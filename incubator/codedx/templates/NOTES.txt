@@ -1,0 +1,7 @@
+This Code Dx instance is for development and test purposes (not suitable for production use).
+
+The password for the Code Dx database root user is {{ .Values.rootUserDatabasePassword }}.
+
+The Code Dx admin password is {{ .Values.codedxAdminPassword }}.
+
+Code Dx will be available on port {{ .Values.codedxTomcatPort }}.

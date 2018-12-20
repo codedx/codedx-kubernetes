@@ -10,7 +10,12 @@ metadata:
     app.kubernetes.io/managed-by: {{ $.Release.Service }}
     app.kubernetes.io/component: "ingress"
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /codedx
+    # Note - In my testing these annotations didn't actually have any affect on the NGINX
+    #        ingress controller, and neither does the "path" property on the "rules"
+    #        attribute (at least for this configuration)
+
+    ingress.kubernetes.io/rewrite-target: "/codedx"
+    nginx.ingress.kubernetes.io/rewrite-target: "/codedx"
 spec:
   {{- if .tls }}
   tls:
@@ -23,7 +28,7 @@ spec:
   - host: {{ .name }}
     http:
       paths:
-      - path: {{ default "/codedx/*" .path }}
+      - path: {{ default "/codedx" .path }}
         backend:
           serviceName: {{ include "codedx.fullname" $ }}
           servicePort: {{ $.Values.codedxTomcatPort }}

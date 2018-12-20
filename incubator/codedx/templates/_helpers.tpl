@@ -38,3 +38,15 @@ Create chart name and version as used by the chart label.
 {{- define "codedx.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{- define "codedx.servicetype" -}}
+{{- if and (.Values.service) (default "" .Values.service.type) -}}
+{{- .Values.service.type -}}
+{{- else }}
+{{- if .Values.ingress.enabled -}}
+{{- "ClusterIP" }}
+{{- else -}}
+{{- "LoadBalancer" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}

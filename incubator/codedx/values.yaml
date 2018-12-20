@@ -12,7 +12,7 @@ ingress:
   hosts:
   # - name: codedx.local
   #   tls: true
-  #   # TODO
+  #   # TODO?
   #   #certManager: true
   #   tlsSecret: tls-secret
   
@@ -22,13 +22,15 @@ ingress:
   #   key:
   #   certificate: 
 
-service:
+service: {}
   # Specify the type of service that will be exposing Code Dx. Acceptable values are:
   # ClusterIP, NodePort, LoadBalancer
   #
-  # If left unassigned, this will be "NodePort" if "ingress.enabled" is true, and "LoadBalancer" otherwise.
+  # If left unassigned, this will have one of the following defaults:
+  #   "ClusterIP"    - If "ingress.enabled" = true
+  #   "LoadBalancer" - If "ingress.enabled" = false
   #
-  type: LoadBalancer
+  #type: LoadBalancer
 
 mariadb:
   db:

@@ -1,0 +1,32 @@
+{{- if .Values.ingress.enabled -}}
+{{- range .Values.ingress.hosts -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ printf "%s-%s" (include "codedx.name" $) .name | trunc 63 | trimSuffix "-" | quote }}
+  labels:
+    helm.sh/chart: {{ include "codedx.chart" $ }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+    app.kubernetes.io/component: "ingress"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /codedx
+spec:
+  {{- if .tls }}
+  tls:
+  - hosts:
+    - {{ .name }}
+    secretName: {{ .tlsSecret }}
+  {{- end }}
+
+  rules:
+  - host: {{ .name }}
+    http:
+      paths:
+      - path: {{ default "/codedx/*" .path }}
+        backend:
+          serviceName: {{ include "codedx.fullname" $ }}
+          servicePort: {{ $.Values.codedxTomcatPort }}
+---
+{{- end -}}
+{{- end -}}

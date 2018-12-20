@@ -7,6 +7,29 @@ codedxTomcatPort: 9090
 rootUserDatabasePassword: 5jqJL2b8hqn3
 codedxAdminPassword: wtKzR4F8o64A
 
+ingress:
+  enabled: false
+  hosts:
+  # - name: codedx.local
+  #   tls: true
+  #   # TODO
+  #   #certManager: true
+  #   tlsSecret: tls-secret
+  
+  # Use to auto-create secrets with the given properties if they don't yet exist
+  # secrets:
+  # - name:
+  #   key:
+  #   certificate: 
+
+service:
+  # Specify the type of service that will be exposing Code Dx. Acceptable values are:
+  # ClusterIP, NodePort, LoadBalancer
+  #
+  # If left unassigned, this will be "NodePort" if "ingress.enabled" is true, and "LoadBalancer" otherwise.
+  #
+  type: LoadBalancer
+
 mariadb:
   db:
     name: codedx

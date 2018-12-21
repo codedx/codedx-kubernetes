@@ -1,4 +1,4 @@
-{{- if and .Values.codedx.propsFile (not .Values.codedx.propsConfigMap) -}}
+{{- if and .Values.codedx.props.file (not .Values.codedx.props.configMap) -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -7,14 +7,17 @@ metadata:
     helm.sh/chart: {{ include "codedx.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/component: configmap
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/part-of: codedx
+  annotations:
+{{ toYaml .Values.codedx.props.annotations | indent 4 }}
 data:
   {{- /* We use `replaceRegex` here instead of usual file templating. A `codedx.props` file can contain documenting */ -}}
   {{- /* comments with sample parameters named ie "{{project.name}}". Rather than try to trim comments from the output */ -}}
   {{- /* or change the `codedx.props` sample file, we use a simple text-replace for flexibility. */ -}}
   {{- $dbUrl := (printf "jdbc:mysql://%s-mariadb/codedx" .Release.Name) -}}
   {{- $dbPassword := .Values.rootUserDatabasePassword -}}
-  {{- $propsContents := .Files.Get .Values.codedx.propsFile -}}
+  {{- $propsContents := .Files.Get .Values.codedx.props.file -}}
 
   {{- $propsContents := ($propsContents | replace "TPL_K8S_DB_URL" $dbUrl) -}}
   {{- $propsContents := ($propsContents | replace "TPL_K8S_DB_DRIVER" "com.mysql.jdbc.Driver") -}}

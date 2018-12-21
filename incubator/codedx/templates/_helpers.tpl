@@ -40,24 +40,24 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 
 {{- define "codedx.license.exists" -}}
-{{- or .Values.codedx.licenseSecret .Values.codedx.licenseFile -}}
+{{- or .Values.codedx.license.secret .Values.codedx.license.file -}}
 {{- end -}}
 
 {{- define "codedx.license.secretName" -}}
-{{- if .Values.codedx.licenseSecret -}}
-{{- .Values.codedx.licenseSecret -}}
+{{- if .Values.codedx.license.secret -}}
+{{- .Values.codedx.license.secret -}}
 {{- else -}}
 {{- printf "%s-license-secret" (include "codedx.fullname" .) -}}
 {{- end -}}
 {{- end -}}
 
 {{- define "codedx.props.exists" -}}
-{{- or .Values.codedx.propsConfigMap .Values.codedx.propsFile -}}
+{{- or .Values.codedx.props.configMap .Values.codedx.props.file -}}
 {{- end -}}
 
 {{- define "codedx.props.configMapName" -}}
-{{- if .Values.codedx.propsConfigMap -}}
-{{- .Values.codedx.propsConfigMap -}}
+{{- if .Values.codedx.props.configMap -}}
+{{- .Values.codedx.props.configMap -}}
 {{- else -}}
 {{- printf "%s-configmap" (include "codedx.fullname" .) -}}
 {{- end -}}

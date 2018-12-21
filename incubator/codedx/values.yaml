@@ -8,26 +8,41 @@ rootUserDatabasePassword: 5jqJL2b8hqn3
 codedxAdminPassword: wtKzR4F8o64A
 
 codedx:
-  # Specify 'propsFile' to create a config-map for Code Dx based on the given 'codedx.props' file
-  propsFile: codedx.props
+  props:
+    # Specify 'codedx.props.file' to create a config-map for Code Dx based on the given 'codedx.props' file
+    file: codedx.props
 
-  # Specify 'propsConfigMap' to use an existing config-map for Code Dx. This config-map MUST contain
-  # a key named 'codedx.props' with the contents of the properties to use. Check the provided
-  # 'codedx.props' file included with this chart and use the same 'swa.db.*' values to ensure that
-  # Code Dx properly connects to the generated MariaDB instances.
-  # 
-  # (If both propsFile and propsConfigMap are specified, the existing 'propsConfigMap' will be used
-  #  and no new config-map will be created.)
-  #propsConfigMap: my-codedx-config-map
+    # Specify 'codedx.props.configMap' to use an existing config-map for Code Dx. This config-map MUST contain
+    # a key named 'codedx.props' with the contents of the properties to use. Check the provided
+    # 'codedx.props' file included with this chart and use the same 'swa.db.*' values to ensure that
+    # Code Dx properly connects to the generated MariaDB instances.
+    # 
+    # (If both file and configMap are specified, the existing 'configMap' will be used
+    #  and no new ConfigMap will be created.)
+    #configMap: my-codedx-config-map
 
-  # Specify 'licenseSecret' to use an existing secret for the Code Dx license. This secret MUST
-  # contain a key named 'license.lic' with the contents of the license to use.
-  licenseSecret: my-codedx-license-secret
+    # Specify annotations to attach to a generated ConfigMap
+    # annotations:
+    #   abc: "123"
+    #   def: "456"
 
-  # Specify 'licenseFile' to automatically create a secret based on the given license
-  # (If both are specified, the existing 'licenseSecret' will be used and no new secret
-  #  will be created.)
-  #licenseFile: my-license-file
+  license:
+    # Specify 'codedx.license.file' to automatically create a secret based on the given license
+    #file: my-license-file
+
+    # Specify 'codedx.license.secret' to use an existing secret for the Code Dx license. This secret MUST
+    # contain a key named 'license.lic' with the contents of the license to use.
+    #
+    # (If both file and secret are specified, the existing 'secret' will be used and no new secret
+    #  will be created.)
+    secret: my-codedx-license-secret
+
+    # Specify annotations to attach to a generated Secret
+    # annotations:
+    #   abc: "123"
+    #   def: "456"
+
+
 
 mariadb:
   db:

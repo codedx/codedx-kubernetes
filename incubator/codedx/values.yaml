@@ -8,7 +8,8 @@ rootUserDatabasePassword: 5jqJL2b8hqn3
 codedxAdminPassword: wtKzR4F8o64A
 
 codedx:
-  propsfile: codedx.props
+  propsFile: codedx.props
+  #licenseFile: my-license-file
 
 mariadb:
   db:

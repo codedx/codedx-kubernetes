@@ -36,10 +36,15 @@ spec:
         volumeMounts:
         - mountPath: /opt/codedx
           name: {{ include "volume.fullname" . | quote }}
-        {{ if .Values.codedx.propsfile -}}
+        {{ if .Values.codedx.propsFile -}}
         - mountPath: /opt/codedx/codedx.props
           name: codedx-props-configmap-volume
           subPath: codedx.props
+        {{- end }}
+        {{ if .Values.codedx.licenseFile -}}
+        - mountPath: /opt/codedx/license.lic
+          name: codedx-license-secret-volume
+          subPath: license.lic
         {{- end }}
       initContainers:
         - name: {{ include "dbinit.fullname" . }}
@@ -50,7 +55,7 @@ spec:
       - name: {{ include "volume.fullname" . | quote }}
         persistentVolumeClaim:
           claimName: {{ include "volume.fullname" . | quote }}
-      {{ if .Values.codedx.propsfile -}}
+      {{ if .Values.codedx.propsFile -}}
       - name: codedx-props-configmap-volume
         configMap:
           name: {{ include "codedx.name" . }}-configmap
@@ -58,4 +63,13 @@ spec:
           - key: codedx.props
             path: codedx.props
       {{- end }}
+      {{ if .Values.codedx.licenseFile -}}
+      - name: codedx-license-secret-volume
+        secret:
+          secretName: {{ include "codedx.fullname" . }}-license-secret
+          items:
+          - key: license.lic
+            path: license.lic
+      {{- end }}
+
 status: {}

@@ -19,7 +19,7 @@ data:
   {{- $propsContents := ($propsContents | replace "TPL_K8S_DB_URL" $dbUrl) -}}
   {{- $propsContents := ($propsContents | replace "TPL_K8S_DB_DRIVER" "com.mysql.jdbc.Driver") -}}
   {{- $propsContents := ($propsContents | replace "TPL_K8S_DB_USER" "root") -}}
-  {{- $propsContents := ($propsContents | replace "TPL_K8S_DB_PASSWORD" $dbPassword) -}}
+  {{- $propsContents := ($propsContents | replace "TPL_K8S_DB_PASSWORD" $dbPassword) }}
   codedx.props: |-
-    {{ $propsContents | nindent 4 }}
+    {{- $propsContents | nindent 4 }}
 {{- end -}}

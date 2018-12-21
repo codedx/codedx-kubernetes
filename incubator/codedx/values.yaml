@@ -7,6 +7,9 @@ codedxTomcatPort: 9090
 rootUserDatabasePassword: 5jqJL2b8hqn3
 codedxAdminPassword: wtKzR4F8o64A
 
+codedx:
+  propsfile: codedx.props
+
 mariadb:
   db:
     name: codedx

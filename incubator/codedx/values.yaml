@@ -8,9 +8,22 @@ rootUserDatabasePassword: 5jqJL2b8hqn3
 codedxAdminPassword: wtKzR4F8o64A
 
 codedx:
+  # Specify 'propsFile' to create a config-map for Code Dx based on the given 'codedx.props' file
   propsFile: codedx.props
-  # Specify 'licenseSecret' to use an existing secret for the Code Dx license
+
+  # Specify 'propsConfigMap' to use an existing config-map for Code Dx. This config-map MUST contain
+  # a key named 'codedx.props' with the contents of the properties to use. Check the provided
+  # 'codedx.props' file included with this chart and use the same 'swa.db.*' values to ensure that
+  # Code Dx properly connects to the generated MariaDB instances.
+  # 
+  # (If both propsFile and propsConfigMap are specified, the existing 'propsConfigMap' will be used
+  #  and no new config-map will be created.)
+  #propsConfigMap: my-codedx-config-map
+
+  # Specify 'licenseSecret' to use an existing secret for the Code Dx license. This secret MUST
+  # contain a key named 'license.lic' with the contents of the license to use.
   licenseSecret: my-codedx-license-secret
+
   # Specify 'licenseFile' to automatically create a secret based on the given license
   # (If both are specified, the existing 'licenseSecret' will be used and no new secret
   #  will be created.)

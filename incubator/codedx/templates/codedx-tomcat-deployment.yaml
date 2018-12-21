@@ -9,6 +9,8 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: "frontend"
 spec:
+  {{ $hasProps := (include "codedx.props.exists" .) -}}
+  {{- $hasLicense := (include "codedx.license.exists" .) -}}
   replicas: 1
   selector:
     matchLabels:
@@ -36,12 +38,12 @@ spec:
         volumeMounts:
         - mountPath: /opt/codedx
           name: {{ include "volume.fullname" . | quote }}
-        {{ if .Values.codedx.propsFile -}}
+        {{ if $hasProps -}}
         - mountPath: /opt/codedx/codedx.props
           name: codedx-props-configmap-volume
           subPath: codedx.props
         {{- end }}
-        {{ if (include "codedx.license.exists" .) -}}
+        {{ if $hasLicense -}}
         - mountPath: /opt/codedx/license.lic
           name: codedx-license-secret-volume
           subPath: license.lic
@@ -55,15 +57,15 @@ spec:
       - name: {{ include "volume.fullname" . | quote }}
         persistentVolumeClaim:
           claimName: {{ include "volume.fullname" . | quote }}
-      {{ if .Values.codedx.propsFile -}}
+      {{ if $hasProps -}}
       - name: codedx-props-configmap-volume
         configMap:
-          name: {{ include "codedx.name" . }}-configmap
+          name: {{ include "codedx.props.configMapName" . | quote }}
           items:
           - key: codedx.props
             path: codedx.props
       {{- end }}
-      {{ if (include "codedx.license.exists" .) -}}
+      {{ if $hasLicense -}}
       - name: codedx-license-secret-volume
         secret:
           secretName: {{ include "codedx.license.secretName" . | quote }}

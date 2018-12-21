@@ -50,3 +50,15 @@ Create chart name and version as used by the chart label.
 {{- printf "%s-license-secret" (include "codedx.fullname" .) -}}
 {{- end -}}
 {{- end -}}
+
+{{- define "codedx.props.exists" -}}
+{{- or .Values.codedx.propsConfigMap .Values.codedx.propsFile -}}
+{{- end -}}
+
+{{- define "codedx.props.configMapName" -}}
+{{- if .Values.codedx.propsConfigMap -}}
+{{- .Values.codedx.propsConfigMap -}}
+{{- else -}}
+{{- printf "%s-configmap" (include "codedx.fullname" .) -}}
+{{- end -}}
+{{- end -}}

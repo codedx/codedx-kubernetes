@@ -1,8 +1,8 @@
-{{- if .Values.codedx.propsFile -}}
+{{- if and .Values.codedx.propsFile (not .Values.codedx.propsConfigMap) -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "codedx.name" . }}-configmap
+  name: {{ include "codedx.props.configMapName" . }}
   labels:
     helm.sh/chart: {{ include "codedx.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}

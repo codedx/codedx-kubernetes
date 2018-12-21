@@ -41,7 +41,7 @@ spec:
           name: codedx-props-configmap-volume
           subPath: codedx.props
         {{- end }}
-        {{ if .Values.codedx.licenseFile -}}
+        {{ if (include "codedx.license.exists" .) -}}
         - mountPath: /opt/codedx/license.lic
           name: codedx-license-secret-volume
           subPath: license.lic
@@ -63,10 +63,10 @@ spec:
           - key: codedx.props
             path: codedx.props
       {{- end }}
-      {{ if .Values.codedx.licenseFile -}}
+      {{ if (include "codedx.license.exists" .) -}}
       - name: codedx-license-secret-volume
         secret:
-          secretName: {{ include "codedx.fullname" . }}-license-secret
+          secretName: {{ include "codedx.license.secretName" . | quote }}
           items:
           - key: license.lic
             path: license.lic

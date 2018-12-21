@@ -9,6 +9,11 @@ codedxAdminPassword: wtKzR4F8o64A
 
 codedx:
   propsFile: codedx.props
+  # Specify 'licenseSecret' to use an existing secret for the Code Dx license
+  licenseSecret: my-codedx-license-secret
+  # Specify 'licenseFile' to automatically create a secret based on the given license
+  # (If both are specified, the existing 'licenseSecret' will be used and no new secret
+  #  will be created.)
   #licenseFile: my-license-file
 
 mariadb:

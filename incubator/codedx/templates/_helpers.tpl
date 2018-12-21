@@ -38,3 +38,15 @@ Create chart name and version as used by the chart label.
 {{- define "codedx.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{- define "codedx.license.exists" -}}
+{{- or .Values.codedx.licenseSecret .Values.codedx.licenseFile -}}
+{{- end -}}
+
+{{- define "codedx.license.secretName" -}}
+{{- if .Values.codedx.licenseSecret -}}
+{{- .Values.codedx.licenseSecret -}}
+{{- else -}}
+{{- printf "%s-license-secret" (include "codedx.fullname" .) -}}
+{{- end -}}
+{{- end -}}

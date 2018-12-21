@@ -24,14 +24,6 @@ spec:
     spec:
       containers:
       - env:
-        - name: DB_DRIVER
-          value: "com.mysql.jdbc.Driver"
-        - name: DB_PASSWORD
-          value: {{ .Values.rootUserDatabasePassword | quote }}
-        - name: DB_URL
-          value: "jdbc:mysql://{{ .Release.Name }}-mariadb.default.svc.cluster.local/codedx"
-        - name: DB_USER
-          value: "root"
         - name: SUPERUSER_NAME
           value: "admin"
         - name: SUPERUSER_PASSWORD
@@ -44,6 +36,11 @@ spec:
         volumeMounts:
         - mountPath: /opt/codedx
           name: {{ include "volume.fullname" . | quote }}
+        {{ if .Values.codedx.propsfile -}}
+        - mountPath: /opt/codedx/codedx.props
+          name: codedx-props-configmap-volume
+          subPath: codedx.props
+        {{- end }}
       initContainers:
         - name: {{ include "dbinit.fullname" . }}
           image: "ubuntu:18.04"
@@ -53,4 +50,12 @@ spec:
       - name: {{ include "volume.fullname" . | quote }}
         persistentVolumeClaim:
           claimName: {{ include "volume.fullname" . | quote }}
+      {{ if .Values.codedx.propsfile -}}
+      - name: codedx-props-configmap-volume
+        configMap:
+          name: {{ include "codedx.name" . }}-configmap
+          items:
+          - key: codedx.props
+            path: codedx.props
+      {{- end }}
 status: {}

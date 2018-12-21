@@ -12,7 +12,7 @@ data:
   {{- /* We use `replaceRegex` here instead of usual file templating. A `codedx.props` file can contain documenting */ -}}
   {{- /* comments with sample parameters named ie "{{project.name}}". Rather than try to trim comments from the output */ -}}
   {{- /* or change the `codedx.props` sample file, we use a simple text-replace for flexibility. */ -}}
-  {{- $dbUrl := (printf "jdbc://mysql://%s-mariadb.default.svc.cluster.local/codedx" .Release.Name) -}}
+  {{- $dbUrl := (printf "jdbc:mysql://%s-mariadb.default.svc.cluster.local/codedx" .Release.Name) -}}
   {{- $dbPassword := .Values.rootUserDatabasePassword -}}
   {{- $propsContents := .Files.Get .Values.codedx.propsfile -}}
 

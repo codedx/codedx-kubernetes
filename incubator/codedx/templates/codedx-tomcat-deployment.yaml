@@ -1,5 +1,13 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
+{{/*
+Note: This ne/tpl weirdness is an attempt to force-cast the result of these "includes"
+to a boolean value so that the "if" checks work properly against these variables on
+Mac OS. For some reason no-value variables are interpreted as "true" in an `if` check.
+(Issue present on Mac OS Mojave 10.14.2; Helm client+server v2.12.1.) 
+*/}}
+{{- $hasProps := ne "" (tpl (include "codedx.props.exists" .) .) -}}
+{{- $hasLicense := ne "" (tpl (include "codedx.license.exists" .) .) -}}
 metadata:
   name: {{ include "codedx.fullname" . }}
   labels:
@@ -9,8 +17,6 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: "frontend"
 spec:
-  {{ $hasProps := (include "codedx.props.exists" .) -}}
-  {{- $hasLicense := (include "codedx.license.exists" .) -}}
   replicas: 1
   selector:
     matchLabels:

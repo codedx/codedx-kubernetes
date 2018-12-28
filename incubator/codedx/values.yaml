@@ -7,6 +7,16 @@ codedxTomcatPort: 9090
 rootUserDatabasePassword: 5jqJL2b8hqn3
 codedxAdminPassword: wtKzR4F8o64A
 
+rbac:
+  create: true
+
+serviceAccount:
+  create: true
+  name: 
+
+podSecurityPolicy:
+  enabled: true
+
 codedx:
   props:
     # Specify 'codedx.props.file' to create a config-map for Code Dx based on the given 'codedx.props' file
@@ -26,7 +36,7 @@ codedx:
     #   abc: "123"
     #   def: "456"
 
-  license:
+  license: {}
     # Specify 'codedx.license.file' to automatically create a secret based on the given license
     #file: my-license-file
 
@@ -35,7 +45,7 @@ codedx:
     #
     # (If both file and secret are specified, the existing 'secret' will be used and no new secret
     #  will be created.)
-    secret: my-codedx-license-secret
+    #secret: my-codedx-license-secret
 
     # Specify annotations to attach to a generated Secret
     # annotations:

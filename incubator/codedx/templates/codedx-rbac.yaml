@@ -1,0 +1,58 @@
+{{- if .Values.rbac.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "codedx.fullname" . | quote }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app.kubernetes.io/name: {{ include "codedx.name" . | quote }}
+    helm.sh/chart: {{ include "codedx.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: "frontend"
+rules:
+- apiGroups: [""]
+  resources: ["configmaps", "secrets", "persistentvolumeclaims"]
+  verbs: ["get"]
+{{ if .Values.podSecurityPolicy.enabled -}}
+- apiGroups: ["policy"]
+  resources: ["podsecuritypolicies"]
+  verbs: ["use"]
+  resourceNames:
+  - {{ include "codedx.name" . | quote }}
+{{- end -}}
+{{- if .Values.serviceAccount.create }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "codedx.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app.kubernetes.io/name: {{ include "codedx.name" . }}
+    helm.sh/chart: {{ include "codedx.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: "frontend"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "codedx.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app.kubernetes.io/name: {{ include "codedx.name" . }}
+    helm.sh/chart: {{ include "codedx.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: "frontend"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "codedx.fullname" . }}
+subjects:
+- name: {{ include "codedx.serviceAccountName" . }}
+  kind: ServiceAccount
+  namespace: {{ .Release.Namespace | quote }}
+{{- end -}}
+{{- end -}}

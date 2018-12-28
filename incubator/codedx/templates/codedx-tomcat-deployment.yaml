@@ -10,6 +10,7 @@ Mac OS. For some reason no-value variables are interpreted as "true" in an `if` 
 {{- $hasLicense := ne "" (tpl (include "codedx.license.exists" .) .) -}}
 metadata:
   name: {{ include "codedx.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: {{ include "codedx.name" . }}
     helm.sh/chart: {{ include "codedx.chart" . }}
@@ -30,6 +31,7 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: "frontend"
     spec:
+      serviceAccountName: {{ include "codedx.serviceAccountName" . }}
       containers:
       - env:
         - name: SUPERUSER_NAME

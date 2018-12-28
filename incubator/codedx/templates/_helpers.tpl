@@ -62,3 +62,14 @@ Create chart name and version as used by the chart label.
 {{- printf "%s-configmap" (include "codedx.fullname" .) -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "codedx.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create -}}
+{{ default (include "codedx.fullname" .) .Values.serviceAccount.name }}
+{{- else -}}
+{{ default "default" .Values.serviceAccount.name }}
+{{- end -}}
+{{- end -}}

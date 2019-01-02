@@ -17,6 +17,15 @@ serviceAccount:
 podSecurityPolicy:
   enabled: true
 
+networkPolicy:
+  db:
+    master:
+      enabled: true
+    slave:
+      enabled: true
+  codedx:
+    enabled: true
+
 codedx:
   props:
     # Specify 'codedx.props.file' to create a config-map for Code Dx based on the given 'codedx.props' file

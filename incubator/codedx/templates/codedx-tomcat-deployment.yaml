@@ -30,6 +30,10 @@ spec:
         app.kubernetes.io/name: {{ include "codedx.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: "frontend"
+        # Extra labels so that the network policy can match against this
+        app: {{ include "codedx.name" . }}
+        instance: {{ .Release.Name }}
+        component: "frontend"
     spec:
       serviceAccountName: {{ include "codedx.serviceAccountName" . }}
       containers:

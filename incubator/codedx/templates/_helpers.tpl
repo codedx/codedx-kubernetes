@@ -73,3 +73,23 @@ Create the name of the service account to use
 {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Port ranges for DNS resolution
+*/}}
+{{- define "netpolicy.dns.ports" -}}
+# DNS resolution
+- port: 53
+  protocol: UDP
+- port: 53
+  protocol: TCP
+{{- end -}}
+
+{{/*
+Full Egress object for DNS resolution
+*/}}
+{{- define "netpolicy.dns.egress" -}}
+egress:
+- ports:
+  {{- include "netpolicy.dns.ports" . | nindent 2 }}
+{{- end -}}

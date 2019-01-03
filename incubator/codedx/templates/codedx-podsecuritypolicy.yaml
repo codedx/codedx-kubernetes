@@ -13,7 +13,7 @@ metadata:
 spec:
   privileged: false
   allowPrivilegeEscalation: false
-  volumes: []
+  volumes: ["persistentVolumeClaim", "configMap", "secret"]
   hostNetwork: false
   hostIPC: false
   hostPID: false
@@ -28,7 +28,11 @@ spec:
     - min: 1
       max: 65535
   runAsUser:
-    rule: MustRunAsNonRoot
+    # TODO - Disable running as root user; enabled for now since I can't find an existing, simple, minimal non-root image
+    #        When disabled, update the codedx-tomcat-deployment container templates to have "securityContext: { runAsUser: <uid> }"
+    #        to force the container to run as the specified user (if necessary)
+    #rule: MustRunAsNonRoot
+    rule: RunAsAny
   seLinux:
     rule: RunAsAny
 {{- end -}}

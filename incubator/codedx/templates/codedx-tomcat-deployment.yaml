@@ -36,6 +36,7 @@ spec:
         component: "frontend"
     spec:
       serviceAccountName: {{ include "codedx.serviceAccountName" . }}
+      serviceAccount: {{ include "codedx.serviceAccountName" . }}
       containers:
       - env:
         - name: SUPERUSER_NAME

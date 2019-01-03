@@ -2,7 +2,7 @@
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
-  name: {{ include "codedx.name" . }}
+  name: {{ include "codedx.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: {{ include "codedx.name" . }}

@@ -19,7 +19,7 @@ rules:
   resources: ["podsecuritypolicies"]
   verbs: ["use"]
   resourceNames:
-  - {{ include "codedx.name" . | quote }}
+  - {{ include "codedx.fullname" . | quote }}
 {{- end -}}
 {{- if .Values.serviceAccount.create }}
 ---

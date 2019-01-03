@@ -14,17 +14,19 @@ serviceAccount:
   create: true
   name: 
 
+# A PodSecurityPolicy (PSP) template has been provided. But, without a Service Account
+# and PSP for the MariaDB pods, the DB will fail to start. If PSPs are enabled, you'll
+# need to assign a Service Account to the MariaDB StatefulSets with an appropriate PSP
+# in order for Code Dx to run successfully.
 podSecurityPolicy:
-  enabled: true
+  enabled: false
 
 networkPolicy:
   db:
     master:
-      enabled: true
+      create: true
     slave:
-      enabled: true
-  codedx:
-    enabled: true
+      create: true
 
 codedx:
   props:

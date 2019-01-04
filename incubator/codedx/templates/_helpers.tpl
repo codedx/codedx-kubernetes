@@ -51,14 +51,39 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 {{- end -}}
 
-{{- define "codedx.props.exists" -}}
-{{- or .Values.codedx.props.configMap .Values.codedx.props.file -}}
-{{- end -}}
-
 {{- define "codedx.props.configMapName" -}}
 {{- if .Values.codedx.props.configMap -}}
 {{- .Values.codedx.props.configMap -}}
 {{- else -}}
 {{- printf "%s-configmap" (include "codedx.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
+
+{{- define "codedx.mariadb.props.name" -}}
+codedx.mariadb.props
+{{- end -}}
+{{- define "codedx.mariadb.props.path" -}}
+/opt/codedx/{{ include "codedx.mariadb.props.name" . }}
+{{- end -}}
+
+{{- define "codedx.mariadb.secretName" -}}
+{{- default (printf "%s-%s" .Release.Name "mariadb-secret") .Values.codedx.props.mariadb.secretName -}}
+{{- end -}}
+
+{{- define "codedx.props.extra.params" -}}
+{{- range .Values.codedx.props.extra -}}
+{{- printf " -Dcodedx.additional-props-%s=\"/opt/codedx/%s\"" .key .key -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "codedx.props.params.combined" -}}
+{{- printf "-Dcodedx.additional-props-mariadb=\"%s\"%s" (include "codedx.mariadb.props.path" .) (include "codedx.props.extra.params" .) -}}
+{{- end -}}
+
+{{- define "codedx.props.params.separated" -}}
+- "-Dcodedx.additional-props-mariadb={{ include "codedx.mariadb.props.path" . }}"
+{{- range .Values.codedx.props.extra }}
+- "-Dcodedx.additional-props-{{ .key }}=/opt/codedx/{{ .key }}"
 {{- end -}}
 {{- end -}}

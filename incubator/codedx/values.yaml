@@ -9,7 +9,8 @@ codedxAdminPassword: wtKzR4F8o64A
 
 ingress:
   enabled: false
-  hosts:
+  autoRedirect: true
+  hosts: {}
   # - name: codedx.local
   #   tls: true
   #   # TODO?

@@ -9,13 +9,13 @@ metadata:
     app.kubernetes.io/instance: {{ $.Release.Name }}
     app.kubernetes.io/managed-by: {{ $.Release.Service }}
     app.kubernetes.io/component: "ingress"
+    app.kubernetes.io/part-of: codedx
   annotations:
-    # Note - In my testing these annotations didn't actually have any affect on the NGINX
-    #        ingress controller, and neither does the "path" property on the "rules"
-    #        attribute (at least for this configuration)
-
-    ingress.kubernetes.io/rewrite-target: "/codedx"
-    nginx.ingress.kubernetes.io/rewrite-target: "/codedx"
+    {{ if .Values.ingress.autoRedirect -}}
+    nginx.ingress.kubernetes.io/app-root: /codedx
+    {{- end }}
+    # Increase timeout duration for Code Dx live updates
+    nginx.ingress.kubernetes.io/proxy-read-timeout: 3600
 spec:
   {{- if .tls }}
   tls:
@@ -28,7 +28,7 @@ spec:
   - host: {{ .name }}
     http:
       paths:
-      - path: {{ default "/codedx" .path }}
+      - path: /codedx
         backend:
           serviceName: {{ include "codedx.fullname" $ }}
           servicePort: {{ $.Values.codedxTomcatPort }}

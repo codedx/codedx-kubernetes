@@ -41,7 +41,7 @@ spec:
           httpGet:
             path: /codedx/login
             port: 8080
-          initialDelaySeconds: 120
+          initialDelaySeconds: 600
           periodSeconds: 15
           timeoutSeconds: 10
         command: ["start.sh"]

@@ -7,17 +7,25 @@ codedxTomcatPort: 9090
 rootUserDatabasePassword: 5jqJL2b8hqn3
 codedxAdminPassword: wtKzR4F8o64A
 
+# Use the `ingress` object and its properties to configure how Ingress resources are generated
+# for the new Code Dx service.
 ingress:
+  # Set `ingress.enabled` to "true" to generate an Ingress rule that forwards request to Code Dx
   enabled: false
+  # If using NGINX Ingress Controller, set this to "true" to automatically redirect any requests
+  # from `/` to `/codedx`.
   autoRedirect: true
-  hosts: {}
-  # - name: codedx.local
-  #   tls: true
-  #   # TODO?
-  #   #certManager: true
-  #   tlsSecret: tls-secret
+  # Specify the set of hosts for which to create Ingress resources
+  hosts:
+    # Specify the FQDN that Code Dx will be hosted on
+  - name: codedx.local
+    # Set `tls` to "true" to add HTTPS/TLS properties to the generated Ingress resource
+    tls: true
+    # If `tls` is "true", specifies the name of the TLS secret containing the key and certificate
+    tlsSecret: tls-secret
   
-  # Use to auto-create secrets with the given properties if they don't yet exist
+  # Use to auto-create secrets with the given properties if they don't yet exist. The values
+  # for "key" and "certificate" should be base64-encoded
   # secrets:
   # - name:
   #   key:

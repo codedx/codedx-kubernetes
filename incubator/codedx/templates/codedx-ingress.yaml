@@ -14,6 +14,9 @@ metadata:
     {{ if $.Values.ingress.autoRedirect -}}
     nginx.ingress.kubernetes.io/app-root: /codedx
     {{- end }}
+    {{ if not .tls -}}
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    {{- end }}
     # Increase timeout duration for Code Dx live updates
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
 spec:

@@ -31,6 +31,19 @@ spec:
           value: {{ .Values.codedxAdminPassword | quote }}
         image: {{ .Values.codedxTomcatImage | quote }}
         name: "{{ include "codedx.name" . }}"
+        readinessProbe:
+          httpGet:
+            path: /codedx/login
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 3
+        livenessProbe:
+          httpGet:
+            path: /codedx/login
+            port: 8080
+          initialDelaySeconds: 600
+          periodSeconds: 15
+          timeoutSeconds: 10
         command: ["start.sh"]
         args: {{ include "codedx.props.params.separated" . | nindent 8 }}
         ports:

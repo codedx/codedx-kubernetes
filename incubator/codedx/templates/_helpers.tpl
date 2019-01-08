@@ -39,8 +39,20 @@ Create chart name and version as used by the chart label.
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "codedx.servicetype" -}}
+{{- if and (.Values.service) (default "" .Values.service.type) -}}
+{{- .Values.service.type -}}
+{{- else }}
+{{- if .Values.ingress.enabled -}}
+{{- "ClusterIP" }}
+{{- else -}}
+{{- "LoadBalancer" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "codedx.license.exists" -}}
-{{- or .Values.codedx.license.secret .Values.codedx.license.file -}}
+{{- or (default "" .Values.codedx.license.secret) (default "" .Values.codedx.license.file) -}}
 {{- end -}}
 
 {{- define "codedx.license.secretName" -}}

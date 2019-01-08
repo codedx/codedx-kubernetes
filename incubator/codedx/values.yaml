@@ -7,6 +7,41 @@ codedxTomcatPort: 9090
 rootUserDatabasePassword: 5jqJL2b8hqn3
 codedxAdminPassword: wtKzR4F8o64A
 
+# Use the `ingress` object and its properties to configure how Ingress resources are generated
+# for the new Code Dx service.
+ingress:
+  # Set `ingress.enabled` to "true" to generate an Ingress rule that forwards request to Code Dx
+  enabled: false
+  # If using NGINX Ingress Controller, set this to "true" to automatically redirect any requests
+  # from `/` to `/codedx`.
+  autoRedirect: true
+  # Specify the set of hosts for which to create Ingress resources
+  hosts:
+    # Specify the FQDN that Code Dx will be hosted on
+  - name: codedx.local
+    # Set `tls` to "true" to add HTTPS/TLS properties to the generated Ingress resource
+    tls: true
+    # If `tls` is "true", specifies the name of the TLS secret containing the key and certificate
+    tlsSecret: tls-secret
+  
+  # Use to auto-create secrets with the given properties if they don't yet exist. The values
+  # for "key" and "certificate" should be base64-encoded
+  # secrets:
+  # - name:
+  #   key:
+  #   certificate: 
+
+service: {}
+  # Specify the type of service that will be exposing Code Dx. Acceptable values are:
+  # ClusterIP, NodePort, LoadBalancer
+  #
+  # If left unassigned, this will have one of the following defaults:
+  #   "ClusterIP"    - If "ingress.enabled" = true
+  #   "LoadBalancer" - If "ingress.enabled" = false
+  #
+  #type: LoadBalancer
+
+
 # Code Dx Properties Configuration
 #
 #
@@ -72,7 +107,7 @@ codedx:
     #  key: ldap-props
 
 
-  license:
+  license: {}
     # Specify 'codedx.license.file' to automatically create a secret based on the given license
     #file: my-license-file
 
@@ -81,7 +116,7 @@ codedx:
     #
     # (If both file and secret are specified, the existing 'secret' will be used and no new secret
     #  will be created.)
-    secret: my-codedx-license-secret
+    #secret: my-codedx-license-secret
 
     # Specify annotations to attach to a generated Secret
     # annotations:

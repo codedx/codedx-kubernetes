@@ -52,7 +52,7 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 
 {{- define "codedx.license.exists" -}}
-{{- or .Values.codedx.license.secret .Values.codedx.license.file -}}
+{{- or (default "" .Values.codedx.license.secret) (default "" .Values.codedx.license.file) -}}
 {{- end -}}
 
 {{- define "codedx.license.secretName" -}}

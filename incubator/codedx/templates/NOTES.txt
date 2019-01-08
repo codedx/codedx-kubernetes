@@ -4,4 +4,26 @@ The password for the Code Dx database root user is {{ .Values.rootUserDatabasePa
 
 The Code Dx admin password is {{ .Values.codedxAdminPassword }}.
 
+{{- if not (include "codedx.license.exists" .) }}
+
+No license was provided during installation - you'll need to provide one when accessing Code Dx for the first time.
+
+{{- end }}
+
+{{ if .Values.ingress.enabled -}}
+Code Dx will be available at the following URLs:
+{{ range .Values.ingress.hosts }}
+{{- if .tls -}}
+- https://{{ .name }}/codedx
+{{ else -}}
+- http://{{ .name }}/codedx
+{{ end -}}
+{{- end -}}
+{{- else -}}
 Code Dx will be available on port {{ .Values.codedxTomcatPort }}.
+{{- end }}
+
+Code Dx can be customized by editing the {{ include "codedx.props.configMapName" . | quote }} config map and
+starting a new pod to reload the changes. If you want to add more Code Dx configuration properties as secrets,
+mount the secret as a file to Code Dx and give the file path to Code Dx by modifying the `tomcat.env` key of
+the {{ include "codedx.props.configMapName" . | quote }} config map.

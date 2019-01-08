@@ -12,17 +12,17 @@ metadata:
   annotations:
 {{ toYaml .Values.codedx.props.annotations | indent 4 }}
 data:
-  {{- /* We use `replaceRegex` here instead of usual file templating. A `codedx.props` file can contain documenting */ -}}
+  {{- /* We use `replace` here instead of usual file templating. A `codedx.props` file can contain documenting */ -}}
   {{- /* comments with sample parameters named ie "{{project.name}}". Rather than try to trim comments from the output */ -}}
   {{- /* or change the `codedx.props` sample file, we use a simple text-replace for flexibility. */ -}}
   {{- $dbUrl := (printf "jdbc:mysql://%s-mariadb/codedx" .Release.Name) -}}
-  {{- $dbPassword := .Values.rootUserDatabasePassword -}}
   {{- $propsContents := .Files.Get .Values.codedx.props.file -}}
 
-  {{- $propsContents := ($propsContents | replace "TPL_K8S_DB_URL" $dbUrl) -}}
-  {{- $propsContents := ($propsContents | replace "TPL_K8S_DB_DRIVER" "com.mysql.jdbc.Driver") -}}
-  {{- $propsContents := ($propsContents | replace "TPL_K8S_DB_USER" "root") -}}
-  {{- $propsContents := ($propsContents | replace "TPL_K8S_DB_PASSWORD" $dbPassword) }}
+  {{- $propsContents := ($propsContents | replace "TPL_K8S_DB_URL" $dbUrl) }}
   codedx.props: |-
     {{- $propsContents | nindent 4 }}
+
+  tomcat.env: |-
+    export CATALINA_OPTS={{ include "codedx.props.params.combined" . }}
+
 {{- end -}}

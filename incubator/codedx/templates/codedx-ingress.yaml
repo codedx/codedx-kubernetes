@@ -1,0 +1,40 @@
+{{- if .Values.ingress.enabled -}}
+{{- range .Values.ingress.hosts -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ printf "%s-%s" (include "codedx.name" $) .name | trunc 63 | trimSuffix "-" | quote }}
+  labels:
+    helm.sh/chart: {{ include "codedx.chart" $ }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+    app.kubernetes.io/component: "ingress"
+    app.kubernetes.io/part-of: codedx
+  annotations:
+    {{ if $.Values.ingress.autoRedirect -}}
+    nginx.ingress.kubernetes.io/app-root: /codedx
+    {{- end }}
+    {{ if not .tls -}}
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    {{- end }}
+    # Increase timeout duration for Code Dx live updates
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+spec:
+  {{- if .tls }}
+  tls:
+  - hosts:
+    - {{ .name }}
+    secretName: {{ .tlsSecret }}
+  {{- end }}
+
+  rules:
+  - host: {{ .name }}
+    http:
+      paths:
+      - path: /codedx
+        backend:
+          serviceName: {{ include "codedx.fullname" $ }}
+          servicePort: {{ $.Values.codedxTomcatPort }}
+---
+{{- end -}}
+{{- end -}}

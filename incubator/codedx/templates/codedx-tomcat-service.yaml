@@ -9,10 +9,11 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: "frontend"
 spec:
-  type: LoadBalancer
+  type: {{ include "codedx.servicetype" . }}
   ports:
-  - name: {{ .Values.codedxTomcatPort | quote }}
+  - name: http
     port: {{ .Values.codedxTomcatPort }}
+    protocol: TCP
     targetPort: 8080
   selector:
     app.kubernetes.io/name: {{ include "codedx.name" . }}

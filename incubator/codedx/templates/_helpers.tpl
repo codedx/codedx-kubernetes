@@ -39,8 +39,20 @@ Create chart name and version as used by the chart label.
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "codedx.servicetype" -}}
+{{- if and (.Values.service) (default "" .Values.service.type) -}}
+{{- .Values.service.type -}}
+{{- else }}
+{{- if .Values.ingress.enabled -}}
+{{- "ClusterIP" }}
+{{- else -}}
+{{- "LoadBalancer" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "codedx.license.exists" -}}
-{{- or .Values.codedx.license.secret .Values.codedx.license.file -}}
+{{- or (default "" .Values.codedx.license.secret) (default "" .Values.codedx.license.file) -}}
 {{- end -}}
 
 {{- define "codedx.license.secretName" -}}
@@ -49,10 +61,6 @@ Create chart name and version as used by the chart label.
 {{- else -}}
 {{- printf "%s-license-secret" (include "codedx.fullname" .) -}}
 {{- end -}}
-{{- end -}}
-
-{{- define "codedx.props.exists" -}}
-{{- or .Values.codedx.props.configMap .Values.codedx.props.file -}}
 {{- end -}}
 
 {{- define "codedx.props.configMapName" -}}
@@ -92,4 +100,32 @@ Full Egress object for DNS resolution
 egress:
 - ports:
   {{- include "netpolicy.dns.ports" . | nindent 2 }}
+{{- end -}}
+
+{{- define "codedx.mariadb.props.name" -}}
+codedx.mariadb.props
+{{- end -}}
+{{- define "codedx.mariadb.props.path" -}}
+/opt/codedx/{{ include "codedx.mariadb.props.name" . }}
+{{- end -}}
+
+{{- define "codedx.mariadb.secretName" -}}
+{{- default (printf "%s-%s" .Release.Name "mariadb-secret") .Values.codedx.props.mariadb.secretName -}}
+{{- end -}}
+
+{{- define "codedx.props.extra.params" -}}
+{{- range .Values.codedx.props.extra -}}
+{{- printf " -Dcodedx.additional-props-%s=\"/opt/codedx/%s\"" .key .key -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "codedx.props.params.combined" -}}
+{{- printf "-Dcodedx.additional-props-mariadb=\"%s\"%s" (include "codedx.mariadb.props.path" .) (include "codedx.props.extra.params" .) -}}
+{{- end -}}
+
+{{- define "codedx.props.params.separated" -}}
+- "-Dcodedx.additional-props-mariadb={{ include "codedx.mariadb.props.path" . }}"
+{{- range .Values.codedx.props.extra }}
+- "-Dcodedx.additional-props-{{ .key }}=/opt/codedx/{{ .key }}"
+{{- end -}}
 {{- end -}}

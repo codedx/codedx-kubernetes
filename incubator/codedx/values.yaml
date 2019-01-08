@@ -27,25 +27,105 @@ networkPolicy:
       create: true
     slave:
       create: true
+# Use the `ingress` object and its properties to configure how Ingress resources are generated
+# for the new Code Dx service.
+ingress:
+  # Set `ingress.enabled` to "true" to generate an Ingress rule that forwards request to Code Dx
+  enabled: false
+  # If using NGINX Ingress Controller, set this to "true" to automatically redirect any requests
+  # from `/` to `/codedx`.
+  autoRedirect: true
+  # Specify the set of hosts for which to create Ingress resources
+  hosts:
+    # Specify the FQDN that Code Dx will be hosted on
+  - name: codedx.local
+    # Set `tls` to "true" to add HTTPS/TLS properties to the generated Ingress resource
+    tls: true
+    # If `tls` is "true", specifies the name of the TLS secret containing the key and certificate
+    tlsSecret: tls-secret
+  
+  # Use to auto-create secrets with the given properties if they don't yet exist. The values
+  # for "key" and "certificate" should be base64-encoded
+  # secrets:
+  # - name:
+  #   key:
+  #   certificate: 
+
+service: {}
+  # Specify the type of service that will be exposing Code Dx. Acceptable values are:
+  # ClusterIP, NodePort, LoadBalancer
+  #
+  # If left unassigned, this will have one of the following defaults:
+  #   "ClusterIP"    - If "ingress.enabled" = true
+  #   "LoadBalancer" - If "ingress.enabled" = false
+  #
+  #type: LoadBalancer
+
+
+# Code Dx Properties Configuration
+#
+#
+#   Code Dx can accept multiple "props" files at startup. This feature is used to store common
+# properties in a ConfigMap (generated from the value at 'codedx.props.file'), and store more
+# sensitive information as secrets.
+#
+# The file retrieved from the value `codedx.props.file` will be created as a ConfigMap and mounted
+#   at /opt/codedx/codedx.props.
+#
+# MariaDB creds provided to this chart will be stored in a secret, containing a "props" file
+#   to be mounted at /opt/codedx/codedx.mariadb.props.
+#
+# Additional sensitive information (ie LDAP config) can also be provided to Code Dx as secrets
+#   mounted as prop files by adding to the "codedx.extraProps" list.
 
 codedx:
   props:
     # Specify 'codedx.props.file' to create a config-map for Code Dx based on the given 'codedx.props' file
     file: codedx.props
 
-    # Specify 'codedx.props.configMap' to use an existing config-map for Code Dx. This config-map MUST contain
-    # a key named 'codedx.props' with the contents of the properties to use. Check the provided
-    # 'codedx.props' file included with this chart and use the same 'swa.db.*' values to ensure that
-    # Code Dx properly connects to the generated MariaDB instances.
+    # Specify 'codedx.props.configMap' to use an existing config-map for Code Dx.
+    # This config-map MUST contain:
+    # - a key named 'codedx.props' with the contents of the properties to use. Check the provided
+    #   'codedx.props' file included with this chart and use the same 'swa.db.*' values to ensure that
+    #   Code Dx properly connects to the generated MariaDB instances.
+    # - a key named 'tomcat.env' with the `CATALINA_OPTS` values necessary to load any additional
+    #   props files. (it must at least provide the path to the MariaDB creds.)
     # 
     # (If both file and configMap are specified, the existing 'configMap' will be used
     #  and no new ConfigMap will be created.)
     #configMap: my-codedx-config-map
 
     # Specify annotations to attach to a generated ConfigMap
-    # annotations:
+    annotations: {}
     #   abc: "123"
     #   def: "456"
+
+    # Code Dx will mount a secret as a file, containing MariaDB connection info.
+    #
+    # Set `codedx.props.mariadb.createSecret` to `true` to automatically create a secret.
+    # Set `codedx.props.mariadb.secretName` to specify the name of the secret to use.
+    #
+    # The MariaDB secret should have a `codedx.mariadb.props` key containing the text of a "props"-formatted
+    # file that assigns `swa.db.user` and `swa.db.password`, ie:
+    #
+    # swa.db.user = root
+    # swa.db.password = my-mariadb-password
+    #
+    # (Note that the URL for the MariaDB instance is assigned via the `codedx.props` configmap, not this secret.)
+    mariadb:
+      createSecret: true
+      secretName: test
+      # Specify annotations to attach to a generated MariaDB secret
+      annotations: {}
+
+    # Specify extra secrets to be mounted in Code Dx as props files. Use this for other sensitive info,
+    # ie LDAP config. The secrets will be mounted as /opt/codedx/<key-name> and given to Code Dx. Make
+    # sure the name doesn't conflict with other prop file names. ("codedx.props" and "codedx.mariadb.props"
+    # are reserved.)
+    extra: []
+    #- secretName: my-ldap-secret
+    #  key: ldap-props
+
 
   license: {}
     # Specify 'codedx.license.file' to automatically create a secret based on the given license

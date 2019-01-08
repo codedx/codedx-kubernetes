@@ -17,9 +17,7 @@
 
 # db configuration for using MySQL
 swa.db.url = TPL_K8S_DB_URL
-swa.db.driver = TPL_K8S_DB_DRIVER
-swa.db.user = TPL_K8S_DB_USER
-swa.db.password = TPL_K8S_DB_PASSWORD
+swa.db.driver = com.mysql.jdbc.Driver
 
 # Use 'swa.user.rememberme' to control the level of "remember me" support
 # in the user login form:

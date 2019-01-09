@@ -62,9 +62,8 @@ spec:
     - from:
       - podSelector:
           matchLabels:
-            app: {{ include "codedx.name" . }}
-            instance: {{ .Release.Name }}
-            component: "frontend"
+            codedx.com-instance: {{ .Release.Name }}
+            codedx.com-component: "frontend"
       ports:
       - port: 3306
     # replication port

@@ -1,11 +1,5 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
-{{/*
-Note: This ne/tpl weirdness is an attempt to force-cast the result of these "includes"
-to a boolean value so that the "if" checks work properly against these variables on
-Mac OS. For some reason no-value variables are interpreted as "true" in an `if` check.
-(Issue present on Mac OS Mojave 10.14.2; Helm client+server v2.12.1.) 
-*/}}
 metadata:
   name: {{ include "codedx.fullname" . }}
   namespace: {{ .Release.Namespace }}
@@ -30,9 +24,8 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: "frontend"
         # Extra labels so that the network policy can match against this
-        app: {{ include "codedx.name" . }}
-        instance: {{ .Release.Name }}
-        component: "frontend"
+        codedx.com-instance: {{ .Release.Name }}
+        codedx.com-component: "frontend"
     spec:
       serviceAccountName: {{ include "codedx.serviceAccountName" . }}
       serviceAccount: {{ include "codedx.serviceAccountName" . }}

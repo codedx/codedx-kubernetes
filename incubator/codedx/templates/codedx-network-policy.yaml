@@ -1,0 +1,38 @@
+{{- if .Values.networkPolicy.codedx.create -}}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "codedx.fullname" . }}-codedx-netpolicy
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "codedx.name" . }}
+    helm.sh/chart: {{ include "codedx.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/component: "frontend"
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ include "codedx.name" . }}
+      instance: {{ .Release.Name | quote }}
+      component: "frontend"
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: mariadb
+          release: {{ .Release.Name | quote }}
+    ports:
+    - port: 3306
+  - ports:
+    {{- include "netpolicy.dns.ports" . | nindent 4 -}}
+{{- if .Values.networkPolicy.codedx.ingressSelectors }}
+  ingress:
+  - from:
+{{ toYaml .Values.networkPolicy.codedx.ingressSelectors | indent 4 -}}
+    ports:
+    - port: 9090
+{{- else }}
+  ingress: []
+{{- end -}}
+{{- end -}}

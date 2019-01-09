@@ -27,6 +27,22 @@ networkPolicy:
       create: true
     slave:
       create: true
+
+  # A NetworkPolicy for Code Dx will limit its egress to MariaDB instances, and prevent
+  # ingress from other pods.
+  codedx:
+    create: true
+    # A list of selectors for limiting ingress. Pods matched here will be allowed to
+    # connect to Code Dx over HTTP (port 9090).
+    #
+    # https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.11/#networkpolicypeer-v1-networking-k8s-io
+    ingressSelectors: []
+    # - podSelector:
+    #     matchLabels:
+    #       abc: "def"
+
+
+
 # Use the `ingress` object and its properties to configure how Ingress resources are generated
 # for the new Code Dx service.
 ingress:

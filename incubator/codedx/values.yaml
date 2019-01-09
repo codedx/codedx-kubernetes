@@ -130,7 +130,7 @@ codedx:
     # (Note that the URL for the MariaDB instance is assigned via the `codedx.props` configmap, not this secret.)
     mariadb:
       createSecret: true
-      secretName: test
+      secretName: codedx-mariadb-secret
       # Specify annotations to attach to a generated MariaDB secret
       annotations: {}
 

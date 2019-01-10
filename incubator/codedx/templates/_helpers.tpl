@@ -137,3 +137,15 @@ codedx.mariadb.props
 {{- define "codedx.rbac.db.psp.name" -}}
 {{- default (printf "%s-%s" (include "codedx.fullname" .) "db-psp") .Values.rbac.db.podSecurityPolicy.name -}}
 {{- end -}}
+
+{{- define "mariadb.master.fullname" -}}
+{{- if .Values.mariadb.replication.enabled -}}
+{{- printf "%s-%s" .Release.Name "mariadb-master" | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name "mariadb" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "mariadb.slave.fullname" -}}
+{{- printf "%s-%s" .Release.Name "mariadb-slave" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}

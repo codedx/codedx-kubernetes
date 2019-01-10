@@ -1,6 +1,7 @@
 # Default values for codedx.
 
 codedxTomcatImage: codedx/codedx-tomcat:v3.5.3
+codedxTomcatImagePullSecrets: []
 
 codedxTomcatPort: 9090
 

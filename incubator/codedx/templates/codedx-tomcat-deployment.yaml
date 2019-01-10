@@ -27,6 +27,9 @@ spec:
         codedx.com-instance: {{ .Release.Name }}
         codedx.com-component: "frontend"
     spec:
+      {{ if .Values.codedxTomcatImagePullSecrets -}}
+      imagePullSecrets: {{ toYaml .Values.codedxTomcatImagePullSecrets | nindent 6 -}}
+      {{ end -}}
       serviceAccountName: {{ include "codedx.serviceAccountName" . }}
       serviceAccount: {{ include "codedx.serviceAccountName" . }}
       containers:

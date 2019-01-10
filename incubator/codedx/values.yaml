@@ -7,23 +7,53 @@ codedxTomcatPort: 9090
 rootUserDatabasePassword: 5jqJL2b8hqn3
 codedxAdminPassword: wtKzR4F8o64A
 
+# Configure RBAC-related properties of the Code Dx and MariaDB installations.
 rbac:
   codedx:
+    # Determine the name of the service account to run Code Dx with.
+    # - If create=true but name=undefined - Will create and use an auto-named service account
+    # - If create=false but name!=undefined - Will assign the named service account to the Code Dx deployment
+    # - If create=true and name!=undefined - Will create a service account with the given name and use it for the Code Dx deployment
+    # - If create=false and name=undefined - Will use 'default' service account for the Code Dx deployment
     serviceAccount:
       create: true
       #name: codedx
+    
+    # Configure the creation and use of a PodSecurityPolicy for the Code Dx deployment.
     podSecurityPolicy: {}
+      # Will create a suitable PSP for Code Dx with the given name (or auto-generate a name if undefined.)
       #create: false
+
+      # The name of the PSP to create and/or use (optional)
       #name: codedx-psp
+
+      # Whether or not to create a Role and RoleBinding to use this PSP with the service account described
+      # in rbac.codedx.serviceaccount.
       #bind: false
+
   db:
+    # MariaDB must be configured manually for RBAC, but templates can be generated for later use. A service account
+    # must be created manually and assigned to the MariaDB StatefulSets after installation of this chart. If PSP
+    # properties are defined, the installation notes will output the commands necessary to patch the StatefulSets
+    # with the service account named here.
     serviceAccount: {}
+      # The name of a pre-existing ServiceAccount that will be assigned to MariaDB after installation
       #name: mariadb
     podSecurityPolicy: {}
+      # Will create a suitable PSP for MariaDB with the given name (or auto-generate a name if undefined.)
       #create: true
+
+      # The name of the PSP to create and/or use (optional)
       #name: mariadb-psp
+
+      # Whether or not to create a Role and RoleBinding to use this PSP with the service account named
+      # in rbac.db.serviceAccount.name.
       #bind: true
 
+
+
+# Configure NetworkPolicies to restrict which pods can connect with other pods. (Each created network policy
+# will include an egress rule on port 53 to any target for DNS.)
 networkPolicy:
   # A NetworkPolicy for Code Dx will limit its egress to MariaDB instances, and prevent
   # ingress from other pods.
@@ -38,6 +68,9 @@ networkPolicy:
     #     matchLabels:
     #       abc: "def"
 
+  # NetworkPolicies for MariaDB pods will allow Ingress from only Code Dx and other MariaDB pods. Egress is
+  # allowed to other MariaDB instances. If metrics are enabled, the NetworkPolicies will also allow Ingress
+  # on port 9090 from any source.
   db:
     master:
       create: true

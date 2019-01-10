@@ -8,26 +8,23 @@ rootUserDatabasePassword: 5jqJL2b8hqn3
 codedxAdminPassword: wtKzR4F8o64A
 
 rbac:
-  create: true
-
-serviceAccount:
-  create: true
-  name: 
-
-# A PodSecurityPolicy (PSP) template has been provided. But, without a Service Account
-# and PSP for the MariaDB pods, the DB will fail to start. If PSPs are enabled, you'll
-# need to assign a Service Account to the MariaDB StatefulSets with an appropriate PSP
-# in order for Code Dx to run successfully.
-podSecurityPolicy:
-  enabled: false
+  codedx:
+    serviceAccount:
+      create: true
+      #name: codedx
+    podSecurityPolicy: {}
+      #create: false
+      #name: codedx-psp
+      #bind: false
+  db:
+    serviceAccount: {}
+      #name: mariadb
+    podSecurityPolicy: {}
+      #create: true
+      #name: mariadb-psp
+      #bind: true
 
 networkPolicy:
-  db:
-    master:
-      create: true
-    slave:
-      create: true
-
   # A NetworkPolicy for Code Dx will limit its egress to MariaDB instances, and prevent
   # ingress from other pods.
   codedx:
@@ -40,6 +37,12 @@ networkPolicy:
     # - podSelector:
     #     matchLabels:
     #       abc: "def"
+
+  db:
+    master:
+      create: true
+    slave:
+      create: true
 
 
 

@@ -75,10 +75,10 @@ Create chart name and version as used by the chart label.
 Create the name of the service account to use
 */}}
 {{- define "codedx.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create -}}
-{{ default (include "codedx.fullname" .) .Values.serviceAccount.name }}
+{{- if .Values.rbac.codedx.serviceAccount.create -}}
+{{ default (include "codedx.fullname" .) .Values.rbac.codedx.serviceAccount.name }}
 {{- else -}}
-{{ default "default" .Values.serviceAccount.name }}
+{{ default "default" .Values.rbac.codedx.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
 
@@ -128,4 +128,12 @@ codedx.mariadb.props
 {{- range .Values.codedx.props.extra }}
 - "-Dcodedx.additional-props-{{ .key }}=/opt/codedx/{{ .key }}"
 {{- end -}}
+{{- end -}}
+
+{{- define "codedx.rbac.psp.name" -}}
+{{- default (printf "%s-%s" (include "codedx.fullname" .) "psp") .Values.rbac.codedx.podSecurityPolicy.name -}}
+{{- end -}}
+
+{{- define "codedx.rbac.db.psp.name" -}}
+{{- default (printf "%s-%s" (include "codedx.fullname" .) "db-psp") .Values.rbac.db.podSecurityPolicy.name -}}
 {{- end -}}

@@ -1,8 +1,8 @@
-{{- if .Values.podSecurityPolicy.enabled -}}
+{{- if .Values.rbac.codedx.podSecurityPolicy.create -}}
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
-  name: {{ include "codedx.fullname" . }}
+  name: {{ include "codedx.rbac.psp.name" . }}
   namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: {{ include "codedx.name" . }}

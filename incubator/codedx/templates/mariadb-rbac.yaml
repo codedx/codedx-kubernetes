@@ -1,0 +1,25 @@
+{{- if .Values.rbac.db.podSecurityPolicy.bind }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "codedx.fullname" . }}-mariadb-use-psp
+rules:
+- apiGroups: ["policy"]
+  resources: ["podsecuritypolicies"]
+  verbs: ["use"]
+  resourceNames:
+  - {{ include "codedx.rbac.db.psp.name" . }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "codedx.fullname" . }}-mariadb-use-psp
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "codedx.fullname" . }}-mariadb-use-psp
+subjects:
+- name: {{ .Values.rbac.db.serviceAccount.name }}
+  kind: ServiceAccount
+  namespace: {{ .Release.Namespace | quote }}
+{{- end -}}

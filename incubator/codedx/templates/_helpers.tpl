@@ -71,6 +71,36 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 {{- end -}}
 
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "codedx.serviceAccountName" -}}
+{{- if .Values.rbac.codedx.serviceAccount.create -}}
+{{ default (include "codedx.fullname" .) .Values.rbac.codedx.serviceAccount.name }}
+{{- else -}}
+{{ default "default" .Values.rbac.codedx.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Port ranges for DNS resolution
+*/}}
+{{- define "netpolicy.dns.ports" -}}
+# DNS resolution
+- port: 53
+  protocol: UDP
+- port: 53
+  protocol: TCP
+{{- end -}}
+
+{{/*
+Full Egress object for DNS resolution
+*/}}
+{{- define "netpolicy.dns.egress" -}}
+egress:
+- ports:
+  {{- include "netpolicy.dns.ports" . | nindent 2 }}
+{{- end -}}
 
 {{- define "codedx.mariadb.props.name" -}}
 codedx.mariadb.props
@@ -98,4 +128,24 @@ codedx.mariadb.props
 {{- range .Values.codedx.props.extra }}
 - "-Dcodedx.additional-props-{{ .key }}=/opt/codedx/{{ .key }}"
 {{- end -}}
+{{- end -}}
+
+{{- define "codedx.rbac.psp.name" -}}
+{{- default (printf "%s-%s" (include "codedx.fullname" .) "psp") .Values.rbac.codedx.podSecurityPolicy.name -}}
+{{- end -}}
+
+{{- define "codedx.rbac.db.psp.name" -}}
+{{- default (printf "%s-%s" (include "codedx.fullname" .) "db-psp") .Values.rbac.db.podSecurityPolicy.name -}}
+{{- end -}}
+
+{{- define "mariadb.master.fullname" -}}
+{{- if .Values.mariadb.replication.enabled -}}
+{{- printf "%s-%s" .Release.Name "mariadb-master" | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name "mariadb" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "mariadb.slave.fullname" -}}
+{{- printf "%s-%s" .Release.Name "mariadb-slave" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}

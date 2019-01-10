@@ -1,0 +1,87 @@
+{{- if .Values.networkPolicy.db.slave.create -}}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "codedx.fullname" . }}-mariadb-slave-netpolicy
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "codedx.name" . }}
+    helm.sh/chart: {{ include "codedx.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/component: "frontend"
+spec:
+  podSelector:
+    matchLabels:
+      app: mariadb
+      component: slave
+      release: {{ .Release.Name | quote }}
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: mariadb
+          component: master
+          release: {{ .Release.Name | quote }}
+    ports:
+    - port: 3306
+  - ports:
+    {{- include "netpolicy.dns.ports" . | nindent 4 -}}
+  {{- if .Values.mariadb.metrics.enabled }}
+  ingress:
+  # metrics port
+  - from:
+    - podSelector: {}
+    - namespaceSelector: {}
+    ports:
+    - port: 9104
+  {{- end }}
+{{- end }}
+---
+{{ if .Values.networkPolicy.db.master.create -}}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "codedx.fullname" . }}-mariadb-master-netpolicy
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "codedx.name" . }}
+    helm.sh/chart: {{ include "codedx.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: "frontend"
+spec:
+  podSelector:
+    matchLabels:
+      # TODO - Figure out how to parameterize these labels
+      app: mariadb
+      component: master
+      release: {{ .Release.Name | quote }}
+  ingress:
+    # DB port
+    - from:
+      - podSelector:
+          matchLabels:
+            codedx.com-instance: {{ .Release.Name }}
+            codedx.com-component: "frontend"
+      ports:
+      - port: 3306
+    # replication port
+    - from:
+      - podSelector:
+          matchLabels:
+            app: mariadb
+            component: slave
+            release: {{ .Release.Name | quote }}
+      ports:
+      - port: 3306
+    {{- if .Values.mariadb.metrics.enabled }}
+    # metrics port
+    - from:
+      - podSelector: {}
+      - namespaceSelector: {}
+      ports:
+      - port: 9104
+    {{- end }}
+  {{ include "netpolicy.dns.egress" . | nindent 2 -}}
+{{- end -}}

@@ -2,6 +2,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: {{ include "codedx.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: {{ include "codedx.name" . }}
     helm.sh/chart: {{ include "codedx.chart" . }}
@@ -22,7 +23,12 @@ spec:
         app.kubernetes.io/name: {{ include "codedx.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: "frontend"
+        # Extra labels so that the network policy can match against this
+        codedx.com-instance: {{ .Release.Name }}
+        codedx.com-component: "frontend"
     spec:
+      serviceAccountName: {{ include "codedx.serviceAccountName" . }}
+      serviceAccount: {{ include "codedx.serviceAccountName" . }}
       containers:
       - env:
         - name: SUPERUSER_NAME

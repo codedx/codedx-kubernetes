@@ -1,0 +1,22 @@
+{{- if .Values.rbac.db.podSecurityPolicy.create -}}
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: {{ include "codedx.rbac.db.psp.name" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  volumes: ["persistentVolumeClaim", "configMap", "secret"]
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  supplementalGroups:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+  runAsUser:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+{{- end -}}

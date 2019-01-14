@@ -85,6 +85,11 @@ spec:
           name: codedx-license-secret-volume
           subPath: license.lic
         {{- end }}
+        {{ if .Values.codedx.logging.configFile -}}
+        - mountPath: /opt/codedx/logback.xml
+          name: codedx-logback-volume
+          subPath: logback.xml
+        {{- end }}
       initContainers:
         - name: {{ include "dbinit.fullname" . }}
           image: "ubuntu:18.04"
@@ -127,6 +132,14 @@ spec:
           items:
           - key: license.lic
             path: license.lic
+      {{- end }}
+      {{ if .Values.codedx.logging.configFile -}}
+      - name: codedx-logback-volume
+        configMap:
+          name: {{ include "codedx.props.configMapName" . | quote }}
+          items:
+          - key: logback.xml
+            path: logback.xml
       {{- end }}
 
 status: {}

@@ -25,4 +25,9 @@ data:
   tomcat.env: |-
     export CATALINA_OPTS={{ include "codedx.props.params.combined" . }}
 
+  {{ if .Values.codedx.logging.configFile -}}
+  logback.xml: |-
+    {{- .Files.Get .Values.codedx.logging.configFile | nindent 4 -}}
+  {{- end -}}
+
 {{- end -}}

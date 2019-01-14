@@ -197,6 +197,12 @@ codedx:
     #   def: "456"
 
 
+  # Specify a local "logback.xml" file to be inserted into the Code Dx configmap and used,
+  # allowing you to customize how Code Dx filters its logs. 
+  logging: {}
+    #configFile: my-logback.xml
+
+
 
 mariadb:
   db:

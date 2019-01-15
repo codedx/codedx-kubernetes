@@ -32,6 +32,9 @@ spec:
       {{ end -}}
       serviceAccountName: {{ include "codedx.serviceAccountName" . }}
       serviceAccount: {{ include "codedx.serviceAccountName" . }}
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
       containers:
       - env:
         - name: SUPERUSER_NAME

@@ -19,6 +19,8 @@ metadata:
     {{- end }}
     # Increase timeout duration for Code Dx live updates
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    # Remove file size limit, Code Dx enforces this internally
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
 spec:
   {{- if .tls }}
   tls:

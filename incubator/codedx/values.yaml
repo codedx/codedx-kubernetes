@@ -208,7 +208,8 @@ codedx:
   logging: {}
     #configFile: my-logback.xml
 
-
+# Specify CPU/memory resource requests/limits for Code Dx on Tomcat
+resources: {}
 
 mariadb:
   db:

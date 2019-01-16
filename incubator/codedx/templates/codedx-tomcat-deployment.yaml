@@ -52,7 +52,8 @@ spec:
         args: {{ include "codedx.props.params.separated" . | nindent 8 }}
         ports:
         - containerPort: 8080
-        resources: {}
+        resources:
+        {{- toYaml .Values.resources | nindent 10 }}
         volumeMounts:
         # Code Dx appdata
         - mountPath: /opt/codedx

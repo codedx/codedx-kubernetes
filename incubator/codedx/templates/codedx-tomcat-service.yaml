@@ -3,11 +3,7 @@ kind: Service
 metadata:
   name: {{ include "codedx.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "codedx.name" . }}
-    helm.sh/chart: {{ include "codedx.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/component: "frontend"
+    {{- include "codedx.commonLabels" . | nindent 4 }}
 spec:
   type: {{ include "codedx.servicetype" . }}
   ports:
@@ -18,6 +14,5 @@ spec:
   selector:
     app.kubernetes.io/name: {{ include "codedx.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/component: "frontend"
 status:
   loadBalancer: {}

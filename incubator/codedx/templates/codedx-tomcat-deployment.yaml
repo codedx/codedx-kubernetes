@@ -4,11 +4,7 @@ metadata:
   name: {{ include "codedx.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ include "codedx.name" . }}
-    helm.sh/chart: {{ include "codedx.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/component: "frontend"
+    {{- include "codedx.commonLabels" . | nindent 4 }}
 spec:
   {{ $hasLicense := (include "codedx.license.exists" .) -}}
   replicas: 1
@@ -16,16 +12,12 @@ spec:
     matchLabels:
       app.kubernetes.io/name: {{ include "codedx.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
-      app.kubernetes.io/component: "frontend"
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "codedx.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
-        app.kubernetes.io/component: "frontend"
+        {{- include "codedx.commonLabels" . | nindent 8 }}
         # Extra labels so that the network policy can match against this
         codedx.com-instance: {{ .Release.Name }}
-        codedx.com-component: "frontend"
     spec:
       {{ if .Values.codedxTomcatImagePullSecrets -}}
       imagePullSecrets: {{ toYaml .Values.codedxTomcatImagePullSecrets | nindent 6 -}}

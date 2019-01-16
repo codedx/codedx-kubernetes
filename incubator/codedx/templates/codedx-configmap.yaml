@@ -4,11 +4,7 @@ kind: ConfigMap
 metadata:
   name: {{ include "codedx.props.configMapName" . }}
   labels:
-    helm.sh/chart: {{ include "codedx.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/component: frontend
-    app.kubernetes.io/part-of: codedx
+    {{- include "codedx.commonLabels" . | nindent 4 }}
   annotations:
 {{ toYaml .Values.codedx.props.annotations | indent 4 }}
 data:

@@ -4,6 +4,8 @@ kind: PodSecurityPolicy
 metadata:
   name: {{ include "codedx.rbac.db.psp.name" . }}
   namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "codedx.commonLabels" . | nindent 4 }}
 spec:
   privileged: false
   allowPrivilegeEscalation: false

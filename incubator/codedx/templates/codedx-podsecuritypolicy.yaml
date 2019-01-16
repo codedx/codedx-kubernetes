@@ -5,11 +5,7 @@ metadata:
   name: {{ include "codedx.rbac.psp.name" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ include "codedx.name" . }}
-    helm.sh/chart: {{ include "codedx.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/component: "frontend"
+    {{- include "codedx.commonLabels" . | nindent 4 }}
 spec:
   privileged: false
   allowPrivilegeEscalation: false

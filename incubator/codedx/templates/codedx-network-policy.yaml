@@ -5,16 +5,11 @@ metadata:
   name: {{ include "codedx.fullname" . }}-codedx-netpolicy
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ include "codedx.name" . }}
-    helm.sh/chart: {{ include "codedx.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name | quote }}
-    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-    app.kubernetes.io/component: "frontend"
+    {{- include "codedx.commonLabels" . | nindent 4 }}
 spec:
   podSelector:
     matchLabels:
       codedx.com-instance: {{ .Release.Name | quote }}
-      codedx.com-component: "frontend"
   egress:
   - to:
     - podSelector:

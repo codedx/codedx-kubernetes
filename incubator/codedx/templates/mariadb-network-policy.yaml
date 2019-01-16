@@ -5,11 +5,7 @@ metadata:
   name: {{ include "codedx.fullname" . }}-mariadb-slave-netpolicy
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ include "codedx.name" . }}
-    helm.sh/chart: {{ include "codedx.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name | quote }}
-    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-    app.kubernetes.io/component: "frontend"
+    {{- include "codedx.commonLabels" . | nindent 4 }}
 spec:
   podSelector:
     matchLabels:
@@ -45,11 +41,7 @@ metadata:
   name: {{ include "codedx.fullname" . }}-mariadb-master-netpolicy
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ include "codedx.name" . }}
-    helm.sh/chart: {{ include "codedx.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/component: "frontend"
+    {{- include "codedx.commonLabels" . | nindent 4 }}
 spec:
   podSelector:
     matchLabels:
@@ -63,7 +55,6 @@ spec:
       - podSelector:
           matchLabels:
             codedx.com-instance: {{ .Release.Name }}
-            codedx.com-component: "frontend"
       ports:
       - port: 3306
     # replication port

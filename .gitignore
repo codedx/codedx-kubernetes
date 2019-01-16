@@ -1,4 +1,6 @@
 *.lic
 *.crt
 *.pem
-*.key
+*.
+charts/
+requirements.lock

@@ -53,7 +53,7 @@ spec:
         ports:
         - containerPort: 8080
         resources:
-        {{- toYaml .Values.resources | nindent 10 }}
+        {{- toYaml .Values.resources | trim | nindent 10 }}
         volumeMounts:
         # Code Dx appdata
         - mountPath: /opt/codedx
@@ -136,6 +136,4 @@ spec:
           items:
           - key: logback.xml
             path: logback.xml
-      {{- end }}
-
-status: {}
+      {{- end -}}

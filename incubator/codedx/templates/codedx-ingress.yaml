@@ -24,7 +24,6 @@ spec:
     - {{ .name }}
     secretName: {{ .tlsSecret }}
   {{- end }}
-
   rules:
   - host: {{ .name }}
     http:

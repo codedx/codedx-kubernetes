@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "codedx.commonLabels" . | nindent 4 }}
   annotations:
-{{ toYaml .Values.codedx.props.annotations | indent 4 }}
+{{ toYaml .Values.codedx.props.annotations | trim | indent 4 }}
 data:
   {{- /* We use `replace` here instead of usual file templating. A `codedx.props` file can contain documenting */ -}}
   {{- /* comments with sample parameters named ie "{{project.name}}". Rather than try to trim comments from the output */ -}}

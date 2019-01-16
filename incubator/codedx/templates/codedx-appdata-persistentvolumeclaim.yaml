@@ -1,3 +1,4 @@
+{{- if not .Values.persistence.existingClaim -}}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -6,8 +7,11 @@ metadata:
     {{- include "codedx.commonLabels" . | nindent 4 }}
 spec:
   accessModes:
-  - ReadWriteOnce
+  - {{ .Values.persistence.accessMode }}
   resources:
     requests:
-      storage: 100Mi
-status: {}
+      storage: {{ .Values.persistence.size }}
+{{- if .Values.persistence.storageClass }}
+  storageClassName: {{ .Values.persistence.storageClass }}
+{{- end -}}
+{{- end -}}

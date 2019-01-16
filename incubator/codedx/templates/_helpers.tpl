@@ -33,7 +33,11 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{- define "volume.fullname" -}}
+{{- if .Values.persistence.existingClaim -}}
+{{- .Values.persistence.existingClaim -}}
+{{- else -}}
 {{- printf "%s-%s" .Release.Name "appdata" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "dbinit.fullname" -}}

@@ -79,6 +79,12 @@ networkPolicy:
       create: true
 
 
+persistence:
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 100Mi
+  #existingClaim: ""
+
 
 # Use the `ingress` object and its properties to configure how Ingress resources are generated
 # for the new Code Dx service.

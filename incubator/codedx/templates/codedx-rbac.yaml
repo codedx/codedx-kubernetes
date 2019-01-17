@@ -7,7 +7,6 @@ metadata:
   labels:
     {{- include "codedx.commonLabels" . | nindent 4 }}
 {{- end }}
-
 {{- if .Values.podSecurityPolicy.codedx.bind }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1

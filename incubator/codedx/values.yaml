@@ -18,26 +18,27 @@ serviceAccount:
 
 # Configure the creation and use of a PodSecurityPolicy for the Code Dx deployment.
 podSecurityPolicy:
-  codedx: {}
+  codedx:
     # Will create a suitable PSP for Code Dx with the given name (or auto-generate a name if undefined.)
-    #create: false
+    create: true
 
     # The name of the PSP to create and/or use (optional)
     #name: codedx-psp
 
     # Whether or not to create a Role and RoleBinding to use this PSP with the service account described
     # in rbac.codedx
+    bind: true
   
-  mariadb: {}
+  mariadb:
     # Will create a suitable PSP for MariaDB with the given name (or auto-generate a name if undefined.)
-    #create: true
+    create: true
 
     # The name of the PSP to create and/or use (optional)
     #name: mariadb-psp
 
     # Whether or not to create a Role and RoleBinding to use this PSP with the service account named
     # in rbac.db.serviceAccount.name.
-    #bind: true
+    bind: true
 
 
 # Configure NetworkPolicies to restrict which pods can connect with other pods. (Each created network policy
@@ -157,7 +158,7 @@ codedxProps:
   # (Note that the URL for the MariaDB instance is assigned via the `codedx.props` configmap, not this secret.)
   dbconnection:
     createSecret: true
-    secretName: codedx-mariadb-secret
+    secretName: 
     # Specify annotations to attach to a generated MariaDB secret
     annotations: {}
 

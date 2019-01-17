@@ -150,6 +150,28 @@ codedx.mariadb.props
 {{- default (printf "%s-%s" (include "codedx.fullname" .) "db-psp") .Values.rbac.db.podSecurityPolicy.name -}}
 {{- end -}}
 
+
+
+
+
+
+{{/*
+Duplicates of MariaDB template helpers so we can reference service/serviceAccount names
+*/}}
+
+{{- define "mariadb.ref.fullname" -}}
+{{- if .Values.mariadb.fullnameOverride -}}
+{{- .Values.mariadb.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default "mariadb" .Values.mariadb.nameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- printf .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "mariadb.master.fullname" -}}
 {{- if .Values.mariadb.replication.enabled -}}
 {{- printf "%s-%s" .Release.Name "mariadb-master" | trunc 63 | trimSuffix "-" -}}
@@ -160,4 +182,12 @@ codedx.mariadb.props
 
 {{- define "mariadb.slave.fullname" -}}
 {{- printf "%s-%s" .Release.Name "mariadb-slave" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "mariadb.ref.serviceAccountName" -}}
+{{- if .Values.mariadb.serviceAccount.create -}}
+    {{ default (include "mariadb.ref.fullname" .) .Values.mariadb.serviceAccount.name }}
+{{- else -}}
+    {{ default "default" .Values.mariadb.serviceAccount.name }}
+{{- end -}}
 {{- end -}}

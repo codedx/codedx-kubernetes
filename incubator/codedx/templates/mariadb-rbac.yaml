@@ -23,7 +23,7 @@ roleRef:
   kind: Role
   name: {{ include "codedx.fullname" . }}-mariadb-use-psp
 subjects:
-- name: {{ .Values.rbac.db.serviceAccount.name }}
+- name: {{ include "mariadb.ref.serviceAccountName" . }}
   kind: ServiceAccount
   namespace: {{ .Release.Namespace | quote }}
 {{- end -}}

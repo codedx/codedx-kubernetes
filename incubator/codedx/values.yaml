@@ -37,9 +37,6 @@ rbac:
     # must be created manually and assigned to the MariaDB StatefulSets after installation of this chart. If PSP
     # properties are defined, the installation notes will output the commands necessary to patch the StatefulSets
     # with the service account named here.
-    serviceAccount: {}
-      # The name of a pre-existing ServiceAccount that will be assigned to MariaDB after installation
-      #name: mariadb
     podSecurityPolicy: {}
       # Will create a suitable PSP for MariaDB with the given name (or auto-generate a name if undefined.)
       #create: true
@@ -218,6 +215,8 @@ mariadb:
     password: 5jqJL2b8hqn3
   replication:
     password: 11uAQKLgv4JM
+  serviceAccount:
+    create: true
   master:
     config: |-
       [mysqld]

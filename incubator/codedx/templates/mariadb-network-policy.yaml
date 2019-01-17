@@ -1,4 +1,4 @@
-{{- if .Values.networkPolicy.db.slave.create -}}
+{{- if .Values.networkPolicy.mariadb.slave.create -}}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -34,7 +34,7 @@ spec:
   {{- end }}
 {{- end }}
 ---
-{{ if .Values.networkPolicy.db.master.create -}}
+{{ if .Values.networkPolicy.mariadb.master.create -}}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:

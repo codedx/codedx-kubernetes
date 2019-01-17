@@ -52,8 +52,8 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 
 {{- define "codedx.servicetype" -}}
-{{- if and (.Values.service) (default "" .Values.service.type) -}}
-{{- .Values.service.type -}}
+{{- if .Values.serviceType -}}
+{{- .Values.serviceType -}}
 {{- else }}
 {{- if .Values.ingress.enabled -}}
 {{- "ClusterIP" }}
@@ -64,20 +64,20 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 
 {{- define "codedx.license.exists" -}}
-{{- or (default "" .Values.codedx.license.secret) (default "" .Values.codedx.license.file) -}}
+{{- or (default "" .Values.license.secret) (default "" .Values.license.file) -}}
 {{- end -}}
 
 {{- define "codedx.license.secretName" -}}
-{{- if .Values.codedx.license.secret -}}
-{{- .Values.codedx.license.secret -}}
+{{- if .Values.license.secret -}}
+{{- .Values.license.secret -}}
 {{- else -}}
 {{- printf "%s-license-secret" (include "codedx.fullname" .) -}}
 {{- end -}}
 {{- end -}}
 
 {{- define "codedx.props.configMapName" -}}
-{{- if .Values.codedx.props.configMap -}}
-{{- .Values.codedx.props.configMap -}}
+{{- if .Values.codedxProps.configMap -}}
+{{- .Values.codedxProps.configMap -}}
 {{- else -}}
 {{- printf "%s-configmap" (include "codedx.fullname" .) -}}
 {{- end -}}
@@ -87,10 +87,10 @@ Create chart name and version as used by the chart label.
 Create the name of the service account to use
 */}}
 {{- define "codedx.serviceAccountName" -}}
-{{- if .Values.rbac.codedx.serviceAccount.create -}}
-{{ default (include "codedx.fullname" .) .Values.rbac.codedx.serviceAccount.name }}
+{{- if .Values.serviceAccount.create -}}
+{{ default (include "codedx.fullname" .) .Values.serviceAccount.name }}
 {{- else -}}
-{{ default "default" .Values.rbac.codedx.serviceAccount.name }}
+{{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
 
@@ -122,11 +122,11 @@ codedx.mariadb.props
 {{- end -}}
 
 {{- define "codedx.mariadb.secretName" -}}
-{{- default (printf "%s-%s" .Release.Name "mariadb-secret") .Values.codedx.props.mariadb.secretName -}}
+{{- default (printf "%s-%s" .Release.Name "mariadb-secret") .Values.codedxProps.dbconnection.secretName -}}
 {{- end -}}
 
 {{- define "codedx.props.extra.params" -}}
-{{- range .Values.codedx.props.extra -}}
+{{- range .Values.codedxProps.extra -}}
 {{- printf " -Dcodedx.additional-props-%s=\"/opt/codedx/%s\"" .key .key -}}
 {{- end -}}
 {{- end -}}
@@ -137,17 +137,17 @@ codedx.mariadb.props
 
 {{- define "codedx.props.params.separated" -}}
 - "-Dcodedx.additional-props-mariadb={{ include "codedx.mariadb.props.path" . }}"
-{{- range .Values.codedx.props.extra }}
+{{- range .Values.codedxProps.extra }}
 - "-Dcodedx.additional-props-{{ .key }}=/opt/codedx/{{ .key }}"
 {{- end -}}
 {{- end -}}
 
 {{- define "codedx.rbac.psp.name" -}}
-{{- default (printf "%s-%s" (include "codedx.fullname" .) "psp") .Values.rbac.codedx.podSecurityPolicy.name -}}
+{{- default (printf "%s-%s" (include "codedx.fullname" .) "psp") .Values.podSecurityPolicy.codedx.name -}}
 {{- end -}}
 
-{{- define "codedx.rbac.db.psp.name" -}}
-{{- default (printf "%s-%s" (include "codedx.fullname" .) "db-psp") .Values.rbac.db.podSecurityPolicy.name -}}
+{{- define "codedx.rbac.psp.dbname" -}}
+{{- default (printf "%s-%s" (include "codedx.fullname" .) "db-psp") .Values.podSecurityPolicy.mariadb.name -}}
 {{- end -}}
 
 
@@ -172,7 +172,7 @@ Duplicates of MariaDB template helpers so we can reference service/serviceAccoun
 {{- end -}}
 {{- end -}}
 
-{{- define "mariadb.master.fullname" -}}
+{{- define "mariadb.ref.master.fullname" -}}
 {{- if .Values.mariadb.replication.enabled -}}
 {{- printf "%s-%s" .Release.Name "mariadb-master" | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
@@ -180,7 +180,7 @@ Duplicates of MariaDB template helpers so we can reference service/serviceAccoun
 {{- end -}}
 {{- end -}}
 
-{{- define "mariadb.slave.fullname" -}}
+{{- define "mariadb.ref.slave.fullname" -}}
 {{- printf "%s-%s" .Release.Name "mariadb-slave" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 

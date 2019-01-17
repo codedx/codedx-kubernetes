@@ -5,49 +5,39 @@ codedxTomcatImagePullSecrets: []
 
 codedxTomcatPort: 9090
 
-rootUserDatabasePassword: 5jqJL2b8hqn3
 codedxAdminPassword: wtKzR4F8o64A
 
-# Configure RBAC-related properties of the Code Dx and MariaDB installations.
-rbac:
-  codedx:
-    # Determine the name of the service account to run Code Dx with.
-    # - If create=true but name=undefined - Will create and use an auto-named service account
-    # - If create=false but name!=undefined - Will assign the named service account to the Code Dx deployment
-    # - If create=true and name!=undefined - Will create a service account with the given name and use it for the Code Dx deployment
-    # - If create=false and name=undefined - Will use 'default' service account for the Code Dx deployment
-    serviceAccount:
-      create: true
-      #name: codedx
-    
-    # Configure the creation and use of a PodSecurityPolicy for the Code Dx deployment.
-    podSecurityPolicy: {}
-      # Will create a suitable PSP for Code Dx with the given name (or auto-generate a name if undefined.)
-      #create: false
+# Determine the name of the service account to run Code Dx with.
+# - If create=true but name=undefined - Will create and use an auto-named service account
+# - If create=false but name!=undefined - Will assign the named service account to the Code Dx deployment
+# - If create=true and name!=undefined - Will create a service account with the given name and use it for the Code Dx deployment
+# - If create=false and name=undefined - Will use 'default' service account for the Code Dx deployment
+serviceAccount:
+  create: true
+  #name: codedx
 
-      # The name of the PSP to create and/or use (optional)
-      #name: codedx-psp
+# Configure the creation and use of a PodSecurityPolicy for the Code Dx deployment.
+podSecurityPolicy:
+  codedx: {}
+    # Will create a suitable PSP for Code Dx with the given name (or auto-generate a name if undefined.)
+    #create: false
 
-      # Whether or not to create a Role and RoleBinding to use this PSP with the service account described
-      # in rbac.codedx.serviceaccount.
-      #bind: false
+    # The name of the PSP to create and/or use (optional)
+    #name: codedx-psp
 
-  db:
-    # MariaDB must be configured manually for RBAC, but templates can be generated for later use. A service account
-    # must be created manually and assigned to the MariaDB StatefulSets after installation of this chart. If PSP
-    # properties are defined, the installation notes will output the commands necessary to patch the StatefulSets
-    # with the service account named here.
-    podSecurityPolicy: {}
-      # Will create a suitable PSP for MariaDB with the given name (or auto-generate a name if undefined.)
-      #create: true
+    # Whether or not to create a Role and RoleBinding to use this PSP with the service account described
+    # in rbac.codedx
+  
+  mariadb: {}
+    # Will create a suitable PSP for MariaDB with the given name (or auto-generate a name if undefined.)
+    #create: true
 
-      # The name of the PSP to create and/or use (optional)
-      #name: mariadb-psp
+    # The name of the PSP to create and/or use (optional)
+    #name: mariadb-psp
 
-      # Whether or not to create a Role and RoleBinding to use this PSP with the service account named
-      # in rbac.db.serviceAccount.name.
-      #bind: true
-
+    # Whether or not to create a Role and RoleBinding to use this PSP with the service account named
+    # in rbac.db.serviceAccount.name.
+    #bind: true
 
 
 # Configure NetworkPolicies to restrict which pods can connect with other pods. (Each created network policy
@@ -69,7 +59,7 @@ networkPolicy:
   # NetworkPolicies for MariaDB pods will allow Ingress from only Code Dx and other MariaDB pods. Egress is
   # allowed to other MariaDB instances. If metrics are enabled, the NetworkPolicies will also allow Ingress
   # on port 9090 from any source.
-  db:
+  mariadb:
     master:
       create: true
     slave:
@@ -88,9 +78,8 @@ persistence:
 ingress:
   # Set `ingress.enabled` to "true" to generate an Ingress rule that forwards request to Code Dx
   enabled: false
-  # If using NGINX Ingress Controller, set this to "true" to automatically redirect any requests
-  # from `/` to `/codedx`.
-  autoRedirect: true
+
+  annotations: {}
   # Specify the set of hosts for which to create Ingress resources
   hosts:
     # Specify the FQDN that Code Dx will be hosted on
@@ -107,15 +96,14 @@ ingress:
   #   key:
   #   certificate: 
 
-service: {}
-  # Specify the type of service that will be exposing Code Dx. Acceptable values are:
-  # ClusterIP, NodePort, LoadBalancer
-  #
-  # If left unassigned, this will have one of the following defaults:
-  #   "ClusterIP"    - If "ingress.enabled" = true
-  #   "LoadBalancer" - If "ingress.enabled" = false
-  #
-  #type: LoadBalancer
+# Specify the type of service that will be exposing Code Dx. Acceptable values are:
+# ClusterIP, NodePort, LoadBalancer
+#
+# If left unassigned, this will have one of the following defaults:
+#   "ClusterIP"    - If "ingress.enabled" = true
+#   "LoadBalancer" - If "ingress.enabled" = false
+#
+serviceType: 
 
 
 # Code Dx Properties Configuration
@@ -134,76 +122,74 @@ service: {}
 # Additional sensitive information (ie LDAP config) can also be provided to Code Dx as secrets
 #   mounted as prop files by adding to the "codedx.extraProps" list.
 
-codedx:
-  props:
-    # Specify 'codedx.props.file' to create a config-map for Code Dx based on the given 'codedx.props' file
-    file: codedx.props
+codedxProps:
+  # Specify 'codedx.props.file' to create a config-map for Code Dx based on the given 'codedx.props' file
+  file: codedx.props
 
-    # Specify 'codedx.props.configMap' to use an existing config-map for Code Dx.
-    # This config-map MUST contain:
-    # - a key named 'codedx.props' with the contents of the properties to use. Check the provided
-    #   'codedx.props' file included with this chart and use the same 'swa.db.*' values to ensure that
-    #   Code Dx properly connects to the generated MariaDB instances.
-    # - a key named 'tomcat.env' with the `CATALINA_OPTS` values necessary to load any additional
-    #   props files. (it must at least provide the path to the MariaDB creds.)
-    # 
-    # (If both file and configMap are specified, the existing 'configMap' will be used
-    #  and no new ConfigMap will be created.)
-    #configMap: my-codedx-config-map
+  # Specify 'codedx.props.configMap' to use an existing config-map for Code Dx.
+  # This config-map MUST contain:
+  # - a key named 'codedx.props' with the contents of the properties to use. Check the provided
+  #   'codedx.props' file included with this chart and use the same 'swa.db.*' values to ensure that
+  #   Code Dx properly connects to the generated MariaDB instances.
+  # - a key named 'tomcat.env' with the `CATALINA_OPTS` values necessary to load any additional
+  #   props files. (it must at least provide the path to the MariaDB creds.)
+  # 
+  # (If both file and configMap are specified, the existing 'configMap' will be used
+  #  and no new ConfigMap will be created.)
+  #configMap: my-codedx-config-map
 
-    # Specify annotations to attach to a generated ConfigMap
+  # Specify annotations to attach to a generated ConfigMap
+  annotations: {}
+  #   abc: "123"
+  #   def: "456"
+
+  # Code Dx will mount a secret as a file, containing MariaDB connection info.
+  #
+  # Set `codedx.props.mariadb.createSecret` to `true` to automatically create a secret.
+  # Set `codedx.props.mariadb.secretName` to specify the name of the secret to use.
+  #
+  # The MariaDB secret should have a `codedx.mariadb.props` key containing the text of a "props"-formatted
+  # file that assigns `swa.db.user` and `swa.db.password`, ie:
+  #
+  # swa.db.user = root
+  # swa.db.password = my-mariadb-password
+  #
+  # (Note that the URL for the MariaDB instance is assigned via the `codedx.props` configmap, not this secret.)
+  dbconnection:
+    createSecret: true
+    secretName: codedx-mariadb-secret
+    # Specify annotations to attach to a generated MariaDB secret
     annotations: {}
-    #   abc: "123"
-    #   def: "456"
 
-    # Code Dx will mount a secret as a file, containing MariaDB connection info.
-    #
-    # Set `codedx.props.mariadb.createSecret` to `true` to automatically create a secret.
-    # Set `codedx.props.mariadb.secretName` to specify the name of the secret to use.
-    #
-    # The MariaDB secret should have a `codedx.mariadb.props` key containing the text of a "props"-formatted
-    # file that assigns `swa.db.user` and `swa.db.password`, ie:
-    #
-    # swa.db.user = root
-    # swa.db.password = my-mariadb-password
-    #
-    # (Note that the URL for the MariaDB instance is assigned via the `codedx.props` configmap, not this secret.)
-    mariadb:
-      createSecret: true
-      secretName: codedx-mariadb-secret
-      # Specify annotations to attach to a generated MariaDB secret
-      annotations: {}
-
-    # Specify extra secrets to be mounted in Code Dx as props files. Use this for other sensitive info,
-    # ie LDAP config. The secrets will be mounted as /opt/codedx/<key-name> and given to Code Dx. Make
-    # sure the name doesn't conflict with other prop file names. ("codedx.props" and "codedx.mariadb.props"
-    # are reserved.)
-    extra: []
-    #- secretName: my-ldap-secret
-    #  key: ldap-props
+  # Specify extra secrets to be mounted in Code Dx as props files. Use this for other sensitive info,
+  # ie LDAP config. The secrets will be mounted as /opt/codedx/<key-name> and given to Code Dx. Make
+  # sure the name doesn't conflict with other prop file names. ("codedx.props" and "codedx.mariadb.props"
+  # are reserved.)
+  extra: []
+  #- secretName: my-ldap-secret
+  #  key: ldap-props
 
 
-  license: {}
-    # Specify 'codedx.license.file' to automatically create a secret based on the given license
-    #file: my-license-file
+license: {}
+  # Specify 'codedx.license.file' to automatically create a secret based on the given license
+  #file: my-license-file
 
-    # Specify 'codedx.license.secret' to use an existing secret for the Code Dx license. This secret MUST
-    # contain a key named 'license.lic' with the contents of the license to use.
-    #
-    # (If both file and secret are specified, the existing 'secret' will be used and no new secret
-    #  will be created.)
-    #secret: my-codedx-license-secret
+  # Specify 'codedx.license.secret' to use an existing secret for the Code Dx license. This secret MUST
+  # contain a key named 'license.lic' with the contents of the license to use.
+  #
+  # (If both file and secret are specified, the existing 'secret' will be used and no new secret
+  #  will be created.)
+  #secret: my-codedx-license-secret
 
-    # Specify annotations to attach to a generated Secret
-    # annotations:
-    #   abc: "123"
-    #   def: "456"
+  # Specify annotations to attach to a generated Secret
+  # annotations:
+  #   abc: "123"
+  #   def: "456"
 
 
-  # Specify a local "logback.xml" file to be inserted into the Code Dx configmap and used,
-  # allowing you to customize how Code Dx filters its logs. 
-  logging: {}
-    #configFile: my-logback.xml
+# Specify a local "logback.xml" file to be inserted into the Code Dx configmap and used,
+# allowing you to customize how Code Dx filters its logs.
+loggingConfigFile: 
 
 # Specify CPU/memory resource requests/limits for Code Dx on Tomcat
 resources: {}

@@ -1,4 +1,4 @@
-{{- if .Values.rbac.codedx.podSecurityPolicy.create -}}
+{{- if .Values.podSecurityPolicy.codedx.create -}}
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:

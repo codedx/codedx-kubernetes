@@ -1,4 +1,4 @@
-{{- if .Values.rbac.codedx.serviceAccount.create }}
+{{- if .Values.serviceAccount.create }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -8,7 +8,7 @@ metadata:
     {{- include "codedx.commonLabels" . | nindent 4 }}
 {{- end }}
 
-{{- if .Values.rbac.codedx.podSecurityPolicy.bind }}
+{{- if .Values.podSecurityPolicy.codedx.bind }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role

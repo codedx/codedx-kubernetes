@@ -1,8 +1,8 @@
-{{- if .Values.rbac.db.podSecurityPolicy.create -}}
+{{- if .Values.podSecurityPolicy.mariadb.create -}}
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
-  name: {{ include "codedx.rbac.db.psp.name" . }}
+  name: {{ include "codedx.rbac.psp.dbname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "codedx.commonLabels" . | nindent 4 }}

@@ -67,7 +67,7 @@ spec:
           name: codedx-props
           subPath: codedx.props
         # Any extra config files from codedx.props.extra
-        {{ range .Values.codedx.props.extra -}}
+        {{ range .Values.codedxProps.extra -}}
         - mountPath: /opt/codedx/{{ .key }}
           name: codedx-extra-props-{{ .key }}
           subPath: {{ .key | quote }}
@@ -81,7 +81,7 @@ spec:
           name: codedx-license
           subPath: license.lic
         {{- end }}
-        {{ if .Values.codedx.logging.configFile -}}
+        {{ if .Values.loggingConfigFile -}}
         - mountPath: /opt/codedx/logback.xml
           name: codedx-logback
           subPath: logback.xml
@@ -113,7 +113,7 @@ spec:
           items:
           - key: codedx.mariadb.props
             path: {{ include "codedx.mariadb.props.name" . }}
-      {{ range .Values.codedx.props.extra -}}
+      {{ range .Values.codedxProps.extra -}}
       - name: codedx-extra-props-{{ .key }}
         secret:
           secretName: {{ .secretName | quote }}
@@ -129,7 +129,7 @@ spec:
           - key: license.lic
             path: license.lic
       {{- end }}
-      {{ if .Values.codedx.logging.configFile -}}
+      {{ if .Values.loggingConfigFile -}}
       - name: codedx-logback
         configMap:
           name: {{ include "codedx.props.configMapName" . | quote }}

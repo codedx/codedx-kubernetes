@@ -1,4 +1,4 @@
-{{- if .Values.rbac.db.podSecurityPolicy.bind }}
+{{- if .Values.podSecurityPolicy.mariadb.bind }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -10,7 +10,7 @@ rules:
   resources: ["podsecuritypolicies"]
   verbs: ["use"]
   resourceNames:
-  - {{ include "codedx.rbac.db.psp.name" . }}
+  - {{ include "codedx.rbac.psp.dbname" . }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding

@@ -7,7 +7,13 @@ metadata:
     {{- include "codedx.commonLabels" . | nindent 4 }}
 spec:
   {{ $hasLicense := (include "codedx.license.exists" .) -}}
+  # Code Dx does not officially support more than one instance running against the 
+  # same MariaDB server - doing so will lead to errors in the web interface. More
+  # than one Code Dx instance running during an installation or database schema
+  # upgrade *is very likely to corrupt your database!*
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "codedx.name" . }}
@@ -17,6 +23,8 @@ spec:
       labels:
         {{- include "codedx.commonLabels" . | nindent 8 }}
         # Extra labels so that the network policy can match against this
+        # (Problems have been found with Calico controller when matching
+        # labels contains a slash "/")
         codedx.com-instance: {{ .Release.Name }}
     spec:
       {{ if .Values.codedxTomcatImagePullSecrets -}}
@@ -32,8 +40,8 @@ spec:
         - name: SUPERUSER_NAME
           value: "admin"
         - name: SUPERUSER_PASSWORD
-          value: {{ .Values.codedxAdminPassword | quote }}
-        image: {{ .Values.codedxTomcatImage | quote }}
+          value: {{ required "A password must be provided to create the first Code Dx user during installation! Assign codedxAdminPassword!" .Values.codedxAdminPassword | quote }}
+        image: {{ required "A tomcat image must be provided! Assign codedxTomcatImage!" .Values.codedxTomcatImage | quote }}
         name: "{{ include "codedx.name" . }}"
         readinessProbe:
           httpGet:

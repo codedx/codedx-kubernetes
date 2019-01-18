@@ -6,6 +6,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "codedx.commonLabels" . | nindent 4 }}
+  annotations:
+{{- toYaml .Values.podSecurityPolicy.codedx.annotations | trim | nindent 4 }}
 spec:
   privileged: false
   allowPrivilegeEscalation: false

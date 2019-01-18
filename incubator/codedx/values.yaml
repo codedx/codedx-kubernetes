@@ -28,6 +28,9 @@ podSecurityPolicy:
     # Whether or not to create a Role and RoleBinding to use this PSP with the service account described
     # in rbac.codedx
     bind: true
+
+    # Annotations to attach to a created PodSecurityPolicy
+    annotations: {}
   
   mariadb:
     # Will create a suitable PSP for MariaDB with the given name (or auto-generate a name if undefined.)
@@ -39,6 +42,9 @@ podSecurityPolicy:
     # Whether or not to create a Role and RoleBinding to use this PSP with the service account named
     # in rbac.db.serviceAccount.name.
     bind: true
+
+    # Annotations to attach to a created PodSecurityPolicy
+    annotations: {}
 
 
 # Configure NetworkPolicies to restrict which pods can connect with other pods. (Each created network policy

@@ -1,63 +1,107 @@
 # Default values for codedx.
 
+# codedxTomcatImage specifies the image to use for the Code Dx deployment.
+# ref: https://hub.docker.com/r/codedx/codedx-tomcat/tags
+#
 codedxTomcatImage: codedx/codedx-tomcat:v3.5.3
+
+# codedxTomcatImagePullSecrets allows you to specify names of secrets to use
+# for pulling the Code Dx image.
+# ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-pod-that-uses-your-secret
+#
 codedxTomcatImagePullSecrets: []
 
+# codedxTomcatPort determines the port that the Code Dx Service will be exposed on.
+#
 codedxTomcatPort: 9090
 
+# codedxAdminPassword is used when creating the Code Dx "admin" account during the
+# installation process. After installation, you can sign in with "admin" and the
+# value assigned here.
+#
 codedxAdminPassword: wtKzR4F8o64A
 
-# Determine the name of the service account to run Code Dx with.
+# serviceAccount options for Code Dx.
+# Determine the name of the service account to run Code Dx with, and whether to create the ServiceAccount.
 # - If create=true but name=undefined - Will create and use an auto-named service account
 # - If create=false but name!=undefined - Will assign the named service account to the Code Dx deployment
 # - If create=true and name!=undefined - Will create a service account with the given name and use it for the Code Dx deployment
 # - If create=false and name=undefined - Will use 'default' service account for the Code Dx deployment
+#
 serviceAccount:
+  # serviceAccount.create flag can auto-create and use a ServiceAccount for the Code Dx deployment.
+  # Will use the given name if provided, otherwise will auto-generate a name.
+  #
   create: true
-  #name: codedx
+
+  # serviceAccount.name specifies the name of the ServiceAccount for Code Dx to use. If this is set
+  # and create is false, we assume a ServiceAccount already exists with that name and try to use it.
+  #
+  name:
 
 # Configure the creation and use of a PodSecurityPolicy for the Code Dx deployment.
+# ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
+#
 podSecurityPolicy:
   codedx:
-    # Will create a suitable PSP for Code Dx with the given name (or auto-generate a name if undefined.)
+    # The flag podSecurityPolicy.codedx.create can create a suitable PSP for Code Dx
+    # with the given name (or auto-generate a name if undefined.)
+    #
     create: true
 
-    # The name of the PSP to create and/or use (optional)
-    #name: codedx-psp
+    # podSecurityPolicy.codedx.name assigns the name of the PSP to create and/or use. (optional)
+    #
+    name:
 
-    # Whether or not to create a Role and RoleBinding to use this PSP with the service account described
-    # in rbac.codedx
+    # The flag podSecurityPolicy.codedx.bind determines whether or not to create a Role
+    # and RoleBinding to use this PSP with the service account described in serviceAccount.
+    #
     bind: true
 
-    # Annotations to attach to a created PodSecurityPolicy
+    # Use podSecurityPolicy.codedx.annotations to attach custom annotations to the
+    # PodSecurityPolicy created here. (Does nothing if create = false.)
+    #
     annotations: {}
   
   mariadb:
-    # Will create a suitable PSP for MariaDB with the given name (or auto-generate a name if undefined.)
+    # The flag podSecurityPolicy.mariadb.create can create a suitable PSP for MariaDB
+    # with the given name (or auto-generate a name if undefined.)
+    #
     create: true
 
-    # The name of the PSP to create and/or use (optional)
-    #name: mariadb-psp
+    # podSecurityPolicy.mariadb.name assigns the name of the PSP to create and/or use. (optional)
+    #
+    name:
 
-    # Whether or not to create a Role and RoleBinding to use this PSP with the service account named
-    # in rbac.db.serviceAccount.name.
+    # The flag podSecurityPolicy.mariadb.bind determines whether or not to create a Role
+    # and RoleBinding to use this PSP with the service account named in mariadb.serviceAccount.
+    #
     bind: true
 
-    # Annotations to attach to a created PodSecurityPolicy
+    # Use podSecurityPolicy.mariadb.annotations to attach custom annotations to the
+    # PodSecurityPolicy created here. (Does nothing if create = false.)
+    #
     annotations: {}
 
 
-# Configure NetworkPolicies to restrict which pods can connect with other pods. (Each created network policy
-# will include an egress rule on port 53 to any target for DNS.)
+# Configure NetworkPolicies to restrict which pods can connect with other pods.
+# (Each created network policy will include an egress rule on port 53 to any target for DNS.)
+# ref: https://kubernetes.io/docs/concepts/services-networking/network-policies/
+#
 networkPolicy:
   # A NetworkPolicy for Code Dx will limit its egress to MariaDB instances, and prevent
   # ingress from other pods.
   codedx:
-    create: true
-    # A list of selectors for limiting ingress. Pods matched here will be allowed to
-    # connect to Code Dx over HTTP (port 9090).
+    # The flag networkPolicy.codedx.create can be used to create a NetworkPolicy with suitable ingress
+    # and egress rules, configured to select only the Code Dx pod.
     #
-    # https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.11/#networkpolicypeer-v1-networking-k8s-io
+    create: true
+
+    # networkPolicy.codedx.ingressSelectors is an optional list of selectors to attach to Code Dx
+    # ingress rules. Pods matched here will be allowed to connect to Code Dx over HTTP (port 9090).
+    #
+    # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.11/#networkpolicypeer-v1-networking-k8s-io
+    #
     ingressSelectors: []
     # - podSelector:
     #     matchLabels:
@@ -66,22 +110,54 @@ networkPolicy:
   # NetworkPolicies for MariaDB pods will allow Ingress from only Code Dx and other MariaDB pods. Egress is
   # allowed to other MariaDB instances. If metrics are enabled, the NetworkPolicies will also allow Ingress
   # on port 9090 from any source.
+  #
   mariadb:
     master:
+      # The flag networkPolicy.mariadb.master.create can be used to create a NetworkPolicy targeting
+      # the MariaDB Master pod(s), allowing only ingress from Code Dx and MariaDB slaves. Egress is
+      # disallowed. (The policy is modified appropriately if MariaDB metrics are enabled for Master.)
+      #
       create: true
+
     slave:
+      # The flag networkPolicy.mariadb.slave.create can be used to create a NetworkPolicy targeting
+      # the MariaDB Slave pod(s), allowing only egress to MariaDB master pods. Ingress is disallowed.
+      # (The policy is modified appropriately if MariaDB metrics are enabled for Slave.)
+      #
       create: true
 
 
+# Persistent storage options for Code Dx's /opt/codedx folder, referred to as its "appdata". This
+# stores log files, analysis inputs, etc. - anything generated by or given to Code Dx. It's strongly
+# recommended to increase the persistence.size value to suit your neads.
+# ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims
+#
 persistence:
+  # persistence.storageClass will force a specific storage method for Code Dx's appdata. This should
+  # generally be left blank, so the storage provider can auto-select a backend.
+  # ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#class-1
+  #
   storageClass: ""
+
+  # persistence.accessMode determines how the volume will be shared accross nodes. This should be left
+  # as default.
+  # ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes
+  #
   accessMode: ReadWriteOnce
+
+  # persistence.size determines how much space to request for Code Dx's appdata volume. This size
+  # should probably be increased based on your needs before performing an install. You may find
+  # Code Dx running out of space rather quickly.
+  #
   size: 100Mi
   #existingClaim: ""
 
 
 # Use the `ingress` object and its properties to configure how Ingress resources are generated
-# for the new Code Dx service.
+# for the new Code Dx service. You'll need to make sure an Ingress controller is installed
+# in your cluster for these resources to have any effect.
+# ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+#
 ingress:
   # Set `ingress.enabled` to "true" to generate an Ingress rule that forwards request to Code Dx
   enabled: false

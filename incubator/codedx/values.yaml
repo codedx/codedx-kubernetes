@@ -80,7 +80,12 @@ ingress:
   # Set `ingress.enabled` to "true" to generate an Ingress rule that forwards request to Code Dx
   enabled: false
 
-  annotations: {}
+  annotations:
+    # Increase timeout duration for Code Dx live updates
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    # Remove file size limit, Code Dx enforces this internally
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+
   # Specify the set of hosts for which to create Ingress resources
   hosts:
     # Specify the FQDN that Code Dx will be hosted on
@@ -92,7 +97,7 @@ ingress:
   
   # Use to auto-create secrets with the given properties if they don't yet exist. The values
   # for "key" and "certificate" should be base64-encoded
-  # secrets:
+  secrets: []
   # - name:
   #   key:
   #   certificate: 

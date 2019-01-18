@@ -115,7 +115,7 @@ Code Dx will store all data in its `/opt/codedx` folder in a PersistentVolume. T
 
 **Depending on the projects being scanned, the default size may not be sufficient. Be sure to specify an appropriate claim size when installing Code Dx.**
 
-# Licenses
+## Licenses
 
 By default, Code Dx will be installed without a license. When you first navigate to Code Dx after installation, you will first be asked for a license. You can include a license during the installation process using the `license.file` and/or `license.secret` values. Note that this approach only applies for a new installation, and will have no effect afterwards.
 

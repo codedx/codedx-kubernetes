@@ -36,7 +36,19 @@ To install the chart with a `codedx` release name, run the following command fro
 $ helm install --name codedx .
 ```
 
-The chart contains a subchart reference to stable/mariadb version 5.2.3, which deploys MariaDB 10.1.37. 
+The chart contains a subchart reference to stable/mariadb version 5.5.0, which deploys MariaDB 10.1.37.
+
+### Installation Recommendations
+
+When installing the chart in a public-facing environment, you should be sure to change the passwords for Code Dx Admin, MariaDB Admin, and MariaDB Replication:
+
+```
+$ helm install --name codedx . --set codedxAdminPassword=X --set mariadb.rootUser.password=Y --set mariadb.replication.password=Z
+```
+
+It's recommended to leave PodSecurityPolicies and NetworkPolicies enabled for security.
+
+For more configuration options, see the table below.
 
 ## Uninstalling the Chart
 

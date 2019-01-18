@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: {{ include "codedx.fullname" . }}
+  name: {{ include "codedx.fullname" . | quote }}
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "codedx.commonLabels" . | nindent 4 }}
@@ -16,8 +16,8 @@ spec:
     type: Recreate
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "codedx.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: {{ include "codedx.name" . | quote }}
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
   template:
     metadata:
       labels:
@@ -25,13 +25,13 @@ spec:
         # Extra labels so that the network policy can match against this
         # (Problems have been found with Calico controller when matching
         # labels contains a slash "/")
-        codedx.com-instance: {{ .Release.Name }}
+        codedx.com-instance: {{ .Release.Name | quote }}
     spec:
       {{ if .Values.codedxTomcatImagePullSecrets -}}
       imagePullSecrets: {{ toYaml .Values.codedxTomcatImagePullSecrets | nindent 6 -}}
       {{ end -}}
-      serviceAccountName: {{ include "codedx.serviceAccountName" . }}
-      serviceAccount: {{ include "codedx.serviceAccountName" . }}
+      serviceAccountName: {{ include "codedx.serviceAccountName" . | quote }}
+      serviceAccount: {{ include "codedx.serviceAccountName" . | quote }}
       securityContext:
         fsGroup: 1000
         runAsUser: 1000
@@ -67,17 +67,17 @@ spec:
         - mountPath: /opt/codedx
           name: {{ include "volume.fullname" . | quote }}
         # MariaDB props
-        - mountPath: {{ include "codedx.mariadb.props.path" . }}
+        - mountPath: {{ include "codedx.mariadb.props.path" . | quote }}
           name: codedx-mariadb-props
-          subPath: {{ include "codedx.mariadb.props.name" . }}
+          subPath: {{ include "codedx.mariadb.props.name" . | quote }}
         # Main Code Dx config
         - mountPath: /opt/codedx/codedx.props
           name: codedx-props
           subPath: codedx.props
         # Any extra config files from codedx.props.extra
         {{ range .Values.codedxProps.extra -}}
-        - mountPath: /opt/codedx/{{ .key }}
-          name: codedx-extra-props-{{ .key }}
+        - mountPath: "/opt/codedx/{{ .key }}"
+          name: "codedx-extra-props-{{ .key }}"
           subPath: {{ .key | quote }}
         {{- end }}
         # Command args to have Code Dx load extra props files
@@ -95,7 +95,7 @@ spec:
           subPath: logback.xml
         {{- end }}
       initContainers:
-        - name: {{ include "dbinit.fullname" . }}
+        - name: {{ include "dbinit.fullname" . | quote }}
           image: "ubuntu:18.04"
           command: ["bash", "-c", "for i in {1..60}; do if (timeout 2 bash -c \"</dev/tcp/{{ .Release.Name }}-mariadb/3306\" echo $?); then echo 'Successfully connected to MariaDB port'; exit 0; else echo 'Retrying database connection...'; sleep 2; fi; done; echo 'MariaDB is unavailable'; exit 1"]
       restartPolicy: Always
@@ -117,17 +117,17 @@ spec:
             path: setenv.sh
       - name: codedx-mariadb-props
         secret:
-          secretName: {{ include "codedx.mariadb.secretName" . }}
+          secretName: {{ include "codedx.mariadb.secretName" . | quote }}
           items:
           - key: codedx.mariadb.props
-            path: {{ include "codedx.mariadb.props.name" . }}
+            path: {{ include "codedx.mariadb.props.name" . | quote }}
       {{ range .Values.codedxProps.extra -}}
-      - name: codedx-extra-props-{{ .key }}
+      - name: "codedx-extra-props-{{ .key }}"
         secret:
           secretName: {{ .secretName | quote }}
           items:
-          - key: {{ .key }}
-            path: {{ .key }}
+          - key: {{ .key | quote }}
+            path: {{ .key | quote }}
       {{- end }}
       {{ if $hasLicense -}}
       - name: codedx-license

@@ -2,8 +2,8 @@
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
-  name: {{ include "codedx.rbac.psp.dbname" . }}
-  namespace: {{ .Release.Namespace }}
+  name: {{ include "codedx.rbac.psp.dbname" . | quote }}
+  namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "codedx.commonLabels" . | nindent 4 }}
 spec:

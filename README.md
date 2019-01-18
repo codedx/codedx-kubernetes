@@ -1,4 +1,4 @@
-# Code Dx Helm Chart
+# Code Dx
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
@@ -6,11 +6,19 @@
 
 The Code Dx Helm chart creates an environment for development and test purposes. It may be used in production but has not been heavily tested.
 
+## TL;DR
+
+```
+$ git clone https://github.com/codedx/codedx-kubernetes.git
+$ git checkout develop
+$ cd incubator/codedx
+$ helm install --name codedx .
+```
+
 ## Prerequisite Details
 
 - Kubernetes 1.8+
 - Code Dx license ([purchase](https://codedx.com/purchase-application/) or [request a free trial](https://codedx.com/free-trial/)) 
-
 
 ## Chart Details
 

@@ -3,7 +3,8 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: {{ include "codedx.ingress.name" .name | quote }}
+  {{- $fullName := printf "%s-%s" (include "codedx.fullname" $) .name }}
+  name: {{ include "sanitize" $fullName | quote }}
   labels:
     {{- include "codedx.commonLabels" $ | nindent 4 }}
   annotations:

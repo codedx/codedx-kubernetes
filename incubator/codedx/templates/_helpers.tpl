@@ -100,7 +100,7 @@ Determine the name of the secret to create and/or use for holding the Code Dx li
 {{- if .Values.license.secret -}}
 {{- .Values.license.secret -}}
 {{- else -}}
-{{- include "santize" (printf "%s-license-secret" (include "codedx.fullname" .)) -}}
+{{- include "sanitize" (printf "%s-license-secret" (include "codedx.fullname" .)) -}}
 {{- end -}}
 {{- end -}}
 
@@ -212,11 +212,6 @@ Determine the name to use to create and/or bind MariaDB's PodSecurityPolicy.
 {{- define "codedx.rbac.psp.dbname" -}}
 {{- $fullName := default (printf "%s-%s" (include "codedx.fullname" .) "db-psp") .Values.podSecurityPolicy.mariadb.name -}}
 {{- include "sanitize" $fullName -}}
-{{- end -}}
-
-{{- define "codedx.ingress.name" -}}
-{{- $fullName := printf "%s-%s" (include "codedx.fullname" $) -}}
-{{- include "sanitize" $fullName }}
 {{- end -}}
 
 {{- define "codedx.netpolicy.name" -}}

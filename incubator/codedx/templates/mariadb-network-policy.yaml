@@ -45,7 +45,6 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      # TODO - Figure out how to parameterize these labels
       app: mariadb
       component: master
       release: {{ .Release.Name | quote }}

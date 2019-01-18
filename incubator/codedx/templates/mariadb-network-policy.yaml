@@ -2,7 +2,7 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: "{{ include "codedx.fullname" . }}-mariadb-slave-netpolicy"
+  name: {{ include "codedx.netpolicy.slavedb.name" . | quote }}
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "codedx.commonLabels" . | nindent 4 }}
@@ -38,7 +38,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: "{{ include "codedx.fullname" . }}-mariadb-master-netpolicy"
+  name: {{ include "codedx.netpolicy.masterdb.name" . }}
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "codedx.commonLabels" . | nindent 4 }}

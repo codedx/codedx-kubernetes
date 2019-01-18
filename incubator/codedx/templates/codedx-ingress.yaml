@@ -3,7 +3,7 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: {{ printf "%s-%s" (include "codedx.name" $) .name | trunc 63 | trimSuffix "-" | quote }}
+  name: {{ include "codedx.ingress.name" .name | quote }}
   labels:
     {{- include "codedx.commonLabels" $ | nindent 4 }}
   annotations:
@@ -12,16 +12,16 @@ spec:
   {{- if .tls }}
   tls:
   - hosts:
-    - {{ .name }}
-    secretName: {{ .tlsSecret }}
+    - {{ .name | quote }}
+    secretName: {{ .tlsSecret | quote }}
   {{- end }}
   rules:
-  - host: {{ .name }}
+  - host: {{ .name | quote }}
     http:
       paths:
       - path: /codedx
         backend:
-          serviceName: {{ include "codedx.fullname" $ }}
+          serviceName: {{ include "codedx.fullname" $ | quote }}
           servicePort: {{ $.Values.codedxTomcatPort }}
 ---
 {{- end -}}

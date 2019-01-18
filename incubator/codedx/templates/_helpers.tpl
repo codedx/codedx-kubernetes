@@ -1,16 +1,24 @@
 {{/* vim: set filetype=mustache: */}}
+
+{{/*
+Common name sanitization.
+*/}}
+{{- define "sanitize" -}}
+{{- . | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
 {{/*
 Expand the name of the chart.
 */}}
 {{- define "codedx.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- include "sanitize" (default .Chart.Name .Values.nameOverride) -}}
 {{- end -}}
 
 {{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "codedx.chart" -}}
-{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
+{{- include "sanitize" (printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_") -}}
 {{- end -}}
 
 {{/*
@@ -31,13 +39,13 @@ If release name contains chart name it will be used as a full name.
 */}}
 {{- define "codedx.fullname" -}}
 {{- if .Values.fullnameOverride -}}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- include "sanitize" .Values.fullnameOverride }}
 {{- else -}}
 {{- $name := default .Chart.Name .Values.nameOverride -}}
 {{- if eq $name .Release.Name -}}
-{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- include "sanitize" .Release.Name -}}
 {{- else -}}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- include "sanitize" (printf "%s-%s" .Release.Name $name) -}}
 {{- end -}}
 {{- end -}}
 {{- end -}}
@@ -49,7 +57,7 @@ Determine the name of the volume to create and/or use for Code Dx's "appdata" st
 {{- if .Values.persistence.existingClaim -}}
 {{- .Values.persistence.existingClaim -}}
 {{- else -}}
-{{- printf "%s-%s" .Release.Name "appdata" | trunc 63 | trimSuffix "-" -}}
+{{- include "sanitize" (printf "%s-%s" .Release.Name "appdata") -}}
 {{- end -}}
 {{- end -}}
 
@@ -57,7 +65,7 @@ Determine the name of the volume to create and/or use for Code Dx's "appdata" st
 Determine the name of the initContainer for Code Dx, which checks for MariaDB connectivity.
 */}}
 {{- define "dbinit.fullname" -}}
-{{- printf "%s-%s" .Release.Name "dbinit" | trunc 63 | trimSuffix "-" -}}
+{{- include "sanitize" (printf "%s-%s" .Release.Name "dbinit") -}}
 {{- end -}}
 
 {{/*
@@ -92,7 +100,7 @@ Determine the name of the secret to create and/or use for holding the Code Dx li
 {{- if .Values.license.secret -}}
 {{- .Values.license.secret -}}
 {{- else -}}
-{{- printf "%s-license-secret" (include "codedx.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- include "santize" (printf "%s-license-secret" (include "codedx.fullname" .)) -}}
 {{- end -}}
 {{- end -}}
 
@@ -104,7 +112,7 @@ Determine the name of the configmap to create and/or use for holding the regular
 {{- if .Values.codedxProps.configMap -}}
 {{- .Values.codedxProps.configMap -}}
 {{- else -}}
-{{- printf "%s-configmap" (include "codedx.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- include "sanitize" (printf "%s-configmap" (include "codedx.fullname" .)) -}}
 {{- end -}}
 {{- end -}}
 
@@ -158,7 +166,8 @@ Determine the name of the secret to create and/or use for storing the `props` fi
 credentials, which will be mounted for Code Dx.
 */}}
 {{- define "codedx.mariadb.secretName" -}}
-{{- default (printf "%s-%s" .Release.Name "mariadb-secret") .Values.codedxProps.dbconnection.secretName | trunc 63 | trimSuffix "-" -}}
+{{- $fullName := default (printf "%s-%s" .Release.Name "mariadb-secret") .Values.codedxProps.dbconnection.secretName -}}
+{{- include "sanitize" $fullName -}}
 {{- end -}}
 
 {{/*
@@ -193,17 +202,37 @@ Create a separated YAML list of all parameters to pass to Code Dx for loading ad
 Determine the name to use to create and/or bind Code Dx's PodSecurityPolicy.
 */}}
 {{- define "codedx.rbac.psp.name" -}}
-{{- default (printf "%s-%s" (include "codedx.fullname" .) "psp") .Values.podSecurityPolicy.codedx.name | trunc 63 | trimSuffix "-" -}}
+{{- $fullName := default (printf "%s-%s" (include "codedx.fullname" .) "psp") .Values.podSecurityPolicy.codedx.name -}}
+{{- include "sanitize" $fullName -}}
 {{- end -}}
 
 {{/*
 Determine the name to use to create and/or bind MariaDB's PodSecurityPolicy.
 */}}
 {{- define "codedx.rbac.psp.dbname" -}}
-{{- default (printf "%s-%s" (include "codedx.fullname" .) "db-psp") .Values.podSecurityPolicy.mariadb.name | trunc 63 | trimSuffix "-" -}}
+{{- $fullName := default (printf "%s-%s" (include "codedx.fullname" .) "db-psp") .Values.podSecurityPolicy.mariadb.name -}}
+{{- include "sanitize" $fullName -}}
 {{- end -}}
 
+{{- define "codedx.ingress.name" -}}
+{{- $fullName := printf "%s-%s" (include "codedx.fullname" $) -}}
+{{- include "sanitize" $fullName }}
+{{- end -}}
 
+{{- define "codedx.netpolicy.name" -}}
+{{- $fullName := printf "%s-codedx-netpolicy" (include "codedx.fullname" .) -}}
+{{- include "sanitize" $fullName -}}
+{{- end -}}
+
+{{- define "codedx.netpolicy.masterdb.name" -}}
+{{- $fullName := printf "%s-mariadb-master-netpolicy" (include "codedx.fullname" .) -}}
+{{- include "sanitize" $fullName -}}
+{{- end -}}
+
+{{- define "codedx.netpolicy.slavedb.name" -}}
+{{- $fullName := printf "%s-mariadb-slave-netpolicy" (include "codedx.fullname" .) -}}
+{{- include "sanitize" $fullName -}}
+{{- end -}}
 
 
 

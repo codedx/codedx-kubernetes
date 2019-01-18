@@ -9,10 +9,11 @@ metadata:
 {{- end }}
 {{ if .Values.podSecurityPolicy.mariadb.bind }}
 ---
+{{- $roleName := include "sanitize" (printf "%s-mariadb-use-psp" (include "codedx.fullname" .)) }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: "{{ include "codedx.fullname" . }}-mariadb-use-psp"
+  name: {{ $roleName | quote }}
   labels:
     {{- include "codedx.commonLabels" . | nindent 4 }}
 rules:
@@ -25,13 +26,13 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: "{{ include "codedx.fullname" . }}-mariadb-use-psp"
+  name: {{ $roleName | quote }}
   labels:
     {{- include "codedx.commonLabels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: "{{ include "codedx.fullname" . }}-mariadb-use-psp"
+  name: {{ $roleName | quote }}
 subjects:
 - name: {{ include "mariadb.ref.serviceAccountName" . | quote }}
   kind: ServiceAccount

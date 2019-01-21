@@ -19,7 +19,8 @@ data:
     {{- $propsContents | nindent 4 }}
 
   tomcat.env: |-
-    export CATALINA_OPTS={{ include "codedx.props.params.combined" . }}
+    CATALINA_OPTS={{ include "codedx.props.params.combined" . }}
+    CATALINA_OPTS="$CATALINA_OPTS {{ default "" .Values.codedxJavaOpts }}"
 
   {{ if .Values.loggingConfigFile -}}
   logback.xml: |-

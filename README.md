@@ -31,6 +31,10 @@ This chart will:
 
 ## Installing the Chart
 
+Using this chart requires [Helm](), a Kubernetes package manager. You can find instructions for installing and initializing Helm [here](https://docs.helm.sh/using_helm/). Make sure that a `tiller-deploy` pod is ready before continuing. (`kubectl get pods -n kube-system`) Also make sure that the `tiller-deploy` pod has the necessary permissions via RBAC and a PodSecurityPolicy, if necessary.
+
+A set of RBAC resources and PSP for Helm can be found in this repository, at [helm-tiller-resources.yaml](incubator/codedx/helm-tiller-resources.yaml). Download the file and run `kubectl create -f helm-tiller-resources.yaml` if RBAC and PodSecurityPolicies are enabled for your cluster.
+
 To install the chart with a `codedx` release name, run the following command from the incubator/codedx directory:
 
 ```

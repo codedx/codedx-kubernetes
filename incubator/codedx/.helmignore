@@ -1,2 +1,3 @@
 .git/
 .gitignore
+helm-tiller-resources.yaml

@@ -12,6 +12,7 @@ The Code Dx Helm chart creates an environment for development and test purposes.
 $ git clone https://github.com/codedx/codedx-kubernetes.git
 $ git checkout develop
 $ cd incubator/codedx
+$ helm dependency update
 $ helm install --name codedx .
 ```
 
@@ -36,7 +37,11 @@ To install the chart with a `codedx` release name, run the following command fro
 $ helm install --name codedx .
 ```
 
-The chart contains a subchart reference to stable/mariadb version 5.5.0, which deploys MariaDB 10.1.37.
+The chart contains a subchart reference to stable/mariadb version 5.5.0, which deploys MariaDB 10.1.37. When first installing, you'll need to download the MariaDB chart:
+
+```
+$ helm dependency update
+```
 
 ### Installation Recommendations
 

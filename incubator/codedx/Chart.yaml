@@ -17,7 +17,5 @@ sources:
 - https://hub.docker.com/_/tomcat/
 - https://hub.docker.com/_/mariadb/
 maintainers:
-- name: Tyler Camp
-  email: tylerc@avi.com
-- name: Steve Salas
-  email: ssalas@bluewindover.com
+- name: Code Dx, Inc.
+  email: support@codedx.com

@@ -17,7 +17,7 @@ codedxTomcatPort: 9090
 
 # codedxJavaOpts lets you add custom Java runtime options for Code Dx.
 #
-codedxJavaOpts: "-Xmx1G -Xms256m"
+codedxJavaOpts: "-Xmx3G -Xms256m"
 
 # codedxAdminPassword is used when creating the Code Dx "admin" account during the
 # installation process. After installation, you can sign in with "admin" and the

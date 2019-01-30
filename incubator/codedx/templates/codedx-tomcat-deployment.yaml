@@ -40,7 +40,10 @@ spec:
         - name: SUPERUSER_NAME
           value: "admin"
         - name: SUPERUSER_PASSWORD
-          value: {{ required "A password must be provided to create the first Code Dx user during installation! Assign codedxAdminPassword!" .Values.codedxAdminPassword | quote }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "codedx.adminSecretName" . | quote }}
+              key: password
         image: {{ required "A tomcat image must be provided! Assign codedxTomcatImage!" .Values.codedxTomcatImage | quote }}
         name: "{{ include "codedx.name" . }}"
         readinessProbe:

@@ -23,7 +23,7 @@ codedxJavaOpts: "-Xmx3G -Xms256m"
 # installation process. After installation, you can sign in with "admin" and the
 # value assigned here.
 #
-codedxAdminPassword: wtKzR4F8o64A
+codedxAdminPassword: ""
 
 # cacertsFile can be used to provide a set of custom Java certificates for Code Dx to use. This is
 # necessary for LDAPS and integration with some external tools. This value is the path to a local

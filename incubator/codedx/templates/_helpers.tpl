@@ -234,6 +234,10 @@ Determine the name to use to create and/or bind MariaDB's PodSecurityPolicy.
 {{- include "sanitize" $fullName -}}
 {{- end -}}
 
+{{- define "codedx.adminSecretName" -}}
+{{- $fullName := printf "%s-admin-secret" (include "codedx.fullname" .) -}}
+{{- include "sanitize" $fullName -}}
+{{- end -}}
 
 
 

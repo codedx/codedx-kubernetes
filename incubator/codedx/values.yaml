@@ -170,7 +170,7 @@ persistence:
   # should probably be increased based on your needs before performing an install. You may find
   # Code Dx running out of space rather quickly.
   #
-  size: 100Mi
+  size: 32Gi
 
   # persistence.existingClaim will force the chart to mount the given claim as Code Dx's
   # appdata volume. A new PersistentVolumeClaim will not be created if defined.
@@ -377,6 +377,8 @@ mariadb:
   # Configuration files for the MariaDB Master and Slave DBs. These are mostly copies of the original config,
   # with some changes made to optimize Code Dx performance.
   master:
+    persistence:
+      size: 32Gi
     config: |-
       [mysqld]
       skip-name-resolve
@@ -404,6 +406,8 @@ mariadb:
       socket=/opt/bitnami/mariadb/tmp/mysql.sock
       pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
   slave:
+    persistence:
+      size: 32Gi
     config: |-
       [mysqld]
       skip-name-resolve

@@ -27,11 +27,11 @@ Code Dx will be available at the following URLs:
 {{ end -}}
 {{- end -}}
 {{- else -}}
-Code Dx will be available on port {{ .Values.codedxTomcatPort }}.
+Code Dx will be available on port {{ .Values.codedxTomcatPort }}. Run this command to check the IP that the service is available at:
+    kubectl get svc -n {{ .Release.Namespace }} -l "app.kubernetes.io/instance={{ .Release.Name }}" --watch
 {{- end }}
 
-Code Dx can be customized by editing the {{ include "codedx.props.configMapName" . | quote }} config map and
-starting a new pod to reload the changes. If you want to add more Code Dx configuration properties as secrets, mount the secret as a file to Code Dx and give the file path to Code Dx by modifying the `tomcat.env` key of the {{ include "codedx.props.configMapName" . | quote }} config map.
+Code Dx can be customized by editing the {{ include "codedx.props.configMapName" . | quote }} config map and starting a new pod to reload the changes. If you want to add more Code Dx configuration properties as secrets, mount the secret as a file to Code Dx and give the file path to Code Dx by modifying the `tomcat.env` key of the {{ include "codedx.props.configMapName" . | quote }} config map.
 
 {{- if .Release.IsInstall }}
 {{ if not .Values.codedxProps.dbconnection.createSecret -}}

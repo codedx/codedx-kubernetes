@@ -229,6 +229,11 @@ Determine the name to use to create and/or bind MariaDB's PodSecurityPolicy.
 {{- include "sanitize" $fullName -}}
 {{- end -}}
 
+{{- define "codedx.cacerts.secretName" -}}
+{{- $fullName := printf "%s-cacerts-secret" (include "codedx.fullname" .) -}}
+{{- include "sanitize" $fullName -}}
+{{- end -}}
+
 
 
 

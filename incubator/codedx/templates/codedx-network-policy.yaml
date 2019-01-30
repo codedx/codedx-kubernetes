@@ -20,6 +20,36 @@ spec:
     - port: 3306
   - ports:
     {{- include "netpolicy.dns.ports" . | nindent 4 -}}
+  {{- if .Values.networkPolicy.codedx.ldap }}
+  # LDAP
+  - ports:
+    - port: 389
+      protocol: TCP
+    - port: 389
+      protocol: UDP
+  {{ end -}}
+  {{- if .Values.networkPolicy.codedx.ldaps }}
+  # LDAPS
+  - ports:
+    - port: 636
+      protocol: TCP
+    - port: 636
+      protocol: UDP
+    - port: 3269
+      protocol: TCP
+    - port: 3269
+      protocol: UDP
+  {{ end -}}
+  {{- if .Values.networkPolicy.codedx.http }}
+  # HTTP
+  - ports:
+    - port: 80
+  {{ end -}}
+  {{- if .Values.networkPolicy.codedx.https }}
+  # HTTPS
+  - ports:
+    - port: 443
+  {{ end -}}
 {{- if .Values.networkPolicy.codedx.ingressSelectors }}
   ingress:
   - from:

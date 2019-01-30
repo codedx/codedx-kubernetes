@@ -89,6 +89,11 @@ spec:
           name: codedx-license
           subPath: license.lic
         {{- end }}
+        {{ if .Values.cacertsFile -}}
+        - mountPath: /etc/ssl/certs/java/cacerts
+          name: codedx-cacerts
+          subPath: cacerts
+        {{- end }}
         {{ if .Values.loggingConfigFile -}}
         - mountPath: /opt/codedx/logback.xml
           name: codedx-logback
@@ -136,6 +141,14 @@ spec:
           items:
           - key: license.lic
             path: license.lic
+      {{- end }}
+      {{ if .Values.cacertsFile -}}
+      - name: codedx-cacerts
+        secret:
+          secretName: {{ include "codedx.cacerts.secretName" . | quote }}
+          items:
+          - key: cacerts
+            path: cacerts
       {{- end }}
       {{ if .Values.loggingConfigFile -}}
       - name: codedx-logback

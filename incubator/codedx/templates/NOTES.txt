@@ -1,12 +1,15 @@
 {{- $defaultRootPassword := "5jqJL2b8hqn3" -}}
-{{- $defaultAdminPassword := "wtKzR4F8o64A" -}}
 {{- $defaultReplicationPassword := "11uAQKLgv4JM" -}}
 
 This Code Dx instance is for development and test purposes (not suitable for production use).
 
-The password for the Code Dx database root user is {{ .Values.mariadb.rootUser.password }}.
+You can get the default Code Dx admin credentials with:
+    echo username: admin
+    echo password: $(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "codedx.adminSecretName" . }} -o jsonpath="{.data.password}" | base64 --decode)
 
-The Code Dx admin password is {{ .Values.codedxAdminPassword }}.
+You can get the default MariaDB credentials with:
+    echo username: root
+    echo password: $(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "mariadb.ref.fullname" . }} -o jsonpath="{.data.mariadb-root-password}" | base64 --decode)
 
 {{- if not (include "codedx.license.exists" .) }}
 
@@ -44,13 +47,6 @@ WARNING: A MariaDB secret was not created for Code Dx. Code Dx will attempt to m
 WARNING: When upgrading a Code Dx installation to a new Code Dx version, make sure that new Code Dx instances are NOT terminated before database migration is completed. IT IS HIGHLY RECOMMENDED TO BACK UP YOUR DATABASE BEFORE BEGINNING AN UPGRADE.
 
 To minimize errors, existing Code Dx pods should stopped completely first. The default chart configuration ensures that old Code Dx instances stop before starting a new one.
-
-{{- end }}
-
-{{- if eq .Values.codedxAdminPassword $defaultAdminPassword }}
-
-  WARNING: The default Code Dx admin password is being used - be sure to change this after installation!
-    helm upgrade --set codedxAdminPassword=X {{ .Release.Name }} stable/codedx <other-config-options>
 
 {{- end }}
 

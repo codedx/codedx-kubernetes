@@ -29,6 +29,8 @@ This chart will:
 - Deploy the MariaDB chart with master and slaves
 - Create service accounts, PodSecurityPolicies, and NetworkPolicies
 
+![Kubernetes Deployment Diagram](CodeDxK8s.png)
+
 ## Installing the Chart
 
 Using this chart requires [Helm](), a Kubernetes package manager. You can find instructions for installing and initializing Helm [here](https://docs.helm.sh/using_helm/). Make sure that a `tiller-deploy` pod is ready before continuing. (`kubectl get pods -n kube-system`) Also make sure that the `tiller-deploy` pod has the necessary permissions via RBAC and a PodSecurityPolicy, if necessary.

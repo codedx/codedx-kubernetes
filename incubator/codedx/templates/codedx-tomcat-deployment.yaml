@@ -40,7 +40,10 @@ spec:
         - name: SUPERUSER_NAME
           value: "admin"
         - name: SUPERUSER_PASSWORD
-          value: {{ required "A password must be provided to create the first Code Dx user during installation! Assign codedxAdminPassword!" .Values.codedxAdminPassword | quote }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "codedx.adminSecretName" . | quote }}
+              key: password
         image: {{ required "A tomcat image must be provided! Assign codedxTomcatImage!" .Values.codedxTomcatImage | quote }}
         name: "{{ include "codedx.name" . }}"
         readinessProbe:
@@ -89,6 +92,11 @@ spec:
           name: codedx-license
           subPath: license.lic
         {{- end }}
+        {{ if .Values.cacertsFile -}}
+        - mountPath: /etc/ssl/certs/java/cacerts
+          name: codedx-cacerts
+          subPath: cacerts
+        {{- end }}
         {{ if .Values.loggingConfigFile -}}
         - mountPath: /opt/codedx/logback.xml
           name: codedx-logback
@@ -136,6 +144,14 @@ spec:
           items:
           - key: license.lic
             path: license.lic
+      {{- end }}
+      {{ if .Values.cacertsFile -}}
+      - name: codedx-cacerts
+        secret:
+          secretName: {{ include "codedx.cacerts.secretName" . | quote }}
+          items:
+          - key: cacerts
+            path: cacerts
       {{- end }}
       {{ if .Values.loggingConfigFile -}}
       - name: codedx-logback

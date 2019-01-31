@@ -23,7 +23,15 @@ codedxJavaOpts: "-Xmx3G -Xms256m"
 # installation process. After installation, you can sign in with "admin" and the
 # value assigned here.
 #
-codedxAdminPassword: wtKzR4F8o64A
+codedxAdminPassword: ""
+
+# cacertsFile can be used to provide a set of custom Java certificates for Code Dx to use. This is
+# necessary for LDAPS and integration with some external tools. This value is the path to a local
+# file that will be mounted in the Code Dx container at /etc/ssl/certs/java/cacerts. If undefined
+# (or empty), the default `cacerts` file will be used.
+# ref: https://codedx.com/Documentation/InstallGuide.html#TrustingSelfSignedCertificates
+# 
+cacertsFile: ""
 
 # serviceAccount options for Code Dx.
 # Determine the name of the service account to run Code Dx with, and whether to create the ServiceAccount.
@@ -103,6 +111,14 @@ networkPolicy:
     #
     create: true
 
+    # The flags networkPolicy.codedx.ldap,ldaps,http,https can create egress rules for Code Dx on those ports.
+    # These rules will allow *all* egress from the Code Dx pod on those ports.
+    #
+    ldap: false
+    ldaps: false
+    http: false
+    https: false
+
     # networkPolicy.codedx.ingressSelectors is an optional list of selectors to attach to Code Dx
     # ingress rules. Pods matched here will be allowed to connect to Code Dx over HTTP (port 9090).
     # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.11/#networkpolicypeer-v1-networking-k8s-io
@@ -154,7 +170,7 @@ persistence:
   # should probably be increased based on your needs before performing an install. You may find
   # Code Dx running out of space rather quickly.
   #
-  size: 100Mi
+  size: 32Gi
 
   # persistence.existingClaim will force the chart to mount the given claim as Code Dx's
   # appdata volume. A new PersistentVolumeClaim will not be created if defined.
@@ -361,6 +377,8 @@ mariadb:
   # Configuration files for the MariaDB Master and Slave DBs. These are mostly copies of the original config,
   # with some changes made to optimize Code Dx performance.
   master:
+    persistence:
+      size: 32Gi
     config: |-
       [mysqld]
       skip-name-resolve
@@ -388,6 +406,8 @@ mariadb:
       socket=/opt/bitnami/mariadb/tmp/mysql.sock
       pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
   slave:
+    persistence:
+      size: 32Gi
     config: |-
       [mysqld]
       skip-name-resolve

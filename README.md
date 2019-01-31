@@ -1,3 +1,4 @@
+
 # Code Dx
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -33,9 +34,15 @@ This chart will:
 
 ## Installing the Chart
 
-Using this chart requires [Helm](), a Kubernetes package manager. You can find instructions for installing and initializing Helm [here](https://docs.helm.sh/using_helm/). Make sure that a `tiller-deploy` pod is ready before continuing. (`kubectl get pods -n kube-system`) Also make sure that the `tiller-deploy` pod has the necessary permissions via RBAC and a PodSecurityPolicy, if necessary.
+Using this chart requires [Helm](https://docs.helm.sh/), a Kubernetes package manager. You can find instructions for installing and initializing Helm [here](https://docs.helm.sh/using_helm/). Make sure that a `tiller-deploy` pod is ready before continuing. (`kubectl get pods -n kube-system`) Also make sure that the `tiller-deploy` pod has the necessary permissions via RBAC and a PodSecurityPolicy, if necessary.
 
 A set of RBAC resources and PSP for Helm can be found in this repository, at [helm-tiller-resources.yaml](incubator/codedx/helm-tiller-resources.yaml). Download the file and run `kubectl create -f helm-tiller-resources.yaml` if RBAC and PodSecurityPolicies are enabled for your cluster. After running `helm init`, run `helm init --upgrade --service-account helm-tiller` to use the new resources.
+
+This chart contains a reference to stable/mariadb chart version 5.5.0, which deploys MariaDB 10.1.37. When first installing, you'll need to download the MariaDB chart:
+
+```
+$ helm dependency update
+```
 
 To install the chart with a `codedx` release name, run the following command from the incubator/codedx directory:
 
@@ -43,21 +50,21 @@ To install the chart with a `codedx` release name, run the following command fro
 $ helm install --name codedx .
 ```
 
-The chart contains a subchart reference to stable/mariadb version 5.5.0, which deploys MariaDB 10.1.37. When first installing, you'll need to download the MariaDB chart:
+After installation, you'll be given commands to retrieve the Code Dx admin credentials that were generated. Use `kubectl get pods --watch` to check the status of the Code Dx installation.
 
-```
-$ helm dependency update
-```
+**Before installing, you should first read the recommendations below.**
 
 ### Installation Recommendations
 
-When installing the chart in a public-facing environment, you should be sure to change the passwords for Code Dx Admin, MariaDB Admin, and MariaDB Replication:
+When installing the chart in a public-facing environment, you should be sure to change the passwords for MariaDB Admin and MariaDB Replication. These passwords are not randomly generated and are nontrivial to change after installation.
 
 ```
-$ helm install --name codedx . --set codedxAdminPassword=X --set mariadb.rootUser.password=Y --set mariadb.replication.password=Z
+$ helm install --name codedx . --set mariadb.rootUser.password=X --set mariadb.replication.password=Y
 ```
 
-It's recommended to leave PodSecurityPolicies and NetworkPolicies enabled for security.
+It's recommended to leave PodSecurityPolicies and NetworkPolicies enabled for security. Note that controllers need to be available on the cluster to enforce these policies.
+
+The default volume sizes for Code Dx and MariaDB are `32Gi` - `96Gi` total for the chart, by default. (One volume for Code Dx, one for MariaDB Master, and one for MariaDB Slave.) `32Gi` is not the minimum disk size - the chart can run with a `100Mi` volume for Code Dx and `1Gi` volumes for MariaDB. However, this will quickly fill up and can cause maintenance headaches. Keep in mind that source code, binaries, and scan results will be uploaded to and stored by Code Dx. The size of these files, frequency of scanning, and number of projects should be considered when determining an initial volume size. Expect MariaDB disk usage to be approximately equivalent to Code Dx.
 
 For more configuration options, see the table below.
 
@@ -81,11 +88,11 @@ The following table lists the configurable parameters of the Code Dx chart and t
 
 | Parameter                               | Description                                                                                                                                                                                        | Default                              |
 |-----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------|
-| `codedxTomcatImage`                     | Code Dx Tomcat image full name                                                                                                                                                                     | `codedx/codedx-tomcat:v3.5.3`        |
+| `codedxTomcatImage`                     | Code Dx Tomcat image full name                                                                                                                                                                     | `codedx/codedx-tomcat:v3.6.0`        |
 | `codedxTomcatImagePullSecrets`          | Pull secrets for Code Dx Tomcat image                                                                                                                                                              | `[]`                                 |
 | `codedxTomcatPort`                      | Port for Code Dx Tomcat service                                                                                                                                                                    | `9090`                               |
-| `codedxJavaOpts`                        | Extra options passed to Tomcat JVM                                                                                                                                                                 | `"-Xmx1G -Xms256m"`                  |
-| `codedxAdminPassword`                   | Password for Code Dx 'admin' account created at installation                                                                                                                                       | `wtKzR4F8o64A`                       |
+| `codedxJavaOpts`                        | Extra options passed to Tomcat JVM                                                                                                                                                                 | `""`                                 |
+| `codedxAdminPassword`                   | Password for Code Dx 'admin' account created at installation (random if empty)                                                                                                                     | `""`                                 |
 | `serviceAccount.create`                 | Whether to create a ServiceAccount for Code Dx                                                                                                                                                     | `true`                               |
 | `serviceAccount.name`                   | Name of the ServiceAccount for Code Dx                                                                                                                                                             |                                      |
 | `podSecurityPolicy.codedx.create`       | Whether to create a PodSecurityPolicy for Code Dx pods                                                                                                                                             | `true`                               |
@@ -95,6 +102,10 @@ The following table lists the configurable parameters of the Code Dx chart and t
 | `podSecurityPolicy.mariadb.name`        | Name of the PodSecurityPolicy for MariaDB pods                                                                                                                                                     |                                      |
 | `podSecurityPolicy.mariadb.bind`        | Whether to bind the PodSecurityPolicy to MariaDB's ServiceAccount                                                                                                                                  | `true`                               |
 | `networkPolicy.codedx.create`           | Whether to create a NetworkPolicy for Code Dx                                                                                                                                                      | `true`                               |
+| `networkPolicy.codedx.ldap`             | Whether to include a rule for allowing LDAP egress (port 389)                                                                                                                                      | `false`                              |
+| `networkPolicy.codedx.ldaps`            | Whether to include a rule for allowing LDAPS egress (ports 636, 3269)                                                                                                                              | `false`                              |
+| `networkPolicy.codedx.http`             | Whether to include a rule for allowing HTTP egress (port 80)                                                                                                                                       | `false`                              |
+| `networkPolicy.codedx.https`            | Whether to include a rule for allowing HTTPS egress (port 443)                                                                                                                                     | `false`                              |
 | `networkPolicy.codedx.ingressSelectors` | [Additional Ingress selectors for the Code Dx NetworkPolicy against `codedxTomcatPort`](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.10/#networkpolicypeer-v1beta1-extensions) | `[]`                                 |
 | `networkPolicy.mariadb.master.create`   | Whether to create a NetworkPolicy for the MariaDB Master                                                                                                                                           | `true`                               |
 | `networkPolicy.mariadb.slave.create`    | Whether to create a NetworkPolicy for the MariaDB Slave                                                                                                                                            | `true`                               |
@@ -190,6 +201,36 @@ After making your changes to the ConfigMap, make sure the associated Secret exis
 ```
 Loaded additional props file from <YOUR-PATH> using X syntax, based on the system property <YOUR-PARAM-NAME>.
 ```
+
+### LDAP(s) and External Tools - cacerts
+
+When configuring Code Dx to connect via LDAPS or an external tool, there are two considerations - accepting TLS certs and enabling egress from Code Dx to these services.
+
+#### cacerts
+
+Java applications generally use a _cacerts_ file, which is a collection of certs used to authenticate peers. Any connection using TLS will reference the available certs in this file. For LDAPS and external tools using HTTPS, their cert may need to be imported into _cacerts_ for Code Dx to complete connections to those services. Information for installing a cert into a _cacerts_ file [can be found in the Code Dx Install Guide](https://codedx.com/Documentation/InstallGuide.html#TrustingSelfSignedCertificates). Note that, while that guide modifies the _cacerts_ file directly on the installed machine, you will be modifying a Secret instead that will be mounted as the _cacerts_ file within Code Dx.
+
+This chart accepts a `cacertsFile` value, which is the path to a file on your local machine that will be stored in a Secret and mounted by Code Dx. When installing, you can use `--set cacertsFile=my/path/cacerts` to specify your _cacerts_ file. If changing the _cacerts_ file after installation, you should use `helm upgrade {my-codedx} . --set cacertsFile=my/path/updatedCacerts`. Using the `helm upgrade` command will automatically create a new (or modify an existing) secret with the contents of your _cacerts_ file. It will also update the Code Dx deployment to mount that secret appropriately. (Note that, if the _cacerts_ secret already exists, Code Dx will not see changes to the updated secret until it's restarted.)
+
+You can get the current _cacerts_ file from an existing Code Dx container with:
+
+```
+kubectl cp <CODEDX-POD-NAME>:/etc/ssl/certs/java/cacerts .
+```
+
+#### Egress
+
+If NetworkPolicies are not in use in your cluster, this can be ignored. Otherwise, the network policy for the Code Dx container will need to permit egress on the appropriate ports. For well-known ports LDAP(s) and HTTP(s), you can update the network policy with:
+
+```
+helm upgrade {my-codedx} . \
+    --set networkPolicy.codedx.ldap=true \
+    --set networkPolicy.codedx.ldaps=true \
+    --set networkPolicy.codedx.http=true \
+    --set networkPolicy.codedx.https=true \
+```
+
+For any other ports, the NetworkPolicy will need to be edited manually with `kubectl edit networkpolicy ...`.
 
 ## Ingress
 

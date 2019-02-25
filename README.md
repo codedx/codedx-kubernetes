@@ -50,13 +50,13 @@ To install the chart with a `codedx` release name, run the following command fro
 $ helm install --name codedx .
 ```
 
-After installation, you'll be given commands to retrieve the Code Dx admin credentials that were generated. Use `kubectl get pods --watch` to check the status of the Code Dx installation.
+After installation, you'll be given commands to retrieve the Code Dx admin credentials that were generated. Use `kubectl get pods --watch` to check the status of the Code Dx installation. Change the Code Dx admin password once installation is complete. Calls to `helm upgrade` on Code Dx will modify the password stored in its secret, but will not change the actual password used by Code Dx. `kubectl` calls for getting the admin password will given different results every time `helm upgrade` is used.
 
 **Before installing, you should first read the recommendations below.**
 
 ### Installation Recommendations
 
-When installing the chart in a public-facing environment, you should be sure to change the passwords for MariaDB Admin and MariaDB Replication. These passwords are not randomly generated and are nontrivial to change after installation.
+When installing the chart in a public-facing environment, be sure to change the passwords for MariaDB Admin and MariaDB Replication. These passwords are not randomly generated and are nontrivial to change after installation.
 
 ```
 $ helm install --name codedx . --set mariadb.rootUser.password=X --set mariadb.replication.password=Y

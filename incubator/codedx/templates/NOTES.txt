@@ -6,6 +6,7 @@ This Code Dx instance is for development and test purposes (not suitable for pro
 You can get the default Code Dx admin credentials with:
     echo username: admin
     echo password: $(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "codedx.adminSecretName" . }} -o jsonpath="{.data.password}" | base64 --decode)
+NOTE: These credentials will change when `helm upgrade ...` is used. Make sure to change the admin password within Code Dx after installation!
 
 You can get the default MariaDB credentials with:
     echo username: root

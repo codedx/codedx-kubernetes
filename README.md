@@ -10,11 +10,8 @@ The Code Dx Helm chart creates an environment for development and test purposes.
 ## TL;DR
 
 ```
-$ git clone https://github.com/codedx/codedx-kubernetes.git
-$ git checkout develop
-$ cd incubator/codedx
-$ helm dependency update
-$ helm install --name codedx .
+$ helm repo add codedx https://codedx.github.io/codedx-kubernetes
+$ helm install codedx/codedx --name codedx
 ```
 
 ## Prerequisite Details
@@ -38,17 +35,7 @@ Using this chart requires [Helm](https://docs.helm.sh/), a Kubernetes package ma
 
 A set of RBAC resources and PSP for Helm can be found in this repository, at [helm-tiller-resources.yaml](incubator/codedx/helm-tiller-resources.yaml). Download the file and run `kubectl create -f helm-tiller-resources.yaml` if RBAC and PodSecurityPolicies are enabled for your cluster. After running `helm init`, run `helm init --upgrade --service-account helm-tiller` to use the new resources.
 
-This chart contains a reference to stable/mariadb chart version 5.5.0, which deploys MariaDB 10.1.37. When first installing, you'll need to download the MariaDB chart:
-
-```
-$ helm dependency update
-```
-
-To install the chart with a `codedx` release name, run the following command from the incubator/codedx directory:
-
-```
-$ helm install --name codedx .
-```
+This chart contains a reference to stable/mariadb chart version 5.5.0, which deploys MariaDB 10.1.37.
 
 After installation, you'll be given commands to retrieve the Code Dx admin credentials that were generated. Use `kubectl get pods --watch` to check the status of the Code Dx installation. Change the Code Dx admin password once installation is complete. Calls to `helm upgrade` on Code Dx will modify the password stored in its secret, but will not change the actual password used by Code Dx. `kubectl` calls for getting the admin password will given different results every time `helm upgrade` is used.
 
@@ -59,7 +46,7 @@ After installation, you'll be given commands to retrieve the Code Dx admin crede
 When installing the chart in a public-facing environment, be sure to change the passwords for MariaDB Admin and MariaDB Replication. These passwords are not randomly generated and are nontrivial to change after installation.
 
 ```
-$ helm install --name codedx . --set mariadb.rootUser.password=X --set mariadb.replication.password=Y
+$ helm install codedx/codedx --name codedx --set mariadb.rootUser.password=X --set mariadb.replication.password=Y
 ```
 
 It's recommended to leave PodSecurityPolicies and NetworkPolicies enabled for security. Note that controllers need to be available on the cluster to enforce these policies.
@@ -167,7 +154,7 @@ By default, Code Dx will be installed without a license. When you first navigate
 If you have a Code Dx license file that you want to use, copy it to your current working directory and install Code Dx using helm:
 
 ```
-helm install stable/codedx --name codedx --set license.file="my-codedx-license.lic"
+helm install codedx/codedx --name codedx --set license.file="my-codedx-license.lic"
 ```
 
 Code Dx will create a Secret containing the contents of `my-codedx-license.lic`, which is mounted as a file and read by Code Dx during installation.
@@ -175,7 +162,7 @@ Code Dx will create a Secret containing the contents of `my-codedx-license.lic`,
 If you have a Code Dx license already stored as a secret, you can specify `license.secret` instead to use that existing secret:
 
 ```
-helm install stable/codedx --name codedx --set license.secret="my-codedx-license-secret"
+helm install codedx/codedx --name codedx --set license.secret="my-codedx-license-secret"
 ```
 
 Note that the given secret must have a key named `license.lic`, with the contents of your Code Dx license.
@@ -210,7 +197,7 @@ When configuring Code Dx to connect via LDAPS or an external tool, there are two
 
 Java applications generally use a _cacerts_ file, which is a collection of certs used to authenticate peers. Any connection using TLS will reference the available certs in this file. For LDAPS and external tools using HTTPS, their cert may need to be imported into _cacerts_ for Code Dx to complete connections to those services. Information for installing a cert into a _cacerts_ file [can be found in the Code Dx Install Guide](https://codedx.com/Documentation/InstallGuide.html#TrustingSelfSignedCertificates). Note that, while that guide modifies the _cacerts_ file directly on the installed machine, you will be modifying a Secret instead that will be mounted as the _cacerts_ file within Code Dx.
 
-This chart accepts a `cacertsFile` value, which is the path to a file on your local machine that will be stored in a Secret and mounted by Code Dx. When installing, you can use `--set cacertsFile=my/path/cacerts` to specify your _cacerts_ file. If changing the _cacerts_ file after installation, you should use `helm upgrade {my-codedx} . --set cacertsFile=my/path/updatedCacerts`. Using the `helm upgrade` command will automatically create a new (or modify an existing) secret with the contents of your _cacerts_ file. It will also update the Code Dx deployment to mount that secret appropriately. (Note that, if the _cacerts_ secret already exists, Code Dx will not see changes to the updated secret until it's restarted.)
+This chart accepts a `cacertsFile` value, which is the path to a file on your local machine that will be stored in a Secret and mounted by Code Dx. When installing, you can use `--set cacertsFile=my/path/cacerts` to specify your _cacerts_ file. If changing the _cacerts_ file after installation, you should use `helm upgrade {my-codedx} codedx/codedx --set cacertsFile=my/path/updatedCacerts`. Using the `helm upgrade` command will automatically create a new (or modify an existing) secret with the contents of your _cacerts_ file. It will also update the Code Dx deployment to mount that secret appropriately. (Note that, if the _cacerts_ secret already exists, Code Dx will not see changes to the updated secret until it's restarted.)
 
 You can get the current _cacerts_ file from an existing Code Dx container with:
 
@@ -223,7 +210,7 @@ kubectl cp <CODEDX-POD-NAME>:/etc/ssl/certs/java/cacerts .
 If NetworkPolicies are not in use in your cluster, this can be ignored. Otherwise, the network policy for the Code Dx container will need to permit egress on the appropriate ports. For well-known ports LDAP(s) and HTTP(s), you can update the network policy with:
 
 ```
-helm upgrade {my-codedx} . \
+helm upgrade {my-codedx} codedx/codedx \
     --set networkPolicy.codedx.ldap=true \
     --set networkPolicy.codedx.ldaps=true \
     --set networkPolicy.codedx.http=true \
@@ -239,7 +226,7 @@ This chart can automatically create an Ingress resource for Code Dx. To do this,
 An example installation with Ingress, without HTTPS:
 
 ```
-helm install --name codedx \
+helm install codedx/codedx --name codedx \
     --set ingress.enabled=true \
     --set ingress.hosts[0].name="codedx.company.com"
     --set ingress.tls=false
@@ -248,7 +235,7 @@ helm install --name codedx \
 An example with HTTPS, using an existing TLS secret:
 
 ```
-helm install --name codedx \
+helm install codedx/codedx --name codedx \
     --set ingress.enabled=true \
     --set ingress.hosts[0].name="codedx.company.com"
     --set ingress.hosts[0].tls=true
@@ -285,7 +272,7 @@ Modify the Code Dx deployment manually with the new version via `kubectl edit de
 
 ### Upgrade using Helm
 
-Navigate to the Code Dx chart directory in a terminal and run `helm upgrade --set codedxTomcatVersion=<new-codedx-image> <codedx-installation-name> .`, where:
+Navigate to the Code Dx chart directory in a terminal and run `helm upgrade --set codedxTomcatVersion=<new-codedx-image> <codedx-installation-name> codedx/codedx`, where:
 
 - `<new-codedx-image>`: The full name of a Code Dx image [from docker](https://hub.docker.com/r/codedx/codedx-tomcat/tags), ie `codedx/codedx-tomcat:v3.6.0`
 - `<codedx-installation-name>`: The name of the Code Dx installation, which is set when installing Code Dx via `helm install`. If installed via `helm install --name my-install ...`, the installation name would be `my-install`. If no name was specified, it will default to `codedx`.

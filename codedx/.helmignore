@@ -1,4 +1,6 @@
 .git/
 .gitignore
-helm-tiller-resources.yaml
+sample-values/
+CodeDxK8s.png
+LICENSE
 OWNERS

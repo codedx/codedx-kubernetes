@@ -33,7 +33,7 @@ This chart will:
 
 Using this chart requires [Helm](https://docs.helm.sh/), a Kubernetes package manager. You can find instructions for installing and initializing Helm [here](https://docs.helm.sh/using_helm/). Make sure that a `tiller-deploy` pod is ready before continuing. (`kubectl get pods -n kube-system`) Also make sure that the `tiller-deploy` pod has the necessary permissions via RBAC and a PodSecurityPolicy, if necessary.
 
-A set of RBAC resources and PSP for Helm can be found in this repository, at [helm-tiller-resources.yaml](incubator/codedx/helm-tiller-resources.yaml). Download the file and run `kubectl create -f helm-tiller-resources.yaml` if RBAC and PodSecurityPolicies are enabled for your cluster. After running `helm init`, run `helm init --upgrade --service-account helm-tiller` to use the new resources.
+A set of RBAC resources and PSP for Helm can be found in this repository, at [helm-tiller-resources.yaml](sample-values/helm-tiller-resources.yaml). Download the file and run `kubectl create -f helm-tiller-resources.yaml` if RBAC and PodSecurityPolicies are enabled for your cluster. After running `helm init`, run `helm init --upgrade --service-account helm-tiller` to use the new resources.
 
 This chart contains a reference to stable/mariadb chart version 5.5.0, which deploys MariaDB 10.1.37.
 
@@ -43,17 +43,25 @@ After installation, you'll be given commands to retrieve the Code Dx admin crede
 
 ### Installation Recommendations
 
-When installing the chart in a public-facing environment, be sure to change the passwords for MariaDB Admin and MariaDB Replication. These passwords are not randomly generated and are nontrivial to change after installation.
+#### values.yaml
+For consistency, a custom `values.yaml` file should be used instead of passing each option manually. When using `helm upgrade`, changes are not persisted between runs - if you specify a license file while installing, but don't specify it again when using `helm upgrade`, Helm will delete the license resource from your cluster. Placing your configuration options in a `values.yaml` and passing that each time will simplify the process of making changes.
+
+**Some sample files are available in the [sample-values](sample-values) folder.**
+
+#### MariaDB
+When installing the chart in a public-facing environment, be sure to change the passwords for MariaDB Admin and MariaDB Replication. These passwords are not randomly generated and are nontrivial to change after installation. These should be assigned using a `values.yaml` file.
 
 ```
 $ helm install codedx/codedx --name codedx --set mariadb.rootUser.password=X --set mariadb.replication.password=Y
 ```
 
+#### Network Policies and PSPs
 It's recommended to leave PodSecurityPolicies and NetworkPolicies enabled for security. Note that controllers need to be available on the cluster to enforce these policies.
 
+#### Volume Sizes
 The default volume sizes for Code Dx and MariaDB are `32Gi` - `96Gi` total for the chart, by default. (One volume for Code Dx, one for MariaDB Master, and one for MariaDB Slave.) `32Gi` is not the minimum disk size - the chart can run with a `100Mi` volume for Code Dx and `1Gi` volumes for MariaDB. However, this will quickly fill up and can cause maintenance headaches. Keep in mind that source code, binaries, and scan results will be uploaded to and stored by Code Dx. The size of these files, frequency of scanning, and number of projects should be considered when determining an initial volume size. Expect MariaDB disk usage to be approximately equivalent to Code Dx.
 
-For more configuration options, see the table below.
+For more configuration options, see the table in the [Configuration](#Configuration) section.
 
 ## Uninstalling the Chart
 

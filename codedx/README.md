@@ -5,7 +5,7 @@
 
 [Code Dx](https://codedx.com/) is an automated application vulnerability management tool that makes all of your testing tools work together to provide one set of correlated results, then helps you prioritize and manage vulnerabilities — integrating with your application lifecycle management tools so your security and development teams work together for faster remediation.
 
-The Code Dx Helm chart creates an environment for development and test purposes. It may be used in production but has not been heavily tested.
+The Code Dx Helm chart creates Kubernetes resources for a secure, production-ready Code Dx deployment and environment. To make the most of this, check that Network Policies and Pod Security Policies are enabled and enforced on your cluster.
 
 **This repository contains various in-depth guides in the [docs](docs) folder, outlined below.**
 
@@ -48,9 +48,9 @@ Using this chart requires [Helm](https://docs.helm.sh/), a Kubernetes package ma
 
 This chart contains a reference to stable/mariadb chart version 5.5.0, which deploys MariaDB 10.1.37.
 
-After installation, you'll be given commands to retrieve the Code Dx admin credentials that were generated. Use `kubectl get pods --watch` to check the status of the Code Dx installation. **Change the Code Dx admin password once installation is complete.** Calls to `helm upgrade` on Code Dx will modify the password stored in its secret, but will not change the actual password used by Code Dx. `kubectl` calls for getting the admin password will given different results every time `helm upgrade` is used.
+After installation, you'll be given commands to retrieve the Code Dx admin credentials that were generated. Use `kubectl get pods --watch` to check the status of the Code Dx installation. **Change the Code Dx admin password once installation is complete.** The secret used to get the admin credentials are only used for the first installation of Code Dx, and can change automatically when using `helm upgrade`. After installation and changing the admin password, the secret can be ignored entirely.
 
-An in-depth installation guide can be found [here.](docs/installation-walkthrough.md)
+A complete installation guide can be found [here.](docs/installation-walkthrough.md)
 
 **Before installing, you should first read the recommendations below.**
 

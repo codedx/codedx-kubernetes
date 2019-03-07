@@ -47,9 +47,19 @@ kubectl cp <CODEDX-POD-NAME>:/etc/ssl/certs/java/cacerts .
 
 ### Egress
 
-If NetworkPolicies are not in use in your cluster, this can be ignored. Otherwise, the network policy for the Code Dx container will need to permit egress on the appropriate ports for ie JIRA connections. For well-known ports LDAP(s) and HTTP(s), you can update the network policy with:
+If NetworkPolicies are not in use in your cluster, this can be ignored. Otherwise, the network policy for the Code Dx container will need to permit egress on the appropriate ports (e.g. for connections to JIRA.) For well-known ports LDAP(s) and HTTP(s), you can update the network policy with:
 
+```yaml
+networkPolicy:
+  codedx:
+    ldap: true
+    ldaps: true
+    http: true
+    https: true
 ```
+
+```bash
+# Direct call
 helm upgrade {my-codedx} codedx/codedx \
     --set networkPolicy.codedx.ldap=true \
     --set networkPolicy.codedx.ldaps=true \

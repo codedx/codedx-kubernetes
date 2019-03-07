@@ -12,6 +12,7 @@ The Code Dx Helm chart creates Kubernetes resources for a secure, production-rea
 - [Code Dx Config](docs/codedx-config.md)
 - [Code Dx Licensing](docs/codedx-licensing.md)
 - [Ingress](docs/ingress.md)
+- [Installation Guide](docs/installation-walkthrough.md)
 - [Upgrading Code Dx](docs/upgrading.md)
 
 **Sample installation values can be found [here.](sample-values)**

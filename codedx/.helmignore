@@ -1,6 +1,7 @@
 .git/
 .gitignore
 sample-values/
-CodeDxK8s.png
+docs/
+res/
 LICENSE
 OWNERS

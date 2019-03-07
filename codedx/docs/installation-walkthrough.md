@@ -7,7 +7,7 @@ This document will guide you through the deployment of a basic Code Dx installat
 
 The Code Dx Helm chart requires that Helm be installed to your cluster. Helm is a Kubernetes package manager that makes it easy to define customizable Kubernetes resources and install them in a consistent way.
 
-Installation instructions can be found [in their official documentation](https://helm.sh/docs/using_helm/). Some extra setup is required if Pod Security Policies are enforced on your cluster, so that the Helm Tiller pod (which manages Helm installations) can create resources. Further details and instructions can be found in the section [Installing Helm](#InstallingHelm) below.
+Installation instructions can be found [in their official documentation](https://helm.sh/docs/using_helm/). Some extra setup is required if Pod Security Policies are enforced on your cluster, so that the Helm Tiller pod (which manages Helm installations) can create resources. Further details and instructions can be found in the section [Installing Helm](#Installing-Helm) below.
 
 ## Installing Helm
 

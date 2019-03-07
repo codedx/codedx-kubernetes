@@ -1,5 +1,7 @@
 
+# Installation Walkthrough
 
+This document will guide you through the deployment of a basic Code Dx installation, including recommended practices and caveats.
 
 # Preparation
 

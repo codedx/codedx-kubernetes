@@ -362,6 +362,8 @@ resources: {}
 # Code Dx-specific MariaDB configuration. This should usually be left untouched, unless changing database passwords.
 #
 mariadb:
+  image:
+    tag: 10.2.22
   db:
     # Name of the database for MariaDB to create automatically
     name: codedx

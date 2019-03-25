@@ -47,7 +47,7 @@ This chart will:
 
 Using this chart requires [Helm](https://docs.helm.sh/), a Kubernetes package manager. You can find instructions for installing and initializing Helm [here](https://docs.helm.sh/using_helm/).
 
-This chart contains a reference to stable/mariadb chart version 5.5.0, which deploys MariaDB 10.1.37.
+This chart contains a reference to stable/mariadb chart version 5.5.0, and deploys MariaDB 10.2.22. (Note that "chart version" does not correspond to "app version".)
 
 After installation, you'll be given commands to retrieve the Code Dx admin credentials that were generated. Use `kubectl get pods --watch` to check the status of the Code Dx installation. **Change the Code Dx admin password once installation is complete.** The secret used to get the admin credentials are only used for the first installation of Code Dx, and can change automatically when using `helm upgrade`. After installation and changing the admin password, the secret can be ignored entirely.
 

@@ -1,7 +1,3 @@
 .git/
 .gitignore
-sample-values/
-docs/
-res/
-LICENSE
-OWNERS
+*.lic

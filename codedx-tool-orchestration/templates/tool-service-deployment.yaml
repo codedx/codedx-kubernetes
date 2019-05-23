@@ -16,6 +16,9 @@ spec:
       labels:
         {{- include "codedx-tool-orchestration.commonLabels" . | nindent 8 }}
     spec:
+      {{ if .Values.toolServiceImagePullSecrets -}}
+      imagePullSecrets: {{ toYaml .Values.toolServiceImagePullSecrets | nindent 6 -}}
+      {{ end -}}
       containers:
       - name: tool-service
         image: {{ .Values.toolServiceImageName }}

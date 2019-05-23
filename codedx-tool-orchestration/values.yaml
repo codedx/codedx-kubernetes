@@ -3,6 +3,7 @@
 codeDxBaseUrl: http://host.docker.internal:8080
 
 toolServiceImageName: codedx-tool-service:v1.0
+toolServiceImagePullSecrets: []
 toolServicePort: 3333
 toolServiceApiKey: cc224a8f-a307-416e-a6dd-769600ac8e2c
 

@@ -1,0 +1,45 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ include "codedx-tool-orchestration.fullname" . | quote }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "codedx-tool-orchestration.name" . | quote }}
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+  template:
+    metadata:
+      labels:
+        {{- include "codedx-tool-orchestration.commonLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: tool-service
+        image: {{ .Values.toolServiceImageName }}
+        command: ["/opt/codedx/service/bin/service"]
+        args: ["-adminApiKeyPath", "/opt/codedx/service/secrets/adminApiKey",
+          "-codeDxBaseUrl", "{{ .Values.codeDxBaseUrl }}",
+          "-kubeconfigPath", "",
+          "-kubernetesNamespace", "{{ .Release.Namespace }}",
+          "-logFile", "/opt/codedx/service/logs/service.log",
+          "-minioAdminPasswordPath", "/opt/codedx/service/secrets/minioAdminPassword",
+          "-minioAdminUsernamePath", "/opt/codedx/service/secrets/minioAdminUsername",
+          "-minioClientPath", "/opt/codedx/service/tools/mc",
+          "-minioClusterEndpoint", "{{ template "minio.ref.fullname" . }}:{{.Values.minio.service.port}}",
+          "-minioEndpoint", "{{ template "minio.ref.fullname" . }}:{{.Values.minio.service.port}}",
+          "-port", "{{ .Values.toolServicePort }}",
+          "-workDir", "/opt/codedx/service/work"]
+        volumeMounts:
+        - name: tool-service-secret-volume
+          mountPath: "/opt/codedx/service/secrets"
+          readOnly: true
+        ports:
+        - containerPort: 3333
+          name: http
+      volumes:
+      - name: tool-service-secret-volume
+        secret:
+          secretName: tool-service-secret

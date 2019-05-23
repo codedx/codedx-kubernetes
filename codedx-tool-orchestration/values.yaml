@@ -1,0 +1,22 @@
+# Default values for codedx-tool-orchestration.
+
+codeDxBaseUrl: http://host.docker.internal:8080
+
+toolServiceImageName: codedx-tool-service:v1.0
+toolServicePort: 3333
+toolServiceApiKey: cc224a8f-a307-416e-a6dd-769600ac8e2c
+
+# NOTE: These are setting attributes for the `argo` dependency
+argo:
+  images:
+    tag: v2.3.0
+  ui:
+    enabled: false
+
+# NOTE: These are setting attributes for the `minio` dependency
+minio:
+  accessKey: "231a5aab-7ffc-49ff-a954-83f97ee416a4"
+  secretKey: "89968457-bf3a-4716-9863-b99e04b0e4ee"
+  service:
+    type: LoadBalancer
+    port: 9000

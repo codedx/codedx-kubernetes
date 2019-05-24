@@ -8,7 +8,7 @@ metadata:
   namespace: default
 type: Opaque
 data:
-  codedx.ldap.props: |-
+  codedx.ldap.creds.props: |-
     # Modify these values and replace this with its base64-encoded version
     auth.ldap.url = ldap://my.ldap.com
     auth.ldap.systemUsername = admin

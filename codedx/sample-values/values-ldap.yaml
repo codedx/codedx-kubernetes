@@ -18,5 +18,11 @@ networkPolicy:
 # in case an LDAP system user and password are needed.
 codedxProps:
   extra:
-  - secretName: codedx-ldap
+  - type: secret
+    name: codedx-ldap
+    key: codedx.ldap.creds.props
+  # Add some less-sensitive config in the chart itself for easier configuration
+  - type: values
     key: codedx.ldap.props
+    values:
+    - "auth.ldap.userDnTemplate = cn={0},ou=admin,dc=codedx,dc=com"

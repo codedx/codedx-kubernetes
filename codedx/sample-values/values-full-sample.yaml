@@ -16,7 +16,8 @@ codedxProps:
     createSecret: false
     secretName: codedx-secret
   extra:
-  - secretName: codedx-ldap
+  - type: secret
+    name: codedx-ldap
     key: codedx.ldap.props
 
 cacertsFile: custom-cacerts

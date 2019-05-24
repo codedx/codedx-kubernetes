@@ -82,7 +82,7 @@ spec:
         - mountPath: "/opt/codedx/{{ .key }}"
           name: "codedx-extra-props-{{ .key }}"
           subPath: {{ .key | quote }}
-        {{- end }}
+        {{ end }}
         # Command args to have Code Dx load extra props files
         - mountPath: /usr/local/tomcat/bin/setenv.sh
           name: codedx-props-env
@@ -129,13 +129,21 @@ spec:
           items:
           - key: codedx.mariadb.props
             path: {{ include "codedx.mariadb.props.name" . | quote }}
-      {{ range .Values.codedxProps.extra -}}
+      {{- range .Values.codedxProps.extra }}
       - name: "codedx-extra-props-{{ .key }}"
+        {{- if eq (required "codedxProps.extra entries must have a 'type' defined!" .type) "secret" }}
         secret:
-          secretName: {{ .secretName | quote }}
+          secretName: {{ .name | quote }}
           items:
           - key: {{ .key | quote }}
             path: {{ .key | quote }}
+        {{- else if eq .type "values" }}
+        configMap:
+          name: {{ include "codedx.props.configMapName" $ | quote }}
+          items:
+          - key: {{ .key | quote }}
+            path: {{ .key | quote }}
+        {{- end -}}
       {{- end }}
       {{ if $hasLicense -}}
       - name: codedx-license

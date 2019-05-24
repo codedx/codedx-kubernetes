@@ -27,4 +27,13 @@ data:
     {{- .Files.Get .Values.loggingConfigFile | nindent 4 -}}
   {{- end -}}
 
+  {{ range .Values.codedxProps.extra }}
+  {{ if eq (required "codedxProps.extra entries must have a 'type' defined!" .type) "values" -}}
+  {{ .key }}: |-
+    {{- range .values -}}
+    {{- . | nindent 4 }}
+    {{- end -}}
+  {{- end -}}
+  {{- end -}}
+
 {{- end -}}

@@ -116,6 +116,16 @@ Determine the name of the configmap to create and/or use for holding the regular
 {{- end -}}
 {{- end -}}
 
+{{- define "codedx.props.config.usesDefaultExtra" -}}
+{{- $usesDefault := "false" -}}
+{{- range .Values.codedxProps.extra -}}
+{{- if and (eq .type "values") (not .name) -}}
+{{- $usesDefault := "true" -}}
+{{- end -}}
+{{- end -}}
+{{- eq $usesDefault "true" -}}
+{{- end -}}
+
 {{/*
 Create the name of the service account to use for Code Dx.
 */}}

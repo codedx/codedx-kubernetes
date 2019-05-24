@@ -252,10 +252,10 @@ serviceType:
 #
 #
 #   Code Dx can accept multiple "props" files at startup. This feature is used to store common
-# properties in a ConfigMap (generated from the value at 'codedx.props.file'), and store more
+# properties in a ConfigMap (generated from the value at 'codedxProps.file'), and store more
 # sensitive information as secrets.
 #
-# The file retrieved from the value `codedx.props.file` will be created as a ConfigMap and mounted
+# The file retrieved from the value `codedxProps.file` will be created as a ConfigMap and mounted
 #   at /opt/codedx/codedx.props.
 #
 # MariaDB creds provided to this chart will be stored in a secret, containing a "props" file
@@ -268,7 +268,7 @@ codedxProps:
   # Specify 'codedx.props.file' to create a config-map for Code Dx based on the given 'codedx.props' file
   file: codedx.props
 
-  # Specify 'codedx.props.configMap' to use an existing config-map for Code Dx.
+  # Specify 'codedxProps.configMap' to use an existing config-map for Code Dx.
   # This config-map MUST contain:
   # - a key named 'codedx.props' with the contents of the properties to use. Check the provided
   #   'codedx.props' file included with this chart and use the same 'swa.db.*' values to ensure that
@@ -294,7 +294,7 @@ codedxProps:
   # swa.db.user = root
   # swa.db.password = my-mariadb-password
   #
-  # (Note that the URL for the MariaDB instance is assigned via the `codedx.props` configmap, not this secret.)
+  # (Note that the URL for the MariaDB instance is assigned via the `codedxProps` configmap, not this secret.)
   #
   dbconnection:
 
@@ -311,20 +311,38 @@ codedxProps:
     #
     annotations: {}
 
-  # Use codedxProps.extra to specify extra secrets to be mounted in Code Dx as props files. Use this for other
-  # sensitive info, ie LDAP config. The secrets will be mounted as /opt/codedx/<key-name> and given to Code Dx. Make
-  # sure the name doesn't conflict with other prop file names. ("codedx.props" and "codedx.mariadb.props"
-  # are reserved.)
+  # Use codedxProps.extra to specify extra codedx.props values that can be included either from a pre-existing
+  # secret or from values in the given entry. Use this for sensitive info, ie LDAP config, or for convenience
+  # when setting some non-sensitive property without adding a new props file. Secrets and configmaps will be
+  # mounted as /opt/codedx/<key-name> and given to Code Dx. Make sure the name doesn't conflict with other prop
+  # file names. ("codedx.props" and "codedx.mariadb.props" are reserved.)
   #
   extra: []
-  #   # codedxProps.extra[].secretName specifies the name of an existing secret to mount.
-  #   #
-  # - secretName: my-ldap-secret
 
-  #   # codedxProps.extra[].key specifies the name of the key to be mounted from the secret.
-  #   # The file mounted will have the same name as the key here.
-  #   #
+  # codedxProps.extra[].type can be assigned to either "secret" or "values". "secret" will load all keys from
+  # a pre-existing secret, while "values" will add a configmap entry with the given properties.
+  #
+
+  # codedxProps.extra[].name is used with "type=secret", and is the name of the pre-existing secret
+  # that will be mounted and loaded into Code Dx.
+  #
+
+  # codedxProps.extra[].key determines the key in the configmap or secret to mount as a props file.
+  #
+
+  # codedxProps.extra[].values is used with "type=values", and is a list of settings that will be placed
+  # in the generated props file verbatim.
+  #
+  
+  # - type: secret
+  #   name: my-ldap-secret
   #   key: ldap-props
+
+  # - type: values
+  #   key: my-other-props
+  #   values:
+  #   - "some.prop = some value"
+  #   - "other.prop = other value"
 
 
 license: {}

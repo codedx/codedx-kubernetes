@@ -27,6 +27,11 @@ spec:
         command: ["/opt/codedx/service/bin/service"]
         args: ["-adminApiKeyPath", "/opt/codedx/service/secrets/adminApiKey",
           "-codeDxBaseUrl", "{{ .Values.codeDxBaseUrl }}",
+          "-imageNameCodeDxTools", "{{ .Values.imageNameCodeDxTools }}",
+          "-imageNameNewAnalysis", "{{ .Values.imageNameNewAnalysis }}",
+          "-imageNameSendResults", "{{ .Values.imageNameSendResults }}",
+          "-imageNameZap", "{{ .Values.imageNameZap }}",
+          "-imagePullSecretKey", "{{ .Values.imagePullSecretKey }}",
           "-kubeconfigPath", "",
           "-kubernetesNamespace", "{{ .Release.Namespace }}",
           "-logFile", "/opt/codedx/service/logs/service.log",

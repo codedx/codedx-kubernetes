@@ -2,6 +2,12 @@
 
 codeDxBaseUrl: http://host.docker.internal:8080
 
+imageNameCodeDxTools: "codedx-tools:v1.0"
+imageNameNewAnalysis: "codedx-newanalysis:v1.0"
+imageNameSendResults: "codedx-results:v1.0"
+imageNameZap: "codedx-zaprunner:v1.0"
+imagePullSecretKey: ""
+
 toolServiceImageName: codedx-tool-service:v1.0
 toolServiceImagePullSecrets: []
 toolServicePort: 3333

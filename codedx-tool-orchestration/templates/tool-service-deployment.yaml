@@ -28,6 +28,7 @@ spec:
         args: ["-adminApiKeyPath", "/opt/codedx/service/secrets/adminApiKey",
           "-codeDxBaseUrl", "{{ .Values.codeDxBaseUrl }}",
           "-imageNameCodeDxTools", "{{ .Values.imageNameCodeDxTools }}",
+          "-imageNameCodeDxToolsMono", "{{ .Values.imageNameCodeDxToolsMono }}",
           "-imageNameNewAnalysis", "{{ .Values.imageNameNewAnalysis }}",
           "-imageNameSendResults", "{{ .Values.imageNameSendResults }}",
           "-imageNameZap", "{{ .Values.imageNameZap }}",

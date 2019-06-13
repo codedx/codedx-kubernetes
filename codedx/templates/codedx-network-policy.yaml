@@ -49,14 +49,12 @@ spec:
   # HTTPS
   - ports:
     - port: 443
-  {{ end -}}
-{{- if .Values.networkPolicy.codedx.ingressSelectors }}
+  {{ end }}
   ingress:
-  - from:
+  - ports:
+    - port: 8080
+{{- if .Values.networkPolicy.codedx.ingressSelectors }}
+    from:
 {{ toYaml .Values.networkPolicy.codedx.ingressSelectors | indent 4 -}}
-    ports:
-    - port: 9090
-{{- else }}
-  ingress: []
 {{- end -}}
 {{- end -}}

@@ -1,3 +1,4 @@
+{{- if .Values.networkPolicy.enabled -}}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -10,12 +11,31 @@ spec:
     matchLabels:
       codedx.com-instance: {{ .Release.Name | quote }}
   egress:
+  - ports:
+    - port: {{ .Values.kubeApiPort }}
+      protocol: TCP
+    {{- if .Values.networkPolicy.apiServerSelectors }}
+    to:
+{{ toYaml .Values.networkPolicy.apiServerSelectors | indent 4 }}
+    {{- end }}
+  - ports:
+    - port: 53
+      protocol: TCP
+    - port: 53
+      protocol: UDP
   - to:
     - podSelector:
         matchLabels:
 {{ toYaml .Values.networkPolicy.codeDxLabels | indent 10 }}
     ports:
     - port: 8080
+  - to:
+    - podSelector:
+        matchLabels:
+          app: {{ include "minio.ref.name" . }}
+          release: {{ .Release.Name }}
+    ports:
+    - port: 9000
   ingress:
   - from:
     - podSelector:
@@ -23,3 +43,33 @@ spec:
 {{ toYaml .Values.networkPolicy.codeDxLabels | indent 10 }}
     ports:
     - port: 3333
+---
+{{ end }}
+{{ if .Values.networkPolicy.argoEnabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  {{- $fullName := printf "%s-%s" (include "codedx-tool-orchestration.fullname" .) "argo" }}
+  {{- $safeName := (include "sanitize" $fullName) }}
+  name: {{ $safeName | quote }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      # From argo deployment spec:
+      # https://github.com/argoproj/argo-helm/blob/master/charts/argo/templates/workflow-controller-deployment.yaml#L14
+      app: '{{ .Release.Name }}-{{ .Values.argo.controller.name }}'
+  egress:
+  - ports:
+    - port: {{ .Values.kubeApiPort }}
+      protocol: TCP
+    {{- if .Values.networkPolicy.apiServerSelectors }}
+    from:
+{{ toYaml .Values.networkPolicy.apiServerSelectors }}
+    {{- end }}
+  policyTypes:
+  - Ingress
+  - Egress
+{{- end -}}

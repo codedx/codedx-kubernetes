@@ -23,6 +23,15 @@ logImageName: busybox
 networkPolicy:
   enabled: true
   codeDxLabels: {}
+  argoEnabled: true
+  # Tool service needs access to k8s api server on port 443, which needs to be
+  # selected by IP. By default all egress is allowed on port 443; this
+  # property selects targets on that port. This also affects the argo
+  # network policy (if enabled) since it manages workflows running on the cluster.
+  #
+  apiServerSelectors: []
+  # Port for k8s API server (usually 443 or 8443)
+  kubeApiPort: 443
 
 serviceAccount:
   create: true

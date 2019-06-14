@@ -56,7 +56,11 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{- define "codedx-tool-orchestration.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create -}}
 {{- default (include "codedx-tool-orchestration.fullname" .) .Values.serviceAccount.name -}}
+{{- else -}}
+{{- default "default" .Values.serviceAccount.name -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
@@ -74,4 +78,8 @@ Duplicates of a Minio template helper so we can reference Minio's service name
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 {{- end -}}
+{{- end -}}
+
+{{- define "minio.ref.name" -}}
+{{- default "minio" .Values.minio.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}

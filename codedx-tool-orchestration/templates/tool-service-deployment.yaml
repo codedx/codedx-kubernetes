@@ -5,16 +5,20 @@ metadata:
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
 spec:
   replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "codedx-tool-orchestration.name" . | quote }}
       app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/component: frontend
   template:
     metadata:
       labels:
         {{- include "codedx-tool-orchestration.commonLabels" . | nindent 8 }}
+        app.kubernetes.io/component: frontend
+        codedx.com-instance: {{ .Release.Name | quote }}
     spec:
       {{ if .Values.toolServiceImagePullSecrets -}}
       imagePullSecrets: {{ toYaml .Values.toolServiceImagePullSecrets | nindent 6 -}}

@@ -101,8 +101,9 @@ podSecurityPolicy:
 # ref: https://kubernetes.io/docs/concepts/services-networking/network-policies/
 #
 networkPolicy:
-  # A NetworkPolicy for Code Dx will limit its egress to MariaDB instances, and prevent
-  # ingress from other pods.
+  # A NetworkPolicy for Code Dx will limit its egress to MariaDB instances, and allow
+  # ingress from any pod on port 8080. (This is implicitly applied to the "codedxTomcatPort"
+  # exposed by the generated k8s service.)
   #
   codedx:
 
@@ -119,8 +120,23 @@ networkPolicy:
     http: false
     https: false
 
+    # This flag will create an egress rule from Code Dx to a Tool Orchestration Service on port 3333,
+    # and create an ingress rule to Code Dx on port 8080. If no selector is set via toolServiceSelectors,
+    # this will allow *all* egress from the Code Dx pod on port 3333 and allow *all* ingress to the
+    # Code Dx pod on port 8080.
+    #
+    toolService: false
+
+    # This flag is used to specify the egress target for Code Dx on port 3333, enabling connection
+    # to a Tool Orchestration Service. This also creates an ingress rule for Code Dx on port 8080,
+    # enabling connections from a Tool Orchestration service. If the toolService flag is "false", this
+    # has no effect.
+    # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.11/#networkpolicypeer-v1-networking-k8s-io
+    #
+    toolServiceSelectors: []
+
     # networkPolicy.codedx.ingressSelectors is an optional list of selectors to attach to Code Dx
-    # ingress rules. Pods matched here will be allowed to connect to Code Dx over HTTP (port 9090).
+    # ingress rules. Pods matched here will be allowed to connect to Code Dx over HTTP (port 8080).
     # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.11/#networkpolicypeer-v1-networking-k8s-io
     #
     ingressSelectors: []

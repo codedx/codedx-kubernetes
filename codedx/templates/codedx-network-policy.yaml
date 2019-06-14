@@ -50,11 +50,28 @@ spec:
   - ports:
     - port: 443
   {{ end }}
+  {{- if .Values.networkPolicy.codedx.toolService }}
+  # Tool orchestration service
+  - ports:
+    - port: 3333
+    {{- if .Values.networkPolicy.codedx.toolServiceSelectors }}
+    to:
+{{ toYaml .Values.networkPolicy.codedx.toolServiceSelectors | indent 4 -}}
+    {{- end }}
+  {{- end }}
+  {{- /* Only create ingress rules if there are explicitly selectors or if tool service is enabled */ -}}
+  {{- if or .Values.networkPolicy.codedx.ingressSelectors .Values.networkPolicy.codedx.toolService }}
   ingress:
   - ports:
     - port: 8080
-{{- if .Values.networkPolicy.codedx.ingressSelectors }}
+    {{- if or .Values.networkPolicy.codedx.ingressSelectors .Values.networkPolicy.codedx.toolServiceSelectors }}
     from:
+      {{- if .Values.networkPolicy.codedx.ingressSelectors }}
 {{ toYaml .Values.networkPolicy.codedx.ingressSelectors | indent 4 -}}
-{{- end -}}
+      {{ end -}}
+      {{- if .Values.networkPolicy.codedx.toolServiceSelectors }}
+{{ toYaml .Values.networkPolicy.codedx.toolServiceSelectors | indent 4 -}}
+      {{- end -}}
+    {{- end -}}
+  {{ end -}}
 {{- end -}}

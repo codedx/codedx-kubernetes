@@ -14,6 +14,13 @@ toolServiceImagePullSecrets: []
 toolServicePort: 3333
 toolServiceApiKey: cc224a8f-a307-416e-a6dd-769600ac8e2c
 
+networkPolicy:
+  enabled: true
+  codeDxLabels:
+    app.kubernetes.io/instance: codedx
+    app.kubernetes.io/part-of: codedx
+    codedx.com-instance: codedx
+
 # NOTE: These are setting attributes for the `argo` dependency
 argo:
   images:

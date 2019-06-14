@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "codedx-tool-orchestration.fullname" . | quote }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      codedx.com-instance: {{ .Release.Name | quote }}
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+{{ toYaml .Values.networkPolicy.codeDxLabels | indent 10 }}
+    ports:
+    - port: 8080
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+{{ toYaml .Values.networkPolicy.codeDxLabels | indent 10 }}
+    ports:
+    - port: 3333

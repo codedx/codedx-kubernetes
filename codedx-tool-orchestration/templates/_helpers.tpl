@@ -50,6 +50,15 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 {{- end -}}
 
+{{- define "codedx-tool-orchestration.rbac.psp.name" -}}
+{{- $fullName := default (printf "%s-%s" (include "codedx-tool-orchestration.fullname" .) "psp") .Values.podSecurityPolicy.name -}}
+{{- include "sanitize" $fullName -}}
+{{- end -}}
+
+{{- define "codedx-tool-orchestration.serviceAccountName" -}}
+{{- default (include "codedx-tool-orchestration.fullname" .) .Values.serviceAccount.name -}}
+{{- end -}}
+
 {{/*
 Duplicates of a Minio template helper so we can reference Minio's service name
 */}}

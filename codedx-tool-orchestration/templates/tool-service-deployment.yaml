@@ -47,6 +47,9 @@ spec:
           "-minioEndpoint", "{{ template "minio.ref.fullname" . }}:{{.Values.minio.service.port}}",
           "-port", "{{ .Values.toolServicePort }}",
           "-workDir", "/opt/codedx/service/work"]
+        securityContext:
+          # ID of "service" account in tool orchestration image
+          runAsUser: 1000
         volumeMounts:
         - name: tool-service-secret-volume
           mountPath: "/opt/codedx/service/secrets"
@@ -58,8 +61,11 @@ spec:
         - containerPort: 3333
           name: http
       - name: tool-service-log
-        image: busybox
+        image: {{ .Values.logImageName }}
         args: [/bin/sh, -c, 'tail -n+1 -f /var/log/service/service.log']
+        securityContext:
+          # match ID of service account so we can read logs
+          runAsUser: 1000
         volumeMounts:
         - name: logs
           mountPath: /var/log/service

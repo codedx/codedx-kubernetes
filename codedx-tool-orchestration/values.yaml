@@ -14,12 +14,27 @@ toolServiceImagePullSecrets: []
 toolServicePort: 3333
 toolServiceApiKey: cc224a8f-a307-416e-a6dd-769600ac8e2c
 
+logImageName: busybox
+
+# NOTE: Enabling this will not generate a network policy for
+# minio - see minio chart docs.
+# ref: https://github.com/helm/charts/tree/master/stable/minio#networkpolicy
+#
 networkPolicy:
   enabled: true
-  codeDxLabels:
-    app.kubernetes.io/instance: codedx
-    app.kubernetes.io/part-of: codedx
-    codedx.com-instance: codedx
+  codeDxLabels: {}
+
+serviceAccount:
+  create: true
+  # (optional)
+  name:
+
+podSecurityPolicy:
+  create: true
+  # (optional)
+  name:
+  bind: true
+  annotations: {}
 
 # NOTE: These are setting attributes for the `argo` dependency
 argo:

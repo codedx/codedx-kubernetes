@@ -1,6 +1,7 @@
-{{- $saName := (include "codedx-tool-orchestration.name" .) | quote -}}
+{{- $saName := (include "codedx-tool-orchestration.serviceAccountName" .) | quote -}}
 {{- $rName := (printf "%s-%s" (include "codedx-tool-orchestration.name" .) "role") | quote -}}
 {{- $rbName := (printf "%s-%s" (include "codedx-tool-orchestration.name" .) "binding") | quote -}}
+{{- if .Values.serviceAccount.create -}}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -9,6 +10,7 @@ metadata:
   labels:
     {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
 ---
+{{ end -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -23,6 +25,13 @@ rules:
 - apiGroups: ["argoproj.io"]
   resources: ["workflows"]
   verbs: ["get", "list", "watch", "create", "delete"]
+{{- if .Values.podSecurityPolicy.bind }}
+- apiGroups: ["policy"]
+  resources: ["podsecuritypolicies"]
+  verbs: ["use"]
+  resourceNames:
+  - {{ include "codedx-tool-orchestration.rbac.psp.name" . | quote }}
+{{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding

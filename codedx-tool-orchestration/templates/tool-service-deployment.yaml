@@ -51,10 +51,22 @@ spec:
         - name: tool-service-secret-volume
           mountPath: "/opt/codedx/service/secrets"
           readOnly: true
+        - name: logs
+          mountPath: "/opt/codedx/service/logs"
+          readOnly: false
         ports:
         - containerPort: 3333
           name: http
+      - name: tool-service-log
+        image: busybox
+        args: [/bin/sh, -c, 'tail -n+1 -f /var/log/service/service.log']
+        volumeMounts:
+        - name: logs
+          mountPath: /var/log/service
+          readOnly: true
       volumes:
       - name: tool-service-secret-volume
         secret:
           secretName: tool-service-secret
+      - name: logs
+        emptyDir: {}

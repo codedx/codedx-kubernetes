@@ -24,7 +24,7 @@ codedxTomcatImage: "<new-codedx-image>"
 helm upgrade {my-codedx} codedx/codedx --set codedxTomcatImage=codedx/codedx-tomcat:vX.Y.Z
 ```
 
-- `<new-codedx-image>`: The full name of a Code Dx image [from docker](https://hub.docker.com/r/codedx/codedx-tomcat/tags), ie `codedx/codedx-tomcat:v4.1.0`
+- `<new-codedx-image>`: The full name of a Code Dx image [from docker](https://hub.docker.com/r/codedx/codedx-tomcat/tags), ie `codedx/codedx-tomcat:v4.1.1`
 - `{my-codedx}`: The name of the Code Dx installation, which is set when installing Code Dx via `helm install`. If installed via `helm install --name my-install ...`, the installation name would be `my-install`. If no name was specified, it will default to `codedx`.
 
 **Be sure to include any additional values used in previous upgrades or installations.** If you passed a custom `values.yaml` file via `-f my-values.yaml`, make sure to include this file during the upgrade call. Otherwise, helm may modify Code Dx in unintended ways.

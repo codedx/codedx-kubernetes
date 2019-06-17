@@ -12,7 +12,7 @@ spec:
       codedx.com-instance: {{ .Release.Name | quote }}
   egress:
   - ports:
-    - port: {{ .Values.kubeApiPort }}
+    - port: {{ required "kubeapi-server port must be defined" .Values.networkPolicy.kubeApiPort }}
       protocol: TCP
     {{- if .Values.networkPolicy.apiServerSelectors }}
     to:

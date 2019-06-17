@@ -30,12 +30,12 @@ spec:
         image: {{ .Values.toolServiceImageName }}
         command: ["/opt/codedx/service/bin/service"]
         args: ["-adminApiKeyPath", "/opt/codedx/service/secrets/adminApiKey",
-          "-codeDxBaseUrl", "{{ .Values.codeDxBaseUrl }}",
-          "-imageNameCodeDxTools", "{{ .Values.imageNameCodeDxTools }}",
-          "-imageNameCodeDxToolsMono", "{{ .Values.imageNameCodeDxToolsMono }}",
-          "-imageNameNewAnalysis", "{{ .Values.imageNameNewAnalysis }}",
-          "-imageNameSendResults", "{{ .Values.imageNameSendResults }}",
-          "-imageNameZap", "{{ .Values.imageNameZap }}",
+          "-codeDxBaseUrl", "{{ required "codeDxBaseUrl is required" .Values.codeDxBaseUrl }}",
+          "-imageNameCodeDxTools", "{{ required "imageNameCodeDxTools is required" .Values.imageNameCodeDxTools }}",
+          "-imageNameCodeDxToolsMono", "{{ required "imageNameCodeDxToolsMono is required" .Values.imageNameCodeDxToolsMono }}",
+          "-imageNameNewAnalysis", "{{ required "imageNameNewAnalysis is required" .Values.imageNameNewAnalysis }}",
+          "-imageNameSendResults", "{{  required "imageNameSendResults is required".Values.imageNameSendResults }}",
+          "-imageNameZap", "{{ required "imageNameZap is required" .Values.imageNameZap }}",
           "-imagePullSecretKey", "{{ .Values.imagePullSecretKey }}",
           "-kubeconfigPath", "",
           "-kubernetesNamespace", "{{ .Release.Namespace }}",
@@ -45,7 +45,7 @@ spec:
           "-minioClientPath", "/opt/codedx/service/tools/mc",
           "-minioClusterEndpoint", "{{ template "minio.ref.fullname" . }}:{{.Values.minio.service.port}}",
           "-minioEndpoint", "{{ template "minio.ref.fullname" . }}:{{.Values.minio.service.port}}",
-          "-port", "{{ .Values.toolServicePort }}",
+          "-port", "{{ required "toolServicePort is required" .Values.toolServicePort }}",
           "-workDir", "/opt/codedx/service/work"]
         securityContext:
           # ID of "service" account in tool orchestration image
@@ -61,7 +61,7 @@ spec:
         - containerPort: 3333
           name: http
       - name: tool-service-log
-        image: {{ .Values.logImageName }}
+        image: {{ required "logImageName is required" .Values.logImageName }}
         args: [/bin/sh, -c, 'tail -n+1 -f /var/log/service/service.log']
         securityContext:
           # match ID of service account so we can read logs

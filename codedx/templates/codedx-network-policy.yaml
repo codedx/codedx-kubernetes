@@ -64,14 +64,11 @@ spec:
   ingress:
   - ports:
     - port: 8080
-    {{- if or .Values.networkPolicy.codedx.ingressSelectors .Values.networkPolicy.codedx.toolServiceSelectors }}
+    {{- if .Values.networkPolicy.codedx.ingressSelectors }}
     from:
       {{- if .Values.networkPolicy.codedx.ingressSelectors }}
 {{ toYaml .Values.networkPolicy.codedx.ingressSelectors | indent 4 -}}
       {{ end -}}
-      {{- if .Values.networkPolicy.codedx.toolServiceSelectors }}
-{{ toYaml .Values.networkPolicy.codedx.toolServiceSelectors | indent 4 -}}
-      {{- end -}}
     {{- end -}}
   {{ end -}}
 {{- end -}}

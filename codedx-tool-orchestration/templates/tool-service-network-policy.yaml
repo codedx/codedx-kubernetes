@@ -63,7 +63,7 @@ spec:
       app: '{{ .Release.Name }}-{{ .Values.argo.controller.name }}'
   egress:
   - ports:
-    - port: {{ .Values.kubeApiPort }}
+    - port: {{ required "kubeapi-server port must be defined" .Values.networkPolicy.kubeApiPort }}
       protocol: TCP
     {{- if .Values.networkPolicy.apiServerSelectors }}
     from:

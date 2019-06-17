@@ -128,9 +128,7 @@ networkPolicy:
     toolService: false
 
     # This flag is used to specify the egress target for Code Dx on port 3333, enabling connection
-    # to a Tool Orchestration Service. This also creates an ingress rule for Code Dx on port 8080,
-    # enabling connections from a Tool Orchestration service. If the toolService flag is "false", this
-    # has no effect.
+    # to a Tool Orchestration Service. If the toolService flag is "false", this has no effect.
     # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.11/#networkpolicypeer-v1-networking-k8s-io
     #
     toolServiceSelectors: []

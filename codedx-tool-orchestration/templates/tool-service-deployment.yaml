@@ -34,7 +34,7 @@ spec:
           "-imageNameCodeDxTools", "{{ required "imageNameCodeDxTools is required" .Values.imageNameCodeDxTools }}",
           "-imageNameCodeDxToolsMono", "{{ required "imageNameCodeDxToolsMono is required" .Values.imageNameCodeDxToolsMono }}",
           "-imageNameNewAnalysis", "{{ required "imageNameNewAnalysis is required" .Values.imageNameNewAnalysis }}",
-          "-imageNameSendResults", "{{  required "imageNameSendResults is required".Values.imageNameSendResults }}",
+          "-imageNameSendResults", "{{ required "imageNameSendResults is required" .Values.imageNameSendResults }}",
           "-imageNameZap", "{{ required "imageNameZap is required" .Values.imageNameZap }}",
           "-imagePullSecretKey", "{{ .Values.imagePullSecretKey }}",
           "-kubeconfigPath", "",
@@ -46,7 +46,8 @@ spec:
           "-minioClusterEndpoint", "{{ template "minio.ref.fullname" . }}:{{.Values.minio.service.port}}",
           "-minioEndpoint", "{{ template "minio.ref.fullname" . }}:{{.Values.minio.service.port}}",
           "-port", "{{ required "toolServicePort is required" .Values.toolServicePort }}",
-          "-workDir", "/opt/codedx/service/work"]
+          "-workDir", "/opt/codedx/service/work",
+          "-workflowRoleNames", {{ include "codedx-tool-orchestration.workflow.role.name" . }}]
         securityContext:
           # ID of "service" account in tool orchestration image
           runAsUser: 1000

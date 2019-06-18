@@ -24,6 +24,11 @@ networkPolicy:
   enabled: true
   codeDxLabels: {}
   argoEnabled: true
+  # Enables a network policy specific for the tool service (currently just
+  # denying minio egress, but will limit ingress to tool service and
+  # workflow pods in the future.)
+  #
+  minioEnabled: true
   # Tool service needs access to k8s api server on port 443, which needs to be
   # selected by IP. By default all egress is allowed on port 443; this
   # property selects targets on that port. This also affects the argo

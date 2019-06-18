@@ -72,4 +72,22 @@ spec:
   policyTypes:
   - Ingress
   - Egress
+---
+{{- end }}
+{{ if .Values.networkPolicy.minioEnabled -}}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  {{- $fullName := printf "%s-%s" (include "codedx-tool-orchestration.fullname" .) "minio" }}
+  {{- $safeName := (include "sanitize" $fullName) }}
+  name: {{ $safeName | quote }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app: minio
+      release: {{ .Release.Name }}
+  policyTypes: ["Egress"]
 {{- end -}}

@@ -67,6 +67,10 @@ If release name contains chart name it will be used as a full name.
 {{- (printf "%s-%s" (include "codedx-tool-orchestration.name" .) "workflow-role") | quote -}}
 {{- end -}}
 
+{{- define "codedx-tool-orchestration.secretName" -}}
+{{- include "santize" (printf "%s-tool-service-secret" (include "codedx-tool-orchestration.fullname" .)) -}}
+{{- end -}}
+
 {{/*
 Duplicates of a Minio template helper so we can reference Minio's service name
 */}}

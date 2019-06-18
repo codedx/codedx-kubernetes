@@ -61,5 +61,6 @@ spec:
       volumes:
       - name: tool-service-secret-volume
         secret:
-          secretName: tool-service-secret
-
+          secretName: {{ include "codedx-tool-orchestration.secretName" . }}
+      - name: logs
+        emptyDir: {}

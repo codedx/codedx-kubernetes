@@ -68,7 +68,7 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{- define "codedx-tool-orchestration.secretName" -}}
-{{- include "santize" (printf "%s-tool-service-secret" (include "codedx-tool-orchestration.fullname" .)) -}}
+{{- include "sanitize" (printf "%s-tool-service-secret" (include "codedx-tool-orchestration.fullname" .)) -}}
 {{- end -}}
 
 {{/*

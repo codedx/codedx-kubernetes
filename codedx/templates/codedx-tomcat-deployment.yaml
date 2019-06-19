@@ -101,8 +101,8 @@ spec:
         {{- end }}
       initContainers:
         - name: {{ include "dbinit.fullname" . | quote }}
-          image: "ubuntu:18.04"
-          command: ["bash", "-c", "for i in {1..60}; do if (timeout 2 bash -c \"</dev/tcp/{{ .Release.Name }}-mariadb/3306\" echo $?); then echo 'Successfully connected to MariaDB port'; exit 0; else echo 'Retrying database connection...'; sleep 2; fi; done; echo 'MariaDB is unavailable'; exit 1"]
+          image: "codedx/bash-noroot:5.0"
+          command: ["bash", "-c", "for i in {1..60}; do if (timeout -t 2 bash -c \"</dev/tcp/{{ .Release.Name }}-mariadb/3306\" echo $?); then echo 'Successfully connected to MariaDB port'; exit 0; else echo 'Retrying database connection...'; sleep 2; fi; done; echo 'MariaDB is unavailable'; exit 1"]
       restartPolicy: Always
       volumes:
       - name: {{ include "volume.fullname" . | quote }}

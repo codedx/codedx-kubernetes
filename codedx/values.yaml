@@ -113,12 +113,23 @@ networkPolicy:
     create: true
 
     # The flags networkPolicy.codedx.ldap,ldaps,http,https can create egress rules for Code Dx on those ports.
-    # These rules will allow *all* egress from the Code Dx pod on those ports.
+    # These rules will allow *all* egress from the Code Dx pod on those ports. (Note that setting 'http' or
+    # 'https' to 'false' will be ignored if 'dependencyCheck' is set to 'true'.)
     #
     ldap: false
     ldaps: false
     http: false
     https: false
+
+    # This flag indicates whether we can expect Dependency-Check to be used within Code Dx. Dependency-Check
+    # requires access to various websites to download CVE data and package repository data. If 'true',
+    # an egress rule will be created allowing all egress from Code Dx on ports 80 and 443. (The actual
+    # target IPs used by Dependency-Check can vary, so specific whitelisted targets can't be used.)
+    # Setting this flag to 'true' is equivalent to setting 'http' and 'https' to 'true'.
+    #
+    # see: https://jeremylong.github.io/DependencyCheck/data/index.html
+    #
+    dependencyCheck: true
 
     # This flag will create an egress rule from Code Dx to a Tool Orchestration Service on port 3333,
     # and create an ingress rule to Code Dx on port 8080. If no selector is set via toolServiceSelectors,

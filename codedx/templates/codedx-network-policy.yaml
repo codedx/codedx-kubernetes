@@ -40,12 +40,12 @@ spec:
     - port: 3269
       protocol: UDP
   {{ end -}}
-  {{- if .Values.networkPolicy.codedx.http }}
+  {{- if or .Values.networkPolicy.codedx.http .Values.networkPolicy.codedx.dependencyCheck }}
   # HTTP
   - ports:
     - port: 80
   {{ end -}}
-  {{- if .Values.networkPolicy.codedx.https }}
+  {{- if or .Values.networkPolicy.codedx.https .Values.networkPolicy.codedx.dependencyCheck }}
   # HTTPS
   - ports:
     - port: 443

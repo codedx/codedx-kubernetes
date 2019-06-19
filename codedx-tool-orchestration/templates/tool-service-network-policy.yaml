@@ -33,7 +33,7 @@ spec:
     - podSelector:
         matchLabels:
           app: {{ include "minio.ref.name" . }}
-          release: {{ .Release.Name }}
+          release: {{ .Release.Name | quote }}
     ports:
     - port: 9000
   ingress:
@@ -88,6 +88,6 @@ spec:
   podSelector:
     matchLabels:
       app: minio
-      release: {{ .Release.Name }}
+      release: {{ .Release.Name | quote }}
   policyTypes: ["Egress"]
 {{- end -}}

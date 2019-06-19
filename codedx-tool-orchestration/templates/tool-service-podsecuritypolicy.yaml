@@ -3,7 +3,7 @@ apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
   name: {{ include "codedx-tool-orchestration.rbac.psp.tws.name" . | quote }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
   annotations:
@@ -36,7 +36,7 @@ apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
   name: {{ include "codedx-tool-orchestration.rbac.psp.tws-workflows.name" . | quote }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
   annotations:
@@ -64,10 +64,13 @@ spec:
   hostNetwork: false
   hostIPC: false
   hostPID: false
+
   supplementalGroups:
     rule: RunAsAny
   fsGroup:
     rule: RunAsAny
+  
+  # Note - argo wait container 
   runAsUser:
     rule: RunAsAny
   seLinux:
@@ -79,7 +82,7 @@ apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
   name: {{ include "codedx-tool-orchestration.rbac.psp.argo.name" . | quote }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
   annotations:
@@ -112,7 +115,7 @@ apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
   name: {{ include "codedx-tool-orchestration.rbac.psp.minio.name" . | quote }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
   annotations:
@@ -138,5 +141,4 @@ spec:
     rule: RunAsAny
   seLinux:
     rule: RunAsAny
----
 {{- end }}

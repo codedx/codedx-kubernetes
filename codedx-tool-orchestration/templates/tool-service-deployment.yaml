@@ -27,7 +27,7 @@ spec:
       serviceAccount: {{ include "codedx-tool-orchestration.serviceAccountName" . | quote }}
       containers:
       - name: tool-service
-        image: {{ .Values.toolServiceImageName }}
+        image: {{ .Values.toolServiceImageName | quote }}
         command: ["/opt/codedx/service/bin/service"]
         args: ["-adminApiKeyPath", "/opt/codedx/service/secrets/adminApiKey",
           "-codeDxBaseUrl", "{{ required "codeDxBaseUrl is required" .Values.codeDxBaseUrl }}",
@@ -61,6 +61,6 @@ spec:
       volumes:
       - name: tool-service-secret-volume
         secret:
-          secretName: {{ include "codedx-tool-orchestration.secretName" . }}
+          secretName: {{ include "codedx-tool-orchestration.secretName" . | quote }}
       - name: logs
         emptyDir: {}

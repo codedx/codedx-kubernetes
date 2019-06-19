@@ -1,7 +1,4 @@
 dependencies:
-- name: minio
-  version: 2.4.14
-  repository: https://kubernetes-charts.storage.googleapis.com/
 - name: argo
   version: 0.4.0
   repository: https://argoproj.github.io/argo-helm

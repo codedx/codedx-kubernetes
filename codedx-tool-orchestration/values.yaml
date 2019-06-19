@@ -44,11 +44,34 @@ serviceAccount:
   name:
 
 podSecurityPolicy:
-  create: true
-  # (optional)
-  name:
-  bind: true
-  annotations: {}
+  tws:
+    create: true
+    # (optional)
+    name:
+    bind: true
+    annotations: {}
+    
+  # PSP applied to all workflow pods
+  twsWorkflows:
+    create: true
+    # (optional)
+    name: 
+    bind: true
+    annotations: {}
+
+  argo:
+    create: true
+    # (optional)
+    name:
+    bind: true
+    annotations: {}
+  
+  minio:
+    create: true
+    # (optional)
+    name:
+    bind: true
+    annotations: {}
 
 # NOTE: These are setting attributes for the `argo` dependency
 argo:

@@ -1,13 +1,13 @@
-{{- if .Values.podSecurityPolicy.create -}}
+{{- if .Values.podSecurityPolicy.tws.create -}}
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
-  name: {{ include "codedx-tool-orchestration.rbac.psp.name" . | quote }}
+  name: {{ include "codedx-tool-orchestration.rbac.psp.tws.name" . | quote }}
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
   annotations:
-{{- toYaml .Values.podSecurityPolicy.annotations | trim | nindent 4 }}
+{{- toYaml .Values.podSecurityPolicy.tws.annotations | trim | nindent 4 }}
 spec:
   privileged: false
   allowPrivilegeEscalation: false
@@ -29,4 +29,114 @@ spec:
     rule: MustRunAsNonRoot
   seLinux:
     rule: RunAsAny
-{{- end -}}
+---
+{{- end }}
+{{- if .Values.podSecurityPolicy.twsWorkflows.create }}
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: {{ include "codedx-tool-orchestration.rbac.psp.tws-workflows.name" . | quote }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
+  annotations:
+{{- toYaml .Values.podSecurityPolicy.twsWorkflows.annotations | trim | nindent 4 }}
+spec:
+  privileged: false
+
+  # Allow escalation to root user within a workflow container
+  #
+  allowPrivilegeEscalation: true
+
+  # hostPath is an undesirable permission but is required for argo workflows
+  # https://github.com/kubeflow/pipelines/issues/561
+  #
+  volumes: ["secret", "emptyDir", "hostPath", "downwardAPI"]
+
+  # NOTE - This is specifically for docker hosts and will not work with ie containerd.
+  # This may become unnecessary in future versions of argo.
+  # https://github.com/argoproj/argo/issues/1216
+  #
+  allowedHostPaths:
+  - pathPrefix: /var/run/docker.sock
+    readOnly: false
+  
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  supplementalGroups:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+  runAsUser:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+---
+{{- end }}
+{{- if .Values.podSecurityPolicy.argo.create }}
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: {{ include "codedx-tool-orchestration.rbac.psp.argo.name" . | quote }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
+  annotations:
+{{- toYaml .Values.podSecurityPolicy.argo.annotations | trim | nindent 4 }}
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  volumes: ["configMap", "secret"]
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  supplementalGroups:
+    rule: MustRunAs
+    ranges:
+    - min: 1
+      max: 65535
+  fsGroup:
+    rule: MustRunAs
+    ranges:
+    - min: 1
+      max: 65535
+  runAsUser:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+---
+{{ end -}}
+{{- if .Values.podSecurityPolicy.minio.create }}
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: {{ include "codedx-tool-orchestration.rbac.psp.minio.name" . | quote }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
+  annotations:
+{{- toYaml .Values.podSecurityPolicy.minio.annotations | trim | nindent 4 }}
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  volumes: ["persistentVolumeClaim", "secret", "emptyDir"]
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  supplementalGroups:
+    rule: MustRunAs
+    ranges:
+    - min: 1
+      max: 65535
+  fsGroup:
+    rule: MustRunAs
+    ranges:
+    - min: 1
+      max: 65535
+  runAsUser:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+---
+{{- end }}

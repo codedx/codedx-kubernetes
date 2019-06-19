@@ -50,8 +50,23 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 {{- end -}}
 
-{{- define "codedx-tool-orchestration.rbac.psp.name" -}}
-{{- $fullName := default (printf "%s-%s" (include "codedx-tool-orchestration.fullname" .) "psp") .Values.podSecurityPolicy.name -}}
+{{- define "codedx-tool-orchestration.rbac.psp.tws.name" -}}
+{{- $fullName := default (printf "%s-%s" (include "codedx-tool-orchestration.fullname" .) "tws-psp") .Values.podSecurityPolicy.tws.name -}}
+{{- include "sanitize" $fullName -}}
+{{- end -}}
+
+{{- define "codedx-tool-orchestration.rbac.psp.tws-workflows.name" -}}
+{{- $fullName := default (printf "%s-%s" (include "codedx-tool-orchestration.fullname" .) "workflow-psp") .Values.podSecurityPolicy.twsWorkflows.name -}}
+{{- include "sanitize" $fullName -}}
+{{- end -}}
+
+{{- define "codedx-tool-orchestration.rbac.psp.argo.name" -}}
+{{- $fullName := default (printf "%s-%s" (include "codedx-tool-orchestration.fullname" .) "argo-psp") .Values.podSecurityPolicy.argo.name -}}
+{{- include "sanitize" $fullName -}}
+{{- end -}}
+
+{{- define "codedx-tool-orchestration.rbac.psp.minio.name" -}}
+{{- $fullName := default (printf "%s-%s" (include "codedx-tool-orchestration.fullname" .) "minio-psp") .Values.podSecurityPolicy.minio.name -}}
 {{- include "sanitize" $fullName -}}
 {{- end -}}
 
@@ -90,4 +105,12 @@ Duplicates of a Minio template helper so we can reference Minio's service name
 
 {{- define "minio.ref.name" -}}
 {{- default "minio" .Values.minio.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "minio.ref.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create -}}
+{{- default (include "minio.ref.fullname" .) .Values.minio.serviceAccount.name | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- default "default" .Values.minio.serviceAccount.name -}}
+{{- end -}}
 {{- end -}}

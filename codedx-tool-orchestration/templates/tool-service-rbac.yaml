@@ -1,6 +1,6 @@
 {{- $saName := (include "codedx-tool-orchestration.serviceAccountName" .) | quote -}}
-{{- $rName := (printf "%s-%s" (include "codedx-tool-orchestration.name" .) "role") | quote -}}
-{{- $rbName := (printf "%s-%s" (include "codedx-tool-orchestration.name" .) "binding") | quote -}}
+{{- $rName := (printf "%s-%s" (include "codedx-tool-orchestration.fullname" .) "role") | quote -}}
+{{- $rbName := (printf "%s-%s" (include "codedx-tool-orchestration.fullname" .) "binding") | quote -}}
 {{- if .Values.serviceAccount.create -}}
 apiVersion: v1
 kind: ServiceAccount
@@ -35,18 +35,19 @@ rules:
   resources: ["roles"]
   verbs: ["bind"]
   resourceNames: [{{ include "codedx-tool-orchestration.workflow.role.name" . }}]
-{{- if .Values.podSecurityPolicy.bind }}
+{{- if .Values.podSecurityPolicy.tws.bind }}
 - apiGroups: ["policy"]
   resources: ["podsecuritypolicies"]
   verbs: ["use"]
   resourceNames:
-  - {{ include "codedx-tool-orchestration.rbac.psp.name" . | quote }}
+  - {{ include "codedx-tool-orchestration.rbac.psp.tws.name" . | quote }}
 {{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: {{ include "codedx-tool-orchestration.workflow.role.name" . }}
+  namespace: {{ .Release.Namespace | quote }}
 rules:
 - apiGroups: [""]
   resources: ["pods"]
@@ -54,6 +55,13 @@ rules:
 - apiGroups: [""]
   resources: ["pods/log"]
   verbs: ["get", "watch"]
+{{- if .Values.podSecurityPolicy.twsWorkflows.bind }}
+- apiGroups: ["policy"]
+  resources: ["podsecuritypolicies"]
+  verbs: ["use"]
+  resourceNames:
+  - {{ include "codedx-tool-orchestration.rbac.psp.tws-workflows.name" . }}
+{{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -70,3 +78,65 @@ subjects:
 - name: {{ $saName }}
   kind: ServiceAccount
   namespace: {{ .Release.Namespace | quote }}
+{{- if .Values.podSecurityPolicy.argo.bind }}
+---
+{{- $argoRoleName := (include "sanitize" (printf "%s-argo-use-psp" (include "codedx-tool-orchestration.fullname" .))) -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $argoRoleName | quote }}
+  namespace: {{ .Release.Namespace | quote }}
+rules:
+- apiGroups: ["policy"]
+  resources: ["podsecuritypolicies"]
+  verbs: ["use"]
+  resourceNames:
+  - {{ include "codedx-tool-orchestration.rbac.psp.argo.name" . }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ $argoRoleName | quote }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ $argoRoleName | quote }}
+subjects:
+- name: {{ .Values.argo.controller.serviceAccount | quote }}
+  kind: ServiceAccount
+  namespace: {{ .Release.Namespace | quote }}
+{{- end -}}
+{{- if .Values.podSecurityPolicy.minio.bind }}
+---
+{{- $minioRoleName := (include "sanitize" (printf "%s-minio-use-psp" (include "codedx-tool-orchestration.fullname" .))) -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $minioRoleName | quote }}
+  namespace: {{ .Release.Namespace | quote }}
+rules:
+- apiGroups: ["policy"]
+  resources: ["podsecuritypolicies"]
+  verbs: ["use"]
+  resourceNames:
+  - {{ include "codedx-tool-orchestration.rbac.psp.minio.name" . }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ $minioRoleName | quote }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ $minioRoleName | quote }}
+subjects:
+- name: {{ include "minio.ref.serviceAccountName" . }}
+  kind: ServiceAccount
+  namespace: {{ .Release.Namespace | quote }}
+{{- end -}}

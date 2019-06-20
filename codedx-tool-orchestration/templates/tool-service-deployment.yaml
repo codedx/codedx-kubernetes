@@ -46,6 +46,7 @@ spec:
           "-minioClusterEndpoint", "{{ template "minio.ref.fullname" . }}:{{.Values.minio.service.port}}",
           "-minioEndpoint", "{{ template "minio.ref.fullname" . }}:{{.Values.minio.service.port}}",
           "-port", "{{ required "toolServicePort is required" .Values.toolServicePort }}",
+          "-serviceName", "{{ .Release.Name }}",
           "-workDir", "/opt/codedx/service/work",
           "-workflowRoleNames", {{ include "codedx-tool-orchestration.workflow.role.name" . }}]
         securityContext:

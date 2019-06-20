@@ -5,7 +5,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{ $saName | quote }}
+  name: {{ $saName }}
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
@@ -14,7 +14,7 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ $rName | quote }}
+  name: {{ $rName }}
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
@@ -66,16 +66,16 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{ $rbName | quote }}
+  name: {{ $rbName }}
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: {{ $rName | quote }}
+  name: {{ $rName }}
 subjects:
-- name: {{ $saName | quote }}
+- name: {{ $saName }}
   kind: ServiceAccount
   namespace: {{ .Release.Namespace | quote }}
 {{- if .Values.podSecurityPolicy.argo.bind }}

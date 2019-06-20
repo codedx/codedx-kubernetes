@@ -52,6 +52,18 @@ spec:
         securityContext:
           # ID of "service" account in tool orchestration image
           runAsUser: 1000
+        readinessProbe:
+          httpGet:
+            path: /admin/isAlive
+            port: 3333
+          initialDelaySeconds: 3
+          periodSeconds: 1
+          failureThreshold: 60
+        livenessProbe:
+          tcpSocket:
+            port: 3333
+          initialDelaySeconds: 30
+          periodSeconds: 5
         volumeMounts:
         - name: tool-service-secret-volume
           mountPath: "/opt/codedx/service/secrets"

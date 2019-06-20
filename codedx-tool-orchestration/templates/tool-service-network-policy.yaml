@@ -90,4 +90,24 @@ spec:
       app: minio
       release: {{ .Release.Name | quote }}
   policyTypes: ["Egress"]
+---
+{{- end }}
+{{ if .Values.networkPolicy.twsWorkflowsEnabled -}}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  {{- $fullName := printf "%s-%s" (include "codedx-tool-orchestration.fullname" .) "workflow" }}
+  {{- $safeName := (include "sanitize" $fullName) }}
+  name: {{ $safeName | quote }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      workflowOwner: {{ .Release.Name | quote }}
+  egress:
+  - {}
+  policyTypes: ["Ingress", "Egress"]
+---
 {{- end -}}

@@ -7,7 +7,9 @@ metadata:
     {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
     app.kubernetes.io/component: frontend
 spec:
-  replicas: 1
+  strategy:
+{{ toYaml (required "deploymentStrategy is required" .Values.deploymentStrategy) | indent 4 }}
+  replicas: {{ required "numReplicas is required" .Values.numReplicas }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "codedx-tool-orchestration.name" . | quote }}

@@ -14,6 +14,13 @@ toolServiceImagePullSecrets: []
 toolServicePort: 3333
 toolServiceApiKey: cc224a8f-a307-416e-a6dd-769600ac8e2c
 
+# Number of replicas for the tool orchestration sevice.
+#
+numReplicas: 3
+
+deploymentStrategy:
+  type: RollingUpdate
+
 # Network policy options for the tool service and its dependencies
 #
 networkPolicy:

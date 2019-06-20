@@ -79,7 +79,7 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{- define "codedx-tool-orchestration.workflow.role.name" -}}
-{{- (printf "%s-%s" (include "codedx-tool-orchestration.name" .) "workflow-role") | quote -}}
+{{- (printf "%s-%s" (include "codedx-tool-orchestration.name" .) "workflow-role") -}}
 {{- end -}}
 
 {{- define "codedx-tool-orchestration.secretName" -}}

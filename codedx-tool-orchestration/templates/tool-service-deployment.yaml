@@ -51,9 +51,6 @@ spec:
           "-serviceName", "{{ .Release.Name }}",
           "-workDir", "/opt/codedx/service/work",
           "-workflowRoleNames", {{ include "codedx-tool-orchestration.workflow.role.name" . }}]
-        securityContext:
-          # ID of "service" account in tool orchestration image
-          runAsUser: 1000
         readinessProbe:
           httpGet:
             path: /alive

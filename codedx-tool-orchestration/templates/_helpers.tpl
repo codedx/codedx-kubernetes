@@ -25,11 +25,11 @@ Create chart name and version as used by the chart label.
 Reuse common labels in resource for this chart.
 */}}
 {{- define "codedx-tool-orchestration.commonLabels" -}}
-helm.sh/chart: {{ include "codedx-tool-orchestration.chart" . }}
-app.kubernetes.io/name: {{ include "codedx-tool-orchestration.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-app.kubernetes.io/part-of: codedx-tool-orchestration
+chart: {{ include "codedx-tool-orchestration.chart" . }}
+app: {{ include "codedx-tool-orchestration.name" . }}
+release: {{ .Release.Name | quote }}
+managed-by: {{ .Release.Service | quote }}
+part-of: codedx-tool-orchestration
 {{- end -}}
 
 {{/*

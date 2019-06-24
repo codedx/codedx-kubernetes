@@ -5,22 +5,21 @@ metadata:
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
-    app.kubernetes.io/component: frontend
+    component: frontend
 spec:
   strategy:
 {{ toYaml (required "deploymentStrategy is required" .Values.deploymentStrategy) | indent 4 }}
   replicas: {{ required "numReplicas is required" .Values.numReplicas }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "codedx-tool-orchestration.name" . | quote }}
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
-      app.kubernetes.io/component: frontend
+      app: {{ include "codedx-tool-orchestration.name" . | quote }}
+      release: {{ .Release.Name | quote }}
+      component: frontend
   template:
     metadata:
       labels:
         {{- include "codedx-tool-orchestration.commonLabels" . | nindent 8 }}
-        app.kubernetes.io/component: frontend
-        codedx.com-instance: {{ .Release.Name | quote }}
+        component: frontend
     spec:
       {{ if .Values.toolServiceImagePullSecrets -}}
       imagePullSecrets: {{ toYaml .Values.toolServiceImagePullSecrets | nindent 6 -}}

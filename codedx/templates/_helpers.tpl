@@ -25,11 +25,11 @@ Create chart name and version as used by the chart label.
 Reuse common labels in resource for this chart.
 */}}
 {{- define "codedx.commonLabels" -}}
-helm.sh/chart: {{ include "codedx.chart" . }}
-app.kubernetes.io/name: {{ include "codedx.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-app.kubernetes.io/part-of: codedx
+chart: {{ include "codedx.chart" . }}
+app: {{ include "codedx.name" . }}
+release: {{ .Release.Name }}
+managed-by: {{ .Release.Service }}
+part-of: codedx
 {{- end -}}
 
 {{/*

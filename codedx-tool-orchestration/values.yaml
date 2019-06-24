@@ -21,6 +21,10 @@ numReplicas: 3
 deploymentStrategy:
   type: RollingUpdate
 
+service:
+  type: ClusterIP
+  annotations: {}
+
 # Network policy options for the tool service and its dependencies
 #
 networkPolicy:

@@ -9,7 +9,9 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      codedx.com-instance: {{ .Release.Name | quote }}
+      app: {{ include "codedx.name" . }}
+      release: {{ .Release.Name | quote }}
+      component: frontend
   egress:
   - to:
     - podSelector:

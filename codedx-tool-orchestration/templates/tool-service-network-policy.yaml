@@ -9,7 +9,10 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      codedx.com-instance: {{ .Release.Name | quote }}
+      app: {{ include "codedx-tool-orchestration.name" . | quote }}
+      release: {{ .Release.Name | quote }}
+      part-of: codedx-tool-orchestration
+      component: frontend
   egress:
   - ports:
     - port: {{ required "kubeapi-server port must be defined" .Values.networkPolicy.kubeApiPort }}
@@ -61,6 +64,7 @@ spec:
       # From argo deployment spec:
       # https://github.com/argoproj/argo-helm/blob/master/charts/argo/templates/workflow-controller-deployment.yaml#L14
       app: '{{ .Release.Name }}-{{ .Values.argo.controller.name }}'
+      release: {{ .Release.Name | quote }}
   egress:
   - ports:
     - port: {{ required "kubeapi-server port must be defined" .Values.networkPolicy.kubeApiPort }}
@@ -87,7 +91,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app: minio
+      app: {{ include "minio.ref.name" . | quote }}
       release: {{ .Release.Name | quote }}
   policyTypes: ["Egress"]
 ---

@@ -5,13 +5,17 @@ metadata:
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
+  annotations:
+{{ toYaml .Values.service.annotations | indent 4 }}
 spec:
-  type: LoadBalancer
+  type: {{ required "service.type must be defined" .Values.service.type | quote }}
   ports:
   - name: http
     port: {{ required "toolServicePort is required" .Values.toolServicePort }}
     protocol: TCP
     targetPort: 3333
   selector:
-    app.kubernetes.io/name: {{ include "codedx-tool-orchestration.name" . | quote }}
-    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app: {{ include "codedx-tool-orchestration.name" . | quote }}
+    release: {{ .Release.Name | quote }}
+    component: frontend
+    part-of: codedx-tool-orchestration

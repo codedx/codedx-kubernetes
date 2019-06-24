@@ -16,16 +16,14 @@ spec:
     type: Recreate
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "codedx.name" . | quote }}
-      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app: {{ include "codedx.name" . | quote }}
+      release: {{ .Release.Name | quote }}
+      component: frontend
   template:
     metadata:
       labels:
         {{- include "codedx.commonLabels" . | nindent 8 }}
-        # Extra labels so that the network policy can match against this
-        # (Problems have been found with Calico controller when matching
-        # labels contains a slash "/")
-        codedx.com-instance: {{ .Release.Name | quote }}
+        component: frontend
     spec:
       {{ if .Values.codedxTomcatImagePullSecrets -}}
       imagePullSecrets: {{ toYaml .Values.codedxTomcatImagePullSecrets | nindent 6 -}}

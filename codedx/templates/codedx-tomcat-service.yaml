@@ -12,5 +12,6 @@ spec:
     protocol: TCP
     targetPort: 8080
   selector:
-    app.kubernetes.io/name: {{ include "codedx.name" . | quote }}
-    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app: {{ include "codedx.name" . | quote }}
+    release: {{ .Release.Name | quote }}
+    component: frontend

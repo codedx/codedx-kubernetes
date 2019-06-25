@@ -391,10 +391,11 @@ license: {}
 
 
 # Use `loggingConfigFile` to specify a local "logback.xml" file to be inserted into the Code Dx configmap and used,
-# allowing you to customize how Code Dx filters its logs.
+# allowing you to customize how Code Dx filters its logs. The logback.xml file provided with this chart logs to both
+# stdout and to a rolling log file.
 # ref: https://logback.qos.ch/manual/configuration.html
 #
-loggingConfigFile:
+loggingConfigFile: logback.xml
 
 # Specify CPU/memory resource requests/limits for Code Dx on Tomcat.
 # ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/

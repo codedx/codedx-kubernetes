@@ -95,15 +95,9 @@ spec:
   hostIPC: false
   hostPID: false
   supplementalGroups:
-    rule: MustRunAs
-    ranges:
-    - min: 1
-      max: 65535
+    rule: RunAsAny
   fsGroup:
-    rule: MustRunAs
-    ranges:
-    - min: 1
-      max: 65535
+    rule: RunAsAny
   runAsUser:
     rule: RunAsAny
   seLinux:
@@ -128,15 +122,9 @@ spec:
   hostIPC: false
   hostPID: false
   supplementalGroups:
-    rule: MustRunAs
-    ranges:
-    - min: 1
-      max: 65535
+    rule: RunAsAny
   fsGroup:
-    rule: MustRunAs
-    ranges:
-    - min: 1
-      max: 65535
+    rule: RunAsAny
   runAsUser:
     rule: RunAsAny
   seLinux:

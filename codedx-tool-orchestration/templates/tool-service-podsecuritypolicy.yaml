@@ -89,7 +89,7 @@ metadata:
 {{- toYaml .Values.podSecurityPolicy.argo.annotations | trim | nindent 4 }}
 spec:
   privileged: false
-  allowPrivilegeEscalation: false
+  allowPrivilegeEscalation: true
   volumes: ["configMap", "secret"]
   hostNetwork: false
   hostIPC: false
@@ -122,7 +122,7 @@ metadata:
 {{- toYaml .Values.podSecurityPolicy.minio.annotations | trim | nindent 4 }}
 spec:
   privileged: false
-  allowPrivilegeEscalation: false
+  allowPrivilegeEscalation: true
   volumes: ["persistentVolumeClaim", "secret", "emptyDir"]
   hostNetwork: false
   hostIPC: false

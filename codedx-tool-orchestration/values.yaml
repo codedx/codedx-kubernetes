@@ -32,11 +32,11 @@ networkPolicy:
   # egress through port 8080 and kubeApiPort (below).
   #
   enabled: true
-  # Labels for selecting the Code Dx pod in the network policy, used for
+  # Selectors for the Code Dx pod in the network policy, used for
   # both ingress and egress. If unspecified, all egress will be allowed
   # from port 8080 and all ingress will be allowed to port 3333.
   #
-  codeDxLabels: {}
+  codeDxSelectors: {}
   # Enables a network policy for tool service workflow pods denying all ingress.
   #
   twsWorkflowsEnabled: true

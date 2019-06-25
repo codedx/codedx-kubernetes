@@ -27,9 +27,7 @@ spec:
     - port: 53
       protocol: UDP
   - to:
-    - podSelector:
-        matchLabels:
-{{ toYaml .Values.networkPolicy.codeDxLabels | indent 10 }}
+{{ toYaml .Values.networkPolicy.codeDxSelectors | indent 4 }}
     ports:
     - port: 8080
   - to:
@@ -41,9 +39,7 @@ spec:
     - port: 9000
   ingress:
   - from:
-    - podSelector:
-        matchLabels:
-{{ toYaml .Values.networkPolicy.codeDxLabels | indent 10 }}
+{{ toYaml .Values.networkPolicy.codeDxSelectors | indent 4 }}
     ports:
     - port: 3333
 ---

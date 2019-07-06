@@ -36,7 +36,6 @@ spec:
           "-imageNameCodeDxToolsMono", "{{ required "imageNameCodeDxToolsMono is required" .Values.imageNameCodeDxToolsMono }}",
           "-imageNameNewAnalysis", "{{ required "imageNameNewAnalysis is required" .Values.imageNameNewAnalysis }}",
           "-imageNameSendResults", "{{ required "imageNameSendResults is required" .Values.imageNameSendResults }}",
-          "-imageNameZap", "{{ required "imageNameZap is required" .Values.imageNameZap }}",
           "-imagePullSecretKey", "{{ .Values.imagePullSecretKey }}",
           "-kubeconfigPath", "",
           "-kubernetesNamespace", "{{ .Release.Namespace }}",

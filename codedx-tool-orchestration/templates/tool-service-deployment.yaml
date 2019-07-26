@@ -35,6 +35,7 @@ spec:
           "-imageNameCodeDxTools", "{{ required "imageNameCodeDxTools is required" .Values.imageNameCodeDxTools }}",
           "-imageNameCodeDxToolsMono", "{{ required "imageNameCodeDxToolsMono is required" .Values.imageNameCodeDxToolsMono }}",
           "-imageNameNewAnalysis", "{{ required "imageNameNewAnalysis is required" .Values.imageNameNewAnalysis }}",
+          "-imageNameSendErrorResults", "{{ required "imageNameSendErrorResults is required" .Values.imageNameSendErrorResults }}",
           "-imageNameSendResults", "{{ required "imageNameSendResults is required" .Values.imageNameSendResults }}",
           "-imagePullSecretKey", "{{ .Values.imagePullSecretKey }}",
           "-kubeconfigPath", "",

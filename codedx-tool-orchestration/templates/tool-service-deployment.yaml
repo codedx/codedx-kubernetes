@@ -48,6 +48,7 @@ spec:
           "-minioEndpoint", "{{ template "minio.ref.fullname" . }}:{{.Values.minio.service.port}}",
           "-port", "{{ required "toolServicePort is required" .Values.toolServicePort }}",
           "-serviceName", "{{ .Release.Name }}",
+          "-validateLicensePath", "/opt/codedx/service/bin/validate-license-1.0.0.jar",
           "-workDir", "/opt/codedx/service/work",
           "-workflowRoleNames", {{ include "codedx-tool-orchestration.workflow.role.name" . }}]
         readinessProbe:

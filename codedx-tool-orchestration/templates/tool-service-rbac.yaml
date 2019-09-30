@@ -21,7 +21,7 @@ metadata:
 rules:
 - apiGroups: [""]
   resources: ["secrets"]
-  verbs: ["get", "list", "create", "update", "patch", "delete"]
+  verbs: ["get", "list", "create", "update", "patch", "delete", "watch"]
 - apiGroups: [""]
   resources: ["pods/log"]
   verbs: ["get"]

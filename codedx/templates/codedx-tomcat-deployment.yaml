@@ -110,6 +110,12 @@ spec:
           name: codedx-saml-props
           subPath: codedx-saml.props
         {{- end }}
+        {{ if .Values.extraMounts -}}
+        {{ range .Values.extraMounts -}}
+        - name: {{ .name }}
+        {{- .mount | toYaml | nindent 10 -}}
+        {{- end }}
+        {{- end }}
       initContainers:
         - name: {{ include "dbinit.fullname" . | quote }}
           image: "ubuntu:18.04"
@@ -168,7 +174,7 @@ spec:
           items:
           - key: logback.xml
             path: logback.xml
-      {{- end -}}
+      {{- end }}
       {{ if .Values.samlIdpXmlFile -}}
       - name: codedx-saml-idp
         configMap:
@@ -182,4 +188,10 @@ spec:
           items:
           - key: codedx-saml.props
             path: codedx-saml.props
+      {{- end }}
+      {{ if .Values.extraMounts -}}
+      {{- range .Values.extraMounts -}}
+      - name: {{ .name }}
+      {{- .volume | toYaml | nindent 8 -}}
+      {{- end }}
       {{- end -}}

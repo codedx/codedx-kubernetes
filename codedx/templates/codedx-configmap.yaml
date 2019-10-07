@@ -29,7 +29,7 @@ data:
 
   {{ if .Values.samlIdpXmlFile -}}
   saml-idp.xml: |-
-    {{- .Files.Get .Values.samlIdpXmlFile | nindent 4 }}
+    {{- (required "samlIdpXmlFile cannot be an empty file!" (.Files.Get .Values.samlIdpXmlFile)) | nindent 4 }}
 
   codedx-saml.props: |-
     auth.saml2.identityProviderMetadataPath = /opt/codedx/saml-idp.xml

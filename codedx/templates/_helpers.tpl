@@ -170,6 +170,14 @@ credentials, which will be mounted for Code Dx.
 {{- include "sanitize" $fullName -}}
 {{- end -}}
 
+{{- define "codedx.props.saml.params" -}}
+{{- if .Values.samlIdpXmlFile -}}
+{{- printf " -Dcodedx.additional-props-saml=\"/opt/codedx/codedx-saml.props\"" -}}
+{{- else -}}
+{{ printf "" }}
+{{- end -}}
+{{- end -}}
+
 {{/*
 Create a one-line string of extra/optional parameters that will be passed to the Code Dx Tomcat image's `start.sh`, which will
 be passed to the Code Dx installer and webapp. The parameters tell Code Dx to load config files from the given paths.
@@ -178,6 +186,7 @@ be passed to the Code Dx installer and webapp. The parameters tell Code Dx to lo
 {{- range .Values.codedxProps.extra -}}
 {{- printf " -Dcodedx.additional-props-%s=\"/opt/codedx/%s\"" .key .key -}}
 {{- end -}}
+{{- include "codedx.props.saml.params" . -}}
 {{- end -}}
 
 {{/*

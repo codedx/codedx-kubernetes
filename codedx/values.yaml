@@ -353,6 +353,19 @@ license: {}
 #
 loggingConfigFile:
 
+# Use 'saml.idpXmlFile' to provide an XML file for your Identity Provider when using SAML. The contents
+# of this file will be mounted at /opt/codedx/saml-idp.xml. 
+#
+# If using SAML, the `auth.saml2.identityProviderMetadataPath` Code Dx property will automatically
+# be assigned. You'll still need to provide the following props in a separate secret:
+# - auth.saml2.keystorePassword
+# - auth.saml2.privateKeyPassword
+# - auth.hostBasePath
+#
+# Use the "codedxProps.extra" value to provide the needed configuration.
+#
+samlIdpXmlFile:
+
 # Specify CPU/memory resource requests/limits for Code Dx on Tomcat.
 # ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
 #

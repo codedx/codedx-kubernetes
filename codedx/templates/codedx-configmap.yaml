@@ -19,12 +19,20 @@ data:
     {{- $propsContents | nindent 4 }}
 
   tomcat.env: |-
-    CATALINA_OPTS={{ include "codedx.props.params.combined" . }}
+    CATALINA_OPTS='{{ include "codedx.props.params.combined" . }}'
     CATALINA_OPTS="$CATALINA_OPTS {{ default "" .Values.codedxJavaOpts }}"
 
   {{ if .Values.loggingConfigFile -}}
   logback.xml: |-
     {{- .Files.Get .Values.loggingConfigFile | nindent 4 -}}
+  {{- end -}}
+
+  {{ if .Values.samlIdpXmlFile -}}
+  saml-idp.xml: |-
+    {{- .Files.Get .Values.samlIdpXmlFile | nindent 4 }}
+
+  codedx-saml.props: |-
+    auth.saml2.identityProviderMetadataPath = /opt/codedx/saml-idp.xml
   {{- end -}}
 
 {{- end -}}

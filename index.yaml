@@ -3,7 +3,34 @@ entries:
   codedx:
   - apiVersion: v1
     appVersion: 4.2.4
-    created: "2019-10-07T14:28:10.2261746-04:00"
+    created: "2019-10-07T16:50:34.2460549-04:00"
+    description: A Helm chart for Code Dx
+    digest: 20a788c158c01bbe741b53f393146a46b7c57c335626a53ea079974537778a4a
+    home: https://github.com/codedx/codedx-kubernetes
+    icon: https://codedx.com/wp-content/uploads/2017/03/CodeDx-logo.png
+    keywords:
+    - codedx
+    - security
+    - sast
+    - scan
+    - analysis
+    kubeVersion: '>=1.8.0'
+    maintainers:
+    - email: support@codedx.com
+      name: tylercamp
+    - email: support@codedx.com
+      name: ssalas
+    name: codedx
+    sources:
+    - https://hub.docker.com/r/codedx/codedx-tomcat
+    - https://hub.docker.com/_/tomcat/
+    - https://hub.docker.com/r/bitnami/mariadb
+    urls:
+    - https://codedx.github.io/codedx-kubernetes/codedx-0.4.14.tgz
+    version: 0.4.14
+  - apiVersion: v1
+    appVersion: 4.2.4
+    created: "2019-10-07T16:50:34.2390561-04:00"
     description: A Helm chart for Code Dx
     digest: c49db488de69c8f6a3517e7eed5231a875f3da2310a37e6e87090fa0cfa8bf9a
     home: https://github.com/codedx/codedx-kubernetes
@@ -30,7 +57,7 @@ entries:
     version: 0.4.13
   - apiVersion: v1
     appVersion: 4.2.4
-    created: "2019-10-07T14:28:10.2191751-04:00"
+    created: "2019-10-07T16:50:34.2320548-04:00"
     description: A Helm chart for Code Dx
     digest: 7cb913ef8faf42b500624f041c3ab1150736a38e9cf53a77581e792d903f5c7a
     home: https://github.com/codedx/codedx-kubernetes
@@ -57,7 +84,7 @@ entries:
     version: 0.4.12
   - apiVersion: v1
     appVersion: 4.2.4
-    created: "2019-10-07T14:28:10.2121725-04:00"
+    created: "2019-10-07T16:50:34.2240563-04:00"
     description: A Helm chart for Code Dx
     digest: 8353b6ee15a1708e7c05ae95508a4f1d7aa8f1426a2bb95c06bcfec40194a473
     home: https://github.com/codedx/codedx-kubernetes
@@ -84,7 +111,7 @@ entries:
     version: 0.4.11
   - apiVersion: v1
     appVersion: 4.2.2
-    created: "2019-10-07T14:28:10.2051735-04:00"
+    created: "2019-10-07T16:50:34.2180553-04:00"
     description: A Helm chart for Code Dx
     digest: 1cb8b7edbd0ec322c36d7646ef9287cc8994e675904ec4f5955928471541372a
     home: https://github.com/codedx/codedx-kubernetes
@@ -111,7 +138,7 @@ entries:
     version: 0.4.10
   - apiVersion: v1
     appVersion: 4.2.1
-    created: "2019-10-07T14:28:10.268173-04:00"
+    created: "2019-10-07T16:50:34.288056-04:00"
     description: A Helm chart for Code Dx
     digest: ed9fb96a771eb368b4af1b979b4cde63b9f612e9d68c0d914d7526f6ba916a9b
     home: https://github.com/codedx/codedx-kubernetes
@@ -138,7 +165,7 @@ entries:
     version: 0.4.9
   - apiVersion: v1
     appVersion: 4.2.0
-    created: "2019-10-07T14:28:10.2611729-04:00"
+    created: "2019-10-07T16:50:34.2810551-04:00"
     description: A Helm chart for Code Dx
     digest: 47699e34412aa9947efa58aabc0fd8aca2be4e79dd21da4ddefa3441d036955f
     home: https://github.com/codedx/codedx-kubernetes
@@ -165,7 +192,7 @@ entries:
     version: 0.4.8
   - apiVersion: v1
     appVersion: 4.1.2
-    created: "2019-10-07T14:28:10.2551734-04:00"
+    created: "2019-10-07T16:50:34.2750584-04:00"
     description: A Helm chart for Code Dx
     digest: 86f0f1c61bbfc3d1e3ee9eb9c55317111e713943745b9359092480260bfee7b3
     home: https://github.com/codedx/codedx-kubernetes
@@ -192,7 +219,7 @@ entries:
     version: 0.4.7
   - apiVersion: v1
     appVersion: 4.1.1
-    created: "2019-10-07T14:28:10.2481731-04:00"
+    created: "2019-10-07T16:50:34.2680554-04:00"
     description: A Helm chart for Code Dx
     digest: 6750e5ecb29cc75e55c7e2a887528ffbc74a7074eeb42a67803a04c46517d918
     home: https://github.com/codedx/codedx-kubernetes
@@ -219,7 +246,7 @@ entries:
     version: 0.4.6
   - apiVersion: v1
     appVersion: 4.1.0
-    created: "2019-10-07T14:28:10.2411787-04:00"
+    created: "2019-10-07T16:50:34.2610563-04:00"
     description: A Helm chart for Code Dx
     digest: 391f0f7eb15b71e860a812b215afcd8cf9f6b12ee1acc29ebd317ff8fa939c34
     home: https://github.com/codedx/codedx-kubernetes
@@ -246,7 +273,7 @@ entries:
     version: 0.4.5
   - apiVersion: v1
     appVersion: 4.1.0
-    created: "2019-10-07T14:28:10.2341739-04:00"
+    created: "2019-10-07T16:50:34.2540553-04:00"
     description: A Helm chart for Code Dx
     digest: 6328ea5885b21193ee50af36486c0263c7bf354c4b8c46d762bbf50b56b41ac9
     home: https://github.com/codedx/codedx-kubernetes
@@ -273,7 +300,7 @@ entries:
     version: 0.4.4
   - apiVersion: v1
     appVersion: 4.0.0
-    created: "2019-10-07T14:28:10.2271738-04:00"
+    created: "2019-10-07T16:50:34.2480565-04:00"
     description: A Helm chart for Code Dx
     digest: 6888e5b9742b5e96ea6e923b50117118e959e0c87e095a1d25ca4bb02522afb1
     home: https://github.com/codedx/codedx-kubernetes
@@ -300,7 +327,7 @@ entries:
     version: 0.4.2
   - apiVersion: v1
     appVersion: 3.7.0
-    created: "2019-10-07T14:28:10.1981739-04:00"
+    created: "2019-10-07T16:50:34.2110559-04:00"
     description: A Helm chart for Code Dx (not suitable for production use)
     digest: 5d24f78a9e7d8e3092a597cf79c58cdab856a5fc915382a04a35bbc532024a26
     home: https://github.com/codedx/codedx-kubernetes
@@ -325,7 +352,7 @@ entries:
     version: 0.4.0
   - apiVersion: v1
     appVersion: 3.7.0
-    created: "2019-10-07T14:28:10.1961728-04:00"
+    created: "2019-10-07T16:50:34.2090572-04:00"
     description: A Helm chart for Code Dx (not suitable for production use)
     digest: 0295859c2371da6a25a56168a79d118e9c6244e342e0ca22f05bc643cfc3e249
     home: https://github.com/codedx/codedx-kubernetes
@@ -350,7 +377,7 @@ entries:
     version: 0.3.0
   - apiVersion: v1
     appVersion: 3.6.1
-    created: "2019-10-07T14:28:10.1951727-04:00"
+    created: "2019-10-07T16:50:34.2070562-04:00"
     description: A Helm chart for Code Dx (not suitable for production use)
     digest: b414b7fc1c7f11ff73b06e5df5bde85873429244a58f7288a351bec6eceec875
     home: https://github.com/codedx/codedx-kubernetes
@@ -375,7 +402,7 @@ entries:
     version: 0.2.1
   - apiVersion: v1
     appVersion: 3.6.1
-    created: "2019-10-07T14:28:10.1921746-04:00"
+    created: "2019-10-07T16:50:34.2040564-04:00"
     description: A Helm chart for Code Dx
     digest: 21d64333e2b2e9cdbc68aebb792f905e094f8aa68ffdea6b0910dcfe5dfbc74b
     home: https://github.com/codedx/codedx-kubernetes
@@ -398,4 +425,4 @@ entries:
     urls:
     - https://codedx.github.io/codedx-kubernetes/codedx-0.1.3.tgz
     version: 0.1.3
-generated: "2019-10-07T14:28:10.1851737-04:00"
+generated: "2019-10-07T16:50:34.1970571-04:00"

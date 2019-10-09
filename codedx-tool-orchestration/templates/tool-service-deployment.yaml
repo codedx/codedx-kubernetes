@@ -76,7 +76,9 @@ spec:
           readOnly: true
         {{ if and .Values.minio.tls.enabled .Values.minioTlsTrust.configMapName -}}
         - name: minio-cert-volume
-          mountPath: /etc/ssl/certs
+          mountPath: /etc/ssl/certs/cdx-minio.pem
+          subPath: cdx-minio.pem
+          readOnly: true
         {{ end -}}
         ports:
         - containerPort: 3333
@@ -88,7 +90,10 @@ spec:
       {{ if and .Values.minio.tls.enabled .Values.minioTlsTrust.configMapName -}}
       - name: minio-cert-volume
         configMap:
-          name: {{ .Values.minioTlsTrust.configMapName }} # add every key in ConfigMap
+          name: {{ .Values.minioTlsTrust.configMapName }}
+          items:
+            - key: {{ .Values.minioTlsTrust.configMapPublicCertKeyName }}
+              path: cdx-minio.pem
       {{ end -}}
       - name: logs
         emptyDir: {}

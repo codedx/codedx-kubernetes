@@ -7,13 +7,18 @@ imageNameCodeDxToolsMono: "codedx-toolsmono:v1.0"
 imageNameNewAnalysis: "codedx-newanalysis:v1.0"
 imageNameSendResults: "codedx-results:v1.0"
 imageNameSendErrorResults: "codedx-error-results:v1.0"
-imageNameZap: "codedx-zaprunner:v1.0"
 imagePullSecretKey: ""
 
 toolServiceImageName: codedx-tool-service:v1.0
 toolServiceImagePullSecrets: []
 toolServicePort: 3333
 toolServiceApiKey: cc224a8f-a307-416e-a6dd-769600ac8e2c
+
+logs:
+  # Maximum size in MB for each log file
+  maxSizeMB: 10
+  # Number of old logs to retain
+  maxBackups: 20
 
 # Number of replicas for the tool orchestration sevice.
 #
@@ -73,12 +78,12 @@ podSecurityPolicy:
     name:
     bind: true
     annotations: {}
-    
+
   # PSP applied to all workflow pods
   twsWorkflows:
     create: true
     # (optional)
-    name: 
+    name:
     bind: true
     annotations: {}
 
@@ -88,7 +93,7 @@ podSecurityPolicy:
     name:
     bind: true
     annotations: {}
-  
+
   minio:
     create: true
     # (optional)
@@ -99,14 +104,44 @@ podSecurityPolicy:
 # NOTE: These are setting attributes for the `argo` dependency
 argo:
   images:
+    namespace: codedx
+    executor: codedx-argoexec
+    controller: codedx-workflow-controller
     tag: v2.3.0
   ui:
     enabled: false
+  minio:
+    install: false
 
 # NOTE: These are setting attributes for the `minio` dependency
 minio:
-  accessKey: "231a5aab-7ffc-49ff-a954-83f97ee416a4"
-  secretKey: "89968457-bf3a-4716-9863-b99e04b0e4ee"
+  image:
+    tag: 2019.9.26-debian-9-r3
+  global:
+    minio:
+      accessKey: "231a5aab-7ffc-49ff-a954-83f97ee416a4"
+      secretKey: "89968457-bf3a-4716-9863-b99e04b0e4ee"
   service:
     type: ClusterIP
     port: 9000
+  tls:
+    # Enables or disables MinIO TLS configuration.
+    enabled: false
+    # Specifies the name of a k8s secret containing the certificate info used to configure
+    # MinIO TLS. Create the secret using the following command:
+    # kubectl create secret generic cdx-minio-tls --from-file=path/to/minio.pem --from-file=path/to/minio.key
+    certSecret: "cdx-minio-tls"
+    # The name of the MinIO public certificate in certSecret
+    publicCrt: "minio.pem"
+    # The name of the MinIO private key in certSecret
+    privateKey: "minio.key"
+
+# Options for configuring clients to explicitly trust certificate data for the MinIO TLS configuration. This section
+# does not apply when minio.tls.enabled=false.
+minioTlsTrust:
+  # Specifies a ConfigMap name that contains certificate data that should be explicitly trusted when connecting to
+  # the MinIO server. When using MinIO TLS (minio.tls.enabled=true), use configMapName when the MinIO server's
+  # certificate was not issued by a well known CA.
+  configMapName: ""
+  # Specifies the key name in the configMapName ConfigMap containing the MinIO certificate data.
+  configMapPublicCertKeyName: ""

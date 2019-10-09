@@ -38,14 +38,21 @@ spec:
           "-imageNameSendErrorResults", "{{ required "imageNameSendErrorResults is required" .Values.imageNameSendErrorResults }}",
           "-imageNameSendResults", "{{ required "imageNameSendResults is required" .Values.imageNameSendResults }}",
           "-imagePullSecretKey", "{{ .Values.imagePullSecretKey }}",
-          "-kubeconfigPath", "",
           "-kubernetesNamespace", "{{ .Release.Namespace }}",
           "-logFile", "/opt/codedx/service/logs/service.log",
+          "-logMaxSizeMB", "{{ .Values.logs.maxSizeMB }}",
+          "-logMaxBackups", "{{ .Values.logs.maxBackups }}",
+          "-minioAdminClientPath", "/opt/codedx/service/tools/mc",
           "-minioAdminPasswordPath", "/opt/codedx/service/secrets/minioAdminPassword",
           "-minioAdminUsernamePath", "/opt/codedx/service/secrets/minioAdminUsername",
-          "-minioClientPath", "/opt/codedx/service/tools/mc",
-          "-minioClusterEndpoint", "{{ template "minio.ref.fullname" . }}:{{.Values.minio.service.port}}",
           "-minioEndpoint", "{{ template "minio.ref.fullname" . }}:{{.Values.minio.service.port}}",
+          {{ if .Values.minio.tls.enabled -}}
+          "-minioTlsEnabled",
+          {{ if .Values.minioTlsTrust.configMapName -}}
+          "-minioTlsConfigMapName", "{{ .Values.minioTlsTrust.configMapName }}",
+          "-minioTlsConfigMapPublicCertName", "{{ .Values.minioTlsTrust.configMapPublicCertKeyName }}",
+          {{ end -}}
+          {{ end -}}
           "-port", "{{ required "toolServicePort is required" .Values.toolServicePort }}",
           "-serviceName", "{{ .Release.Name }}",
           "-validateLicensePath", "/opt/codedx/service/bin/validate-license-1.0.0.jar",
@@ -67,6 +74,10 @@ spec:
         - name: tool-service-secret-volume
           mountPath: "/opt/codedx/service/secrets"
           readOnly: true
+        {{ if and .Values.minio.tls.enabled .Values.minioTlsTrust.configMapName -}}
+        - name: minio-cert-volume
+          mountPath: /etc/ssl/certs
+        {{ end -}}
         ports:
         - containerPort: 3333
           name: http
@@ -74,5 +85,10 @@ spec:
       - name: tool-service-secret-volume
         secret:
           secretName: {{ include "codedx-tool-orchestration.secretName" . | quote }}
+      {{ if and .Values.minio.tls.enabled .Values.minioTlsTrust.configMapName -}}
+      - name: minio-cert-volume
+        configMap:
+          name: {{ .Values.minioTlsTrust.configMapName }} # add every key in ConfigMap
+      {{ end -}}
       - name: logs
         emptyDir: {}

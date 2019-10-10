@@ -33,8 +33,8 @@ spec:
   - to:
     - podSelector:
         matchLabels:
-          app: {{ include "minio.ref.name" . }}
-          release: {{ .Release.Name | quote }}
+          app.kubernetes.io/name: {{ include "minio.ref.name" . }}
+          app.kubernetes.io/instance: {{ .Release.Name | quote }}
     ports:
     - port: 9000
   ingress:
@@ -87,8 +87,8 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app: {{ include "minio.ref.name" . | quote }}
-      release: {{ .Release.Name | quote }}
+      app.kubernetes.io/name: {{ include "minio.ref.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
   policyTypes: ["Egress"]
 ---
 {{- end }}

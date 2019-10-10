@@ -51,7 +51,7 @@ spec:
   # hostPath is an undesirable permission but is required for argo workflows
   # https://github.com/kubeflow/pipelines/issues/561
   #
-  volumes: ["secret", "emptyDir", "hostPath", "downwardAPI"]
+  volumes: ["secret", "emptyDir", "hostPath", "downwardAPI", "configMap"]
 
   # NOTE - This is specifically for docker hosts and will not work with ie containerd.
   # This may become unnecessary in future versions of argo.

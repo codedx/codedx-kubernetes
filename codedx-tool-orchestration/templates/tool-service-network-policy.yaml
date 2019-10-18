@@ -1,4 +1,4 @@
-{{- if .Values.networkPolicy.enabled -}}
+{{- if .Values.networkPolicy.toolServiceEnabled -}}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -15,7 +15,7 @@ spec:
       component: frontend
   egress:
   - ports:
-    - port: {{ required "kubeapi-server port must be defined" .Values.networkPolicy.kubeApiPort }}
+    - port: {{ required "kubeapi-server target/pod port must be defined" .Values.networkPolicy.kubeApiTargetPort }}
       protocol: TCP
     {{- if .Values.networkPolicy.apiServerSelectors }}
     to:
@@ -26,10 +26,12 @@ spec:
       protocol: TCP
     - port: 53
       protocol: UDP
-  - to:
-{{ toYaml .Values.networkPolicy.codeDxSelectors | indent 4 }}
-    ports:
+  - ports:
     - port: 8080
+    {{- if .Values.networkPolicy.codeDxSelectors }}
+    to:
+{{ toYaml .Values.networkPolicy.codeDxSelectors | indent 4 }}
+    {{- end }}
   - to:
     - podSelector:
         matchLabels:
@@ -38,12 +40,15 @@ spec:
     ports:
     - port: 9000
   ingress:
-  - from:
-{{ toYaml .Values.networkPolicy.codeDxSelectors | indent 4 }}
-    ports:
+  - ports:
     - port: 3333
+    {{- if .Values.networkPolicy.codeDxSelectors }}
+    from:
+{{ toYaml .Values.networkPolicy.codeDxSelectors | indent 4 }}
+    {{- end }}
 ---
 {{ end }}
+
 {{ if .Values.networkPolicy.argoEnabled }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -63,7 +68,7 @@ spec:
       release: {{ .Release.Name | quote }}
   egress:
   - ports:
-    - port: {{ required "kubeapi-server port must be defined" .Values.networkPolicy.kubeApiPort }}
+    - port: {{ required "kubeapi-server target/pod port must be defined" .Values.networkPolicy.kubeApiTargetPort }}
       protocol: TCP
     {{- if .Values.networkPolicy.apiServerSelectors }}
     to:
@@ -74,6 +79,7 @@ spec:
   - Egress
 ---
 {{- end }}
+
 {{ if .Values.networkPolicy.minioEnabled -}}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -85,13 +91,30 @@ metadata:
   labels:
     {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
 spec:
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: {{ include "codedx-tool-orchestration.name" . | quote }}
+          component: frontend
+          part-of: codedx-tool-orchestration
+          release: {{ .Release.Name | quote }}
+    - podSelector:
+        matchLabels:
+          workflowOwner: {{ .Release.Name | quote }}
+    ports:
+    - protocol: TCP
+      port: 9000
   podSelector:
     matchLabels:
       app.kubernetes.io/name: {{ include "minio.ref.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name | quote }}
-  policyTypes: ["Egress"]
+  policyTypes:
+  - Ingress
+  - Egress
 ---
 {{- end }}
+
 {{ if .Values.networkPolicy.twsWorkflowsEnabled -}}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy

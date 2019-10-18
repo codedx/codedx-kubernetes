@@ -55,13 +55,23 @@ spec:
           {{ end -}}
           "-port", "{{ required "toolServicePort is required" .Values.toolServicePort }}",
           "-serviceName", "{{ .Release.Name }}",
+          {{ if .Values.toolServiceTls.secret -}}
+          "-serviceTlsCertPath", "/opt/codedx/service/tls/{{ .Values.toolServiceTls.certFile }}",
+          "-serviceTlsKeyPath", "/opt/codedx/service/tls/{{ .Values.toolServiceTls.keyFile }}",
+          {{ end -}}
           "-validateLicensePath", "/opt/codedx/service/bin/validate-license-1.0.0.jar",
           "-workDir", "/opt/codedx/service/work",
           "-workflowRoleNames", {{ include "codedx-tool-orchestration.workflow.role.name" . }}]
         readinessProbe:
+          {{ if .Values.toolServiceTls.secret -}}
+          tcpSocket:
+            port: 3333
+          {{ end -}}
+          {{ if not .Values.toolServiceTls.secret -}}
           httpGet:
             path: /alive
             port: 3333
+          {{ end -}}
           initialDelaySeconds: 3
           periodSeconds: 1
           failureThreshold: 60
@@ -80,6 +90,10 @@ spec:
           subPath: cdx-minio.pem
           readOnly: true
         {{ end -}}
+        {{ if .Values.toolServiceTls.secret -}}
+        - name: tool-service-tls-volume
+          mountPath: "/opt/codedx/service/tls"
+        {{ end -}}
         ports:
         - containerPort: 3333
           name: http
@@ -94,6 +108,11 @@ spec:
           items:
             - key: {{ .Values.minioTlsTrust.configMapPublicCertKeyName }}
               path: cdx-minio.pem
+      {{ end -}}
+      {{ if .Values.toolServiceTls.secret -}}
+      - name: tool-service-tls-volume
+        secret:
+          secretName: {{ .Values.toolServiceTls.secret }}
       {{ end -}}
       - name: logs
         emptyDir: {}

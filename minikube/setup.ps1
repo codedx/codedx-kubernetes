@@ -11,28 +11,28 @@
 #
 param (
 	[string] $k8sVersion = 'v1.14.6',
-    [string] $minikubeProfile = 'minikube-1-14-6',
+	[string] $minikubeProfile = 'minikube-1-14-6',
 
-    [string] $imagePullSecretName = 'codedx-docker-registry',
-    [string] $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:v114',
-    [string] $imageCodeDxTools = 'codedxregistry.azurecr.io/codedx/codedx-tools:v114',
-    [string] $imageCodeDxToolsMono = 'codedxregistry.azurecr.io/codedx/codedx-toolsmono:v114',
-    [string] $imageNewAnalysis = 'codedxregistry.azurecr.io/codedx/codedx-newanalysis:v187',
-    [string] $imageSendResults = 'codedxregistry.azurecr.io/codedx/codedx-results:v187',
-    [string] $imageSendErrorResults = 'codedxregistry.azurecr.io/codedx/codedx-error-results:v187',
-    [string] $imageToolService = 'codedxregistry.azurecr.io/codedx/codedx-tool-service:v187',
+	[string] $imagePullSecretName = 'codedx-docker-registry',
+	[string] $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:v114',
+	[string] $imageCodeDxTools = 'codedxregistry.azurecr.io/codedx/codedx-tools:v114',
+	[string] $imageCodeDxToolsMono = 'codedxregistry.azurecr.io/codedx/codedx-toolsmono:v114',
+	[string] $imageNewAnalysis = 'codedxregistry.azurecr.io/codedx/codedx-newanalysis:v187',
+	[string] $imageSendResults = 'codedxregistry.azurecr.io/codedx/codedx-results:v187',
+	[string] $imageSendErrorResults = 'codedxregistry.azurecr.io/codedx/codedx-error-results:v187',
+	[string] $imageToolService = 'codedxregistry.azurecr.io/codedx/codedx-tool-service:v187',
 
-    [string] $namespaceToolOrchestration = 'cdx-svc',
-    [string] $namespaceCodeDx = 'cdx-app',
-    [string] $releaseNameCodeDx = 'codedx-app',
-    [string] $releaseNameToolOrchestration = 'toolsvc-codedx-tool-orchestration',
+	[string] $namespaceToolOrchestration = 'cdx-svc',
+	[string] $namespaceCodeDx = 'cdx-app',
+	[string] $releaseNameCodeDx = 'codedx-app',
+	[string] $releaseNameToolOrchestration = 'toolsvc-codedx-tool-orchestration',
 
-    [string] $codeDxAdminPwd,
-    [string] $minioAdminUsername,
-    [string] $minioAdminPwd,
-    [string] $toolServiceApiKey,
+	[string] $codeDxAdminPwd,
+	[string] $minioAdminUsername,
+	[string] $minioAdminPwd,
+	[string] $toolServiceApiKey,
 
-    [string] $dockerConfigJson
+	[string] $dockerConfigJson
 )
 
 $ErrorActionPreference = 'Stop'
@@ -44,79 +44,79 @@ Set-PSDebug -Strict
 . (join-path $PSScriptRoot codedx.ps1)
 
 if (-not (Test-IsCore)) {
-    write-error 'Unable to continue because you must run this script with PowerShell Core (pwsh)'
+	write-error 'Unable to continue because you must run this script with PowerShell Core (pwsh)'
 }
 
 if (-not $IsWindows) {
-    write-error 'Unable to continue because you must run this script on Windows'
+	write-error 'Unable to continue because you must run this script on Windows'
 }
 
 if (-not (Test-IsElevated)) {
-    write-error "Unable to continue because you must run this script elevated"
+	write-error "Unable to continue because you must run this script elevated"
 }
 
 'minikube','helm','kubectl','openssl','git','keytool' | foreach-object {
-    if ($null -eq (Get-AppCommandPath $_)) {
-        write-error "Unable to continue because $_ cannot be found. Is $_ installed and included in your PATH?"
-    }
+	if ($null -eq (Get-AppCommandPath $_)) {
+		write-error "Unable to continue because $_ cannot be found. Is $_ installed and included in your PATH?"
+	}
 }
 
 $createCluster = -not (Test-MinikubeProfile $minikubeProfile)
 
 if ($createCluster) {
 
-    if ($codeDxAdminPwd -eq '') { $codeDxAdminPwd = Get-SecureStringText 'Enter a password for the Code Dx admin username' 6 }
-    if ($minioAdminUsername -eq '') { $minioAdminUsername = Get-SecureStringText 'Enter a username for the MinIO admin account' 5 }
-    if ($minioAdminPwd -eq '') { $minioAdminPwd = Get-SecureStringText 'Enter a password for the MinIO admin account' 8 }
-    if ($toolServiceApiKey -eq '') { $toolServiceApiKey = Get-SecureStringText 'Enter an API key for the Code Dx Tool Orchestration service' 8 }
-    if ($dockerConfigJson -eq '') { $dockerConfigJson = Get-SecureStringText 'Enter a dockerconfigjson value for your private Docker registry' 0 }
+	if ($codeDxAdminPwd -eq '') { $codeDxAdminPwd = Get-SecureStringText 'Enter a password for the Code Dx admin username' 6 }
+	if ($minioAdminUsername -eq '') { $minioAdminUsername = Get-SecureStringText 'Enter a username for the MinIO admin account' 5 }
+	if ($minioAdminPwd -eq '') { $minioAdminPwd = Get-SecureStringText 'Enter a password for the MinIO admin account' 8 }
+	if ($toolServiceApiKey -eq '') { $toolServiceApiKey = Get-SecureStringText 'Enter an API key for the Code Dx Tool Orchestration service' 8 }
+	if ($dockerConfigJson -eq '') { $dockerConfigJson = Get-SecureStringText 'Enter a dockerconfigjson value for your private Docker registry' 0 }
 
-    Write-Verbose "Creating new minikube cluster using profile $minikubeProfile..."
+	Write-Verbose "Creating new minikube cluster using profile $minikubeProfile..."
 
-    $workDir = "$HOME/.codedx-minikube"
+	$workDir = "$HOME/.codedx-minikube"
 
-    Write-Verbose "Creating directory $workDir..."
-    New-Item -Type Directory $workDir -Force
+	Write-Verbose "Creating directory $workDir..."
+	New-Item -Type Directory $workDir -Force
 
-    Write-Verbose "Switching to directory $workDir..."
-    Push-Location $workDir
+	Write-Verbose "Switching to directory $workDir..."
+	Push-Location $workDir
 
-    Write-Verbose "Profile does not exist. Creating new minikube profile named $minikubeProfile for k8s version $k8sVersion..."
-    New-MinikubeClusterHyperV $minikubeProfile $k8sVersion
+	Write-Verbose "Profile does not exist. Creating new minikube profile named $minikubeProfile for k8s version $k8sVersion..."
+	New-MinikubeClusterHyperV $minikubeProfile $k8sVersion
 
-    Write-Verbose "Adding network policy provider..."
-    Add-NetworkPolicyProvider
+	Write-Verbose "Adding network policy provider..."
+	Add-NetworkPolicyProvider
 
-    Write-Verbose 'Initializing Helm and adding repositories...'
-    Add-Helm
-    Add-HelmRepo 'minio' https://codedx.github.io/charts
-    Add-HelmRepo 'argo' https://argoproj.github.io/argo-helm
+	Write-Verbose 'Initializing Helm and adding repositories...'
+	Add-Helm
+	Add-HelmRepo 'minio' https://codedx.github.io/charts
+	Add-HelmRepo 'argo' https://argoproj.github.io/argo-helm
 
-    Write-Verbose 'Fetching Code Dx Helm charts...'
-    Remove-Item .\codedx-kubernetes -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
-    Invoke-GitClone 'https://github.com/codedx/codedx-kubernetes' 'develop'
+	Write-Verbose 'Fetching Code Dx Helm charts...'
+	Remove-Item .\codedx-kubernetes -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
+	Invoke-GitClone 'https://github.com/codedx/codedx-kubernetes' 'develop'
 
-    Write-Verbose 'Deploying Code Dx with Tool Orchestration disabled...'
-    New-CodeDxDeployment $workDir $namespaceCodeDx $releaseNameCodeDx $codeDxAdminPwd $imageCodeDxTomcat $imagePullSecretName
-    
-    Write-Verbose 'Deploying Tool Orchestration...'
-    New-ToolOrchestrationDeployment $workDir  $namespaceToolOrchestration $namespaceCodeDx $releaseNameCodeDx `
-        $minioAdminUsername $minioAdminPwd $toolServiceApiKey `
-        $imageCodeDxTools $imageCodeDxToolsMono `
-        $imageNewAnalysis $imageSendResults $imageSendErrorResults $imageToolService `
-        $imagePullSecretName
+	Write-Verbose 'Deploying Code Dx with Tool Orchestration disabled...'
+	New-CodeDxDeployment $workDir $namespaceCodeDx $releaseNameCodeDx $codeDxAdminPwd $imageCodeDxTomcat $imagePullSecretName
 
-    Write-Verbose 'Updating Code Dx deployment by enabling Tool Orchestration...'
-    Set-UseToolOrchestration $workDir `
-        $namespaceToolOrchestration $namespaceCodeDx `
-        "https://$releaseNameToolOrchestration.$namespaceToolOrchestration.svc.cluster.local:3333" $toolServiceApiKey `
-        $releaseNameCodeDx
+	Write-Verbose 'Deploying Tool Orchestration...'
+	New-ToolOrchestrationDeployment $workDir  $namespaceToolOrchestration $namespaceCodeDx $releaseNameCodeDx `
+		$minioAdminUsername $minioAdminPwd $toolServiceApiKey `
+		$imageCodeDxTools $imageCodeDxToolsMono `
+		$imageNewAnalysis $imageSendResults $imageSendErrorResults $imageToolService `
+		$imagePullSecretName
+
+	Write-Verbose 'Updating Code Dx deployment by enabling Tool Orchestration...'
+	Set-UseToolOrchestration $workDir `
+		$namespaceToolOrchestration $namespaceCodeDx `
+		"https://$releaseNameToolOrchestration.$namespaceToolOrchestration.svc.cluster.local:3333" $toolServiceApiKey `
+		$releaseNameCodeDx
 }
 
 Write-Verbose "Testing minikube status for profile $minikubeProfile..."
 if (-not (Test-MinikubeStatus $minikubeProfile)) {
-    Write-Verbose "Starting minikube cluster for profile $minikubeProfile with k8s version $k8sVersion..."
-    Start-MinikubeCluster $minikubeProfile $k8sVersion
+	Write-Verbose "Starting minikube cluster for profile $minikubeProfile with k8s version $k8sVersion..."
+	Start-MinikubeCluster $minikubeProfile $k8sVersion
 }
 
 Write-Verbose "Setting kubectl context to minikube profile $minikubeProfile..."
@@ -124,12 +124,12 @@ Set-KubectlContext $minikubeProfile
 
 Write-Verbose 'Checking cluster status...'
 if (-not (Test-ClusterInfo)) {
-    throw "Unable to continue because k8s cluster is not running"
+	throw "Unable to continue because k8s cluster is not running"
 }
 
 if ($createCluster) {
-    Write-Host "Done.`n`nNote that '$workDir' contains values.yaml data that should be kept private."
-    return
+	Write-Host "Done.`n`nNote that '$workDir' contains values.yaml data that should be kept private."
+	return
 }
 
 Write-Verbose 'Waiting to check deployment status...'

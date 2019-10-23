@@ -3,7 +3,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-The Code Dx Tool Orchestration Helm chart installs the Code Dx components that can orchestrate analyses that run in whole or in part on your Kubernetes (k8s) cluster.
+The Code Dx Tool Orchestration Helm chart installs the Code Dx components that can orchestrate analyses that run in whole or in part on your Kubernetes (k8s) cluster. Since Code Dx Tool Orchestration depends on Code Dx, you must install Code Dx first. Then you can install Code Dx Tool Orchestration and update your Code Dx deployment to use the Tool Orchestration service.
 
 ## Prerequisite Details
 
@@ -18,19 +18,18 @@ The use of a separate namespace for Tool Orchestration components is strongly re
 kubectl create namespace cdx-svc
 ```
 
-### Code Dx Information
+### Code Dx
 
-This document assumes that you have installed Code Dx in a separate Kubernetes namespace and that you have the base URL for your Code Dx installation. It also assumes that the Kubernetes namespace where Code Dx is installed has the label name=cdx-app. If you have not yet created a namespace or applied a namespace label, do so now with the following commands.
+This document assumes that you have installed Code Dx in a separate Kubernetes namespace and that you have the base URL for your Code Dx installation. If you have not installed Code Dx, follow the Code Dx Kubernetes installation instructions at this time. This document assumes that your Code Dx namespace is cdx-app created with the following command.
 
 ```
 kubectl create namespace cdx-app
+```
+
+This document also assumes that the Kubernetes namespace where Code Dx is installed has the label name=cdx-app. If you have not yet  applied a namespace label to the Kubernetes namespace where Code Dx is installed, do so now with the following command.
+
+```
 kubectl label namespace cdx-app name=cdx-app
-```
-
-Note: The Code Dx Helm chart also supports network policies, and you can reference the Tool Orchestration service in a Code Dx network policy by using a namespace label. You can use the following command to add a name=cdx-svc label to the cdx-svc namespace for this purpose.
-
-```
-kubectl label namespace cdx-svc name=cdx-svc
 ```
 
 ### TLS Configuration
@@ -68,15 +67,11 @@ helm repo add minio https://codedx.github.io/charts
 helm repo add argo https://argoproj.github.io/argo-helm
 ```
 
-Add a reference to the Tool Orchestration chart repository next.
-
-```
-helm repo add codedx https://codedx.github.io/codedx-kubernetes
-```
-
 ### Your Installation Options File
 
-We recommend keeping installation options in your own `toolsvc-values.yaml` file and using `helm install/upgrade ... -f toolsvc-values.yaml`, to prevent accidental changes to the installation when a configuration property is forgotten or missed. Create a blank `toolsvc-values.yaml` file for now.
+We recommend keeping installation options in your own `toolsvc-values.yaml` file and using `helm upgrade -f toolsvc-values.yaml --reuse-values ...` to prevent accidental changes to the installation when a configuration property is forgotten or missed.
+
+Create a blank `toolsvc-values.yaml` file that you will update in the following sections.
 
 ### Configure MinIO Admin account
 
@@ -169,7 +164,7 @@ networkPolicy:
 
 ### Code Dx Connection
 
-The Tool Orchestration service sends analysis results to Code Dx. You must specify a URL where Code Dx can be reached. We recommend using HTTPS for the connection between the Tool Orchestration service and Code Dx. Append your Code Dx URL for the codeDxBaseUrl configuration to your `toolsvc-values.yaml` file (this document assumes a Code Dx URL of https://codedx-app-codedx.cdx-app.svc.cluster.local:9090).
+The Tool Orchestration service sends analysis results to Code Dx. You must specify a URL where Code Dx can be reached. We recommend using HTTPS for the connection between the Tool Orchestration service and Code Dx. Append your Code Dx URL for the codeDxBaseUrl configuration to your `toolsvc-values.yaml` file (this document assumes a Code Dx k8s service URL of https://codedx-app-codedx.cdx-app.svc.cluster.local:9090/codedx).
 
 ```
 minio:
@@ -193,7 +188,7 @@ networkPolicy:
       matchLabels:
         name: 'cdx-app'
 
-codeDxBaseUrl: 'https://codedx-app-codedx.cdx-app.svc.cluster.local:9090'
+codeDxBaseUrl: 'https://codedx-app-codedx.cdx-app.svc.cluster.local:9090/codedx'
 ```
 
 ### Tool Orchestration API Key
@@ -222,7 +217,7 @@ networkPolicy:
       matchLabels:
         name: 'cdx-app'
 
-codeDxBaseUrl: 'https://codedx-app-codedx.cdx-app.svc.cluster.local:9090'
+codeDxBaseUrl: 'https://codedx-app-codedx.cdx-app.svc.cluster.local:9090/codedx'
 
 toolServiceApiKey: '5eb6fbe3-8126-452c-95e9-83faa87453d4'
 ```
@@ -259,7 +254,7 @@ networkPolicy:
       matchLabels:
         name: 'cdx-app'
 
-codeDxBaseUrl: 'https://codedx-app-codedx.cdx-app.svc.cluster.local:9090'
+codeDxBaseUrl: 'https://codedx-app-codedx.cdx-app.svc.cluster.local:9090/codedx'
 
 toolServiceApiKey: '5eb6fbe3-8126-452c-95e9-83faa87453d4'
 toolServiceTls:
@@ -312,7 +307,7 @@ networkPolicy:
       matchLabels:
         name: 'cdx-app'
 
-codeDxBaseUrl: 'https://codedx-app-codedx.cdx-app.svc.cluster.local:9090'
+codeDxBaseUrl: 'https://codedx-app-codedx.cdx-app.svc.cluster.local:9090/codedx'
 
 toolServiceApiKey: '5eb6fbe3-8126-452c-95e9-83faa87453d4'
 toolServiceTls:
@@ -358,3 +353,103 @@ From Terminal 1: exit
 ### Notes
 
 - Argo controller service account name is not based on release name, so multiple installs of argo to the same namespace will cause conflicts unless `argo.controller.serviceAccount` is assigned to a new value.
+
+## Connect Code Dx to Tool Orchestration
+
+With the Tool Orchestration components installed, you can now update your Code Dx Kubernetes deployment to use the tool service.
+
+### Enable Tool Orchestration Service
+
+Create a new file named `codedx-orchestration-values.yaml` file and add the following codedxProps configuration, replace the tws.apikey (5eb6fbe3-8126-452c-95e9-83faa87453d4) with the Tool Orchestration API key you selected.
+
+```
+codedxProps:
+  extra:
+  - type: values
+    key: cdx-tool-orchestration
+    values:
+    - "tws.enabled = true"
+    - "tws.serviceUrl = https://toolsvc-codedx-tool-orchestration.cdx-svc.svc.cluster.local:3333"
+    - "tws.apiKey = 5eb6fbe3-8126-452c-95e9-83faa87453d4"
+```
+
+### Enable Network Policy
+
+The Code Dx Helm chart supports a network policy for permitting access by the Tool Orchestration service. Use the following command to add a name=cdx-svc label to the cdx-svc namespace for this purpose.
+
+```
+kubectl label namespace cdx-svc name=cdx-svc
+```
+
+Append the following networkPolicy configuration to your `codedx-orchestration-values.yaml` file to permit the Tool Orchestration service to call Code Dx.
+
+```
+codedxProps:
+  extra:
+  - type: values
+    key: cdx-tool-orchestration
+    values:
+    - "tws.enabled = true"
+    - "tws.serviceUrl = https://toolsvc-codedx-tool-orchestration.cdx-svc.svc.cluster.local:3333"
+    - "tws.apiKey = 5eb6fbe3-8126-452c-95e9-83faa87453d4"
+
+networkPolicy:
+  codedx:
+    toolService: true
+    toolServiceSelectors:
+    - namespaceSelector:
+        matchLabels:
+          name: cdx-svc
+```
+
+### Trust Tool Orchestration Certificate
+
+Acquire the cacerts file from your Code Dx application pod using the following command:
+
+```
+kubectl -n cdx-app CODE-DX-POD-NAME:/etc/ssl/certs/java/cacerts ./cacerts
+```
+
+Add the CA for the Tool Orchestration certificate if it is not already in cacerts. If you followed this document, you will add the k8s-ca.pem file with the following command.
+
+```
+keytool -import -trustcacerts -keystore cacerts -file .\k8s-ca.pem
+```
+
+Download the Code Dx Kubernetes chart with the following command.
+
+```
+git clone https://github.com/codedx/codedx-orchestration -b develop
+```
+
+Copy your updated cacerts file to the chart directory, and append the following cacertsFile configuration to your `codedx-orchestration-values.yaml` file.
+
+```
+codedxProps:
+  extra:
+  - type: values
+    key: cdx-tool-orchestration
+    values:
+    - "tws.enabled = true"
+    - "tws.serviceUrl = https://toolsvc-codedx-tool-orchestration.cdx-svc.svc.cluster.local:3333"
+    - "tws.apiKey = 5eb6fbe3-8126-452c-95e9-83faa87453d4"
+
+networkPolicy:
+  codedx:
+    toolService: true
+    toolServiceSelectors:
+    - namespaceSelector:
+        matchLabels:
+          name: cdx-svc
+
+cacertsFile: 'cacerts'
+```
+
+### Upgrade Code Dx
+
+Run the following command after replacing codedx-app with the Helm release name you used for your Code Dx install, path-to-code-dx-chart with the directory containing your Code Dx chart and cacerts file. Specify the correct path to your `codedx-orchestration-values.yaml` file if it's not in your current directory.
+
+```
+helm dependency update path-to-code-dx-chart
+helm upgrade codedx-app --values codedx-orchestration-values.yaml --reuse-values path-to-code-dx-chart
+```

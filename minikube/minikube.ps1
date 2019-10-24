@@ -31,10 +31,95 @@ function Add-NetworkPolicyProvider {
 	Wait-AllRunningPods 'Add Network Policy' 120 5
 }
 
-function Start-MinikubeCluster([string] $profileName, [string] $k8sVersion) {
+function Add-DefaultPodSecurityPolicy([string] $pspFile, [string] $roleFile, [string] $roleBindingFile) {
 
-	# Starts with --network-plugin=cni
-	& minikube start -p $profileName --kubernetes-version $k8sVersion --network-plugin=cni
+	$psp = @'
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: privileged
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
+spec:
+  privileged: true
+  allowPrivilegeEscalation: true
+  allowedCapabilities:
+  - '*'
+  volumes:
+  - '*'
+  hostNetwork: true
+  hostPorts:
+  - min: 0
+    max: 65535
+  hostIPC: true
+  hostPID: true
+  runAsUser:
+    rule: 'RunAsAny'
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'RunAsAny'
+  fsGroup:
+    rule: 'RunAsAny'
+'@
+
+	$psp | out-file $pspFile -Encoding ascii -Force
+	& kubectl create -f $pspFile
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to create PodSecurityPolicy. kubectl exited with code $LASTEXITCODE."
+	}
+
+	$role = @'
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: psp:privileged
+rules:
+- apiGroups: ['policy']
+  resources: ['podsecuritypolicies']
+  verbs:     ['use']
+  resourceNames:
+  - privileged
+'@
+
+	$role | out-file $roleFile -Encoding ascii -Force
+	& kubectl create -f $roleFile
+    	if ($LASTEXITCODE -ne 0) {
+    		throw "Unable to create PodSecurityPolicy ClusterRole. kubectl exited with code $LASTEXITCODE."
+    	}
+
+	$roleBinding = @'
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: psp:privileged-rolebinding
+  namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: psp:privileged
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: Group
+  apiGroup: rbac.authorization.k8s.io
+  name: system:serviceaccounts
+'@
+
+	$roleBinding | out-file $roleBindingFile -Encoding ascii -Force
+	& kubectl create -f $roleBindingFile
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to create default PodSecurityPolicy RoleBinding. kubectl exited with code $LASTEXITCODE."
+	}
+}
+
+function Start-MinikubeCluster([string] $profileName, [string] $k8sVersion, [switch] $usePsp) {
+
+	# Starts with --network-plugin=cni, optionally with PodSecurityPolicy admission plugin
+	if ($usePsp) {
+		& minikube start -p $profileName --kubernetes-version $k8sVersion --network-plugin=cni --extra-config=apiserver.enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,PodSecurityPolicy
+	} else {
+		& minikube start -p $profileName --kubernetes-version $k8sVersion --network-plugin=cni
+	}
+
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to start minikube cluster, minikube exited with code $LASTEXITCODE."
 	}

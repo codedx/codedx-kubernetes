@@ -6,7 +6,7 @@ function Add-Helm {
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to initialize helm, helm exited with code $LASTEXITCODE."
 	}
-	Wait-AllRunningPods 'Initialize Helm' 120 5
+	Wait-Deployment 'Initialize Helm' 300 15 'kube-system' 'tiller-deploy' 1
 }
 
 function Add-HelmRepo([string] $name, [string] $url) {

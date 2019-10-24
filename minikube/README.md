@@ -70,8 +70,7 @@ When the script completes, you can start using Code Dx. You can make the Code Dx
 
 ```
 pwsh
-$podName = kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name
-kubectl -n cdx-app port-forward $podName 8080
+kubectl -n cdx-app port-forward (kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name) 8080
 ```
 
 

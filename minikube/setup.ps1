@@ -67,7 +67,7 @@ $createCluster = -not (Test-MinikubeProfile $minikubeProfile)
 
 if ($createCluster) {
 
-	if ($codeDxAdminPwd -eq '') { $codeDxAdminPwd = Get-SecureStringText 'Enter a password for the Code Dx admin username' 6 }
+	if ($codeDxAdminPwd -eq '') { $codeDxAdminPwd = Get-SecureStringText 'Enter a password for the Code Dx admin account' 6 }
 	if ($minioAdminUsername -eq '') { $minioAdminUsername = Get-SecureStringText 'Enter a username for the MinIO admin account' 5 }
 	if ($minioAdminPwd -eq '') { $minioAdminPwd = Get-SecureStringText 'Enter a password for the MinIO admin account' 8 }
 	if ($toolServiceApiKey -eq '') { $toolServiceApiKey = Get-SecureStringText 'Enter an API key for the Code Dx Tool Orchestration service' 8 }
@@ -122,12 +122,18 @@ if ($createCluster) {
 		$namespaceToolOrchestration $namespaceCodeDx `
 		"https://$releaseNameToolOrchestration.$namespaceToolOrchestration.svc.cluster.local:3333" $toolServiceApiKey `
 		$releaseNameCodeDx
+
+	Write-Verbose 'Adding default PSP...'
+	Add-DefaultPodSecurityPolicy 'psp.yaml' 'psp-role.yaml' 'psp-role-binding.yaml'
+
+	Write-Verbose 'Shutting down cluster...'
+	Stop-MinikubeCluster $minikubeProfile
 }
 
 Write-Verbose "Testing minikube status for profile $minikubeProfile..."
 if (-not (Test-MinikubeStatus $minikubeProfile)) {
 	Write-Verbose "Starting minikube cluster for profile $minikubeProfile with k8s version $k8sVersion..."
-	Start-MinikubeCluster $minikubeProfile $k8sVersion
+	Start-MinikubeCluster $minikubeProfile $k8sVersion -usePSP
 }
 
 Write-Verbose "Setting kubectl context to minikube profile $minikubeProfile..."
@@ -138,11 +144,6 @@ if (-not (Test-ClusterInfo)) {
 	throw "Unable to continue because k8s cluster is not running"
 }
 
-if ($createCluster) {
-	Write-Host "Done.`n`nNote that '$workDir' contains values.yaml data that should be kept private."
-	return
-}
-
 Write-Verbose 'Waiting to check deployment status...'
 Start-Sleep -Seconds 60
 
@@ -151,3 +152,8 @@ Wait-Deployment 'Tool Orchestration Deployment' 300 15 $namespaceToolOrchestrati
 
 Write-Verbose 'Waiting for Code Dx...'
 Wait-Deployment 'Code Dx Deployment' 300 15 $namespaceCodeDx "$releaseNameCodeDx-codedx" 1
+
+if ($createCluster) {
+	Write-Host "Done.`n`nNote that '$workDir' contains values.yaml data that should be kept private."
+	return
+}

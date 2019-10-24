@@ -13,14 +13,9 @@ function Test-MinikubeStatus([string] $profileName) {
 	0 -eq $LASTEXITCODE
 }
 
-function New-MinikubeClusterHyperV([string] $profileName, [string] $k8sVersion) {
+function New-MinikubeCluster([string] $profileName, [string] $k8sVersion, [int] $cpus, [int] $memory) {
 
-	$defaultCpus = 4
-	$defaultMemory = 13312
-	$defaultSwitch = 'Default Switch'
-
-	# Start w/o --network-plugin=cni
-	& minikube start -p $profileName --kubernetes-version $k8sVersion --cpus $defaultCpus --memory $defaultMemory
+	& minikube start -p $profileName --kubernetes-version $k8sVersion --cpus $cpus --memory $memory
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create k8s cluster. Minikube exited with code $LASTEXITCODE."
 	}
@@ -38,14 +33,13 @@ function Add-NetworkPolicyProvider {
 
 function Start-MinikubeCluster([string] $profileName, [string] $k8sVersion) {
 
-	# Start w/ --network-plugin=cni
+	# Starts with --network-plugin=cni
 	& minikube start -p $profileName --kubernetes-version $k8sVersion --network-plugin=cni
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to start minikube cluster, minikube exited with code $LASTEXITCODE."
 	}
 
 	Wait-MinikubeNodeReady 'Start Minikube Cluster' 120 5
-	Wait-AllRunningPods 'Start Minikube Cluster' 120 5
 }
 
 function Wait-MinikubeNodeReady([string] $message, [int] $waitSeconds, [int] $sleepSeconds) {

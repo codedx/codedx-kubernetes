@@ -14,11 +14,15 @@ The following tools must be installed and included in your PATH before running s
 - git
 - keytool
 
->Note: The setup.ps1 script currently supports Windows only and requires a private Docker registry.
+>Note: The setup.ps1 script currently requires a private Docker registry.
 
 ## Setup Minikube Cluster
 
-Run setup.ps1 with the following command.
+Before running the setup.ps1 script, you must download all of the .ps1 files in this directory. You can clone this repository to download the required files.
+
+Run setup.ps1 with the following command. 
+
+>Note: On Windows, you must run this from an elevated Command Prompt.
 
 ```
 pwsh ./setup.ps1
@@ -34,6 +38,14 @@ You can use the default values for many of the setup.ps1 script parameters. When
 | toolServiceApiKey | The API key protecting admin endpoints of the Tool Orchestration service. | fb9a70bc-4049-4250-a676-b4194c34ac09 |
 | dockerConfigJson | The .dockerconfigjson value allowing access to a private Docker registry. | See .dockerconfigjson at https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#registry-secret-existing-credentials |
 
+When the script completes, you can start using Code Dx. You can make the Code Dx web application available on port 8080 by running the following commands.
+
+```
+pwsh
+$podName = kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name
+kubectl -n cdx-app port-forward $podName 8080
+```
+
 >Note: You must enter a valid license before using the Code Dx Tool Orchestration software.
 
 ## Stop Minikube Cluster
@@ -48,11 +60,20 @@ minikube -p minikube-1-14-6 stop
 
 ## Restart Minikube Cluster
 
-You can restart the minikube cluster created by setup.ps1 with the following command.
+Restart the minikube cluster created by setup.ps1 with the following command.
 
 ```
 pwsh ./setup.ps1
 ```
+
+When the script completes, you can start using Code Dx. You can make the Code Dx web application available on port 8080 by running the following commands.
+
+```
+pwsh
+$podName = kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name
+kubectl -n cdx-app port-forward $podName 8080
+```
+
 
 ## Delete Minikube Cluster
 

@@ -12,6 +12,8 @@
 param (
 	[string] $k8sVersion = 'v1.14.6',
 	[string] $minikubeProfile = 'minikube-1-14-6',
+	[int]    $nodeCPUs = 4,
+	[int]    $nodeMemory = 13312,
 
 	[string] $imagePullSecretName = 'codedx-docker-registry',
 	[string] $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:v114',
@@ -82,7 +84,7 @@ if ($createCluster) {
 	Push-Location $workDir
 
 	Write-Verbose "Profile does not exist. Creating new minikube profile named $minikubeProfile for k8s version $k8sVersion..."
-	New-MinikubeClusterHyperV $minikubeProfile $k8sVersion
+	New-MinikubeCluster $minikubeProfile $k8sVersion $nodeCPUs $nodeMemory
 
 	Write-Verbose "Adding network policy provider..."
 	Add-NetworkPolicyProvider
@@ -92,6 +94,9 @@ if ($createCluster) {
 
 	Write-Verbose 'Starting minikube cluster...'
 	Start-MinikubeCluster $minikubeProfile $k8sVersion
+
+	Write-Verbose 'Waiting for running pods...'
+	Wait-AllRunningPods 'Start Minikube Cluster' 120 5
 
 	Write-Verbose 'Initializing Helm and adding repositories...'
 	Add-Helm

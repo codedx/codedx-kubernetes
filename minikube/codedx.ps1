@@ -118,8 +118,7 @@ function Set-UseToolOrchestration([string] $workDir,
 	[string] $codeDxReleaseName) {
 
 	# access cacerts file
-	# TODO: Add status=Running
-	$podName = & kubectl -n $codedxNamespace get pod -l app=codedx -o name
+	$podName = & kubectl -n $codedxNamespace get pod -l app=codedx --field-selector=status.phase=Running -o name
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to get for name of Code Dx pod, kubectl exited with code $LASTEXITCODE."
 	}

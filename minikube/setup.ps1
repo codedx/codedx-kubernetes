@@ -87,6 +87,12 @@ if ($createCluster) {
 	Write-Verbose "Adding network policy provider..."
 	Add-NetworkPolicyProvider
 
+	Write-Verbose 'Stopping minikube cluster...'
+	Stop-MinikubeCluster $minikubeProfile
+
+	Write-Verbose 'Starting minikube cluster...'
+	Start-MinikubeCluster $minikubeProfile $k8sVersion
+
 	Write-Verbose 'Initializing Helm and adding repositories...'
 	Add-Helm
 	Add-HelmRepo 'minio' https://codedx.github.io/charts

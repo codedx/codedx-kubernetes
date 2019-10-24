@@ -20,13 +20,10 @@ function New-MinikubeClusterHyperV([string] $profileName, [string] $k8sVersion) 
 	$defaultSwitch = 'Default Switch'
 
 	# Start w/o --network-plugin=cni
-	& minikube start -p $profileName --kubernetes-version $k8sVersion --vm-driver hyperv --hyperv-virtual-switch $defaultSwitch --cpus $defaultCpus --memory $defaultMemory
+	& minikube start -p $profileName --kubernetes-version $k8sVersion --cpus $defaultCpus --memory $defaultMemory
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create k8s cluster. Minikube exited with code $LASTEXITCODE."
 	}
-
-	# Restart w/ --network-plugin=cni
-	Start-MinikubeCluster $minikubeProfile $k8sVersion
 }
 
 function Add-NetworkPolicyProvider {
@@ -41,6 +38,7 @@ function Add-NetworkPolicyProvider {
 
 function Start-MinikubeCluster([string] $profileName, [string] $k8sVersion) {
 
+	# Start w/ --network-plugin=cni
 	& minikube start -p $profileName --kubernetes-version $k8sVersion --network-plugin=cni
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to start minikube cluster, minikube exited with code $LASTEXITCODE."

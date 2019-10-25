@@ -7,7 +7,7 @@ The setup.ps1 PowerShell Core script uses Helm to install and configure Code Dx 
 
 The following tools must be installed and included in your PATH before running setup.ps1:
 
-- minikube
+- minikube (with VirtualBox)
 - helm
 - kubectl
 - openssl

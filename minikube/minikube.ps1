@@ -15,7 +15,7 @@ function Test-MinikubeStatus([string] $profileName) {
 
 function New-MinikubeCluster([string] $profileName, [string] $k8sVersion, [int] $cpus, [int] $memory) {
 
-	& minikube start -p $profileName --kubernetes-version $k8sVersion --cpus $cpus --memory $memory
+	& minikube start --vm-driver=virtualbox -p $profileName --kubernetes-version $k8sVersion --cpus $cpus --memory $memory
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create k8s cluster. Minikube exited with code $LASTEXITCODE."
 	}
@@ -102,6 +102,9 @@ subjects:
 - kind: Group
   apiGroup: rbac.authorization.k8s.io
   name: system:serviceaccounts
+- kind: Group
+  apiGroup: rbac.authorization.k8s.io
+  name: system:nodes
 '@
 
 	$roleBinding | out-file $roleBindingFile -Encoding ascii -Force
@@ -115,9 +118,9 @@ function Start-MinikubeCluster([string] $profileName, [string] $k8sVersion, [swi
 
 	# Starts with --network-plugin=cni, optionally with PodSecurityPolicy admission plugin
 	if ($usePsp) {
-		& minikube start -p $profileName --kubernetes-version $k8sVersion --network-plugin=cni --extra-config=apiserver.enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,PodSecurityPolicy
+		& minikube start --vm-driver=virtualbox -p $profileName --kubernetes-version $k8sVersion --network-plugin=cni --extra-config=apiserver.enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,PodSecurityPolicy
 	} else {
-		& minikube start -p $profileName --kubernetes-version $k8sVersion --network-plugin=cni
+		& minikube start --vm-driver=virtualbox -p $profileName --kubernetes-version $k8sVersion --network-plugin=cni
 	}
 
 	if ($LASTEXITCODE -ne 0) {

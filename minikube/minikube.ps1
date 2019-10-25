@@ -2,20 +2,20 @@
 
 function Test-MinikubeProfile([string] $profileName) {
 
-	$profileList = & minikube profile list
+	$profileList = minikube profile list
 	$result = $profileList | select-string ('\s{0}\s' -f $profileName)
 	$null -ne $result
 }
 
 function Test-MinikubeStatus([string] $profileName) {
 
-	& minikube -p $profileName status | out-null
+	minikube -p $profileName status | out-null
 	0 -eq $LASTEXITCODE
 }
 
 function New-MinikubeCluster([string] $profileName, [string] $k8sVersion, [int] $cpus, [int] $memory) {
 
-	& minikube start --vm-driver=virtualbox -p $profileName --kubernetes-version $k8sVersion --cpus $cpus --memory $memory
+	minikube start --vm-driver=virtualbox -p $profileName --kubernetes-version $k8sVersion --cpus $cpus --memory $memory
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create k8s cluster. Minikube exited with code $LASTEXITCODE."
 	}
@@ -23,12 +23,22 @@ function New-MinikubeCluster([string] $profileName, [string] $k8sVersion, [int] 
 
 function Add-NetworkPolicyProvider {
 
-	& kubectl apply -f https://docs.projectcalico.org/v3.9/manifests/calico.yaml
+	kubectl apply -f https://docs.projectcalico.org/v3.9/manifests/calico.yaml
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create k8s cluster. Minikube exited with code $LASTEXITCODE."
 	}
 
 	Wait-AllRunningPods 'Add Network Policy' 120 5
+}
+
+function Add-IngressAddon([string] $profileName) {
+
+	minikube -p $profileName addons enable ingress
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to add ingress addon. Minikube exited with code $LASTEXITCODE."
+	}
+
+	Wait-Deployment 'Ingress Addon' 300 15 'kube-system' 'nginx-ingress-controller' 1
 }
 
 function Add-DefaultPodSecurityPolicy([string] $pspFile, [string] $roleFile, [string] $roleBindingFile) {
@@ -64,7 +74,7 @@ spec:
 '@
 
 	$psp | out-file $pspFile -Encoding ascii -Force
-	& kubectl create -f $pspFile
+	kubectl create -f $pspFile
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create PodSecurityPolicy. kubectl exited with code $LASTEXITCODE."
 	}
@@ -83,7 +93,7 @@ rules:
 '@
 
 	$role | out-file $roleFile -Encoding ascii -Force
-	& kubectl create -f $roleFile
+	kubectl create -f $roleFile
     	if ($LASTEXITCODE -ne 0) {
     		throw "Unable to create PodSecurityPolicy ClusterRole. kubectl exited with code $LASTEXITCODE."
     	}
@@ -108,7 +118,7 @@ subjects:
 '@
 
 	$roleBinding | out-file $roleBindingFile -Encoding ascii -Force
-	& kubectl create -f $roleBindingFile
+	kubectl create -f $roleBindingFile
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create default PodSecurityPolicy RoleBinding. kubectl exited with code $LASTEXITCODE."
 	}
@@ -118,9 +128,9 @@ function Start-MinikubeCluster([string] $profileName, [string] $k8sVersion, [swi
 
 	# Starts with --network-plugin=cni, optionally with PodSecurityPolicy admission plugin
 	if ($usePsp) {
-		& minikube start --vm-driver=virtualbox -p $profileName --kubernetes-version $k8sVersion --network-plugin=cni --extra-config=apiserver.enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,PodSecurityPolicy
+		minikube start --vm-driver=virtualbox -p $profileName --kubernetes-version $k8sVersion --network-plugin=cni --extra-config=apiserver.enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,PodSecurityPolicy
 	} else {
-		& minikube start --vm-driver=virtualbox -p $profileName --kubernetes-version $k8sVersion --network-plugin=cni
+		minikube start --vm-driver=virtualbox -p $profileName --kubernetes-version $k8sVersion --network-plugin=cni
 	}
 
 	if ($LASTEXITCODE -ne 0) {
@@ -136,7 +146,7 @@ function Wait-MinikubeNodeReady([string] $message, [int] $waitSeconds, [int] $sl
 	while ($true) {
 
 		Write-Verbose "Waiting for ready node ($message)..."
-		$results = & kubectl get node
+		$results = kubectl get node
 		if ($null -ne ($results | select-string 'minikube\s+Ready')) {
 			Write-Verbose "Node is ready ($message)"
 			break
@@ -179,7 +189,7 @@ function Get-MinikubeCaCert {
 
 function Stop-MinikubeCluster([string] $profileName) {
 
-	& minikube stop -p $profileName
+	minikube stop -p $profileName
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to stop minikube cluster. Minikube exited with code $LASTEXITCODE."
 	}

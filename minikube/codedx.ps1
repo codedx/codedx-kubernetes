@@ -118,19 +118,19 @@ function Set-UseToolOrchestration([string] $workDir,
 	[string] $codeDxReleaseName) {
 
 	# access cacerts file
-	$podName = & kubectl -n $codedxNamespace get pod -l app=codedx --field-selector=status.phase=Running -o name
+	$podName = kubectl -n $codedxNamespace get pod -l app=codedx --field-selector=status.phase=Running -o name
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to get for name of Code Dx pod, kubectl exited with code $LASTEXITCODE."
 	}
 
 	$podFile = "$($podName.Replace('pod/', ''))`:/etc/ssl/certs/java/cacerts"
-	& kubectl -n $codedxNamespace cp $podFile './cacerts'
+	kubectl -n $codedxNamespace cp $podFile './cacerts'
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to copy out cacerts file, kubectl exited with code $LASTEXITCODE."
 	}
 
 	# update cacerts file
-	& keytool -import -trustcacerts -keystore cacerts -file (Get-MinikubeCaCertPath) -noprompt -storepass changeit
+	keytool -import -trustcacerts -keystore cacerts -file (Get-MinikubeCaCertPath) -noprompt -storepass changeit
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to import CA certificate into cacerts file, keytool exited with code $LASTEXITCODE."
 	}
@@ -162,7 +162,7 @@ cacertsFile: 'cacerts'
 	$valuesFile = 'codedx-orchestration-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
 
-	& helm upgrade --values $valuesFile --reuse-values $codeDxReleaseName $chartFolder
+	helm upgrade --values $valuesFile --reuse-values $codeDxReleaseName $chartFolder
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to upgrade Code Dx release for tool orchestration, helm exited with code $LASTEXITCODE."
 	}

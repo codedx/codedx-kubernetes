@@ -36,7 +36,7 @@ function Get-SecureStringText([string] $prompt, [int] $minimumLength) {
 
 function Invoke-GitClone([string] $url, [string] $branch) {
 
-	& git clone $url -b $branch
+	git clone $url -b $branch
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to run git clone with $url and branch $branch, git exited with code $LASTEXITCODE."
 	}
@@ -51,7 +51,5 @@ function Test-IsElevated {
 	if ($IsWindows) {
 		return [bool](([Security.Principal.WindowsIdentity]::GetCurrent()).groups -match "S-1-5-32-544")
 	}
-
-	# TODO: Implement on other platforms
-	$true
+	(id -u) -eq 0
 }

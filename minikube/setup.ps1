@@ -49,13 +49,16 @@ if (-not (Test-IsCore)) {
 	write-error 'Unable to continue because you must run this script with PowerShell Core (pwsh)'
 }
 
-if (-not $IsWindows) {
-	write-error 'Unable to continue because you must run this script on Windows'
+if ($IsWindows) {
+	if (-not (Test-IsElevated)) {
+		write-error "Unable to continue because you must run this script elevated"
+	}
+} else {
+	if (Test-IsElevated) {
+		write-error "Unable to continue because you cannot run this script as the root user"
+	}
 }
 
-if (-not (Test-IsElevated)) {
-	write-error "Unable to continue because you must run this script elevated"
-}
 
 'minikube','helm','kubectl','openssl','git','keytool' | foreach-object {
 	if ($null -eq (Get-AppCommandPath $_)) {
@@ -102,6 +105,9 @@ if ($createCluster) {
 	Add-Helm
 	Add-HelmRepo 'minio' https://codedx.github.io/charts
 	Add-HelmRepo 'argo' https://argoproj.github.io/argo-helm
+
+	Write-Verbose 'Adding Ingress Addon'
+	Add-IngressAddOn $minikubeProfile
 
 	Write-Verbose 'Fetching Code Dx Helm charts...'
 	Remove-Item .\codedx-kubernetes -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
@@ -154,6 +160,9 @@ Write-Verbose 'Waiting for Code Dx...'
 Wait-Deployment 'Code Dx Deployment' 300 15 $namespaceCodeDx "$releaseNameCodeDx-codedx" 1
 
 if ($createCluster) {
-	Write-Host "Done.`n`nNote that '$workDir' contains values.yaml data that should be kept private."
-	return
+	Write-Host "Done.`n`n***Note: '$workDir' contains values.yaml data that should be kept private.`n`n"
 }
+
+Write-Host '`nRun the following command to make Code Dx available at http://localhost:8080/codedx' 
+Write-Host 'pwsh -c "kubectl -n cdx-app port-forward (kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name) 8080"'
+

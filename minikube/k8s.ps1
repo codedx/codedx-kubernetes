@@ -2,7 +2,7 @@
 
 function New-Namespace([string] $namespace) {
 
-	& kubectl create namespace $namespace
+	kubectl create namespace $namespace
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create namespace $namespace, kubectl exited with code $LASTEXITCODE."
 	}
@@ -10,13 +10,13 @@ function New-Namespace([string] $namespace) {
 
 function Test-Namespace([string] $namespace) {
 
-	& kubectl get namespace $namespace | out-null
+	kubectl get namespace $namespace | out-null
 	0 -eq $LASTEXITCODE
 }
 
 function Set-KubectlContext([string] $profileName) {
 
-	& kubectl config use-context $profileName
+	kubectl config use-context $profileName
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to change kubectl context, kubectl exited with code $LASTEXITCODE."
 	}
@@ -24,7 +24,7 @@ function Set-KubectlContext([string] $profileName) {
 
 function Test-ClusterInfo([string] $profileName) {
 
-	& kubectl cluster-info | out-null
+	kubectl cluster-info | out-null
 	0 -eq $LASTEXITCODE
 }
 
@@ -52,7 +52,7 @@ DNS.3 = {2}
 
 	$request | out-file $requestFile -Encoding ascii -Force
 
-	& openssl req -new -config $requestFile -out $csrFile -keyout $keyFile
+	openssl req -new -config $requestFile -out $csrFile -keyout $keyFile
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create CSR, openssl exited with code $LASTEXITCODE."
 	}
@@ -60,13 +60,13 @@ DNS.3 = {2}
 
 function Test-CsrResource([string] $resourceName) {
 
-	& kubectl get csr $resourceName | out-null
+	kubectl get csr $resourceName | out-null
 	$LASTEXITCODE -eq 0
 }
 
 function Remove-CsrResource([string] $resourceName) {
 
-	& kubectl delete csr $resourceName
+	kubectl delete csr $resourceName
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to delete CSR, kubectl exited with code $LASTEXITCODE."
 	}
@@ -95,7 +95,7 @@ spec:
 
 	$resourceRequest | out-file  $csrResourceFile -Encoding ascii -Force
 
-	& kubectl create -f $csrResourceFile
+	kubectl create -f $csrResourceFile
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create CSR resource, kubectl exited with code $LASTEXITCODE."
 	}
@@ -103,7 +103,7 @@ spec:
 
 function New-CsrApproval([string] $resourceName) {
 
-	& kubectl certificate approve $resourceName
+	kubectl certificate approve $resourceName
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to approve CSR, kubectl exited with code $LASTEXITCODE."
 	}
@@ -126,7 +126,7 @@ function Get-Certificate([string] $resourceName) {
 
 function Set-NamespaceLabel([string] $namespace, [string] $labelName, [string] $labelValue) {
 
-	& kubectl label namespace $namespace $labelName`=$labelValue --overwrite
+	kubectl label namespace $namespace $labelName`=$labelValue --overwrite
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create $namespace label with $labelName=$labelValue, kubectl exited with code $LASTEXITCODE."
 	}
@@ -152,7 +152,7 @@ function New-CertificateSecret([string] $namespace, [string] $name, [string] $ce
 		Remove-Secret $namespace $name
 	}
 
-	& kubectl -n $namespace create secret generic $name --from-file`=$certFile --from-file`=$keyFile
+	kubectl -n $namespace create secret generic $name --from-file`=$certFile --from-file`=$keyFile
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create secret named $name, kubectl exited with code $LASTEXITCODE."
 	}
@@ -178,7 +178,7 @@ function New-CertificateConfigMap([string] $namespace, [string] $name, [string] 
 		Remove-ConfigMap $namespace $name
 	}
 
-	& kubectl -n $namespace create configmap $name --from-file`=$certFile
+	kubectl -n $namespace create configmap $name --from-file`=$certFile
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create configmap named $name, kubectl exited with code $LASTEXITCODE."
 	}
@@ -201,7 +201,7 @@ type: kubernetes.io/dockerconfigjson
 '@ -f $name, $dockerConfigJson
 
 	$imagePullSecret | out-file "$name.yaml" -Encoding ascii -Force
-	& kubectl -n $namespace create -f "$name.yaml"
+	kubectl -n $namespace create -f "$name.yaml"
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create image pull secret named $name, kubectl exited with code $LASTEXITCODE."
 	}
@@ -214,7 +214,7 @@ function Wait-AllRunningPods([string] $message, [int] $waitSeconds, [int] $sleep
 
 		Write-Verbose "Checking for pods that are not in a Running status ($message)..."
 		kubectl get pod --all-namespaces
-		$results = & kubectl get pod --field-selector=status.phase!=Running --all-namespaces
+		$results = kubectl get pod --field-selector=status.phase!=Running --all-namespaces
 		if ($null -eq $results) {
 			Write-Verbose 'All pods show a Running status...'
 			break
@@ -234,7 +234,7 @@ function Wait-Deployment([string] $message, [int] $waitSeconds, [int] $sleepSeco
 	while ($true) {
 
 		Write-Verbose "Fetching status of deployment named $deploymentName..."
-		$deploymentJson = & kubectl -n $namespace get deployment $deploymentName -o json
+		$deploymentJson = kubectl -n $namespace get deployment $deploymentName -o json
 		if ($LASTEXITCODE -ne 0) {
 			throw "Unable to wait for deployment, kubectl exited with code $LASTEXITCODE."
 		}

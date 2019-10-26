@@ -28,7 +28,7 @@ function Add-NetworkPolicyProvider {
 		throw "Unable to create k8s cluster. Minikube exited with code $LASTEXITCODE."
 	}
 
-	Wait-AllRunningPods 'Add Network Policy' 120 5
+	Wait-AllRunningPods 'Add Network Policy' 120
 }
 
 function Add-IngressAddon([string] $profileName) {
@@ -38,7 +38,7 @@ function Add-IngressAddon([string] $profileName) {
 		throw "Unable to add ingress addon. Minikube exited with code $LASTEXITCODE."
 	}
 
-	Wait-Deployment 'Ingress Addon' 300 15 'kube-system' 'nginx-ingress-controller' 1
+	Wait-Deployment 'Ingress Addon' 300 'kube-system' 'nginx-ingress-controller' 1
 }
 
 function Add-DefaultPodSecurityPolicy([string] $pspFile, [string] $roleFile, [string] $roleBindingFile) {
@@ -137,11 +137,12 @@ function Start-MinikubeCluster([string] $profileName, [string] $k8sVersion, [swi
 		throw "Unable to start minikube cluster, minikube exited with code $LASTEXITCODE."
 	}
 
-	Wait-MinikubeNodeReady 'Start Minikube Cluster' 120 5
+	Wait-MinikubeNodeReady 'Start Minikube Cluster' 120
 }
 
-function Wait-MinikubeNodeReady([string] $message, [int] $waitSeconds, [int] $sleepSeconds) {
+function Wait-MinikubeNodeReady([string] $message, [int] $waitSeconds) {
 
+	$sleepSeconds = $waitSeconds * .05
 	$timeoutTime = [datetime]::Now.AddSeconds($waitSeconds)
 	while ($true) {
 

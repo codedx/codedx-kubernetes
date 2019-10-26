@@ -207,8 +207,9 @@ type: kubernetes.io/dockerconfigjson
 	}
 }
 
-function Wait-AllRunningPods([string] $message, [int] $waitSeconds, [int] $sleepSeconds) {
+function Wait-AllRunningPods([string] $message, [int] $waitSeconds) {
 
+	$sleepSeconds = $waitSeconds * .05
 	$timeoutTime = [datetime]::Now.AddSeconds($waitSeconds)
 	while ($true) {
 
@@ -228,8 +229,9 @@ function Wait-AllRunningPods([string] $message, [int] $waitSeconds, [int] $sleep
 	}
 }
 
-function Wait-Deployment([string] $message, [int] $waitSeconds, [int] $sleepSeconds, [string] $namespace, [string] $deploymentName, [string] $totalReplicas) {
+function Wait-Deployment([string] $message, [int] $waitSeconds, [string] $namespace, [string] $deploymentName, [string] $totalReplicas) {
 
+	$sleepSeconds = $waitSeconds * .05
 	$timeoutTime = [datetime]::Now.AddSeconds($waitSeconds)
 	while ($true) {
 

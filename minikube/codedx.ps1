@@ -167,5 +167,5 @@ cacertsFile: 'cacerts'
 		throw "Unable to upgrade Code Dx release for tool orchestration, helm exited with code $LASTEXITCODE."
 	}
 
-	Wait-Deployment 'Helm Upgrade' 300 15 $codedxNamespace "$codeDxReleaseName-codedx" 1
+	Wait-Deployment 'Helm Upgrade' 300 $codedxNamespace "$codeDxReleaseName-codedx" 1
 }

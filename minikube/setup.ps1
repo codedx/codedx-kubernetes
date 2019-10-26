@@ -14,6 +14,7 @@ param (
 	[string] $minikubeProfile = 'minikube-1-14-6',
 	[int]    $nodeCPUs = 4,
 	[int]    $nodeMemory = 13312,
+	[int]    $waitTimeSeconds = 300,
 
 	[string] $imagePullSecretName = 'codedx-docker-registry',
 	[string] $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:v114',
@@ -99,7 +100,7 @@ if ($createCluster) {
 	Start-MinikubeCluster $minikubeProfile $k8sVersion
 
 	Write-Verbose 'Waiting for running pods...'
-	Wait-AllRunningPods 'Start Minikube Cluster' 120 5
+	Wait-AllRunningPods 'Start Minikube Cluster' $waitTimeSeconds
 
 	Write-Verbose 'Initializing Helm and adding repositories...'
 	Add-Helm
@@ -154,15 +155,15 @@ Write-Verbose 'Waiting to check deployment status...'
 Start-Sleep -Seconds 60
 
 Write-Verbose 'Waiting for Tool Orchestration deployment...'
-Wait-Deployment 'Tool Orchestration Deployment' 300 15 $namespaceToolOrchestration $releaseNameToolOrchestration 3
+Wait-Deployment 'Tool Orchestration Deployment' $waitTimeSeconds $namespaceToolOrchestration $releaseNameToolOrchestration 3
 
 Write-Verbose 'Waiting for Code Dx...'
-Wait-Deployment 'Code Dx Deployment' 300 15 $namespaceCodeDx "$releaseNameCodeDx-codedx" 1
+Wait-Deployment 'Code Dx Deployment' $waitTimeSeconds $namespaceCodeDx "$releaseNameCodeDx-codedx" 1
 
 if ($createCluster) {
 	Write-Host "Done.`n`n***Note: '$workDir' contains values.yaml data that should be kept private.`n`n"
 }
 
-Write-Host '`nRun the following command to make Code Dx available at http://localhost:8080/codedx' 
+Write-Host "`nRun the following command to make Code Dx available at http://localhost:8080/codedx"
 Write-Host 'pwsh -c "kubectl -n cdx-app port-forward (kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name) 8080"'
 

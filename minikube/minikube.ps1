@@ -21,24 +21,24 @@ function New-MinikubeCluster([string] $profileName, [string] $k8sVersion, [int] 
 	}
 }
 
-function Add-NetworkPolicyProvider {
+function Add-NetworkPolicyProvider([string] $waitSeconds) {
 
 	kubectl apply -f https://docs.projectcalico.org/v3.9/manifests/calico.yaml
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create k8s cluster. Minikube exited with code $LASTEXITCODE."
 	}
 
-	Wait-AllRunningPods 'Add Network Policy' 120
+	Wait-AllRunningPods 'Add Network Policy' $waitSeconds
 }
 
-function Add-IngressAddon([string] $profileName) {
+function Add-IngressAddon([string] $profileName, [int] $waitSeconds) {
 
 	minikube -p $profileName addons enable ingress
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to add ingress addon. Minikube exited with code $LASTEXITCODE."
 	}
 
-	Wait-Deployment 'Ingress Addon' 300 'kube-system' 'nginx-ingress-controller' 1
+	Wait-Deployment 'Ingress Addon' $waitSeconds 'kube-system' 'nginx-ingress-controller' 1
 }
 
 function Add-DefaultPodSecurityPolicy([string] $pspFile, [string] $roleFile, [string] $roleBindingFile) {
@@ -124,7 +124,7 @@ subjects:
 	}
 }
 
-function Start-MinikubeCluster([string] $profileName, [string] $k8sVersion, [switch] $usePsp) {
+function Start-MinikubeCluster([string] $profileName, [string] $k8sVersion, [int] $waitSeconds, [switch] $usePsp) {
 
 	# Starts with --network-plugin=cni, optionally with PodSecurityPolicy admission plugin
 	if ($usePsp) {
@@ -137,7 +137,7 @@ function Start-MinikubeCluster([string] $profileName, [string] $k8sVersion, [swi
 		throw "Unable to start minikube cluster, minikube exited with code $LASTEXITCODE."
 	}
 
-	Wait-MinikubeNodeReady 'Start Minikube Cluster' 120
+	Wait-MinikubeNodeReady 'Start Minikube Cluster' $waitSeconds
 }
 
 function Wait-MinikubeNodeReady([string] $message, [int] $waitSeconds) {

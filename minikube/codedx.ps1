@@ -1,6 +1,7 @@
 . (join-path $PSScriptRoot minikube.ps1)
 
 function New-CodeDxDeployment([string] $workDir, 
+	[int]    $waitSeconds,
 	[string] $namespace,
 	[string] $releaseName,
 	[string] $adminPwd,
@@ -27,10 +28,11 @@ codedxTomcatImagePullSecrets:
 	$values | out-file $valuesFile -Encoding ascii -Force
 
 	$chartFolder = (join-path $workDir codedx-kubernetes/codedx)
-	Invoke-HelmSingleDeployment 'Code Dx' $namespace $releaseName $chartFolder $valuesFile 'codedx-app-codedx' 1
+	Invoke-HelmSingleDeployment 'Code Dx' $waitSeconds $namespace $releaseName $chartFolder $valuesFile 'codedx-app-codedx' 1
 }
 
 function New-ToolOrchestrationDeployment([string] $workDir, 
+	[int]    $waitSeconds,
 	[string] $namespace,
 	[string] $codedxNamespace,
 	[string] $codedxReleaseName,
@@ -109,10 +111,11 @@ $imagePullSecretName,$toolsImage,$toolsMonoImage,$newAnalysisImage,$sendResultsI
 	$values | out-file $valuesFile -Encoding ascii -Force
 
 	$chartFolder = (join-path $workDir codedx-kubernetes/codedx-tool-orchestration)
-	Invoke-HelmSingleDeployment 'Tool Orchestration' $namespace 'toolsvc' $chartFolder $valuesFile 'toolsvc-codedx-tool-orchestration' 3
+	Invoke-HelmSingleDeployment 'Tool Orchestration' $waitSeconds $namespace 'toolsvc' $chartFolder $valuesFile 'toolsvc-codedx-tool-orchestration' 3
 }
 
 function Set-UseToolOrchestration([string] $workDir, 
+	[string] $waitSeconds,
 	[string] $namespace, [string] $codedxNamespace,
 	[string] $toolServiceUrl, [string] $toolServiceApiKey,
 	[string] $codeDxReleaseName) {
@@ -167,5 +170,5 @@ cacertsFile: 'cacerts'
 		throw "Unable to upgrade Code Dx release for tool orchestration, helm exited with code $LASTEXITCODE."
 	}
 
-	Wait-Deployment 'Helm Upgrade' 300 $codedxNamespace "$codeDxReleaseName-codedx" 1
+	Wait-Deployment 'Helm Upgrade' $waitSeconds $codedxNamespace "$codeDxReleaseName-codedx" 1
 }

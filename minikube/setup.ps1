@@ -91,34 +91,34 @@ if ($createCluster) {
 	New-MinikubeCluster $minikubeProfile $k8sVersion $nodeCPUs $nodeMemory
 
 	Write-Verbose "Adding network policy provider..."
-	Add-NetworkPolicyProvider
+	Add-NetworkPolicyProvider $waitTimeSeconds
 
 	Write-Verbose 'Stopping minikube cluster...'
 	Stop-MinikubeCluster $minikubeProfile
 
 	Write-Verbose 'Starting minikube cluster...'
-	Start-MinikubeCluster $minikubeProfile $k8sVersion
+	Start-MinikubeCluster $minikubeProfile $k8sVersion $waitTimeSeconds
 
 	Write-Verbose 'Waiting for running pods...'
 	Wait-AllRunningPods 'Start Minikube Cluster' $waitTimeSeconds
 
 	Write-Verbose 'Initializing Helm and adding repositories...'
-	Add-Helm
+	Add-Helm $waitTimeSeconds
 	Add-HelmRepo 'minio' https://codedx.github.io/charts
 	Add-HelmRepo 'argo' https://argoproj.github.io/argo-helm
 
 	Write-Verbose 'Adding Ingress Addon'
-	Add-IngressAddOn $minikubeProfile
+	Add-IngressAddOn $minikubeProfile $waitTimeSeconds
 
 	Write-Verbose 'Fetching Code Dx Helm charts...'
 	Remove-Item .\codedx-kubernetes -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
 	Invoke-GitClone 'https://github.com/codedx/codedx-kubernetes' 'develop'
 
 	Write-Verbose 'Deploying Code Dx with Tool Orchestration disabled...'
-	New-CodeDxDeployment $workDir $namespaceCodeDx $releaseNameCodeDx $codeDxAdminPwd $imageCodeDxTomcat $imagePullSecretName
+	New-CodeDxDeployment $workDir $waitTimeSeconds $namespaceCodeDx $releaseNameCodeDx $codeDxAdminPwd $imageCodeDxTomcat $imagePullSecretName
 
 	Write-Verbose 'Deploying Tool Orchestration...'
-	New-ToolOrchestrationDeployment $workDir  $namespaceToolOrchestration $namespaceCodeDx $releaseNameCodeDx `
+	New-ToolOrchestrationDeployment $workDir $waitTimeSeconds $namespaceToolOrchestration $namespaceCodeDx $releaseNameCodeDx `
 		$minioAdminUsername $minioAdminPwd $toolServiceApiKey `
 		$imageCodeDxTools $imageCodeDxToolsMono `
 		$imageNewAnalysis $imageSendResults $imageSendErrorResults $imageToolService `
@@ -126,6 +126,7 @@ if ($createCluster) {
 
 	Write-Verbose 'Updating Code Dx deployment by enabling Tool Orchestration...'
 	Set-UseToolOrchestration $workDir `
+		$waitTimeSeconds `
 		$namespaceToolOrchestration $namespaceCodeDx `
 		"https://$releaseNameToolOrchestration.$namespaceToolOrchestration.svc.cluster.local:3333" $toolServiceApiKey `
 		$releaseNameCodeDx
@@ -140,7 +141,7 @@ if ($createCluster) {
 Write-Verbose "Testing minikube status for profile $minikubeProfile..."
 if (-not (Test-MinikubeStatus $minikubeProfile)) {
 	Write-Verbose "Starting minikube cluster for profile $minikubeProfile with k8s version $k8sVersion..."
-	Start-MinikubeCluster $minikubeProfile $k8sVersion -usePSP
+	Start-MinikubeCluster $minikubeProfile $k8sVersion $waitTimeSeconds -usePSP
 }
 
 Write-Verbose "Setting kubectl context to minikube profile $minikubeProfile..."

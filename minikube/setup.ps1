@@ -15,6 +15,7 @@ param (
 	[int]    $nodeCPUs = 4,
 	[int]    $nodeMemory = 13312,
 	[int]    $waitTimeSeconds = 300,
+	[string] $vmDriver = 'virtualbox',
 
 	[string] $imagePullSecretName = 'codedx-docker-registry',
 	[string] $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:v114',
@@ -88,7 +89,7 @@ if ($createCluster) {
 	Push-Location $workDir
 
 	Write-Verbose "Profile does not exist. Creating new minikube profile named $minikubeProfile for k8s version $k8sVersion..."
-	New-MinikubeCluster $minikubeProfile $k8sVersion $nodeCPUs $nodeMemory
+	New-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $nodeCPUs $nodeMemory
 
 	Write-Verbose "Adding network policy provider..."
 	Add-NetworkPolicyProvider $waitTimeSeconds

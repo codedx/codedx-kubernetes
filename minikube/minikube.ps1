@@ -124,13 +124,13 @@ subjects:
 	}
 }
 
-function Start-MinikubeCluster([string] $profileName, [string] $k8sVersion, [int] $waitSeconds, [switch] $usePsp) {
+function Start-MinikubeCluster([string] $profileName, [string] $k8sVersion, [string] $vmDriver, [int] $waitSeconds, [switch] $usePsp) {
 
 	# Starts with --network-plugin=cni, optionally with PodSecurityPolicy admission plugin
 	if ($usePsp) {
-		minikube start --vm-driver=virtualbox -p $profileName --kubernetes-version $k8sVersion --network-plugin=cni --extra-config=apiserver.enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,PodSecurityPolicy
+		minikube start -p $profileName --kubernetes-version $k8sVersion --vm-driver $vmDriver --network-plugin=cni --extra-config=apiserver.enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,PodSecurityPolicy
 	} else {
-		minikube start --vm-driver=virtualbox -p $profileName --kubernetes-version $k8sVersion --network-plugin=cni
+		minikube start -p $profileName --kubernetes-version $k8sVersion --vm-driver $vmDriver --network-plugin=cni
 	}
 
 	if ($LASTEXITCODE -ne 0) {

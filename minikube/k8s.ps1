@@ -58,6 +58,11 @@ DNS.3 = {2}
 	}
 }
 
+function Test-Deployment([string] $namespace, [string] $deploymentName) {
+	kubectl -n $namespace get deployment $deploymentName | out-null
+	$LASTEXITCODE -eq 0
+}
+
 function Test-CsrResource([string] $resourceName) {
 
 	kubectl get csr $resourceName | out-null
@@ -119,10 +124,6 @@ function Get-Certificate([string] $resourceName) {
 	$certBytes = [convert]::frombase64string($certData)
 	[text.encoding]::ascii.getstring($certBytes)
 }
-
-
-
-
 
 function Set-NamespaceLabel([string] $namespace, [string] $labelName, [string] $labelValue) {
 
@@ -235,19 +236,26 @@ function Wait-Deployment([string] $message, [int] $waitSeconds, [string] $namesp
 	$timeoutTime = [datetime]::Now.AddSeconds($waitSeconds)
 	while ($true) {
 
-		Write-Verbose "Fetching status of deployment named $deploymentName..."
-		$deploymentJson = kubectl -n $namespace get deployment $deploymentName -o json
-		if ($LASTEXITCODE -ne 0) {
-			throw "Unable to wait for deployment, kubectl exited with code $LASTEXITCODE."
-		}
+		if (Test-Deployment $namespace $deploymentName) {
 
-		$readyReplicas = ($deploymentJson | convertfrom-json).status.readyReplicas
-		if ($null -eq $readyReplicas) {
-			$readyReplicas = 0
-		}
-		Write-Verbose "Found $readyReplicas of $totalReplicas ready"
-		if ($totalReplicas -eq $readyReplicas) {
-			break
+			Write-Verbose "Fetching status of deployment named $deploymentName..."
+			$deploymentJson = kubectl -n $namespace get deployment $deploymentName -o json
+			if ($LASTEXITCODE -ne 0) {
+				throw "Unable to wait for deployment, kubectl exited with code $LASTEXITCODE."
+			}
+
+			$readyReplicas = ($deploymentJson | convertfrom-json).status.readyReplicas
+			if ($null -eq $readyReplicas) {
+				$readyReplicas = 0
+			}
+			
+			Write-Verbose "Found $readyReplicas of $totalReplicas ready"
+			if ($totalReplicas -eq $readyReplicas) {
+				break
+			}
+
+		} else {
+			Write-Verbose "Deployment $deploymentName in namespace $namespace does not exist"
 		}
 
 		if ([datetime]::now -gt $timeoutTime) {

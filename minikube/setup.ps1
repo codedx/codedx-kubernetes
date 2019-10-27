@@ -98,7 +98,7 @@ if ($createCluster) {
 	Stop-MinikubeCluster $minikubeProfile
 
 	Write-Verbose 'Starting minikube cluster...'
-	Start-MinikubeCluster $minikubeProfile $k8sVersion $waitTimeSeconds
+	Start-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $waitTimeSeconds
 
 	Write-Verbose 'Waiting for running pods...'
 	Wait-AllRunningPods 'Start Minikube Cluster' $waitTimeSeconds
@@ -142,7 +142,7 @@ if ($createCluster) {
 Write-Verbose "Testing minikube status for profile $minikubeProfile..."
 if (-not (Test-MinikubeStatus $minikubeProfile)) {
 	Write-Verbose "Starting minikube cluster for profile $minikubeProfile with k8s version $k8sVersion..."
-	Start-MinikubeCluster $minikubeProfile $k8sVersion $waitTimeSeconds -usePSP
+	Start-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $waitTimeSeconds -usePSP
 }
 
 Write-Verbose "Setting kubectl context to minikube profile $minikubeProfile..."

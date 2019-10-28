@@ -142,7 +142,7 @@ function Start-MinikubeCluster([string] $profileName, [string] $k8sVersion, [str
 
 function Wait-MinikubeNodeReady([string] $message, [int] $waitSeconds) {
 
-	$sleepSeconds = $waitSeconds * .05
+	$sleepSeconds = [math]::min(60, ($waitSeconds * .05))
 	$timeoutTime = [datetime]::Now.AddSeconds($waitSeconds)
 	while ($true) {
 

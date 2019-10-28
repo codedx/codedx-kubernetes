@@ -13,7 +13,8 @@ param (
 	[string] $k8sVersion = 'v1.14.6',
 	[string] $minikubeProfile = 'minikube-1-14-6',
 	[int]    $nodeCPUs = 4,
-	[int]    $nodeMemory = 13312,
+	[string] $nodeMemory = '13312mb',
+	[string] $nodeDiskSize = '15000mb',
 	[int]    $waitTimeSeconds = 300,
 	[string] $vmDriver = 'virtualbox',
 
@@ -89,7 +90,7 @@ if ($createCluster) {
 	Push-Location $workDir
 
 	Write-Verbose "Profile does not exist. Creating new minikube profile named $minikubeProfile for k8s version $k8sVersion..."
-	New-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $nodeCPUs $nodeMemory
+	New-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $nodeCPUs $nodeMemory $nodeDiskSize
 
 	Write-Verbose "Adding network policy provider..."
 	Add-NetworkPolicyProvider $waitTimeSeconds

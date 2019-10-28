@@ -13,9 +13,9 @@ function Test-MinikubeStatus([string] $profileName) {
 	0 -eq $LASTEXITCODE
 }
 
-function New-MinikubeCluster([string] $profileName, [string] $k8sVersion, [string] $vmDriver, [int] $cpus, [int] $memory) {
+function New-MinikubeCluster([string] $profileName, [string] $k8sVersion, [string] $vmDriver, [int] $cpus, [string] $memory, [string] $diskSize) {
 
-	minikube start --vm-driver=$vmDriver -p $profileName --kubernetes-version $k8sVersion --cpus $cpus --memory $memory
+	minikube start --vm-driver=$vmDriver -p $profileName --kubernetes-version $k8sVersion --cpus $cpus --memory $memory --disk-size $diskSize
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create k8s cluster. Minikube exited with code $LASTEXITCODE."
 	}

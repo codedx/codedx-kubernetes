@@ -15,7 +15,7 @@ toolServicePort: 3333
 toolServiceApiKey: cc224a8f-a307-416e-a6dd-769600ac8e2c
 
 toolServiceTls:
-  secret: "cdx-tool-service-tls"
+  secret:
   certFile: "tool-service.pem"
   keyFile: "tool-service.key"
 
@@ -135,11 +135,8 @@ minio:
     tag: 2019.9.26-debian-9-r3
   global:
     minio:
-      accessKey: "231a5aab-7ffc-49ff-a954-83f97ee416a4"
-      secretKey: "89968457-bf3a-4716-9863-b99e04b0e4ee"
-  service:
-    type: ClusterIP
-    port: 9000
+      accessKeyGlobal: "231a5aab-7ffc-49ff-a954-83f97ee416a4"
+      secretKeyGlobal: "89968457-bf3a-4716-9863-b99e04b0e4ee"
   tls:
     # Enables or disables MinIO TLS configuration.
     enabled: false

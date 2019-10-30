@@ -15,7 +15,7 @@ param (
 	[int]    $nodeCPUs = 4,
 	[string] $nodeMemory = '13312mb',
 	[string] $nodeDiskSize = '15000mb',
-	[int]    $waitTimeSeconds = 300,
+	[int]    $waitTimeSeconds = 600,
 	[string] $vmDriver = 'virtualbox',
 
 	[string] $imagePullSecretName = 'codedx-docker-registry',

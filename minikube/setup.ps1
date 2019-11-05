@@ -13,8 +13,8 @@ param (
 	[string] $k8sVersion = 'v1.14.6',
 	[string] $minikubeProfile = 'minikube-1-14-6',
 	[int]    $nodeCPUs = 4,
-	[string] $nodeMemory = '13312mb',
-	[string] $nodeDiskSize = '15000mb',
+	[string] $nodeMemory = '16g',
+	[string] $nodeDiskSize = '50g',
 	[int]    $waitTimeSeconds = 600,
 	[string] $vmDriver = 'virtualbox',
 

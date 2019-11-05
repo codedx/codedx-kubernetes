@@ -114,15 +114,31 @@ function New-CsrApproval([string] $resourceName) {
 	}
 }
 
-function Get-Certificate([string] $resourceName) {
+function Get-Certificate([string] $resourceName, [int] $waitSeconds=120) {
 
-	$certData = kubectl get csr $resourceName -o jsonpath='{.status.certificate}'
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to retrieve certificate from CSR, kubectl exited with code $LASTEXITCODE."
+	$sleepSeconds = [math]::min(60, ($waitSeconds * .05))
+	$timeoutTime = [datetime]::Now.AddSeconds($waitSeconds)
+	while ($true) {
+
+		$certData = kubectl get csr $resourceName -o jsonpath='{.status.certificate}'
+		if ($LASTEXITCODE -ne 0) {
+			throw "Unable to retrieve certificate from CSR, kubectl exited with code $LASTEXITCODE."
+		}
+
+		if ($null -ne $certData) {
+
+			$certBytes = [convert]::frombase64string($certData)
+			[text.encoding]::ascii.getstring($certBytes)
+			break
+		}
+
+		if ([datetime]::now -gt $timeoutTime) {
+			throw "Unable to continue because the certificate $resourceName is not ready"
+		}
+
+		Write-Verbose "Certificate $resourceName is not available. Another check will occur in $sleepSeconds seconds."
+		start-sleep -seconds $sleepSeconds
 	}
-
-	$certBytes = [convert]::frombase64string($certData)
-	[text.encoding]::ascii.getstring($certBytes)
 }
 
 function Set-NamespaceLabel([string] $namespace, [string] $labelName, [string] $labelValue) {

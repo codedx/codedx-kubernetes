@@ -19,23 +19,23 @@ param (
 	[string] $vmDriver = 'virtualbox',
 
 	[string] $imagePullSecretName = 'codedx-docker-registry',
-	[string] $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:v114',
-	[string] $imageCodeDxTools = 'codedxregistry.azurecr.io/codedx/codedx-tools:v114',
-	[string] $imageCodeDxToolsMono = 'codedxregistry.azurecr.io/codedx/codedx-toolsmono:v114',
-	[string] $imageNewAnalysis = 'codedxregistry.azurecr.io/codedx/codedx-newanalysis:v187',
-	[string] $imageSendResults = 'codedxregistry.azurecr.io/codedx/codedx-results:v187',
-	[string] $imageSendErrorResults = 'codedxregistry.azurecr.io/codedx/codedx-error-results:v187',
-	[string] $imageToolService = 'codedxregistry.azurecr.io/codedx/codedx-tool-service:v187',
+	[string] $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:v115',
+	[string] $imageCodeDxTools = 'codedxregistry.azurecr.io/codedx/codedx-tools:v115',
+	[string] $imageCodeDxToolsMono = 'codedxregistry.azurecr.io/codedx/codedx-toolsmono:v115',
+	[string] $imageNewAnalysis = 'codedxregistry.azurecr.io/codedx/codedx-newanalysis:v191',
+	[string] $imageSendResults = 'codedxregistry.azurecr.io/codedx/codedx-results:v191',
+	[string] $imageSendErrorResults = 'codedxregistry.azurecr.io/codedx/codedx-error-results:v191',
+	[string] $imageToolService = 'codedxregistry.azurecr.io/codedx/codedx-tool-service:v191',
 
 	[string] $namespaceToolOrchestration = 'cdx-svc',
 	[string] $namespaceCodeDx = 'cdx-app',
 	[string] $releaseNameCodeDx = 'codedx-app',
 	[string] $releaseNameToolOrchestration = 'toolsvc-codedx-tool-orchestration',
 
+	[string] $toolServiceApiKey = [guid]::newguid().toString(),
 	[string] $codeDxAdminPwd,
 	[string] $minioAdminUsername,
 	[string] $minioAdminPwd,
-	[string] $toolServiceApiKey,
 
 	[string] $dockerConfigJson
 )

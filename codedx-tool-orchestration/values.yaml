@@ -123,7 +123,7 @@ argo:
     namespace: codedx
     executor: codedx-argoexec
     controller: codedx-workflow-controller
-    tag: v2.3.0
+    tag: v2.4.2
   ui:
     enabled: false
   minio:

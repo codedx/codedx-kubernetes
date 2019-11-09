@@ -27,6 +27,12 @@ param (
 	[string] $imageSendErrorResults = 'codedxregistry.azurecr.io/codedx/codedx-error-results:v191',
 	[string] $imageToolService = 'codedxregistry.azurecr.io/codedx/codedx-tool-service:v191',
 
+	[int]    $toolServiceReplicas = 3,
+
+	[bool]   $useTLS  = $true,
+	[bool]   $usePSPs = $true,
+	[bool]   $useNetworkPolicies = $true,
+
 	[string] $namespaceToolOrchestration = 'cdx-svc',
 	[string] $namespaceCodeDx = 'cdx-app',
 	[string] $releaseNameCodeDx = 'codedx-app',
@@ -81,7 +87,7 @@ if ($createCluster) {
 
 	Write-Verbose "Creating new minikube cluster using profile $minikubeProfile..."
 
-	$workDir = "$HOME/.codedx-minikube"
+	$workDir = "$HOME/.codedx-$minikubeProfile"
 
 	Write-Verbose "Creating directory $workDir..."
 	New-Item -Type Directory $workDir -Force
@@ -92,14 +98,16 @@ if ($createCluster) {
 	Write-Verbose "Profile does not exist. Creating new minikube profile named $minikubeProfile for k8s version $k8sVersion..."
 	New-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $nodeCPUs $nodeMemory $nodeDiskSize
 
-	Write-Verbose "Adding network policy provider..."
-	Add-NetworkPolicyProvider $waitTimeSeconds
+	if ($useNetworkPolicies) {
+		Write-Verbose "Adding Calico network policy provider..."
+		Add-CalicoNetworkPolicyProvider $waitTimeSeconds
+	}
 
 	Write-Verbose 'Stopping minikube cluster...'
 	Stop-MinikubeCluster $minikubeProfile
 
 	Write-Verbose 'Starting minikube cluster...'
-	Start-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $waitTimeSeconds
+	Start-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $waitTimeSeconds -useNetworkPolicy:$useNetworkPolicies
 
 	Write-Verbose 'Waiting for running pods...'
 	Wait-AllRunningPods 'Start Minikube Cluster' $waitTimeSeconds
@@ -117,34 +125,45 @@ if ($createCluster) {
 	Invoke-GitClone 'https://github.com/codedx/codedx-kubernetes' 'develop'
 
 	Write-Verbose 'Deploying Code Dx with Tool Orchestration disabled...'
-	New-CodeDxDeployment $workDir $waitTimeSeconds $namespaceCodeDx $releaseNameCodeDx $codeDxAdminPwd $imageCodeDxTomcat $imagePullSecretName
+	New-CodeDxDeployment $workDir $waitTimeSeconds $namespaceCodeDx $releaseNameCodeDx $codeDxAdminPwd $imageCodeDxTomcat $imagePullSecretName $dockerConfigJson `
+		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies
 
 	Write-Verbose 'Deploying Tool Orchestration...'
-	New-ToolOrchestrationDeployment $workDir $waitTimeSeconds $namespaceToolOrchestration $namespaceCodeDx $releaseNameCodeDx `
+	New-ToolOrchestrationDeployment $workDir $waitTimeSeconds $namespaceToolOrchestration $namespaceCodeDx $releaseNameCodeDx $toolServiceReplicas `
 		$minioAdminUsername $minioAdminPwd $toolServiceApiKey `
 		$imageCodeDxTools $imageCodeDxToolsMono `
 		$imageNewAnalysis $imageSendResults $imageSendErrorResults $imageToolService `
-		$imagePullSecretName
+		$imagePullSecretName $dockerConfigJson `
+		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
 
 	Write-Verbose 'Updating Code Dx deployment by enabling Tool Orchestration...'
+	$protocol = 'http'
+	if ($useTLS) {
+		$protocol = 'https'
+	}
 	Set-UseToolOrchestration $workDir `
 		$waitTimeSeconds `
 		$namespaceToolOrchestration $namespaceCodeDx `
-		"https://$releaseNameToolOrchestration.$namespaceToolOrchestration.svc.cluster.local:3333" $toolServiceApiKey `
-		$releaseNameCodeDx
+		"$protocol`://$releaseNameToolOrchestration.$namespaceToolOrchestration.svc.cluster.local:3333" $toolServiceApiKey `
+		$releaseNameCodeDx -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
 
-	Write-Verbose 'Adding default PSP...'
-	Add-DefaultPodSecurityPolicy 'psp.yaml' 'psp-role.yaml' 'psp-role-binding.yaml'
+	if ($usePSPs) {
+		Write-Verbose 'Adding default PSP...'
+		Add-DefaultPodSecurityPolicy 'psp.yaml' 'psp-role.yaml' 'psp-role-binding.yaml'
+	}
 
 	Write-Verbose 'Shutting down cluster...'
 	Stop-MinikubeCluster $minikubeProfile
 }
 
 Write-Verbose "Testing minikube status for profile $minikubeProfile..."
-if (-not (Test-MinikubeStatus $minikubeProfile)) {
-	Write-Verbose "Starting minikube cluster for profile $minikubeProfile with k8s version $k8sVersion..."
-	Start-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $waitTimeSeconds -usePSP
+if (Test-MinikubeStatus $minikubeProfile) {
+	Write-Verbose "Stopping minikube for profile $minikubeProfile..."
+	Stop-MinikubeCluster $minikubeProfile
 }
+
+Write-Verbose "Starting minikube cluster for profile $minikubeProfile with k8s version $k8sVersion..."
+Start-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $waitTimeSeconds -useNetworkPolicy:$useNetworkPolicies -usePSP:$usePSPs
 
 Write-Verbose "Setting kubectl context to minikube profile $minikubeProfile..."
 Set-KubectlContext $minikubeProfile
@@ -158,7 +177,7 @@ Write-Verbose 'Waiting to check deployment status...'
 Start-Sleep -Seconds 60
 
 Write-Verbose 'Waiting for Tool Orchestration deployment...'
-Wait-Deployment 'Tool Orchestration Deployment' $waitTimeSeconds $namespaceToolOrchestration $releaseNameToolOrchestration 3
+Wait-Deployment 'Tool Orchestration Deployment' $waitTimeSeconds $namespaceToolOrchestration $releaseNameToolOrchestration $toolServiceReplicas
 
 Write-Verbose 'Waiting for Code Dx...'
 Wait-Deployment 'Code Dx Deployment' $waitTimeSeconds $namespaceCodeDx "$releaseNameCodeDx-codedx" 1

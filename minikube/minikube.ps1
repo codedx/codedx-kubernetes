@@ -21,7 +21,7 @@ function New-MinikubeCluster([string] $profileName, [string] $k8sVersion, [strin
 	}
 }
 
-function Add-NetworkPolicyProvider([string] $waitSeconds) {
+function Add-CalicoNetworkPolicyProvider([string] $waitSeconds) {
 
 	kubectl apply -f https://docs.projectcalico.org/v3.9/manifests/calico.yaml
 	if ($LASTEXITCODE -ne 0) {
@@ -124,14 +124,19 @@ subjects:
 	}
 }
 
-function Start-MinikubeCluster([string] $profileName, [string] $k8sVersion, [string] $vmDriver, [int] $waitSeconds, [switch] $usePsp) {
+function Start-MinikubeCluster([string] $profileName, [string] $k8sVersion, [string] $vmDriver, [int] $waitSeconds, [switch] $usePsp, [switch] $useNetworkPolicy) {
 
-	# Starts with --network-plugin=cni, optionally with PodSecurityPolicy admission plugin
+	$pspConfig = ''
 	if ($usePsp) {
-		minikube start -p $profileName --kubernetes-version $k8sVersion --vm-driver $vmDriver --network-plugin=cni --extra-config=apiserver.enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,PodSecurityPolicy
-	} else {
-		minikube start -p $profileName --kubernetes-version $k8sVersion --vm-driver $vmDriver --network-plugin=cni
+		$pspConfig = '--extra-config=apiserver.enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,PodSecurityPolicy'
 	}
+
+	$cniConfig = ''
+	if ($useNetworkPolicy) {
+		$cniConfig = '--network-plugin=cni'
+	}
+
+	minikube start -p $profileName --kubernetes-version $k8sVersion --vm-driver $vmDriver $cniConfig $pspConfig
 
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to start minikube cluster, minikube exited with code $LASTEXITCODE."

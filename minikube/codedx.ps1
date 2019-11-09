@@ -6,7 +6,10 @@ function New-CodeDxDeployment([string] $workDir,
 	[string] $releaseName,
 	[string] $adminPwd,
 	[string] $tomcatImage,
-	[string] $tomcatImagePullSecretName) {
+	[string] $tomcatImagePullSecretName,
+	[string] $dockerConfigJson,
+	[switch] $enablePSPs,
+	[switch] $enableNetworkPolicies) {
  
 	if (-not (Test-Namespace $namespace)) {
 		New-Namespace  $namespace
@@ -17,12 +20,34 @@ function New-CodeDxDeployment([string] $workDir,
 		New-ImagePullSecret $namespace $tomcatImagePullSecretName $dockerConfigJson
 	}
 
+	$psp = 'false'
+	if ($enablePSPs) {
+		$psp = 'true'
+	}
+	$networkPolicy = 'false'
+	if ($enableNetworkPolicies) {
+		$networkPolicy = 'true'
+	}
+
 	$values = @'
 codedxAdminPassword: '{0}'
+podSecurityPolicy:
+  codedx:
+    create: {3}
+  mariadb:
+    create: {3}
+networkPolicy:
+  codedx:
+    create: {4}
+  mariadb:
+    master:
+      create: {4}
+    slave:
+      create: {4}
 codedxTomcatImage: {1}
 codedxTomcatImagePullSecrets:
   - name: '{2}'
-'@ -f $adminPwd, $tomcatImage, $tomcatImagePullSecretName
+'@ -f $adminPwd, $tomcatImage, $tomcatImagePullSecretName, $psp, $networkPolicy
 
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
@@ -36,6 +61,7 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 	[string] $namespace,
 	[string] $codedxNamespace,
 	[string] $codedxReleaseName,
+	[int]    $numReplicas,
 	[string] $minioUsername,
 	[string] $minioPwd,
 	[string] $apiKey,
@@ -45,22 +71,45 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 	[string] $sendResultsImage,
 	[string] $sendErrorResultsImage,
 	[string] $toolServiceImage,
-	[string] $imagePullSecretName) {
+	[string] $imagePullSecretName,
+	[string] $dockerConfigJson,
+	[switch] $enablePSPs,
+	[switch] $enableNetworkPolicies,
+	[switch] $configureTls) {
 
 	if (-not (Test-Namespace $namespace)) {
 		New-Namespace  $namespace
 	}
 	Set-NamespaceLabel $namespace 'name' $namespace
 
-	New-Certificate 'toolsvc-codedx-tool-orchestration' 'toolsvc-codedx-tool-orchestration' $namespace
-	New-Certificate 'toolsvc-minio' 'toolsvc-minio' $namespace
+	$tlsConfig = 'false'
+	$tlsMinioCertSecret = ''
+	$tlsToolServiceCertSecret = ''
 
-	New-CertificateSecret $namespace 'cdx-toolsvc-minio-tls' 'toolsvc-minio.pem' 'toolsvc-minio.key'
-	New-CertificateConfigMap $namespace 'cdx-toolsvc-minio-cert' 'toolsvc-minio.pem'
-	New-CertificateSecret $namespace 'cdx-toolsvc-codedx-tool-orchestration-tls' 'toolsvc-codedx-tool-orchestration.pem' 'toolsvc-codedx-tool-orchestration.key'
+	if ($configureTls) {
+		$tlsConfig = 'true'
+		$tlsMinioCertSecret = 'cdx-toolsvc-minio-tls'
+		$tlsToolServiceCertSecret = 'cdx-toolsvc-codedx-tool-orchestration-tls'
+
+		New-Certificate 'toolsvc-codedx-tool-orchestration' 'toolsvc-codedx-tool-orchestration' $namespace
+		New-Certificate 'toolsvc-minio' 'toolsvc-minio' $namespace
+
+		New-CertificateSecret $namespace $tlsMinioCertSecret 'toolsvc-minio.pem' 'toolsvc-minio.key'
+		New-CertificateConfigMap $namespace 'cdx-toolsvc-minio-cert' 'toolsvc-minio.pem'
+		New-CertificateSecret $namespace $tlsToolServiceCertSecret 'toolsvc-codedx-tool-orchestration.pem' 'toolsvc-codedx-tool-orchestration.key'
+	}
 
 	if ($null -ne $imagePullSecretName) {
 		New-ImagePullSecret $namespace $imagePullSecretName $dockerConfigJson
+	}
+
+	$psp = 'false'
+	if ($enablePSPs) {
+		$psp = 'true'
+	}
+	$networkPolicy = 'false'
+	if ($enableNetworkPolicies) {
+		$networkPolicy = 'true'
 	}
 
 	$values = @'
@@ -70,8 +119,8 @@ minio:
       accessKeyGlobal: '{0}'
       secretKeyGlobal: '{1}'
     tls:
-      enabled: true
-      certSecret: 'cdx-toolsvc-minio-tls'
+      enabled: {13}
+      certSecret: {14}
       publicCrt: 'toolsvc-minio.pem'
       privateKey: 'toolsvc-minio.key'
 
@@ -79,7 +128,23 @@ minioTlsTrust:
   configMapName: 'cdx-toolsvc-minio-cert'
   configMapPublicCertKeyName: 'toolsvc-minio.pem'
 
+podSecurityPolicy:
+  tws:
+    create: {16}
+  twsWorkflows:	
+    create: {16}
+  argo:
+    create: {16}
+  minio:
+    create: {16}
+
+numReplicas: {12}
+
 networkPolicy:
+  toolServiceEnabled: {17}
+  twsWorkflowsEnabled: {17}
+  argoEnabled: {17}
+  minioEnabled: {17}      
   kubeApiTargetPort: 8443
   codeDxSelectors:
   - namespaceSelector:
@@ -90,7 +155,7 @@ codeDxBaseUrl: 'http://{3}-codedx.{2}.svc.cluster.local:9090/codedx'
   
 toolServiceApiKey: '{4}'
 toolServiceTls:
-  secret: 'cdx-toolsvc-codedx-tool-orchestration-tls'
+  secret: {15}
   certFile: 'toolsvc-codedx-tool-orchestration.pem'
   keyFile: 'toolsvc-codedx-tool-orchestration.key'
   
@@ -105,20 +170,24 @@ toolServiceImagePullSecrets:
   - name: '{5}'
 '@ -f $minioUsername,`
 $minioPwd,$codedxNamespace,$codedxReleaseName,$apiKey,`
-$imagePullSecretName,$toolsImage,$toolsMonoImage,$newAnalysisImage,$sendResultsImage,$sendErrorResultsImage,$toolServiceImage
+$imagePullSecretName,$toolsImage,$toolsMonoImage,$newAnalysisImage,$sendResultsImage,$sendErrorResultsImage,$toolServiceImage,$numReplicas,
+$tlsConfig,$tlsMinioCertSecret,$tlsToolServiceCertSecret,
+$psp,$networkPolicy
 
 	$valuesFile = 'toolsvc-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
 
 	$chartFolder = (join-path $workDir codedx-kubernetes/codedx-tool-orchestration)
-	Invoke-HelmSingleDeployment 'Tool Orchestration' $waitSeconds $namespace 'toolsvc' $chartFolder $valuesFile 'toolsvc-codedx-tool-orchestration' 3
+	Invoke-HelmSingleDeployment 'Tool Orchestration' $waitSeconds $namespace 'toolsvc' $chartFolder $valuesFile 'toolsvc-codedx-tool-orchestration' $numReplicas
 }
 
 function Set-UseToolOrchestration([string] $workDir, 
 	[string] $waitSeconds,
 	[string] $namespace, [string] $codedxNamespace,
 	[string] $toolServiceUrl, [string] $toolServiceApiKey,
-	[string] $codeDxReleaseName) {
+	[string] $codeDxReleaseName,
+	[switch] $enableNetworkPolicies,
+	[switch] $configureTls) {
 
 	# access cacerts file
 	$podName = kubectl -n $codedxNamespace get pod -l app=codedx --field-selector=status.phase=Running -o name
@@ -141,6 +210,16 @@ function Set-UseToolOrchestration([string] $workDir,
 	$chartFolder = (join-path $workDir codedx-kubernetes/codedx)
 	copy-item cacerts $chartFolder -Force
 
+	$networkPolicy = 'false'
+	if ($enableNetworkPolicies) {
+		$networkPolicy = 'true'
+	}
+
+	$cacertsFile = ''
+	if ($configureTls) {
+		$cacertsFile = 'cacerts'
+	}
+
 	$values = @'
 codedxProps:
   extra:
@@ -153,14 +232,14 @@ codedxProps:
 
 networkPolicy:
   codedx:
-    toolService: true
+    toolService: {3}
     toolServiceSelectors:
     - namespaceSelector:
         matchLabels:
           name: {2}
 
-cacertsFile: 'cacerts'
-'@ -f $toolServiceUrl, $toolServiceApiKey, $namespace
+cacertsFile: {4}
+'@ -f $toolServiceUrl, $toolServiceApiKey, $namespace, $networkPolicy, $cacertsFile
 
 	$valuesFile = 'codedx-orchestration-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force

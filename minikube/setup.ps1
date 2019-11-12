@@ -22,10 +22,10 @@ param (
 	[string] $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:v115',
 	[string] $imageCodeDxTools = 'codedxregistry.azurecr.io/codedx/codedx-tools:v115',
 	[string] $imageCodeDxToolsMono = 'codedxregistry.azurecr.io/codedx/codedx-toolsmono:v115',
-	[string] $imageNewAnalysis = 'codedxregistry.azurecr.io/codedx/codedx-newanalysis:v191',
-	[string] $imageSendResults = 'codedxregistry.azurecr.io/codedx/codedx-results:v191',
-	[string] $imageSendErrorResults = 'codedxregistry.azurecr.io/codedx/codedx-error-results:v191',
-	[string] $imageToolService = 'codedxregistry.azurecr.io/codedx/codedx-tool-service:v191',
+	[string] $imageNewAnalysis = 'codedxregistry.azurecr.io/codedx/codedx-newanalysis:v193',
+	[string] $imageSendResults = 'codedxregistry.azurecr.io/codedx/codedx-results:v193',
+	[string] $imageSendErrorResults = 'codedxregistry.azurecr.io/codedx/codedx-error-results:v193',
+	[string] $imageToolService = 'codedxregistry.azurecr.io/codedx/codedx-tool-service:v193',
 
 	[int]    $toolServiceReplicas = 3,
 

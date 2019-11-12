@@ -97,6 +97,17 @@ spec:
           name: codedx-logback
           subPath: logback.xml
         {{- end }}
+        {{ if .Values.codedxTls.enabled -}}
+        - mountPath: /usr/local/tomcat/conf/server.xml
+          name: codedx-server-xml
+          subPath: server.xml
+        - mountPath: /usr/local/tomcat/conf/ssl.crt
+          name: codedx-tls
+          subPath: ssl.crt
+        - mountPath: /usr/local/tomcat/conf/ssl.key
+          name: codedx-tls
+          subPath: ssl.key
+        {{- end }}
       initContainers:
         - name: {{ include "dbinit.fullname" . | quote }}
           image: "codedx/bash-noroot:5.0"
@@ -163,4 +174,20 @@ spec:
           items:
           - key: logback.xml
             path: logback.xml
+      {{- end }}
+      {{ if .Values.codedxTls.enabled -}}
+      - name: codedx-server-xml
+        configMap:
+          name: {{ include "codedx.serverXmlName" . | quote }}
+          items:
+          - key: server.xml
+            path: server.xml
+      - name: codedx-tls
+        secret:
+          secretName: {{ .Values.codedxTls.secret }}
+          items:
+          - key: {{ .Values.codedxTls.certFile }}
+            path: ssl.crt
+          - key: {{ .Values.codedxTls.keyFile }}
+            path: ssl.key
       {{- end -}}

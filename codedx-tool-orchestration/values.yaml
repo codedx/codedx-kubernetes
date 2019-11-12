@@ -1,6 +1,9 @@
 # Default values for codedx-tool-orchestration.
 
-codeDxBaseUrl: http://host.docker.internal:8080
+codedxBaseUrl: http://host.docker.internal:8080
+codedxTls:
+    enabled: false
+    caConfigMap: 
 
 imageNameCodeDxTools: "codedx-tools:v1.0"
 imageNameCodeDxToolsMono: "codedx-toolsmono:v1.0"
@@ -43,14 +46,14 @@ networkPolicy:
   # Enables a network policy for the tool service:
   # egress:  - DNS port (53)
   #          - kube API target/pod port (see kubeApiTargetPort), optionally restricted by API server selectors
-  #          - Code Dx target/pod port (8080), restricted by Code Dx server selectors (see codeDxSelectors)
+  #          - Code Dx target/pod port (8080/8443), restricted by Code Dx server selectors (see codedxSelectors)
   #          - MinIO port (9000) of MinIO instance
-  # ingress: - Service port (3333), restricted by Code Dx server selectors (see codeDxSelectors)
+  # ingress: - Service port (3333), restricted by Code Dx server selectors (see codedxSelectors)
   toolServiceEnabled: true
 
   # Selectors for identifying the Code Dx pod referenced by network policies. If unspecified, network policies
   # for the tool service and MinIO will be relaxed by not restricting source and destination for ingress and egress.
-  codeDxSelectors: []
+  codedxSelectors: []
 
   # Enables a network policy for tool workflow steps:
   # egress:  - allow all

@@ -31,7 +31,8 @@ spec:
         image: {{ .Values.toolServiceImageName | quote }}
         command: ["/opt/codedx/service/bin/service"]
         args: ["-adminApiKeyPath", "/opt/codedx/service/secrets/adminApiKey",
-          "-codeDxBaseUrl", "{{ required "codeDxBaseUrl is required" .Values.codeDxBaseUrl }}",
+          "-codeDxBaseUrl", "{{ required "codedxBaseUrl is required" .Values.codedxBaseUrl }}",
+          "-codeDxCaConfigMapName", "{{ .Values.codedxTls.caConfigMap }}",
           "-imageNameCodeDxTools", "{{ required "imageNameCodeDxTools is required" .Values.imageNameCodeDxTools }}",
           "-imageNameCodeDxToolsMono", "{{ required "imageNameCodeDxToolsMono is required" .Values.imageNameCodeDxToolsMono }}",
           "-imageNameNewAnalysis", "{{ required "imageNameNewAnalysis is required" .Values.imageNameNewAnalysis }}",

@@ -15,6 +15,11 @@ codedxTomcatImagePullSecrets: []
 #
 codedxTomcatPort: 9090
 
+# codedxTlsTomcatPort determines the TLS port that the Code Dx Service will be exposed on. This
+# gets ignored when codedxTls.enabled=false.
+#
+codedxTlsTomcatPort: 9443
+
 # codedxJavaOpts lets you add custom Java runtime options for Code Dx.
 #
 codedxJavaOpts: ""
@@ -102,8 +107,8 @@ podSecurityPolicy:
 #
 networkPolicy:
   # A NetworkPolicy for Code Dx will limit its egress to MariaDB instances, and allow
-  # ingress from any pod on port 8080. (This is implicitly applied to the "codedxTomcatPort"
-  # exposed by the generated k8s service.)
+  # ingress from port 8080/8443. (This is implicitly applied to the "codedxTomcatPort"
+  # and "codedxTlsTomcatPort" exposed by the generated k8s service.)
   #
   codedx:
 
@@ -132,9 +137,9 @@ networkPolicy:
     dependencyCheck: true
 
     # This flag will create an egress rule from Code Dx to a Tool Orchestration Service on port 3333,
-    # and create an ingress rule to Code Dx on port 8080. If no selector is set via toolServiceSelectors,
+    # and create an ingress rule to Code Dx on port 8080/8443. If no selector is set via toolServiceSelectors,
     # this will allow *all* egress from the Code Dx pod on port 3333 and allow *all* ingress to the
-    # Code Dx pod on port 8080.
+    # Code Dx pod on port 8080/8443.
     #
     toolService: false
 
@@ -401,6 +406,12 @@ loggingConfigFile: logback.xml
 # ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
 #
 resources: {}
+
+codedxTls:
+  enabled: false
+  secret: 'codedx-tls-secret'
+  certFile: 'codedx-cert.pem'
+  keyFile: 'codedx-cert.key'
 
 # Code Dx-specific MariaDB configuration. This should usually be left untouched, unless changing database passwords.
 #

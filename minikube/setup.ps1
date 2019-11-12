@@ -39,7 +39,7 @@ param (
 	[string] $releaseNameToolOrchestration = 'toolsvc-codedx-tool-orchestration',
 
 	[string] $toolServiceApiKey = [guid]::newguid().toString(),
-	[string] $codeDxAdminPwd,
+	[string] $codedxAdminPwd,
 	[string] $minioAdminUsername,
 	[string] $minioAdminPwd,
 
@@ -79,7 +79,7 @@ $createCluster = -not (Test-MinikubeProfile $minikubeProfile)
 
 if ($createCluster) {
 
-	if ($codeDxAdminPwd -eq '') { $codeDxAdminPwd = Get-SecureStringText 'Enter a password for the Code Dx admin account' 6 }
+	if ($codedxAdminPwd -eq '') { $codedxAdminPwd = Get-SecureStringText 'Enter a password for the Code Dx admin account' 6 }
 	if ($minioAdminUsername -eq '') { $minioAdminUsername = Get-SecureStringText 'Enter a username for the MinIO admin account' 5 }
 	if ($minioAdminPwd -eq '') { $minioAdminPwd = Get-SecureStringText 'Enter a password for the MinIO admin account' 8 }
 	if ($toolServiceApiKey -eq '') { $toolServiceApiKey = Get-SecureStringText 'Enter an API key for the Code Dx Tool Orchestration service' 8 }
@@ -125,8 +125,8 @@ if ($createCluster) {
 	Invoke-GitClone 'https://github.com/codedx/codedx-kubernetes' 'develop'
 
 	Write-Verbose 'Deploying Code Dx with Tool Orchestration disabled...'
-	New-CodeDxDeployment $workDir $waitTimeSeconds $namespaceCodeDx $releaseNameCodeDx $codeDxAdminPwd $imageCodeDxTomcat $imagePullSecretName $dockerConfigJson `
-		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies
+	New-CodeDxDeployment $workDir $waitTimeSeconds $namespaceCodeDx $releaseNameCodeDx $codedxAdminPwd $imageCodeDxTomcat $imagePullSecretName $dockerConfigJson `
+		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
 
 	Write-Verbose 'Deploying Tool Orchestration...'
 	New-ToolOrchestrationDeployment $workDir $waitTimeSeconds $namespaceToolOrchestration $namespaceCodeDx $releaseNameCodeDx $toolServiceReplicas `
@@ -186,6 +186,15 @@ if ($createCluster) {
 	Write-Host "Done.`n`n***Note: '$workDir' contains values.yaml data that should be kept private.`n`n"
 }
 
-Write-Host "`nRun the following command to make Code Dx available at http://localhost:8080/codedx"
-Write-Host 'pwsh -c "kubectl -n cdx-app port-forward (kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name) 8080"'
+$portNum = 8080
+$cmd = 'pwsh -c "kubectl -n cdx-app port-forward (kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name) 8080"'
+if ($useTLS) {
+	$portNum = 8443
+	$cmd = 'pwsh -c "kubectl -n cdx-app port-forward (kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name) 8443"'
+}
+Write-Host "`nRun the following command to make Code Dx available at http://localhost:$portNum/codedx"
+Write-Host $cmd
 
+if ($useTls) {
+	Write-Host "Note that you may need to trust the root certificate located at $(join-path $HOME '.minikube/ca.pem')"
+}

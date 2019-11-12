@@ -32,7 +32,7 @@ You can use the default values for many of the setup.ps1 script parameters. When
 
 | Parameter | Description | Example |
 |---|---|---|
-| codeDxAdminPwd | The password for the Code Dx admin account. | R8Cx3o$ptVQ1 |
+| codedxAdminPwd | The password for the Code Dx admin account. | R8Cx3o$ptVQ1 |
 | minioAdminUsername | The username of the admin MinIO account. | 55XX08PR$lpO |
 | minioAdminPwd | The password for the admin MinIO account. | y@w#Bn$$3M2q |
 | dockerConfigJson | The .dockerconfigjson value allowing access to a private Docker registry. | See .dockerconfigjson at https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#registry-secret-existing-credentials |

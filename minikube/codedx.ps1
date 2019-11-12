@@ -9,7 +9,8 @@ function New-CodeDxDeployment([string] $workDir,
 	[string] $tomcatImagePullSecretName,
 	[string] $dockerConfigJson,
 	[switch] $enablePSPs,
-	[switch] $enableNetworkPolicies) {
+	[switch] $enableNetworkPolicies,
+	[switch] $configureTls) {
  
 	if (-not (Test-Namespace $namespace)) {
 		New-Namespace  $namespace
@@ -29,8 +30,24 @@ function New-CodeDxDeployment([string] $workDir,
 		$networkPolicy = 'true'
 	}
 
+	$tlsEnabled = 'false'
+	$tlsSecretName = 'cdx-codedx-app-codedx-tls'
+	$tlsCertFile = 'codedx-app-codedx.pem'
+	$tlsKeyFile = 'codedx-app-codedx.key'
+	if ($configureTls) {
+		$tlsEnabled = 'true'
+
+		New-Certificate 'codedx-app-codedx' 'codedx-app-codedx' 'cdx-app'
+		New-CertificateSecret 'cdx-app' $tlsSecretName $tlsCertFile $tlsKeyFile
+	}
+
 	$values = @'
 codedxAdminPassword: '{0}'
+codedxTls:
+  enabled: {5}
+  secret: {6}
+  certFile: {7}
+  keyFile: {8}
 podSecurityPolicy:
   codedx:
     create: {3}
@@ -47,7 +64,7 @@ networkPolicy:
 codedxTomcatImage: {1}
 codedxTomcatImagePullSecrets:
   - name: '{2}'
-'@ -f $adminPwd, $tomcatImage, $tomcatImagePullSecretName, $psp, $networkPolicy
+'@ -f $adminPwd, $tomcatImage, $tomcatImagePullSecretName, $psp, $networkPolicy, $tlsEnabled, $tlsSecretName, $tlsCertFile, $tlsKeyFile
 
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
@@ -82,14 +99,20 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 	}
 	Set-NamespaceLabel $namespace 'name' $namespace
 
+	$protocol = 'http'
+	$codedxPort = '9090'
 	$tlsConfig = 'false'
 	$tlsMinioCertSecret = ''
 	$tlsToolServiceCertSecret = ''
+	$codedxCaConfigMap = ''
 
 	if ($configureTls) {
+		$protocol = 'https'
+		$codedxPort = '9443'
 		$tlsConfig = 'true'
 		$tlsMinioCertSecret = 'cdx-toolsvc-minio-tls'
 		$tlsToolServiceCertSecret = 'cdx-toolsvc-codedx-tool-orchestration-tls'
+		$codedxCaConfigMap = 'cdx-codedx-ca-cert'
 
 		New-Certificate 'toolsvc-codedx-tool-orchestration' 'toolsvc-codedx-tool-orchestration' $namespace
 		New-Certificate 'toolsvc-minio' 'toolsvc-minio' $namespace
@@ -97,7 +120,10 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 		New-CertificateSecret $namespace $tlsMinioCertSecret 'toolsvc-minio.pem' 'toolsvc-minio.key'
 		New-CertificateConfigMap $namespace 'cdx-toolsvc-minio-cert' 'toolsvc-minio.pem'
 		New-CertificateSecret $namespace $tlsToolServiceCertSecret 'toolsvc-codedx-tool-orchestration.pem' 'toolsvc-codedx-tool-orchestration.key'
+
+		New-CertificateConfigMap $namespace $codedxCaConfigMap (Get-MinikubeCaCertPath)
 	}
+	$codedxBaseUrl = '{0}://{1}-codedx.{2}.svc.cluster.local:{3}/codedx' -f $protocol,$codedxReleaseName,$codedxNamespace,$codedxPort
 
 	if ($null -ne $imagePullSecretName) {
 		New-ImagePullSecret $namespace $imagePullSecretName $dockerConfigJson
@@ -146,12 +172,15 @@ networkPolicy:
   argoEnabled: {17}
   minioEnabled: {17}      
   kubeApiTargetPort: 8443
-  codeDxSelectors:
+  codedxSelectors:
   - namespaceSelector:
       matchLabels:
         name: '{2}'
   
-codeDxBaseUrl: 'http://{3}-codedx.{2}.svc.cluster.local:9090/codedx'
+codedxBaseUrl: '{18}'
+codedxTls:
+  enabled: {19}
+  caConfigMap: {20}
   
 toolServiceApiKey: '{4}'
 toolServiceTls:
@@ -172,7 +201,8 @@ toolServiceImagePullSecrets:
 $minioPwd,$codedxNamespace,$codedxReleaseName,$apiKey,`
 $imagePullSecretName,$toolsImage,$toolsMonoImage,$newAnalysisImage,$sendResultsImage,$sendErrorResultsImage,$toolServiceImage,$numReplicas,
 $tlsConfig,$tlsMinioCertSecret,$tlsToolServiceCertSecret,
-$psp,$networkPolicy
+$psp,$networkPolicy,$codedxBaseUrl,`
+$tlsConfig,$codedxCaConfigMap
 
 	$valuesFile = 'toolsvc-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
@@ -185,7 +215,7 @@ function Set-UseToolOrchestration([string] $workDir,
 	[string] $waitSeconds,
 	[string] $namespace, [string] $codedxNamespace,
 	[string] $toolServiceUrl, [string] $toolServiceApiKey,
-	[string] $codeDxReleaseName,
+	[string] $codedxReleaseName,
 	[switch] $enableNetworkPolicies,
 	[switch] $configureTls) {
 
@@ -244,10 +274,10 @@ cacertsFile: {4}
 	$valuesFile = 'codedx-orchestration-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
 
-	helm upgrade --values $valuesFile --reuse-values $codeDxReleaseName $chartFolder
+	helm upgrade --values $valuesFile --reuse-values $codedxReleaseName $chartFolder
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to upgrade Code Dx release for tool orchestration, helm exited with code $LASTEXITCODE."
 	}
 
-	Wait-Deployment 'Helm Upgrade' $waitSeconds $codedxNamespace "$codeDxReleaseName-codedx" 1
+	Wait-Deployment 'Helm Upgrade' $waitSeconds $codedxNamespace "$codedxReleaseName-codedx" 1
 }

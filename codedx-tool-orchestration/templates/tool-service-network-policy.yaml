@@ -27,10 +27,14 @@ spec:
     - port: 53
       protocol: UDP
   - ports:
+    {{- if .Values.codedxTls.enabled }}
+    - port: 8443
+    {{- else }}
     - port: 8080
-    {{- if .Values.networkPolicy.codeDxSelectors }}
+    {{- end }}
+    {{- if .Values.networkPolicy.codedxSelectors }}
     to:
-{{ toYaml .Values.networkPolicy.codeDxSelectors | indent 4 }}
+{{ toYaml .Values.networkPolicy.codedxSelectors | indent 4 }}
     {{- end }}
   - to:
     - podSelector:
@@ -42,9 +46,9 @@ spec:
   ingress:
   - ports:
     - port: 3333
-    {{- if .Values.networkPolicy.codeDxSelectors }}
+    {{- if .Values.networkPolicy.codedxSelectors }}
     from:
-{{ toYaml .Values.networkPolicy.codeDxSelectors | indent 4 }}
+{{ toYaml .Values.networkPolicy.codedxSelectors | indent 4 }}
     {{- end }}
 ---
 {{ end }}

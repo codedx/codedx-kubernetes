@@ -156,7 +156,7 @@ minioTlsTrust:
   configMapPublicCertKeyName: 'toolsvc-minio.pem'
 
 networkPolicy:
-  codeDxSelectors:
+  codedxSelectors:
   - namespaceSelector:
       matchLabels:
         name: 'cdx-app'      
@@ -164,7 +164,7 @@ networkPolicy:
 
 ### Code Dx Connection
 
-The Tool Orchestration service sends analysis results to Code Dx. You must specify a URL where Code Dx can be reached. We recommend using HTTPS for the connection between the Tool Orchestration service and Code Dx. Append your Code Dx URL for the codeDxBaseUrl configuration to your `toolsvc-values.yaml` file (this document assumes a Code Dx k8s service URL of https://codedx-app-codedx.cdx-app.svc.cluster.local:9090/codedx).
+The Tool Orchestration service sends analysis results to Code Dx. You must specify a URL where Code Dx can be reached. We recommend using HTTPS for the connection between the Tool Orchestration service and Code Dx. Append your Code Dx URL for the codedxBaseUrl configuration to your `toolsvc-values.yaml` file (this document assumes a Code Dx k8s service URL of https://codedx-app-codedx.cdx-app.svc.cluster.local:9090/codedx).
 
 ```
 minio:
@@ -183,12 +183,12 @@ minioTlsTrust:
   configMapPublicCertKeyName: 'toolsvc-minio.pem'
 
 networkPolicy:
-  codeDxSelectors:
+  codedxSelectors:
   - namespaceSelector:
       matchLabels:
         name: 'cdx-app'
 
-codeDxBaseUrl: 'https://codedx-app-codedx.cdx-app.svc.cluster.local:9090/codedx'
+codedxBaseUrl: 'https://codedx-app-codedx.cdx-app.svc.cluster.local:9090/codedx'
 ```
 
 ### Tool Orchestration API Key
@@ -212,12 +212,12 @@ minioTlsTrust:
   configMapPublicCertKeyName: 'toolsvc-minio.pem'
 
 networkPolicy:
-  codeDxSelectors:
+  codedxSelectors:
   - namespaceSelector:
       matchLabels:
         name: 'cdx-app'
 
-codeDxBaseUrl: 'https://codedx-app-codedx.cdx-app.svc.cluster.local:9090/codedx'
+codedxBaseUrl: 'https://codedx-app-codedx.cdx-app.svc.cluster.local:9090/codedx'
 
 toolServiceApiKey: '5eb6fbe3-8126-452c-95e9-83faa87453d4'
 ```
@@ -249,12 +249,12 @@ minioTlsTrust:
   configMapPublicCertKeyName: 'toolsvc-minio.pem'
 
 networkPolicy:
-  codeDxSelectors:
+  codedxSelectors:
   - namespaceSelector:
       matchLabels:
         name: 'cdx-app'
 
-codeDxBaseUrl: 'https://codedx-app-codedx.cdx-app.svc.cluster.local:9090/codedx'
+codedxBaseUrl: 'https://codedx-app-codedx.cdx-app.svc.cluster.local:9090/codedx'
 
 toolServiceApiKey: '5eb6fbe3-8126-452c-95e9-83faa87453d4'
 toolServiceTls:
@@ -302,12 +302,12 @@ minioTlsTrust:
   configMapPublicCertKeyName: 'toolsvc-minio.pem'
 
 networkPolicy:
-  codeDxSelectors:
+  codedxSelectors:
   - namespaceSelector:
       matchLabels:
         name: 'cdx-app'
 
-codeDxBaseUrl: 'https://codedx-app-codedx.cdx-app.svc.cluster.local:9090/codedx'
+codedxBaseUrl: 'https://codedx-app-codedx.cdx-app.svc.cluster.local:9090/codedx'
 
 toolServiceApiKey: '5eb6fbe3-8126-452c-95e9-83faa87453d4'
 toolServiceTls:

@@ -99,8 +99,8 @@ if ($createCluster) {
 	New-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $nodeCPUs $nodeMemory $nodeDiskSize
 
 	if ($useNetworkPolicies) {
-		Write-Verbose "Adding Calico network policy provider..."
-		Add-CalicoNetworkPolicyProvider $waitTimeSeconds
+		Write-Verbose "Adding Cilium network policy provider..."
+		Add-CiliumNetworkPolicyProvider $minikubeProfile $waitTimeSeconds
 	}
 
 	Write-Verbose 'Stopping minikube cluster...'

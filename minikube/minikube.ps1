@@ -25,7 +25,22 @@ function Add-CalicoNetworkPolicyProvider([string] $waitSeconds) {
 
 	kubectl apply -f https://docs.projectcalico.org/v3.9/manifests/calico.yaml
 	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to create k8s cluster. Minikube exited with code $LASTEXITCODE."
+		throw "Unable to add Calico. kubectl exited with code $LASTEXITCODE."
+	}
+
+	Wait-AllRunningPods 'Add Network Policy' $waitSeconds
+}
+
+function Add-CiliumNetworkPolicyProvider([string] $profileName, [string] $waitSeconds) {
+
+	minikube -p $profileName ssh -- sudo mount bpffs -t bpf /sys/fs/bpf
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to mount BPF filesystem. Minikube exited with code $LASTEXITCODE."
+	}
+
+	kubectl create -f https://raw.githubusercontent.com/cilium/cilium/1.6.3/install/kubernetes/quick-install.yaml
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to add Cilium. kubectl exited with code $LASTEXITCODE."
 	}
 
 	Wait-AllRunningPods 'Add Network Policy' $waitSeconds

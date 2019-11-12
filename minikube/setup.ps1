@@ -187,12 +187,14 @@ if ($createCluster) {
 }
 
 $portNum = 8080
+$protocol = 'http'
 $cmd = 'pwsh -c "kubectl -n cdx-app port-forward (kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name) 8080"'
 if ($useTLS) {
 	$portNum = 8443
+	$protocol = 'https'
 	$cmd = 'pwsh -c "kubectl -n cdx-app port-forward (kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name) 8443"'
 }
-Write-Host "`nRun the following command to make Code Dx available at http://localhost:$portNum/codedx"
+Write-Host "`nRun the following command to make Code Dx available at $protocol`://localhost:$portNum/codedx"
 Write-Host $cmd
 
 if ($useTls) {

@@ -3,7 +3,7 @@
 # codedxTomcatImage specifies the image to use for the Code Dx deployment.
 # ref: https://hub.docker.com/r/codedx/codedx-tomcat/tags
 #
-codedxTomcatImage: codedx/codedx-tomcat:v4.1.0
+codedxTomcatImage: codedx/codedx-tomcat:v4.3.3
 
 # codedxTomcatImagePullSecrets allows you to specify names of secrets to use
 # for pulling the Code Dx image.
@@ -396,6 +396,42 @@ license: {}
 # ref: https://logback.qos.ch/manual/configuration.html
 #
 loggingConfigFile: logback.xml
+
+# Use 'saml.idpXmlFile' to provide an XML file for your Identity Provider when using SAML. The contents
+# of this file will be mounted at /opt/codedx/saml-idp.xml. 
+#
+# If using SAML, the `auth.saml2.identityProviderMetadataPath` Code Dx property will automatically
+# be assigned. You'll still need to provide the following props in a separate secret:
+# - auth.saml2.keystorePassword
+# - auth.saml2.privateKeyPassword
+# - auth.hostBasePath
+#
+# Use the "codedxProps.extra" value to provide the needed configuration.
+#
+samlIdpXmlFile:
+
+# Use 'extraMounts' to mount any additional, pre-existing data that may be necessary for your Code Dx
+# installation via config-maps, secrets, PVs, etc. Uses original Volume mounting syntax; see
+# 'ref' below.
+#
+# Volumes are mounted at `target` and subpath `name`.
+# 
+# This can be useful if providing files to Code Dx, since external files can't be accessed by the
+# chart.
+#
+# ref: https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes
+#
+extraMounts: []
+# - name: sample-extra-mount
+#   mount:
+#     mountPath: /opt/codedx/example.txt
+#     subPath: example.txt
+#   volume:
+#     configMap:
+#       name: my-configmap
+#       items:
+#       - key: some-key
+#         path: some-key
 
 # Specify CPU/memory resource requests/limits for Code Dx on Tomcat.
 # ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/

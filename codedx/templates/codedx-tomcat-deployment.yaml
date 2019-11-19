@@ -97,6 +97,20 @@ spec:
           name: codedx-logback
           subPath: logback.xml
         {{- end }}
+        {{ if .Values.samlIdpXmlFile -}}
+        - mountPath: /opt/codedx/saml-idp.xml
+          name: codedx-saml-idp
+          subPath: saml-idp.xml
+        - mountPath: /opt/codedx/codedx-saml.props
+          name: codedx-saml-props
+          subPath: codedx-saml.props
+        {{- end }}
+        {{ if .Values.extraMounts -}}
+        {{ range .Values.extraMounts -}}
+        - name: {{ .name }}
+        {{- .mount | toYaml | nindent 10 -}}
+        {{- end }}
+        {{- end }}
       initContainers:
         - name: {{ include "dbinit.fullname" . | quote }}
           image: "codedx/bash-noroot:5.0"
@@ -163,4 +177,24 @@ spec:
           items:
           - key: logback.xml
             path: logback.xml
+      {{- end }}
+      {{ if .Values.samlIdpXmlFile -}}
+      - name: codedx-saml-idp
+        configMap:
+          name: {{ include "codedx.props.configMapName" . | quote }}
+          items:
+          - key: saml-idp.xml
+            path: saml-idp.xml
+      - name: codedx-saml-props
+        configMap:
+          name: {{ include "codedx.props.configMapName" . | quote }}
+          items:
+          - key: codedx-saml.props
+            path: codedx-saml.props
+      {{- end }}
+      {{ if .Values.extraMounts -}}
+      {{- range .Values.extraMounts -}}
+      - name: {{ .name }}
+      {{- .volume | toYaml | nindent 8 -}}
+      {{- end }}
       {{- end -}}

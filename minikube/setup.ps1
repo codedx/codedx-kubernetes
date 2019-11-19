@@ -19,13 +19,13 @@ param (
 	[string] $vmDriver = 'virtualbox',
 
 	[string] $imagePullSecretName = 'codedx-docker-registry',
-	[string] $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:v115',
-	[string] $imageCodeDxTools = 'codedxregistry.azurecr.io/codedx/codedx-tools:v115',
-	[string] $imageCodeDxToolsMono = 'codedxregistry.azurecr.io/codedx/codedx-toolsmono:v115',
-	[string] $imageNewAnalysis = 'codedxregistry.azurecr.io/codedx/codedx-newanalysis:v193',
-	[string] $imageSendResults = 'codedxregistry.azurecr.io/codedx/codedx-results:v193',
-	[string] $imageSendErrorResults = 'codedxregistry.azurecr.io/codedx/codedx-error-results:v193',
-	[string] $imageToolService = 'codedxregistry.azurecr.io/codedx/codedx-tool-service:v193',
+	[string] $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:v120',
+	[string] $imageCodeDxTools = 'codedxregistry.azurecr.io/codedx/codedx-tools:v120',
+	[string] $imageCodeDxToolsMono = 'codedxregistry.azurecr.io/codedx/codedx-toolsmono:v120',
+	[string] $imageNewAnalysis = 'codedxregistry.azurecr.io/codedx/codedx-newanalysis:v198',
+	[string] $imageSendResults = 'codedxregistry.azurecr.io/codedx/codedx-results:v198',
+	[string] $imageSendErrorResults = 'codedxregistry.azurecr.io/codedx/codedx-error-results:v198',
+	[string] $imageToolService = 'codedxregistry.azurecr.io/codedx/codedx-tool-service:v198',
 
 	[int]    $toolServiceReplicas = 3,
 

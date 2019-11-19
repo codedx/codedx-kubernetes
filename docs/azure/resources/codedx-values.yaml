@@ -1,0 +1,85 @@
+# This file is a slightly-modified copy of "values-full-sample.yaml"
+# provided: https://github.com/codedx/codedx-kubernetes/blob/master/codedx/sample-values/values-full-sample.yaml
+
+codedxTomcatImage: codedx/codedx-tomcat:v4.2.4
+
+
+# Size of the Code Dx app data storage. We've found 32GB
+# to be a reasonable default for Code Dx and MariaDB
+# for new installations. Do not change this value after
+# installation, as pre-existing volumes can't be resized.
+persistence:
+  size: 32Gi
+
+# Size of the MariaDB storage.
+mariadb:
+  master:
+    persistence:
+      size: 32Gi
+  slave:
+    replicas: 1
+    persistence:
+      size: 32Gi
+
+# # Configuration to include a license during installation. Not
+# # required - you can provide a license after installation has
+# # completed.
+# license:
+#   # Can specify a pre-existing secret containing the license
+#   # in a key named "license.lic"
+#   secret: codedx-secret
+#   # Can provide the cert file to Helm to create the secret automatically
+#   file: my-license.lic
+
+# Enable creation of network policies and allow connections *from* Code Dx from
+# HTTP and HTTPS ports.
+networkPolicy:
+  codedx:
+    create: true
+    http: true
+    https: true
+  mariadb:
+    master:
+      create: true
+    slave:
+      create: true
+
+ingress:
+  enabled: true
+  # Defines "annotations" attached to Ingress resources. These
+  # are custom values that can be read by the NGINX Ingress controller.
+  # The full list of recognized annotations are linked below, though
+  # these values are sufficient for a Code Dx installation
+  # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/
+  #
+  annotations:
+    # NGINX config options specific to Code Dx
+    #
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+
+    # !!! If not using cert-manager, the two annotations below can be removed !!!
+    # Allow cert-manager to provision a TLS cert automatically
+    #
+    kubernetes.io/tls-acme: "true"
+
+    # Choose the issuer we want to use
+    #
+    certmanager.k8s.io/cluster-issuer: "letsencrypt-staging"
+  
+  # Specify one or more hostnames to specify in our ingress
+  hosts:
+    # CHANGEME
+  - name: mycodedx.com
+    
+    # Enable HTTPS
+    tls: true
+    
+    # Name of the secret containing the TLS cert. If using cert-manager,
+    # this will be created automatically. If not, the secret will need
+    # to be created manually with its "type" set to "kubernetes.io/tls". You can
+    # also provide the contents of the cert directly in the chart, as in the
+    # example: https://github.com/codedx/codedx-kubernetes/blob/master/codedx/sample-values/values-ingress.yaml
+    #
+    # CHANGEME
+    tlsSecret: mycodedx.com

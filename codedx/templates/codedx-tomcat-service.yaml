@@ -11,6 +11,12 @@ spec:
     port: {{ .Values.codedxTomcatPort }}
     protocol: TCP
     targetPort: 8080
+  {{- if .Values.codedxTls.enabled }}
+  - name: https
+    port: {{ .Values.codedxTlsTomcatPort }}
+    protocol: TCP
+    targetPort: 8443
+  {{- end }}  
   selector:
     app: {{ include "codedx.name" . | quote }}
     release: {{ .Release.Name | quote }}

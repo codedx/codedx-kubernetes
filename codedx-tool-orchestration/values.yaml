@@ -1,18 +1,32 @@
 # Default values for codedx-tool-orchestration.
 
-codeDxBaseUrl: http://host.docker.internal:8080
+codedxBaseUrl: http://host.docker.internal:8080
+codedxTls:
+    enabled: false
+    caConfigMap: 
 
 imageNameCodeDxTools: "codedx-tools:v1.0"
 imageNameCodeDxToolsMono: "codedx-toolsmono:v1.0"
 imageNameNewAnalysis: "codedx-newanalysis:v1.0"
 imageNameSendResults: "codedx-results:v1.0"
-imageNameZap: "codedx-zaprunner:v1.0"
+imageNameSendErrorResults: "codedx-error-results:v1.0"
 imagePullSecretKey: ""
 
 toolServiceImageName: codedx-tool-service:v1.0
 toolServiceImagePullSecrets: []
 toolServicePort: 3333
 toolServiceApiKey: cc224a8f-a307-416e-a6dd-769600ac8e2c
+
+toolServiceTls:
+  secret:
+  certFile: "tool-service.pem"
+  keyFile: "tool-service.key"
+
+logs:
+  # Maximum size in MB for each log file
+  maxSizeMB: 10
+  # Number of old logs to retain
+  maxBackups: 20
 
 # Number of replicas for the tool orchestration sevice.
 #
@@ -28,35 +42,46 @@ service:
 # Network policy options for the tool service and its dependencies
 #
 networkPolicy:
-  # Enables a network policy for the tool service, enabling ingress on port 3333 and
-  # egress through port 8080 and kubeApiPort (below).
-  #
-  enabled: true
-  # Selectors for the Code Dx pod in the network policy, used for
-  # both ingress and egress. If unspecified, all egress will be allowed
-  # from port 8080 and all ingress will be allowed to port 3333.
-  #
-  codeDxSelectors: []
-  # Enables a network policy for tool service workflow pods denying all ingress.
-  #
+
+  # Enables a network policy for the tool service:
+  # egress:  - DNS port (53)
+  #          - kube API target/pod port (see kubeApiTargetPort), optionally restricted by API server selectors
+  #          - Code Dx target/pod port (8080/8443), restricted by Code Dx server selectors (see codedxSelectors)
+  #          - MinIO port (9000) of MinIO instance
+  # ingress: - Service port (3333), restricted by Code Dx server selectors (see codedxSelectors)
+  toolServiceEnabled: true
+
+  # Selectors for identifying the Code Dx pod referenced by network policies. If unspecified, network policies
+  # for the tool service and MinIO will be relaxed by not restricting source and destination for ingress and egress.
+  codedxSelectors: []
+
+  # Enables a network policy for tool workflow steps:
+  # egress:  - allow all
+  # ingress: - allow all
   twsWorkflowsEnabled: true
-  # Enables an argo network policy allowing only egress on 'kubeApiPort' (below)
-  # and denying any ingress.
-  #
+
+  # Enables a network policy for Argo workflow controller:
+  # egress:  - kube API target/pod port (see kubeApiTargetPort), optionally restricted by API server selectors
+  # ingress: - deny all
   argoEnabled: true
-  # Enables a minio network policy specific for the tool service requirements (currently just
-  # denying minio egress, but will limit ingress to tool service and
-  # workflow pods in the future.)
-  #
+
+  # Enables a network policy for MinIO:
+  # egress:  - deny all
+  # ingress: - MinIO port (9000) of tool service instances
+  #          - MinIO port (9000) of tool workflow steps
   minioEnabled: true
-  # Tool service needs access to k8s api server on port 443, which needs to be
-  # selected by IP. By default all egress is allowed on port 443; this
-  # property selects targets on that port. This also affects the argo
-  # network policy (if enabled) since it manages workflows running on the cluster.
-  #
+
+  # Selectors for identifying the k8s api server referenced by network policies. The tool service append
+  # Argo workflow controller access the api server by IP on the port specified by kubeApiTargetPort
+  # (see below). If unspecified, the network policies for the Argo workflow controller and the tool service
+  # will be relaxed by not restricting source and destination for ingress and egress on the kubeApiTargetPort.
   apiServerSelectors: []
-  # Port for k8s API server (usually 443 or 8443)
-  kubeApiPort: 443
+
+  # Target/pod port for the k8s API server (usually 443, 8443, or 6443). This is targetPort of the kubernetes k8s
+  # service. This is not necessarily the port associated with the URL applications use to access the API. For example,
+  # an application accessing the API with a kubernetes service URL of https://10.96.0.1:443 may connect to the
+  # k8s API server pod on port 8443.
+  kubeApiTargetPort: 443
 
 # Options for the service account used for the tool service.
 #
@@ -72,12 +97,12 @@ podSecurityPolicy:
     name:
     bind: true
     annotations: {}
-    
+
   # PSP applied to all workflow pods
   twsWorkflows:
     create: true
     # (optional)
-    name: 
+    name:
     bind: true
     annotations: {}
 
@@ -87,7 +112,7 @@ podSecurityPolicy:
     name:
     bind: true
     annotations: {}
-  
+
   minio:
     create: true
     # (optional)
@@ -98,14 +123,41 @@ podSecurityPolicy:
 # NOTE: These are setting attributes for the `argo` dependency
 argo:
   images:
-    tag: v2.3.0
+    namespace: codedx
+    executor: codedx-argoexec
+    controller: codedx-workflow-controller
+    tag: v2.4.2
   ui:
     enabled: false
+  minio:
+    install: false
 
 # NOTE: These are setting attributes for the `minio` dependency
 minio:
-  accessKey: "231a5aab-7ffc-49ff-a954-83f97ee416a4"
-  secretKey: "89968457-bf3a-4716-9863-b99e04b0e4ee"
-  service:
-    type: ClusterIP
-    port: 9000
+  image:
+    tag: 2019.9.26-debian-9-r3
+  global:
+    minio:
+      accessKeyGlobal: "231a5aab-7ffc-49ff-a954-83f97ee416a4"
+      secretKeyGlobal: "89968457-bf3a-4716-9863-b99e04b0e4ee"
+  tls:
+    # Enables or disables MinIO TLS configuration.
+    enabled: false
+    # Specifies the name of a k8s secret containing the certificate info used to configure
+    # MinIO TLS. Create the secret using the following command:
+    # kubectl create secret generic cdx-minio-tls --from-file=path/to/minio.pem --from-file=path/to/minio.key
+    certSecret: "cdx-minio-tls"
+    # The name of the MinIO public certificate in certSecret
+    publicCrt: "minio.pem"
+    # The name of the MinIO private key in certSecret
+    privateKey: "minio.key"
+
+# Options for configuring clients to explicitly trust certificate data for the MinIO TLS configuration. This section
+# does not apply when minio.tls.enabled=false.
+minioTlsTrust:
+  # Specifies a ConfigMap name that contains certificate data that should be explicitly trusted when connecting to
+  # the MinIO server. When using MinIO TLS (minio.tls.enabled=true), use configMapName when the MinIO server's
+  # certificate was not issued by a well known CA.
+  configMapName: ""
+  # Specifies the key name in the configMapName ConfigMap containing the MinIO certificate data.
+  configMapPublicCertKeyName: ""

@@ -66,14 +66,22 @@ spec:
   ingress:
   - ports:
     - port: 8080
-    {{- if .Values.networkPolicy.codedx.ingressSelectors }}
+    {{- if or .Values.networkPolicy.codedx.ingressSelectors .Values.networkPolicy.codedx.toolServiceSelectors }}
     from:
-      {{- if .Values.networkPolicy.codedx.ingressSelectors }}
+    {{- if .Values.networkPolicy.codedx.ingressSelectors }}
 {{ toYaml .Values.networkPolicy.codedx.ingressSelectors | indent 4 -}}
-      {{ end -}}
-      {{- if .Values.networkPolicy.codedx.toolServiceSelectors }}
+    {{ end -}}
+    {{- if .Values.networkPolicy.codedx.toolServiceSelectors }}
 {{ toYaml .Values.networkPolicy.codedx.toolServiceSelectors | indent 4 }}
-      {{- end -}}
     {{- end -}}
+    {{- end -}}
+  {{- if .Values.codedxTls.enabled }}
+  - ports: 
+    - port: 8443
+    {{- if .Values.networkPolicy.codedx.toolServiceSelectors }}
+    from:
+{{ toYaml .Values.networkPolicy.codedx.toolServiceSelectors | indent 4 }}      
+    {{- end -}}
+  {{- end -}}
   {{ end -}}
 {{- end -}}

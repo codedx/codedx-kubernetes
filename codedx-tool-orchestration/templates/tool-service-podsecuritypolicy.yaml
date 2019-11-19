@@ -31,6 +31,8 @@ spec:
     rule: RunAsAny
 ---
 {{- end }}
+
+
 {{- if .Values.podSecurityPolicy.twsWorkflows.create }}
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
@@ -51,7 +53,7 @@ spec:
   # hostPath is an undesirable permission but is required for argo workflows
   # https://github.com/kubeflow/pipelines/issues/561
   #
-  volumes: ["secret", "emptyDir", "hostPath", "downwardAPI"]
+  volumes: ["secret", "emptyDir", "hostPath", "downwardAPI", "configMap"]
 
   # NOTE - This is specifically for docker hosts and will not work with ie containerd.
   # This may become unnecessary in future versions of argo.
@@ -60,7 +62,7 @@ spec:
   allowedHostPaths:
   - pathPrefix: /var/run/docker.sock
     readOnly: false
-  
+
   hostNetwork: false
   hostIPC: false
   hostPID: false
@@ -69,14 +71,16 @@ spec:
     rule: RunAsAny
   fsGroup:
     rule: RunAsAny
-  
-  # Note - argo wait container 
+
+  # Note - argo wait container
   runAsUser:
     rule: RunAsAny
   seLinux:
     rule: RunAsAny
 ---
 {{- end }}
+
+
 {{- if .Values.podSecurityPolicy.argo.create }}
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
@@ -104,6 +108,8 @@ spec:
     rule: RunAsAny
 ---
 {{ end -}}
+
+
 {{- if .Values.podSecurityPolicy.minio.create }}
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy

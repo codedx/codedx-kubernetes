@@ -34,6 +34,7 @@ data:
     {{- . | nindent 4 }}
     {{- end -}}
   {{- end }}
+  {{- end }}
 
   {{ if .Values.samlIdpXmlFile -}}
   saml-idp.xml: |-

@@ -289,3 +289,4 @@ Duplicates of MariaDB template helpers so we can reference service/serviceAccoun
 {{- else -}}
     {{ default "default" .Values.mariadb.serviceAccount.name }}
 {{- end -}}
+{{- end -}}

@@ -369,8 +369,8 @@ codedxProps:
     key: cdx-tool-orchestration
     values:
     - "tws.enabled = true"
-    - "tws.serviceUrl = https://toolsvc-codedx-tool-orchestration.cdx-svc.svc.cluster.local:3333"
-    - "tws.apiKey = 5eb6fbe3-8126-452c-95e9-83faa87453d4"
+    - "tws.service-url = https://toolsvc-codedx-tool-orchestration.cdx-svc.svc.cluster.local:3333"
+    - "tws.api-key = 5eb6fbe3-8126-452c-95e9-83faa87453d4"
 ```
 
 ### Enable Network Policy
@@ -390,8 +390,8 @@ codedxProps:
     key: cdx-tool-orchestration
     values:
     - "tws.enabled = true"
-    - "tws.serviceUrl = https://toolsvc-codedx-tool-orchestration.cdx-svc.svc.cluster.local:3333"
-    - "tws.apiKey = 5eb6fbe3-8126-452c-95e9-83faa87453d4"
+    - "tws.service-url = https://toolsvc-codedx-tool-orchestration.cdx-svc.svc.cluster.local:3333"
+    - "tws.api-key = 5eb6fbe3-8126-452c-95e9-83faa87453d4"
 
 networkPolicy:
   codedx:
@@ -431,8 +431,8 @@ codedxProps:
     key: cdx-tool-orchestration
     values:
     - "tws.enabled = true"
-    - "tws.serviceUrl = https://toolsvc-codedx-tool-orchestration.cdx-svc.svc.cluster.local:3333"
-    - "tws.apiKey = 5eb6fbe3-8126-452c-95e9-83faa87453d4"
+    - "tws.service-url = https://toolsvc-codedx-tool-orchestration.cdx-svc.svc.cluster.local:3333"
+    - "tws.api-key = 5eb6fbe3-8126-452c-95e9-83faa87453d4"
 
 networkPolicy:
   codedx:

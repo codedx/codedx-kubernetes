@@ -257,8 +257,8 @@ codedxProps:
     key: cdx-tool-orchestration
     values:
     - "tws.enabled = true"
-    - "tws.serviceUrl = {0}"
-    - "tws.apiKey = {1}"
+    - "tws.service-url = {0}"
+    - "tws.api-key = {1}"
 
 networkPolicy:
   codedx:

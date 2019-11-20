@@ -19,9 +19,9 @@ param (
 	[string] $vmDriver = 'virtualbox',
 
 	[string] $imagePullSecretName = 'codedx-docker-registry',
-	[string] $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:v120',
-	[string] $imageCodeDxTools = 'codedxregistry.azurecr.io/codedx/codedx-tools:v120',
-	[string] $imageCodeDxToolsMono = 'codedxregistry.azurecr.io/codedx/codedx-toolsmono:v120',
+	[string] $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:v123',
+	[string] $imageCodeDxTools = 'codedxregistry.azurecr.io/codedx/codedx-tools:v122',
+	[string] $imageCodeDxToolsMono = 'codedxregistry.azurecr.io/codedx/codedx-toolsmono:v123',
 	[string] $imageNewAnalysis = 'codedxregistry.azurecr.io/codedx/codedx-newanalysis:v198',
 	[string] $imageSendResults = 'codedxregistry.azurecr.io/codedx/codedx-results:v198',
 	[string] $imageSendErrorResults = 'codedxregistry.azurecr.io/codedx/codedx-error-results:v198',

@@ -8,6 +8,8 @@ function New-CodeDxDeployment([string] $workDir,
 	[string] $tomcatImage,
 	[string] $tomcatImagePullSecretName,
 	[string] $dockerConfigJson,
+	[string] $mariadbRootPwd,
+	[string] $mariadbReplicatorPwd,
 	[switch] $enablePSPs,
 	[switch] $enableNetworkPolicies,
 	[switch] $configureTls) {
@@ -64,7 +66,12 @@ networkPolicy:
 codedxTomcatImage: {1}
 codedxTomcatImagePullSecrets:
   - name: '{2}'
-'@ -f $adminPwd, $tomcatImage, $tomcatImagePullSecretName, $psp, $networkPolicy, $tlsEnabled, $tlsSecretName, $tlsCertFile, $tlsKeyFile
+mariadb:
+  rootUser:
+    password: '{9}'
+  replication:
+    password: '{10}'
+'@ -f $adminPwd, $tomcatImage, $tomcatImagePullSecretName, $psp, $networkPolicy, $tlsEnabled, $tlsSecretName, $tlsCertFile, $tlsKeyFile, $mariadbRootPwd, $mariadbReplicatorPwd
 
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force

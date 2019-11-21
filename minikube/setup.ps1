@@ -42,6 +42,8 @@ param (
 	[string] $codedxAdminPwd,
 	[string] $minioAdminUsername,
 	[string] $minioAdminPwd,
+	[string] $mariadbRootPwd,
+	[string] $mariadbReplicatorPwd,
 
 	[string] $dockerConfigJson
 )
@@ -79,11 +81,13 @@ $createCluster = -not (Test-MinikubeProfile $minikubeProfile)
 
 if ($createCluster) {
 
-	if ($codedxAdminPwd -eq '') { $codedxAdminPwd = Get-SecureStringText 'Enter a password for the Code Dx admin account' 6 }
 	if ($minioAdminUsername -eq '') { $minioAdminUsername = Get-SecureStringText 'Enter a username for the MinIO admin account' 5 }
 	if ($minioAdminPwd -eq '') { $minioAdminPwd = Get-SecureStringText 'Enter a password for the MinIO admin account' 8 }
+	if ($mariadbRootPwd -eq '') { $mariadbRootPwd = Get-SecureStringText 'Enter a password for the MariaDB root user' 0 }
+	if ($mariadbReplicatorPwd -eq '') { $mariadbReplicatorPwd = Get-SecureStringText 'Enter a password for the MariaDB replicator user' 0 }
+	if ($codedxAdminPwd -eq '') { $codedxAdminPwd = Get-SecureStringText 'Enter a password for the Code Dx admin account' 6 }
 	if ($toolServiceApiKey -eq '') { $toolServiceApiKey = Get-SecureStringText 'Enter an API key for the Code Dx Tool Orchestration service' 8 }
-	if ($dockerConfigJson -eq '') { $dockerConfigJson = Get-SecureStringText 'Enter a dockerconfigjson value for your private Docker registry' 0 }
+	if ($dockerConfigJson -eq '') { $dockerConfigJson = Get-SecureStringText 'Enter a dockerconfigjson value for your private Docker registry' 0 }	
 
 	Write-Verbose "Creating new minikube cluster using profile $minikubeProfile..."
 
@@ -126,6 +130,7 @@ if ($createCluster) {
 
 	Write-Verbose 'Deploying Code Dx with Tool Orchestration disabled...'
 	New-CodeDxDeployment $workDir $waitTimeSeconds $namespaceCodeDx $releaseNameCodeDx $codedxAdminPwd $imageCodeDxTomcat $imagePullSecretName $dockerConfigJson `
+		$mariadbRootPwd $mariadbReplicatorPwd `
 		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
 
 	Write-Verbose 'Deploying Tool Orchestration...'

@@ -181,14 +181,16 @@ function Wait-MinikubeNodeReady([string] $message, [int] $waitSeconds) {
 	}
 }
 
-function New-Certificate([string] $resourceName, [string] $dnsName, [string] $namespace){
+function New-Certificate([string] $resourceName, [string] $dnsName, [string] $namespace, [string[]] $alternativeNames){
+
+	$altNames = @()
+	$altNames = $altNames + "$dnsName.$namespace" + "$dnsName.$namespace.svc.cluster.local" + $alternativeNames
 
 	New-Csr $dnsName `
-	"$dnsName.$namespace" `
-	"$dnsName.$namespace.svc.cluster.local" `
-	"$dnsName.conf" `
-	"$dnsName.csr" `
-	"$dnsName.key"
+		$altNames `
+		"$dnsName.conf" `
+		"$dnsName.csr" `
+		"$dnsName.key"
 
 	New-CsrResource $resourceName "$dnsName.csr" "$dnsName.csrr"
 	New-CsrApproval $resourceName

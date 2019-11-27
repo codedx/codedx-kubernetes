@@ -28,7 +28,7 @@ function Test-ClusterInfo([string] $profileName) {
 	0 -eq $LASTEXITCODE
 }
 
-function New-Csr([string] $dns1, [string] $dns2, [string] $dns3, [string] $requestFile, [string] $csrFile, [string] $keyFile) {
+function New-Csr([string] $dns, [string[]] $altNames, [string] $requestFile, [string] $csrFile, [string] $keyFile) {
 
 	$request = @'
 [ req ]
@@ -46,9 +46,13 @@ subjectAltName = @alt_names
 
 [ alt_names ]
 DNS.1 = {0}
-DNS.2 = {1}
-DNS.3 = {2}
-'@ -f $dns1, $dns2, $dns3
+'@ -f $dns
+
+$i = 2
+$altNames | ForEach-Object {
+	$request = $request + ("`nDNS.{0} = {1}" -f $i,$_)
+	$i += 1
+}
 
 	$request | out-file $requestFile -Encoding ascii -Force
 

@@ -10,6 +10,7 @@
 # 6 keytool
 #
 param (
+	[string] $codeDxDnsName = $env:computername,
 	[string] $k8sVersion = 'v1.14.6',
 	[string] $minikubeProfile = 'minikube-1-14-6',
 	[int]    $nodeCPUs = 4,
@@ -19,13 +20,13 @@ param (
 	[string] $vmDriver = 'virtualbox',
 
 	[string] $imagePullSecretName = 'codedx-docker-registry',
-	[string] $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:v123',
-	[string] $imageCodeDxTools = 'codedxregistry.azurecr.io/codedx/codedx-tools:v122',
-	[string] $imageCodeDxToolsMono = 'codedxregistry.azurecr.io/codedx/codedx-toolsmono:v123',
-	[string] $imageNewAnalysis = 'codedxregistry.azurecr.io/codedx/codedx-newanalysis:v198',
-	[string] $imageSendResults = 'codedxregistry.azurecr.io/codedx/codedx-results:v198',
-	[string] $imageSendErrorResults = 'codedxregistry.azurecr.io/codedx/codedx-error-results:v198',
-	[string] $imageToolService = 'codedxregistry.azurecr.io/codedx/codedx-tool-service:v198',
+	[string] $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:latest',
+	[string] $imageCodeDxTools = 'codedxregistry.azurecr.io/codedx/codedx-tools:latest',
+	[string] $imageCodeDxToolsMono = 'codedxregistry.azurecr.io/codedx/codedx-toolsmono:latest',
+	[string] $imageNewAnalysis = 'codedxregistry.azurecr.io/codedx/codedx-newanalysis:latest',
+	[string] $imageSendResults = 'codedxregistry.azurecr.io/codedx/codedx-results:latest',
+	[string] $imageSendErrorResults = 'codedxregistry.azurecr.io/codedx/codedx-error-results:latest',
+	[string] $imageToolService = 'codedxregistry.azurecr.io/codedx/codedx-tool-service:latest',
 
 	[int]    $toolServiceReplicas = 3,
 
@@ -129,7 +130,7 @@ if ($createCluster) {
 	Invoke-GitClone 'https://github.com/codedx/codedx-kubernetes' 'develop'
 
 	Write-Verbose 'Deploying Code Dx with Tool Orchestration disabled...'
-	New-CodeDxDeployment $workDir $waitTimeSeconds $namespaceCodeDx $releaseNameCodeDx $codedxAdminPwd $imageCodeDxTomcat $imagePullSecretName $dockerConfigJson `
+	New-CodeDxDeployment $codeDxDnsName $workDir $waitTimeSeconds $namespaceCodeDx $releaseNameCodeDx $codedxAdminPwd $imageCodeDxTomcat $imagePullSecretName $dockerConfigJson `
 		$mariadbRootPwd $mariadbReplicatorPwd `
 		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
 
@@ -193,14 +194,16 @@ if ($createCluster) {
 
 $portNum = 8080
 $protocol = 'http'
-$cmd = 'pwsh -c "kubectl -n cdx-app port-forward (kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name) 8080"'
 if ($useTLS) {
 	$portNum = 8443
 	$protocol = 'https'
-	$cmd = 'pwsh -c "kubectl -n cdx-app port-forward (kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name) 8443"'
 }
-Write-Host "`nRun the following command to make Code Dx available at $protocol`://localhost:$portNum/codedx"
-Write-Host $cmd
+
+$ips = Resolve-DnsName -Type A $env:computername | ForEach-Object { $_.IPAddress }
+$ipList = [string]::Join(',', $ips)
+
+Write-Host "`nRun the following command to make Code Dx available at $protocol`://$codeDxDnsName`:$portNum/codedx"
+Write-Host ('pwsh -c "kubectl -n cdx-app port-forward --address {0} (kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name) {1}"' -f $ipList,$portNum)
 
 if ($useTls) {
 	Write-Host "Note that you may need to trust the root certificate located at $(join-path $HOME '.minikube/ca.pem')"

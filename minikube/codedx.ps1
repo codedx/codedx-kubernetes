@@ -1,6 +1,7 @@
 . (join-path $PSScriptRoot minikube.ps1)
 
-function New-CodeDxDeployment([string] $workDir, 
+function New-CodeDxDeployment([string] $codeDxDnsName,
+    [string] $workDir, 
 	[int]    $waitSeconds,
 	[string] $namespace,
 	[string] $releaseName,
@@ -39,7 +40,7 @@ function New-CodeDxDeployment([string] $workDir,
 	if ($configureTls) {
 		$tlsEnabled = 'true'
 
-		New-Certificate 'codedx-app-codedx' 'codedx-app-codedx' 'cdx-app'
+		New-Certificate 'codedx-app-codedx' 'codedx-app-codedx' 'cdx-app' @($codeDxDnsName)
 		New-CertificateSecret 'cdx-app' $tlsSecretName $tlsCertFile $tlsKeyFile
 	}
 
@@ -121,8 +122,8 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 		$tlsToolServiceCertSecret = 'cdx-toolsvc-codedx-tool-orchestration-tls'
 		$codedxCaConfigMap = 'cdx-codedx-ca-cert'
 
-		New-Certificate 'toolsvc-codedx-tool-orchestration' 'toolsvc-codedx-tool-orchestration' $namespace
-		New-Certificate 'toolsvc-minio' 'toolsvc-minio' $namespace
+		New-Certificate 'toolsvc-codedx-tool-orchestration' 'toolsvc-codedx-tool-orchestration' $namespace @()
+		New-Certificate 'toolsvc-minio' 'toolsvc-minio' $namespace @()
 
 		New-CertificateSecret $namespace $tlsMinioCertSecret 'toolsvc-minio.pem' 'toolsvc-minio.key'
 		New-CertificateConfigMap $namespace 'cdx-toolsvc-minio-cert' 'toolsvc-minio.pem'

@@ -32,20 +32,16 @@ You can use the default values for many of the setup.ps1 script parameters. When
 
 | Parameter | Description | Example |
 |---|---|---|
-| codedxAdminPwd | The password for the Code Dx admin account. | R8Cx3o$ptVQ1 |
 | minioAdminUsername | The username of the admin MinIO account. | 55XX08PR$lpO |
 | minioAdminPwd | The password for the admin MinIO account. | y@w#Bn$$3M2q |
+| mariadbRootPwd | The password for the MariaDB root account. | B4ut!mse08h5 |
+| mariadbReplicatorPwd | The password for the MariaDB replicator account. | dEu#92@rOPYH |
+| codedxAdminPwd | The password for the Code Dx admin account. | R8Cx3o$ptVQ1 |
 | dockerConfigJson | The .dockerconfigjson value allowing access to a private Docker registry. | See .dockerconfigjson at https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#registry-secret-existing-credentials |
 
-When the script completes, you can start using Code Dx. You can make the Code Dx web application available on port 8080 by running the following commands.
+When the script completes, it will display a port-forward command that you can use to access your Code Dx instance.
 
-```
-pwsh
-$podName = kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name
-kubectl -n cdx-app port-forward $podName 8080
-```
-
-You must enter a valid license before using the Code Dx Tool Orchestration software. After running the above command, visit http://localhost:8080/codedx and upload a Code Dx license with the Orchestration feature enabled.
+To use the Code Dx Tool Orchestration feature, upload a Code Dx license with the Orchestration feature enabled when prompted by the Code Dx web application.
 
 ## Stop Minikube Cluster
 
@@ -65,13 +61,7 @@ Restart the minikube cluster created by setup.ps1 with the following command.
 pwsh ./setup.ps1
 ```
 
-When the script completes, you can start using Code Dx. You can make the Code Dx web application available on port 8080 by running the following commands.
-
-```
-pwsh
-kubectl -n cdx-app port-forward (kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name) 8080
-```
-
+When the script completes, it will display a port-forward command that you can use to access your Code Dx instance.
 
 ## Delete Minikube Cluster
 

@@ -1,9 +1,9 @@
 . (join-path $PSScriptRoot k8s.ps1)
 
-function Test-MinikubeProfile([string] $profileName) {
+function Test-MinikubeProfile([string] $profileName, [string] $vmDriver, [string] $k8sVersion) {
 
 	$profileList = minikube profile list
-	$result = $profileList | select-string ('\s{0}\s' -f $profileName)
+	$result = $profileList | select-string ('\s{0}\s+\|\s+{1}\s+.+\s+{2}\s+\|' -f [regex]::escape($profileName),[regex]::escape($vmDriver),[regex]::escape($k8sVersion))
 	$null -ne $result
 }
 

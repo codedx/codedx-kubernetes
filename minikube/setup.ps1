@@ -78,7 +78,10 @@ if ($IsWindows) {
 	}
 }
 
-$createCluster = -not (Test-MinikubeProfile $minikubeProfile)
+$workDir = "$HOME/.codedx-$minikubeProfile"
+$varsPath = Join-Path $workDir 'vars.csv'
+
+$createCluster = -not (Test-MinikubeProfile $minikubeProfile $vmDriver $k8sVersion)
 
 if ($createCluster) {
 
@@ -91,8 +94,6 @@ if ($createCluster) {
 	if ($dockerConfigJson -eq '') { $dockerConfigJson = Get-SecureStringText 'Enter a dockerconfigjson value for your private Docker registry' 0 }	
 
 	Write-Verbose "Creating new minikube cluster using profile $minikubeProfile..."
-
-	$workDir = "$HOME/.codedx-$minikubeProfile"
 
 	Write-Verbose "Creating directory $workDir..."
 	New-Item -Type Directory $workDir -Force
@@ -160,7 +161,31 @@ if ($createCluster) {
 
 	Write-Verbose 'Shutting down cluster...'
 	Stop-MinikubeCluster $minikubeProfile
+
+	Write-Verbose 'Saving configuration for startup process...'
+	$vars = @{
+		'codeDxDnsName' = $codeDxDnsName;
+		'namespaceCodeDx' = $namespaceCodeDx;
+		'namespaceToolOrchestration' = $namespaceToolOrchestration;
+		'releaseNameCodeDx' = $releaseNameCodeDx;
+		'releaseNameToolOrchestration' = $releaseNameToolOrchestration;
+		'toolServiceReplicas' = $toolServiceReplicas;
+		'useNetworkPolicies' = $useNetworkPolicies;
+		'usePSPs' = $usePSPs;
+		'useTLS' = $useTLS;
+		'waitTimeSeconds' = $waitTimeSeconds;
+		'workDir' = $workDir
+	}
+	New-Object psobject -Property $vars | Export-Csv -LiteralPath $varsPath -Encoding ascii
 }
+
+Write-Verbose 'Reading saved startup configuration...'
+$vars = Import-Csv -LiteralPath $varsPath
+$vars.useNetworkPolicies = [convert]::ToBoolean($vars.useNetworkPolicies)
+$vars.usePSPs = [convert]::ToBoolean($vars.usePSPs)
+$vars.useTLS = [convert]::ToBoolean($vars.useTLS)
+
+Write-Output "Using saved configuration:`n$vars"
 
 Write-Verbose "Testing minikube status for profile $minikubeProfile..."
 if (Test-MinikubeStatus $minikubeProfile) {
@@ -169,7 +194,7 @@ if (Test-MinikubeStatus $minikubeProfile) {
 }
 
 Write-Verbose "Starting minikube cluster for profile $minikubeProfile with k8s version $k8sVersion..."
-Start-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $waitTimeSeconds -useNetworkPolicy:$useNetworkPolicies -usePSP:$usePSPs
+Start-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $vars.waitTimeSeconds -useNetworkPolicy:$($vars.useNetworkPolicies) -usePSP:$($vars.usePSPs)
 
 Write-Verbose "Setting kubectl context to minikube profile $minikubeProfile..."
 Set-KubectlContext $minikubeProfile
@@ -183,28 +208,28 @@ Write-Verbose 'Waiting to check deployment status...'
 Start-Sleep -Seconds 60
 
 Write-Verbose 'Waiting for Tool Orchestration deployment...'
-Wait-Deployment 'Tool Orchestration Deployment' $waitTimeSeconds $namespaceToolOrchestration $releaseNameToolOrchestration $toolServiceReplicas
+Wait-Deployment 'Tool Orchestration Deployment' $vars.waitTimeSeconds $vars.namespaceToolOrchestration $vars.releaseNameToolOrchestration $vars.toolServiceReplicas
 
 Write-Verbose 'Waiting for Code Dx...'
-Wait-Deployment 'Code Dx Deployment' $waitTimeSeconds $namespaceCodeDx "$releaseNameCodeDx-codedx" 1
+Wait-Deployment 'Code Dx Deployment' $vars.waitTimeSeconds $vars.namespaceCodeDx "$($vars.releaseNameCodeDx)-codedx" 1
 
 if ($createCluster) {
-	Write-Host "Done.`n`n***Note: '$workDir' contains values.yaml data that should be kept private.`n`n"
+	Write-Host "Done.`n`n***Note: '$($vars.workDir)' contains values.yaml data that should be kept private.`n`n"
 }
 
 $portNum = 8080
 $protocol = 'http'
-if ($useTLS) {
+if ($vars.useTLS) {
 	$portNum = 8443
 	$protocol = 'https'
 }
 
-$ips = Resolve-DnsName -Type A $env:computername | ForEach-Object { $_.IPAddress }
+$ips = Resolve-DnsName -Type A $vars.codeDxDnsName | ForEach-Object { $_.IPAddress }
 $ipList = [string]::Join(',', $ips)
 
-Write-Host "`nRun the following command to make Code Dx available at $protocol`://$codeDxDnsName`:$portNum/codedx"
+Write-Host "`nRun the following command to make Code Dx available at $protocol`://$($vars.codeDxDnsName)`:$portNum/codedx"
 Write-Host ('pwsh -c "kubectl -n cdx-app port-forward --address {0} (kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name) {1}"' -f $ipList,$portNum)
 
-if ($useTls) {
+if ($vars.useTls) {
 	Write-Host "Note that you may need to trust the root certificate located at $(join-path $HOME '.minikube/ca.pem')"
 }

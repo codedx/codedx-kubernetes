@@ -9,8 +9,11 @@
 # 5 git
 # 6 keytool
 #
+# 7 socat (when using $vmDriver 'none')
+#
 param (
 	[string] $codeDxDnsName = $env:computername,
+	[int]    $codeDxPortNumber = 8443,
 	[string] $k8sVersion = 'v1.14.6',
 	[string] $minikubeProfile = 'minikube-1-14-6',
 	[int]    $nodeCPUs = 4,
@@ -61,13 +64,21 @@ if (-not (Test-IsCore)) {
 	write-error 'Unable to continue because you must run this script with PowerShell Core (pwsh)'
 }
 
+$isElevated = Test-IsElevated
+
 if ($IsWindows) {
-	if (-not (Test-IsElevated)) {
-		write-error "Unable to continue because you must run this script elevated"
+	if (-not $isElevated) {
+			write-error "Unable to continue because you must run this script elevated"
 	}
 } else {
-	if (Test-IsElevated) {
-		write-error "Unable to continue because you cannot run this script as the root user"
+	if ($vmDriver -eq 'none') {
+			if (-not $isElevated) {
+					write-error "Unable to continue because you must run this script as the root user"
+			}
+	} else {
+			if ($isElevated) {
+					write-error "Unable to continue because you cannot run this script as the root user"
+			}
 	}
 }
 
@@ -106,7 +117,7 @@ if ($createCluster) {
 
 	if ($useNetworkPolicies) {
 		Write-Verbose "Adding Cilium network policy provider..."
-		Add-CiliumNetworkPolicyProvider $minikubeProfile $waitTimeSeconds
+		Add-CiliumNetworkPolicyProvider $minikubeProfile $waitTimeSeconds $vmDriver
 	}
 
 	Write-Verbose 'Stopping minikube cluster...'
@@ -165,6 +176,7 @@ if ($createCluster) {
 	Write-Verbose 'Saving configuration for startup process...'
 	$vars = @{
 		'codeDxDnsName' = $codeDxDnsName;
+		'codeDxPortNumber' = $codeDxPortNumber;
 		'namespaceCodeDx' = $namespaceCodeDx;
 		'namespaceToolOrchestration' = $namespaceToolOrchestration;
 		'releaseNameCodeDx' = $releaseNameCodeDx;
@@ -177,6 +189,11 @@ if ($createCluster) {
 		'workDir' = $workDir
 	}
 	New-Object psobject -Property $vars | Export-Csv -LiteralPath $varsPath -Encoding ascii
+}
+
+if (-not (Test-Path $varsPath)) {
+	Write-Host "A previous attempt to create a cluster failed. Delete that cluster before continuing by running this command:`nminikube -p $minikubeProfile delete"
+	Exit 1
 }
 
 Write-Verbose 'Reading saved startup configuration...'
@@ -227,8 +244,8 @@ if ($vars.useTLS) {
 $ips = Resolve-DnsName -Type A $vars.codeDxDnsName | ForEach-Object { $_.IPAddress }
 $ipList = [string]::Join(',', $ips)
 
-Write-Host "`nRun the following command to make Code Dx available at $protocol`://$($vars.codeDxDnsName)`:$portNum/codedx"
-Write-Host ('pwsh -c "kubectl -n cdx-app port-forward --address {0} (kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name) {1}"' -f $ipList,$portNum)
+Write-Host "`nRun the following command to make Code Dx available at $protocol`://$($vars.codeDxDnsName)`:$($vars.codeDxPortNumber)/codedx"
+Write-Host ('pwsh -c "kubectl -n cdx-app port-forward --address {0} (kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name) {1}:{2}"' -f $ipList,$vars.codeDxPortNumber,$portNum)
 
 if ($vars.useTls) {
 	Write-Host "Note that you may need to trust the root certificate located at $(join-path $HOME '.minikube/ca.pem')"

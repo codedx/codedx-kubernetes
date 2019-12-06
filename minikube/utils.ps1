@@ -53,3 +53,11 @@ function Test-IsElevated {
 	}
 	(id -u) -eq 0
 }
+
+function Get-IPv4AddressList([string] $hostname) {
+
+	# not using Resolve-DnsName here because it's currently unavailable on ubuntu
+	$entry = [net.dns]::gethostentry($hostname)
+	$list = $entry.AddressList | Where-Object { -not $_.IsIPv6LinkLocal } | ForEach-Object { $_.IPAddressToString }
+	[string]::Join(',', $list)
+}

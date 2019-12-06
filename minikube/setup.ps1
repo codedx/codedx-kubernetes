@@ -12,7 +12,7 @@
 # 7 socat (when using $vmDriver 'none')
 #
 param (
-	[string] $codeDxDnsName = $env:computername,
+	[string] $codeDxDnsName = (hostname),
 	[int]    $codeDxPortNumber = 8443,
 	[string] $k8sVersion = 'v1.14.6',
 	[string] $minikubeProfile = 'minikube-1-14-6',

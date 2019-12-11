@@ -13,9 +13,10 @@ function Test-MinikubeStatus([string] $profileName) {
 	0 -eq $LASTEXITCODE
 }
 
-function New-MinikubeCluster([string] $profileName, [string] $k8sVersion, [string] $vmDriver, [int] $cpus, [string] $memory, [string] $diskSize) {
+function New-MinikubeCluster([string] $profileName, [string] $k8sVersion, [string] $vmDriver, [int] $cpus, [string] $memory, [string] $diskSize, [string[]] $extraConfig) {
 
-	minikube start --vm-driver=$vmDriver -p $profileName --kubernetes-version $k8sVersion --cpus $cpus --memory $memory --disk-size $diskSize
+	minikube start --vm-driver=$vmDriver -p $profileName --kubernetes-version $k8sVersion --cpus $cpus --memory $memory --disk-size $diskSize @($extraConfig)
+	
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create k8s cluster. Minikube exited with code $LASTEXITCODE."
 	}
@@ -141,7 +142,7 @@ subjects:
 	}
 }
 
-function Start-MinikubeCluster([string] $profileName, [string] $k8sVersion, [string] $vmDriver, [int] $waitSeconds, [switch] $usePsp, [switch] $useNetworkPolicy) {
+function Start-MinikubeCluster([string] $profileName, [string] $k8sVersion, [string] $vmDriver, [int] $waitSeconds, [switch] $usePsp, [switch] $useNetworkPolicy, [string[]] $extraConfig) {
 
 	$pspConfig = ''
 	if ($usePsp) {
@@ -153,7 +154,7 @@ function Start-MinikubeCluster([string] $profileName, [string] $k8sVersion, [str
 		$cniConfig = '--network-plugin=cni'
 	}
 
-	minikube start -p $profileName --kubernetes-version $k8sVersion --vm-driver $vmDriver $cniConfig $pspConfig
+	minikube start -p $profileName --kubernetes-version $k8sVersion --vm-driver $vmDriver $cniConfig $pspConfig @($extraConfig)
 
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to start minikube cluster, minikube exited with code $LASTEXITCODE."

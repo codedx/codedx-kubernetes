@@ -140,17 +140,19 @@ minio:
     minio:
       accessKeyGlobal: "231a5aab-7ffc-49ff-a954-83f97ee416a4"
       secretKeyGlobal: "89968457-bf3a-4716-9863-b99e04b0e4ee"
-  tls:
-    # Enables or disables MinIO TLS configuration.
-    enabled: false
-    # Specifies the name of a k8s secret containing the certificate info used to configure
-    # MinIO TLS. Create the secret using the following command:
-    # kubectl create secret generic cdx-minio-tls --from-file=path/to/minio.pem --from-file=path/to/minio.key
-    certSecret: "cdx-minio-tls"
-    # The name of the MinIO public certificate in certSecret
-    publicCrt: "minio.pem"
-    # The name of the MinIO private key in certSecret
-    privateKey: "minio.key"
+    tls:
+      # Enables or disables MinIO TLS configuration.
+      enabled: false
+      # Specifies the name of a k8s secret containing the certificate info used to configure
+      # MinIO TLS. Create the secret using the following command:
+      # kubectl create secret generic cdx-minio-tls --from-file=path/to/minio.pem --from-file=path/to/minio.key
+      certSecret: "cdx-minio-tls"
+      # The name of the MinIO public certificate in certSecret
+      publicCrt: "minio.pem"
+      # The name of the MinIO private key in certSecret
+      privateKey: "minio.key"
+  persistence:
+    size: 50Gi
 
 # Options for configuring clients to explicitly trust certificate data for the MinIO TLS configuration. This section
 # does not apply when minio.tls.enabled=false.

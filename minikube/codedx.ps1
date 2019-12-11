@@ -11,6 +11,8 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[string] $dockerConfigJson,
 	[string] $mariadbRootPwd,
 	[string] $mariadbReplicatorPwd,
+	[int]    $dbVolumeSizeGiB,
+	[int]    $codeDxVolumeSizeGiB,
 	[switch] $enablePSPs,
 	[switch] $enableNetworkPolicies,
 	[switch] $configureTls) {
@@ -46,6 +48,8 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 
 	$values = @'
 codedxAdminPassword: '{0}'
+persistence:
+  size: {12}Gi
 codedxTls:
   enabled: {5}
   secret: {6}
@@ -62,8 +66,13 @@ networkPolicy:
   mariadb:
     master:
       create: {4}
+      persistence:
+        size: {11}Gi
     slave:
       create: {4}
+      persistence:
+        size: {11}Gi
+
 codedxTomcatImage: {1}
 codedxTomcatImagePullSecrets:
   - name: '{2}'
@@ -72,7 +81,11 @@ mariadb:
     password: '{9}'
   replication:
     password: '{10}'
-'@ -f $adminPwd, $tomcatImage, $tomcatImagePullSecretName, $psp, $networkPolicy, $tlsEnabled, $tlsSecretName, $tlsCertFile, $tlsKeyFile, $mariadbRootPwd, $mariadbReplicatorPwd
+'@ -f $adminPwd, $tomcatImage, $tomcatImagePullSecretName, `
+$psp, $networkPolicy, `
+$tlsEnabled, $tlsSecretName, $tlsCertFile, $tlsKeyFile, `
+$mariadbRootPwd, $mariadbReplicatorPwd, `
+$dbVolumeSizeGiB, $codeDxVolumeSizeGiB
 
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
@@ -98,6 +111,7 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 	[string] $toolServiceImage,
 	[string] $imagePullSecretName,
 	[string] $dockerConfigJson,
+	[int]    $minioVolumeSizeGiB,
 	[switch] $enablePSPs,
 	[switch] $enableNetworkPolicies,
 	[switch] $configureTls) {
@@ -157,6 +171,8 @@ minio:
       certSecret: {14}
       publicCrt: 'toolsvc-minio.pem'
       privateKey: 'toolsvc-minio.key'
+  persistence:
+    size: {21}Gi
 
 minioTlsTrust:
   configMapName: 'cdx-toolsvc-minio-cert'
@@ -210,7 +226,7 @@ $minioPwd,$codedxNamespace,$codedxReleaseName,$apiKey,`
 $imagePullSecretName,$toolsImage,$toolsMonoImage,$newAnalysisImage,$sendResultsImage,$sendErrorResultsImage,$toolServiceImage,$numReplicas,
 $tlsConfig,$tlsMinioCertSecret,$tlsToolServiceCertSecret,
 $psp,$networkPolicy,$codedxBaseUrl,`
-$tlsConfig,$codedxCaConfigMap
+$tlsConfig,$codedxCaConfigMap,$minioVolumeSizeGiB
 
 	$valuesFile = 'toolsvc-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force

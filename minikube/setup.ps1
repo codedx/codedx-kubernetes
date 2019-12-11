@@ -18,9 +18,12 @@ param (
 	[string] $minikubeProfile = 'minikube-1-14-6',
 	[int]    $nodeCPUs = 4,
 	[string] $nodeMemory = '16g',
-	[string] $nodeDiskSize = '50g',
 	[int]    $waitTimeSeconds = 600,
 	[string] $vmDriver = 'virtualbox',
+
+	[int]    $dbVolumeSizeGiB = 32,
+	[int]    $minioVolumeSizeGiB = 32,
+	[int]    $codeDxVolumeSizeGiB = 32,
 
 	[string] $imagePullSecretName = 'codedx-docker-registry',
 	[string] $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:latest',
@@ -112,8 +115,22 @@ if ($createCluster) {
 	Write-Verbose "Switching to directory $workDir..."
 	Push-Location $workDir
 
+	$extraConfig = @()
+	if ($vmDriver -eq 'none') {
+		$extraConfig = '--extra-config=kubeadm.ignore-preflight-errors=SystemVerification','--extra-config=kubelet.resolv-conf=/run/systemd/resolve/resolv.conf'
+	}
+
+	Write-Verbose "Determining disk size requirement..."
+	$minikubeDiskSizeGiB = 20
+	$nodeDiskSize = [string](2 * $dbVolumeSizeGiB + $minioVolumeSizeGiB + $codeDxVolumeSizeGiB + $minikubeDiskSizeGiB) + 'g'
+
 	Write-Verbose "Profile does not exist. Creating new minikube profile named $minikubeProfile for k8s version $k8sVersion..."
-	New-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $nodeCPUs $nodeMemory $nodeDiskSize
+	New-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $nodeCPUs $nodeMemory $nodeDiskSize $extraConfig
+
+	if ($vmDriver -eq 'none') {
+		Write-Verbose "Pausing to provide opportunity for cluster customizations..."
+		Read-Host -Prompt "Apply any custom cluster configuration and then press Enter to continue setup"
+	}
 
 	if ($useNetworkPolicies) {
 		Write-Verbose "Adding Cilium network policy provider..."
@@ -124,7 +141,7 @@ if ($createCluster) {
 	Stop-MinikubeCluster $minikubeProfile
 
 	Write-Verbose 'Starting minikube cluster...'
-	Start-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $waitTimeSeconds -useNetworkPolicy:$useNetworkPolicies
+	Start-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $waitTimeSeconds -useNetworkPolicy:$useNetworkPolicies $extraConfig
 
 	Write-Verbose 'Waiting for running pods...'
 	Wait-AllRunningPods 'Start Minikube Cluster' $waitTimeSeconds
@@ -144,6 +161,7 @@ if ($createCluster) {
 	Write-Verbose 'Deploying Code Dx with Tool Orchestration disabled...'
 	New-CodeDxDeployment $codeDxDnsName $workDir $waitTimeSeconds $namespaceCodeDx $releaseNameCodeDx $codedxAdminPwd $imageCodeDxTomcat $imagePullSecretName $dockerConfigJson `
 		$mariadbRootPwd $mariadbReplicatorPwd `
+		$dbVolumeSizeGiB $codeDxVolumeSizeGiB `
 		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
 
 	Write-Verbose 'Deploying Tool Orchestration...'
@@ -151,7 +169,7 @@ if ($createCluster) {
 		$minioAdminUsername $minioAdminPwd $toolServiceApiKey `
 		$imageCodeDxTools $imageCodeDxToolsMono `
 		$imageNewAnalysis $imageSendResults $imageSendErrorResults $imageToolService `
-		$imagePullSecretName $dockerConfigJson `
+		$imagePullSecretName $dockerConfigJson $minioVolumeSizeGiB `
 		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
 
 	Write-Verbose 'Updating Code Dx deployment by enabling Tool Orchestration...'
@@ -185,6 +203,7 @@ if ($createCluster) {
 		'useNetworkPolicies' = $useNetworkPolicies;
 		'usePSPs' = $usePSPs;
 		'useTLS' = $useTLS;
+		'vmDriver' = $vmDriver;
 		'waitTimeSeconds' = $waitTimeSeconds;
 		'workDir' = $workDir
 	}
@@ -202,6 +221,11 @@ $vars.useNetworkPolicies = [convert]::ToBoolean($vars.useNetworkPolicies)
 $vars.usePSPs = [convert]::ToBoolean($vars.usePSPs)
 $vars.useTLS = [convert]::ToBoolean($vars.useTLS)
 
+$extraConfig = @()
+if ($vars.vmDriver -eq 'none') {
+	$extraConfig = '--extra-config=kubeadm.ignore-preflight-errors=SystemVerification','--extra-config=kubelet.resolv-conf=/run/systemd/resolve/resolv.conf'
+}
+
 Write-Output "Using saved configuration:`n$vars"
 
 Write-Verbose "Testing minikube status for profile $minikubeProfile..."
@@ -211,7 +235,7 @@ if (Test-MinikubeStatus $minikubeProfile) {
 }
 
 Write-Verbose "Starting minikube cluster for profile $minikubeProfile with k8s version $k8sVersion..."
-Start-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $vars.waitTimeSeconds -useNetworkPolicy:$($vars.useNetworkPolicies) -usePSP:$($vars.usePSPs)
+Start-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $vars.waitTimeSeconds -useNetworkPolicy:$($vars.useNetworkPolicies) -usePSP:$($vars.usePSPs) $extraConfig
 
 Write-Verbose "Setting kubectl context to minikube profile $minikubeProfile..."
 Set-KubectlContext $minikubeProfile
@@ -247,5 +271,5 @@ Write-Host "`nRun the following command to make Code Dx available at $protocol`:
 Write-Host ('pwsh -c "kubectl -n cdx-app port-forward --address {0} (kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name) {1}:{2}"' -f $ipList,$vars.codeDxPortNumber,$portNum)
 
 if ($vars.useTls) {
-	Write-Host "Note that you may need to trust the root certificate located at $(join-path $HOME '.minikube/ca.pem')"
+	Write-Host "Note that you may need to trust the root certificate located at $(join-path $HOME '.minikube/ca.crt')"
 }

@@ -328,7 +328,8 @@ codedxProps:
   #
   dbconnection:
 
-    # The flag codedxProps.dbconnection.createSecret determines whether or not a new secret will be generated.
+    # The flag codedxProps.dbconnection.createSecret determines whether or not a new secret will be generated. This
+    # value is ignored when .Values.mariadb.enabled is false.
     #
     createSecret: true
 
@@ -340,6 +341,11 @@ codedxProps:
     # Use codedxProps.dbconnection.annotations to attach extra annotations to a generated secret.
     #
     annotations: {}
+
+    # Use externalDbUrl to specify the database URL of an external MariaDB instance. This value is ignored
+    # when .Values.mariadb.enabled is true.
+    #
+    externalDbUrl:
 
   # Use codedxProps.extra to specify extra codedx.props values that can be included either from a pre-existing
   # secret or from values in the given entry. Use this for sensitive info, ie LDAP config, or for convenience
@@ -449,9 +455,15 @@ codedxTls:
   certFile: 'codedx-cert.pem'
   keyFile: 'codedx-cert.key'
 
-# Code Dx-specific MariaDB configuration. This should usually be left untouched, unless changing database passwords.
+# Code Dx-specific MariaDB configuration. This should usually be left untouched, unless changing database passwords or
+# opting to use an external MariaDB instance by setting mariadb.enabled to false. When using an external MariaDB instance,
+# you must specify a value for codedxProps.dbconnection.externalDbUrl and create your own k8s secret containing a MariaDB 
+# credential (refer to the codedxProps.dbconnection section for details).
 #
 mariadb:
+  # Enable installation of the MariaDB chart to create a Code Dx database host. Set to false when using Code Dx 
+  # with an external MariaDB instance whose connection details can be found in codedxProps.dbconnection.
+  enabled: true
   image:
     tag: 10.2.22
   db:

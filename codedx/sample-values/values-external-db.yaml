@@ -1,0 +1,17 @@
+# This file is an example in using Code Dx with a database named codedx that's hosted
+# by an external MariaDB instance.
+#
+# This file relies on a pre-existing secret in a specific format. See the resource
+# definition in the 'values-external-db-resources.yaml' file, which can be modified 
+# and used directly with `kubectl create -f ...`
+#
+# The contents of this file can be added to your own custom values.yaml file.
+
+codedxProps:
+  dbconnection:
+    createSecret: false
+    secretName: codedx-database-credential-secret
+    externalDbUrl: jdbc:mysql://host.docker.internal/codedx
+
+mariadb:
+  enabled: false

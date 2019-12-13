@@ -1,3 +1,4 @@
+{{- if .Values.mariadb.enabled -}}
 {{- if .Values.mariadb.serviceAccount.create }}
 apiVersion: v1
 kind: ServiceAccount
@@ -37,4 +38,5 @@ subjects:
 - name: {{ include "mariadb.ref.serviceAccountName" . | quote }}
   kind: ServiceAccount
   namespace: {{ .Release.Namespace | quote }}
+{{- end -}}
 {{- end -}}

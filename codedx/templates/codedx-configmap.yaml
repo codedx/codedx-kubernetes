@@ -12,6 +12,9 @@ data:
   {{- /* comments with sample parameters named ie "{{project.name}}". Rather than try to trim comments from the output */ -}}
   {{- /* or change the `codedx.props` sample file, we use a simple text-replace for flexibility. */ -}}
   {{- $dbUrl := (printf "jdbc:mysql://%s-mariadb/codedx" .Release.Name) -}}
+  {{- if not .Values.mariadb.enabled -}}
+  {{- $dbUrl = (required ".Values.codedxProp.externalDbUrl must be specified when using an external MariaDB instance" .Values.codedxProps.dbconnection.externalDbUrl) -}}
+  {{- end -}}
   {{- $propsContents := (required "codedx.props cannot be an empty file!" (.Files.Get .Values.codedxProps.file)) -}}
 
   {{- $propsContents := ($propsContents | replace "TPL_K8S_DB_URL" $dbUrl) }}

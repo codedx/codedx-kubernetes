@@ -6,7 +6,7 @@
 #
 
 # Pin to a specific Code Dx version
-codedxTomcatImage: codedx/codedx-tomcat:v4.3.4
+codedxTomcatImage: codedx/codedx-tomcat:v4.3.5
 
 # Keep or modify Code Dx app data storage size
 persistence:

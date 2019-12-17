@@ -13,6 +13,7 @@ spec:
       release: {{ .Release.Name | quote }}
       component: frontend
   egress:
+  {{- if .Values.mariadb.enabled }}
   - to:
     - podSelector:
         matchLabels:
@@ -20,6 +21,10 @@ spec:
           release: {{ .Release.Name | quote }}
     ports:
     - port: 3306
+  {{ else }}
+  - ports:
+    - port: 3306    
+  {{ end -}}  
   - ports:
     {{- include "netpolicy.dns.ports" . | nindent 4 -}}
   {{- if .Values.networkPolicy.codedx.ldap }}

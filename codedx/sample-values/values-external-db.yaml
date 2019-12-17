@@ -11,7 +11,7 @@ codedxProps:
   dbconnection:
     createSecret: false
     secretName: codedx-database-credential-secret
-    externalDbUrl: jdbc:mysql://host.docker.internal/codedx
+    externalDbUrl: jdbc:mysql://host.docker.internal/codedxdb
 
 mariadb:
   enabled: false

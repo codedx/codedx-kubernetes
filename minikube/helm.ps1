@@ -17,7 +17,7 @@ function Add-HelmRepo([string] $name, [string] $url) {
 	}
 }
 
-function Invoke-HelmSingleDeployment([string] $message, [int] $waitSeconds, [string] $namespace, [string] $releaseName, [string] $chartFolder, [string] $valuesFile, [string] $deploymentName, [int] $totalReplicas) {
+function Invoke-HelmSingleDeployment([string] $message, [int] $waitSeconds, [string] $namespace, [string] $releaseName, [string] $chartFolder, [string] $valuesFile, [string] $deploymentName, [int] $totalReplicas, [string[]] $extraValuesPaths) {
 
 	helm dependency update $chartFolder
 	if ($LASTEXITCODE -ne 0) {
@@ -25,7 +25,13 @@ function Invoke-HelmSingleDeployment([string] $message, [int] $waitSeconds, [str
 	}
 	Wait-AllRunningPods "Pre-Helm Install: $message" $waitSeconds
 
-	helm install --name $releaseName --namespace $namespace --values $valuesFile $chartFolder
+	$extraValues = @()
+	$extraValuesPaths | ForEach-Object {
+		$extraValues = $extraValues + "--values"
+		$extraValues = $extraValues + ('"{0}"' -f $_)
+	}
+
+	helm install --name $releaseName --namespace $namespace --values $valuesFile @($extraValues) $chartFolder
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to run helm install, helm exited with code $LASTEXITCODE."
 	}

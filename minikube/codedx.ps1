@@ -1,21 +1,22 @@
 . (join-path $PSScriptRoot minikube.ps1)
 
 function New-CodeDxDeployment([string] $codeDxDnsName,
-    [string] $workDir, 
-	[int]    $waitSeconds,
-	[string] $namespace,
-	[string] $releaseName,
-	[string] $adminPwd,
-	[string] $tomcatImage,
-	[string] $tomcatImagePullSecretName,
-	[string] $dockerConfigJson,
-	[string] $mariadbRootPwd,
-	[string] $mariadbReplicatorPwd,
-	[int]    $dbVolumeSizeGiB,
-	[int]    $codeDxVolumeSizeGiB,
-	[switch] $enablePSPs,
-	[switch] $enableNetworkPolicies,
-	[switch] $configureTls) {
+    [string]   $workDir, 
+	[int]      $waitSeconds,
+	[string]   $namespace,
+	[string]   $releaseName,
+	[string]   $adminPwd,
+	[string]   $tomcatImage,
+	[string]   $tomcatImagePullSecretName,
+	[string]   $dockerConfigJson,
+	[string]   $mariadbRootPwd,
+	[string]   $mariadbReplicatorPwd,
+	[int]      $dbVolumeSizeGiB,
+	[int]      $codeDxVolumeSizeGiB,
+	[string[]] $extraValuesPaths,
+	[switch]   $enablePSPs,
+	[switch]   $enableNetworkPolicies,
+	[switch]   $configureTls) {
  
 	if (-not (Test-Namespace $namespace)) {
 		New-Namespace  $namespace
@@ -91,7 +92,7 @@ $dbVolumeSizeGiB, $codeDxVolumeSizeGiB
 	$values | out-file $valuesFile -Encoding ascii -Force
 
 	$chartFolder = (join-path $workDir codedx-kubernetes/codedx)
-	Invoke-HelmSingleDeployment 'Code Dx' $waitSeconds $namespace $releaseName $chartFolder $valuesFile 'codedx-app-codedx' 1
+	Invoke-HelmSingleDeployment 'Code Dx' $waitSeconds $namespace $releaseName $chartFolder $valuesFile 'codedx-app-codedx' 1 $extraValuesPaths
 }
 
 function New-ToolOrchestrationDeployment([string] $workDir, 
@@ -232,7 +233,7 @@ $tlsConfig,$codedxCaConfigMap,$minioVolumeSizeGiB
 	$values | out-file $valuesFile -Encoding ascii -Force
 
 	$chartFolder = (join-path $workDir codedx-kubernetes/codedx-tool-orchestration)
-	Invoke-HelmSingleDeployment 'Tool Orchestration' $waitSeconds $namespace 'toolsvc' $chartFolder $valuesFile 'toolsvc-codedx-tool-orchestration' $numReplicas
+	Invoke-HelmSingleDeployment 'Tool Orchestration' $waitSeconds $namespace 'toolsvc' $chartFolder $valuesFile 'toolsvc-codedx-tool-orchestration' $numReplicas @()
 }
 
 function Set-UseToolOrchestration([string] $workDir, 

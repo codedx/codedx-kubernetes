@@ -12,47 +12,50 @@
 # 7 socat (when using $vmDriver 'none')
 #
 param (
-	[string] $codeDxDnsName = (hostname),
-	[int]    $codeDxPortNumber = 8443,
-	[string] $k8sVersion = 'v1.14.6',
-	[string] $minikubeProfile = 'minikube-1-14-6',
-	[int]    $nodeCPUs = 4,
-	[string] $nodeMemory = '16g',
-	[int]    $waitTimeSeconds = 600,
-	[string] $vmDriver = 'virtualbox',
+	[string]   $codeDxDnsName = (hostname),
+	[int]      $codeDxPortNumber = 8443,
+	[string]   $k8sVersion = 'v1.14.6',
+	[string]   $minikubeProfile = 'minikube-1-14-6',
+	[int]      $nodeCPUs = 4,
+	[string]   $nodeMemory = '16g',
+	[int]      $waitTimeSeconds = 600,
+	[string]   $vmDriver = 'virtualbox',
 
-	[int]    $dbVolumeSizeGiB = 32,
-	[int]    $minioVolumeSizeGiB = 32,
-	[int]    $codeDxVolumeSizeGiB = 32,
+	[int]      $dbVolumeSizeGiB = 32,
+	[int]      $minioVolumeSizeGiB = 32,
+	[int]      $codeDxVolumeSizeGiB = 32,
 
-	[string] $imagePullSecretName = 'codedx-docker-registry',
-	[string] $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:latest',
-	[string] $imageCodeDxTools = 'codedxregistry.azurecr.io/codedx/codedx-tools:latest',
-	[string] $imageCodeDxToolsMono = 'codedxregistry.azurecr.io/codedx/codedx-toolsmono:latest',
-	[string] $imageNewAnalysis = 'codedxregistry.azurecr.io/codedx/codedx-newanalysis:latest',
-	[string] $imageSendResults = 'codedxregistry.azurecr.io/codedx/codedx-results:latest',
-	[string] $imageSendErrorResults = 'codedxregistry.azurecr.io/codedx/codedx-error-results:latest',
-	[string] $imageToolService = 'codedxregistry.azurecr.io/codedx/codedx-tool-service:latest',
+	[string]   $imagePullSecretName = 'codedx-docker-registry',
+	[string]   $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:latest',
+	[string]   $imageCodeDxTools = 'codedxregistry.azurecr.io/codedx/codedx-tools:latest',
+	[string]   $imageCodeDxToolsMono = 'codedxregistry.azurecr.io/codedx/codedx-toolsmono:latest',
+	[string]   $imageNewAnalysis = 'codedxregistry.azurecr.io/codedx/codedx-newanalysis:latest',
+	[string]   $imageSendResults = 'codedxregistry.azurecr.io/codedx/codedx-results:latest',
+	[string]   $imageSendErrorResults = 'codedxregistry.azurecr.io/codedx/codedx-error-results:latest',
+	[string]   $imageToolService = 'codedxregistry.azurecr.io/codedx/codedx-tool-service:latest',
 
-	[int]    $toolServiceReplicas = 3,
+	[int]      $toolServiceReplicas = 3,
 
-	[bool]   $useTLS  = $true,
-	[bool]   $usePSPs = $true,
-	[bool]   $useNetworkPolicies = $true,
+	[bool]     $useTLS  = $true,
+	[bool]     $usePSPs = $true,
+	[bool]     $useNetworkPolicies = $true,
 
-	[string] $namespaceToolOrchestration = 'cdx-svc',
-	[string] $namespaceCodeDx = 'cdx-app',
-	[string] $releaseNameCodeDx = 'codedx-app',
-	[string] $releaseNameToolOrchestration = 'toolsvc-codedx-tool-orchestration',
+	[string]   $namespaceToolOrchestration = 'cdx-svc',
+	[string]   $namespaceCodeDx = 'cdx-app',
+	[string]   $releaseNameCodeDx = 'codedx-app',
+	[string]   $releaseNameToolOrchestration = 'toolsvc-codedx-tool-orchestration',
 
-	[string] $toolServiceApiKey = [guid]::newguid().toString(),
-	[string] $codedxAdminPwd,
-	[string] $minioAdminUsername,
-	[string] $minioAdminPwd,
-	[string] $mariadbRootPwd,
-	[string] $mariadbReplicatorPwd,
+	[string]   $toolServiceApiKey = [guid]::newguid().toString(),
+	[string]   $codedxAdminPwd,
+	[string]   $minioAdminUsername,
+	[string]   $minioAdminPwd,
+	[string]   $mariadbRootPwd,
+	[string]   $mariadbReplicatorPwd,
 
-	[string] $dockerConfigJson
+	[string]   $dockerConfigJson,
+
+	[string[]] $extraCodeDxValuesPaths = @(),
+	[switch]   $pauseForClusterConfig
 )
 
 $ErrorActionPreference = 'Stop'
@@ -127,7 +130,7 @@ if ($createCluster) {
 	Write-Verbose "Profile does not exist. Creating new minikube profile named $minikubeProfile for k8s version $k8sVersion..."
 	New-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $nodeCPUs $nodeMemory $nodeDiskSize $extraConfig
 
-	if ($vmDriver -eq 'none') {
+	if ($pauseForClusterConfig) {
 		Write-Verbose "Pausing to provide opportunity for cluster customizations..."
 		Read-Host -Prompt "Apply any custom cluster configuration and then press Enter to continue setup"
 	}
@@ -162,6 +165,7 @@ if ($createCluster) {
 	New-CodeDxDeployment $codeDxDnsName $workDir $waitTimeSeconds $namespaceCodeDx $releaseNameCodeDx $codedxAdminPwd $imageCodeDxTomcat $imagePullSecretName $dockerConfigJson `
 		$mariadbRootPwd $mariadbReplicatorPwd `
 		$dbVolumeSizeGiB $codeDxVolumeSizeGiB `
+		$extraCodeDxValuesPaths `
 		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
 
 	Write-Verbose 'Deploying Tool Orchestration...'

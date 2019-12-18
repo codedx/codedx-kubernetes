@@ -8,7 +8,7 @@ The setup.ps1 PowerShell Core script uses Helm to install and configure Code Dx 
 You must install PowerShell Core before running setup.ps1. The following tools must be installed and included in your PATH before running setup.ps1:
 
 - [minikube](https://kubernetes.io/docs/tasks/tools/install-minikube) ([VirtualBox](https://www.virtualbox.org/wiki/Downloads) preferred)
-- [helm 2.0](https://helm.sh/docs/install)
+- [helm 3.0](https://helm.sh/docs/install)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) (for Kubernetes 1.14.6)
 - [openssl](https://www.openssl.org/)
 - [git](https://git-scm.com/)
@@ -20,7 +20,7 @@ You must install PowerShell Core before running setup.ps1. The following tools m
 
 Before running the setup.ps1 script, you must download all of the .ps1 files in this directory. You can clone this repository to download the required files.
 
-Run setup.ps1 with the following command. 
+Run setup.ps1 with the following command.
 
 >Note: On Windows, you must run this from an elevated Command Prompt.
 

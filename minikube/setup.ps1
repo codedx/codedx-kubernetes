@@ -3,7 +3,7 @@
 # The following tools must be installed and included in your PATH prior to running this script:
 #
 # 1 minikube
-# 2 helm tool
+# 2 helm tool (v3)
 # 3 kubectl
 # 4 openssl
 # 5 git
@@ -95,6 +95,11 @@ if ($IsWindows) {
 	}
 }
 
+$helmVersionMatch = helm version | select-string 'Version:"v3'
+if ($helmVersionMatch -eq $null) {
+	write-error 'Unable to continue because helm (v3) was not found. Is it in your PATH?'
+}
+
 $workDir = "$HOME/.codedx-$minikubeProfile"
 $varsPath = Join-Path $workDir 'vars.csv'
 
@@ -149,10 +154,8 @@ if ($createCluster) {
 	Write-Verbose 'Waiting for running pods...'
 	Wait-AllRunningPods 'Start Minikube Cluster' $waitTimeSeconds
 
-	Write-Verbose 'Initializing Helm and adding repositories...'
-	Add-Helm $waitTimeSeconds
-	Add-HelmRepo 'minio' https://codedx.github.io/charts
-	Add-HelmRepo 'argo' https://argoproj.github.io/argo-helm
+	Write-Verbose 'Adding Helm repository...'
+	Add-HelmRepo 'codedx' https://codedx.github.io/codedx-kubernetes
 
 	Write-Verbose 'Adding Ingress Addon'
 	Add-IngressAddOn $minikubeProfile $waitTimeSeconds

@@ -26,9 +26,7 @@ This document should be accompanied by the following files, used as examples or 
         - [Connect and Test Your Cluster](#connect-and-test-your-cluster)
 - [Additional Cluster Setup](#additional-cluster-setup)
     - [Installing Helm](#installing-helm)
-        - [What is Helm?](#what-is-helm)
         - [Installation](#installation)
-        - [RBAC – Giving Helm Permissions on Our Cluster](#rbac--giving-helm-permissions-on-our-cluster)
     - [Installing nginx-ingress](#installing-nginx-ingress)
         - [What is nginx-ingress?](#what-is-nginx-ingress)
         - [Reserving a Public IP](#reserving-a-public-ip)
@@ -123,7 +121,7 @@ You can then run the following commands to check your cluster:
 
 1. `kubectl get nodes` - Lists the nodes in your cluster. All nodes should be listed and should reach the “Ready” status. If a node is “NotReady”, check that the VM for that node has started. It can take a few minutes for a node to become “Ready”.
 2. `kubectl get pods --all-namespaces` - Lists the “pods” in your cluster, which are sets of containerized applications running on Kubernetes. All pods listed should reach the “1/1 READY” state with a “STATUS” of “Running”. Some pods depend on others and may crash initially, run the same command with the --watch parameter to monitor the state of the pods and wait for them to start.
- 
+
 ![](images/initial-ks-get-pods.PNG)
 
 _Figure 5 - Output of “kubectl get pods --all-namespaces” after all pods have completed startup_
@@ -138,69 +136,17 @@ We will now install:
 
 ### Installing Helm
 
-- https://helm.sh
-
-#### What is Helm?
-
-_Helm_ is a commonly used Kubernetes package manager that we will use to install _cert-manager_, _nginx-ingress_, and finally Code Dx. It deploys Kubernetes resources defined in the package based on user-provided values. For example, we can use Helm to install the Code Dx “chart”, which will deploy a MariaDB database, Code Dx web application, request storage volumes, and link these resources together so they can communicate properly. We can use properties provided by the chart to, for example, change the registered hostnames for an application, and it will take those customizations into account accordingly.
-
-_Note – There are 2 “primary” versions of Helm – v2.14.3, and v3. Helm v3 is in alpha at time of writing and is incompatible with the charts used here. v2.14.3 is the latest stable version of Helm and should be used instead. v3 is mentioned as it’s growing in popularity and is frequently mentioned during Helm discussions._
+[Helm](https://helm.sh/docs/intro) is a commonly used Kubernetes package manager that we will use to install _cert-manager_, _nginx-ingress_, and finally Code Dx. It deploys Kubernetes resources defined in the package based on user-provided values. For example, we can use Helm to install the Code Dx “chart”, which will deploy a MariaDB database, Code Dx web application, request storage volumes, and link these resources together so they can communicate properly. We can use properties provided by the chart to, for example, change the registered hostnames for an application, and it will take those customizations into account accordingly.
 
 #### Installation
 
-The Azure Cloud Shell comes with the Helm command executable pre-installed, but we need to deploy the Helm resources to the cluster. Run `helm init` in your shell to do so.
+The Azure Cloud Shell comes with the helm command executable pre-installed. Run helm version to confirm that you have Helm v3 installed.
 
-![](images/helm-init.PNG)
+![](images/helm-version.PNG)
 
-_Figure 6 - Output of running "helm init"_
+_Figure 6 - Output of “helm version” indicating helm v3_
 
-Run kubectl get pods -n kube-system --watch and you should see a new “tiller-deploy” pod in the list. This is the Helm worker process that will communicate with the Kubernetes services to deploy our charts.
- 
-![](images/tiller-pod.PNG)
-
-_Figure 7 - Using "kubectl get pods" to check the status of “tiller"_
-
-#### RBAC – Giving Helm Permissions on Our Cluster
-
-The Helm Tiller pod is deployed but does not have sufficient permissions by default to deploy the resources we will need. RBAC is a Kubernetes permissions scheme enabled in our cluster, based on Service Accounts and the Roles that are assigned to them. We will create a Service Account for the Tiller pod, create a Role and RoleBinding for it, then re-initialize helm with the new Service Account.
-
-Copy the included helm-rbac.yaml file to your Azure Cloud Shell environment, and run:
-
-```bash
-kubectl create -f helm-rbac.yaml
-```
-
-![](images/helm-rbac-create.PNG)
-
-_Figure 8 - Output from creation of RBAC resources for Helm Tiller_
-
-Then, re-initialize Tiller with:
-
-```bash
-helm init --upgrade --service-account helm-tiller
-```
-
-![](images/helm-rbac-update.PNG)
- 
-_Figure 9 - Output of using "helm init --upgrade" to modify the Helm installation_
-
-Run `kubectl get pods -n kube-system` and you should see the previous Tiller pod terminating and a new Tiller pod starting. If it happened too quickly to see, you should at least notice a new age for the current Tiller pod.
-
-![](images/helm-rbac-ready.PNG)
-
-_Figure 10 - "Tiller" pod has had its age reset to "9s" after being reconstructed due to RBAC change_
-
-Run the command:
-
-```bash
-kubectl describe deploy -n kube-system tiller-deploy | grep helm-tiller
-```
-
-... and you should see the text: “Service Account: helm-tiller”. This confirms that our changes were successful.
- 
-![](images/helm-rbac-check.PNG)
-
-_Figure 11 - Tiller deployment has been updated to use the "helm-tiller" Service Account_
+If you do not have Helm v3 pre-installed, download helm v3 from the [helm releases](https://github.com/helm/helm/releases) page.
 
 ### Installing nginx-ingress
 
@@ -210,7 +156,7 @@ _Figure 11 - Tiller deployment has been updated to use the "helm-tiller" Service
 
 A Kubernetes Ingress will be used to allow multiple web applications to run on the same IP and provide HTTPS services. An Ingress resource defines the hostnames and base endpoints to manage, the application to forward to, and TLS options. However, an Ingress resource on its own is only a “request” for these features; Kubernetes allows Ingresses to be made but does not handle them directly. Instead, it requires that an Ingress Controller be installed to the cluster, which can monitor these requested resources and act accordingly.
 
-In this document we will be using the nginx-ingress implementation for our Ingress Controller. Nginx-ingress is a widely used and flexible controller, with advanced NGINX-specific routing options available as annotations on an ingress. 
+In this document we will be using the nginx-ingress implementation for our Ingress Controller. Nginx-ingress is a widely used and flexible controller, with advanced NGINX-specific routing options available as annotations on an ingress.
 
 #### Reserving a Public IP
 
@@ -220,27 +166,27 @@ In the Azure Web Portal (https://portal.azure.com), navigate to the “MC” Res
 
 ![](images/staticip-add.PNG)
 
-_Figure 12 - Displaying the "MC_" resource group and "Add" button to be used_
+_Figure 7 - Displaying the "MC_" resource group and "Add" button to be used_
 
 ![](images/staticip-search.png)
 
-_Figure 13 - Search "public ip" in the resource creation window to display the "Public IP address" option_
+_Figure 8 - Search "public ip" in the resource creation window to display the "Public IP address" option_
 
 ![](images/staticip-create.PNG)
 
-_Figure 14 - Resource creation page for a "Public IP address"_
+_Figure 9 - Resource creation page for a "Public IP address"_
 
 It should use an IPv4 address, Basic SKU, Static IP, and have the same Location as your nodes.
 
 ![](images/staticip-settings.PNG)
- 
-_Figure 15 - Configuration for Public IP address resource; "IP address assignment" has been set to "Static"_
+
+_Figure 10 - Configuration for Public IP address resource; "IP address assignment" has been set to "Static"_
 
 Once the static IP has been created, inspect it in the Azure Portal to retrieve its address. We will use this when installing the NGINX Ingress controller.
 
 ![](images/staticip-done.PNG)
- 
-_Figure 16 - View of the created "Public IP address" resource and the address assigned to it_
+
+_Figure 11 - View of the created "Public IP address" resource and the address assigned to it_
 
 #### Installation
 
@@ -257,14 +203,14 @@ helm install \
 ... where `<RESERVED-IP>` should be replaced with the static IP you created in the previous section.
 
 When the command completes, use `kubectl get pods -n nginx --watch` to watch the NGINX pods start. Use `kubectl get svc -n nginx --watch` to check that the LoadBalancer service was created with its “EXTERNAL-IP” assigned to our static IP. This association can take a few minutes to complete.
- 
+
 ![](images/nginx-watch.PNG)
 
-_Figure 17 - Using "kubectl get pods" to check the status of the new NGINX Ingress pods in the "nginx" namespace_
+_Figure 12 - Using "kubectl get pods" to check the status of the new NGINX Ingress pods in the "nginx" namespace_
 
 ![](images/nginx-svc.PNG)
 
-_Figure 18 - Using "kubectl get svc" to check that the "Public IP address" resource was successfully assigned to the LoadBalancer service after 3 minutes_
+_Figure 13 - Using "kubectl get svc" to check that the "Public IP address" resource was successfully assigned to the LoadBalancer service after 3 minutes_
 
 When the LoadBalancer has been assigned its static IP and the NGINX pods have reached a “1/1 READY” status, you can open your browser and navigate to `http://<STATIC-IP>` to confirm that NGINX is listening at that IP. You should see a mostly-blank page, with the text “default backend – 404”. If you see this text, installation has completed.
 
@@ -300,7 +246,7 @@ _Check the cert-manager docs for the latest version of that command to run._
 
 ![](images/certmanager-crds.PNG)
 
-_Figure 19 – Command output after creating the cert-manager CustomResourceDefinitions_
+_Figure 14 – Command output after creating the cert-manager CustomResourceDefinitions_
 
 Then you’ll need to add the JetStack helm repository, since the cert-manager package isn’t available on the default repository:
 
@@ -317,12 +263,12 @@ helm install --name cert-manager --namespace cert-manager jetstack/cert-manager
 Use `kubectl get pods -n cert-manager --watch` to monitor the status of the deployment. Installation is complete when all pods in that namespace reach “1/1 READY”.
 
 ![](images/certmanager-install.PNG)
- 
-_Figure 20 - Partial output of the "helm install" command for cert-manager_
+
+_Figure 15 - Partial output of the "helm install" command for cert-manager_
 
 ![](images/certmanager-install-watch.PNG)
 
-_Figure 21 - Using "kubectl get pods" to check the status of the new cert-manager pods_
+_Figure 16 - Using "kubectl get pods" to check the status of the new cert-manager pods_
 
 #### Creating Cert Issuers
 
@@ -342,16 +288,16 @@ Copy the staging-issuer.yaml and production-issuer.yaml files to your Azure Clou
 kubectl create -f staging-issuer.yaml
 kubectl create -f production-issuer.yaml
 ```
- 
+
 ![](images/certmanager-issuers.PNG)
 
-_Figure 22 - Command output after creating the Staging and Production ClusterIssuer resources_
+_Figure 17 - Command output after creating the Staging and Production ClusterIssuer resources_
 
 After these have been created, you can run `kubectl get clusterissuer` to see that the issuers were successfully installed and `kubectl describe clusterissuer letsencrypt-staging letsencrypt-prod` to confirm there are no errors. These won’t do anything yet, but we’ll refer to these by name when configuring the Code Dx Ingress.
- 
+
 ![](images/certmanager-issuers-confirm.PNG)
 
-_Figure 23 - Confirming that the ClusterIssuers were created and using "kubectl describe clusterissuer" to check the status of the "letsencrypt-prod" issuer (partial command output is displayed)_
+_Figure 18 - Confirming that the ClusterIssuers were created and using "kubectl describe clusterissuer" to check the status of the "letsencrypt-prod" issuer (partial command output is displayed)_
 
 ## Installing Code Dx
 
@@ -391,7 +337,7 @@ kubectl get secret --namespace default codedx-admin-secret -o jsonpath="{.data.p
 
 ![](images/codedx-adminpass.PNG)
 
-_Figure 24 - Example command and partial output for retrieving the randomly-generated Code Dx Admin password_
+_Figure 19 - Example command and partial output for retrieving the randomly-generated Code Dx Admin password_
 
 ... if you gave your Code Dx installation a different name or installed to a different namespace, you can find the appropriate command in the output of the helm install command.
 
@@ -399,21 +345,21 @@ _Figure 24 - Example command and partial output for retrieving the randomly-gene
 
 #### Monitor Installation Status
 
-Use `kubectl get pods --watch` to see the MariaDB and Code Dx pods start. This can take up to 15 minutes on a new cluster, since Kubernetes needs to download the necessary Docker images to run the applications and Code Dx needs to initialize the database. If any errors occur, use `kubectl describe pod <pod-name>` to get more detailed information for troubleshooting. 
+Use `kubectl get pods --watch` to see the MariaDB and Code Dx pods start. This can take up to 15 minutes on a new cluster, since Kubernetes needs to download the necessary Docker images to run the applications and Code Dx needs to initialize the database. If any errors occur, use `kubectl describe pod <pod-name>` to get more detailed information for troubleshooting.
 
 ![](images/codedx-pods-1.PNG)
 
-_Figure 25 - Using "kubectl get pods" to check the status of the new pods created by the Code Dx chart_
+_Figure 20 - Using "kubectl get pods" to check the status of the new pods created by the Code Dx chart_
 
 ![](images/codedx-pods-2.PNG)
 
-_Figure 26 - Example output of a successful initialization of MariaDB and Code Dx. The MariaDB "slave" has restarted once and finished its initialization successfully_
+_Figure 21 - Example output of a successful initialization of MariaDB and Code Dx. The MariaDB "slave" has restarted once and finished its initialization successfully_
 
 The applications have started once they’ve reached the “0/1 READY” state and will be ready once they’ve reached “1/1 READY”. You can use `kubectl logs -f <pod-name>` to monitor the logs of any of the pods. Use `kubectl get networkpolicy` and check that there are three policies created – one for Code Dx, one for MariaDB Master, and one for MariaDB Slave.
 
 ![](images/network-policies.PNG)
 
-_Figure 27 - Using "kubectl get networkpolicy" to confirm that the NetworkPolicy resources were deployed by the Code Dx chart_
+_Figure 22 - Using "kubectl get networkpolicy" to confirm that the NetworkPolicy resources were deployed by the Code Dx chart_
 
 
 ##### Ingress
@@ -422,7 +368,7 @@ Use kubectl get ing to check that the Ingress resource was created appropriately
 
 ![](images/codedx-ing.PNG)
 
-_Figure 28 - Using "kubectl get ing" to confirm that the Ingress resource was created properly by the Code Dx chart_
+_Figure 23 - Using "kubectl get ing" to confirm that the Ingress resource was created properly by the Code Dx chart_
 
 ##### TLS/cert-manager
 
@@ -430,7 +376,7 @@ If using cert-manager, use kubectl get certs to check that a Certificate was aut
 
 ![](images/codedx-ing-cert-staging.PNG)
 
-_Figure 29 - Using "kubectl get certs" to check that cert-manager automatically provisioned a certificate for our Ingress. The cert has its "READY" state set to "True", and will be used automatically by our Ingress_
+_Figure 24 - Using "kubectl get certs" to check that cert-manager automatically provisioned a certificate for our Ingress. The cert has its "READY" state set to "True", and will be used automatically by our Ingress_
 
 
 #### Connect to Code Dx
@@ -439,7 +385,7 @@ Once installation is complete, Code Dx should be available at the hostname speci
 
 ![](images/codedx-installed-staging.PNG)
 
-_Figure 30 - Code Dx web page after installation has completed. The browser warns that the HTTPS connection is "Not secure", due to the use of the Let's Encrypt Staging issuer which uses an untrusted CA. Code Dx was installed without a license, causing it to prompt for a license before use_
+_Figure 25 - Code Dx web page after installation has completed. The browser warns that the HTTPS connection is "Not secure", due to the use of the Let's Encrypt Staging issuer which uses an untrusted CA. Code Dx was installed without a license, causing it to prompt for a license before use_
 
 ##### Change from Staging to Production Cert Issuer
 
@@ -457,11 +403,11 @@ Then run `kubectl get cert` to see that the TLS certificate has had its “READY
 
 ![](images/codedx-ing-cert-prod-monitor.PNG)
 
-_Figure 31 - The existing Certificate has been reset after changing the ClusterIssuer assigned to it. Its "READY" state has returned to "False" while regenerating the cert, and is automatically updated to "True" after successful provisioning_
+_Figure 26 - The existing Certificate has been reset after changing the ClusterIssuer assigned to it. Its "READY" state has returned to "False" while regenerating the cert, and is automatically updated to "True" after successful provisioning_
 
 ![](images/codedx-installed-prod.PNG)
 
-_Figure 32 - The Code Dx web page no longer creates the "Not secure" message due to using the Let's Encrypt Production issue with a trusted CA_
+_Figure 27 - The Code Dx web page no longer creates the "Not secure" message due to using the Let's Encrypt Production issue with a trusted CA_
 
 #### First Log-in
 
@@ -474,10 +420,10 @@ Once you get to the login page you can sign in with the user “admin” and the
 #### Installation Complete
 
 At this point we have deployed a working Code Dx installation, and you can move forward with adding users and projects. Keep your customized codedx-values.yaml file in a reliable location so it can be accessed later if you need to make changes.
- 
+
 ![](images/codedx-installed-final.PNG)
 
-_Figure 33 - Code Dx "Projects" page after providing a license and signing in with the "admin" user and password generated during installation_
+_Figure 28 - Code Dx "Projects" page after providing a license and signing in with the "admin" user and password generated during installation_
 
 
 ## Modifying/Upgrading Code Dx
@@ -513,7 +459,7 @@ kubectl get pvc
 ```
 ![](images/uninstall-lingering-pvcs.PNG)
 
-_Figure 34 - Using "kubectl get pvc" to check that the MariaDB PVCs still remain after uninstalling Code Dx from the cluster_
+_Figure 29 - Using "kubectl get pvc" to check that the MariaDB PVCs still remain after uninstalling Code Dx from the cluster_
 
 ... then delete the MariaDB volumes with:
 
@@ -523,7 +469,7 @@ kubectl delete pvc <master-pvc-name> <slave-pvc-name>
 
 ![](images/uninstall-delete-pvcs.PNG)
 
-_Figure 35 - Using "kubectl delete pvc" to manually delete the storage volumes_
+_Figure 30 - Using "kubectl delete pvc" to manually delete the storage volumes_
 
 ## Helpful Commands
 

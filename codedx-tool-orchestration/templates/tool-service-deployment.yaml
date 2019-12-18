@@ -21,8 +21,9 @@ spec:
         {{- include "codedx-tool-orchestration.commonLabels" . | nindent 8 }}
         component: frontend
     spec:
-      {{ if .Values.toolServiceImagePullSecrets -}}
-      imagePullSecrets: {{ toYaml .Values.toolServiceImagePullSecrets | nindent 6 -}}
+      {{- if .Values.toolServiceImagePullSecrets }}
+      imagePullSecrets:
+      {{- toYaml .Values.toolServiceImagePullSecrets | nindent 6 }}
       {{ end -}}
       serviceAccountName: {{ include "codedx-tool-orchestration.serviceAccountName" . | quote }}
       serviceAccount: {{ include "codedx-tool-orchestration.serviceAccountName" . | quote }}

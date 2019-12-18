@@ -54,17 +54,14 @@ The following sections will assume you have a toolsvc-minio.pem file and a tools
 
 ## Installing the Chart
 
-Using this chart requires [Helm](https://docs.helm.sh/), a Kubernetes package manager. You can find instructions for installing and initializing Helm [here](https://docs.helm.sh/using_helm/).
-
-After initializing Helm for the first time, run `helm version` repeatedly until you see a specific server version in the output. If you see the "could not find a ready tiller pod" message, Helm has not yet initialized.
+Using this chart requires [Helm v3](https://docs.helm.sh/), a Kubernetes package manager. You can find instructions for installing Helm [here](https://helm.sh/docs/intro/install/).
 
 ### Add Required Repositories
 
-This chart contains references to MinIO and Argo, so you must add the following Helm repositories before installing the chart.
+This chart contains references to MinIO and Argo, so you must add the following Helm repository before installing the chart.
 
 ```
-helm repo add minio https://codedx.github.io/charts
-helm repo add argo https://argoproj.github.io/argo-helm
+helm repo add minio https://codedx.github.io/codedx-kubernetes
 ```
 
 ### Your Installation Options File
@@ -325,7 +322,7 @@ After completing the sections above, you can now install the chart using your `t
 ```
 git clone https://github.com/codedx/codedx-kubernetes -b develop
 helm dependency update ./codedx-kubernetes/codedx-tool-orchestration
-helm install --name toolsvc --namespace cdx-svc --values toolsvc-values.yaml ./codedx-kubernetes/codedx-tool-orchestration
+helm install toolsvc --namespace cdx-svc --values toolsvc-values.yaml ./codedx-kubernetes/codedx-tool-orchestration
 ```
 
 Repeatedly issue the following command until all pods show a "Running" STATUS with a "1/1" READY value.

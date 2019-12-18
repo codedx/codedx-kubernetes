@@ -1,14 +1,5 @@
 . (join-path $PSScriptRoot k8s.ps1)
 
-function Add-Helm([int] $waitSeconds) {
-
-	helm init
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to initialize helm, helm exited with code $LASTEXITCODE."
-	}
-	Wait-Deployment 'Initialize Helm' $waitSeconds 'kube-system' 'tiller-deploy' 1
-}
-
 function Add-HelmRepo([string] $name, [string] $url) {
 
 	helm repo add $name $url
@@ -31,7 +22,7 @@ function Invoke-HelmSingleDeployment([string] $message, [int] $waitSeconds, [str
 		$extraValues = $extraValues + ('"{0}"' -f $_)
 	}
 
-	helm install --name $releaseName --namespace $namespace --values $valuesFile @($extraValues) $chartFolder
+	helm install $releaseName --namespace $namespace --values $valuesFile @($extraValues) $chartFolder
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to run helm install, helm exited with code $LASTEXITCODE."
 	}

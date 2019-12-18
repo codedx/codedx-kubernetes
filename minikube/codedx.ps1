@@ -76,7 +76,7 @@ networkPolicy:
 
 codedxTomcatImage: {1}
 codedxTomcatImagePullSecrets:
-  - name: '{2}'
+- name: '{2}'
 mariadb:
   rootUser:
     password: '{9}'
@@ -221,7 +221,7 @@ imageNameSendResults: '{9}'
 imageNameSendErrorResults: '{10}' 
 toolServiceImageName: '{11}' 
 toolServiceImagePullSecrets: 
-  - name: '{5}'
+- name: '{5}'
 '@ -f $minioUsername,`
 $minioPwd,$codedxNamespace,$codedxReleaseName,$apiKey,`
 $imagePullSecretName,$toolsImage,$toolsMonoImage,$newAnalysisImage,$sendResultsImage,$sendErrorResultsImage,$toolServiceImage,$numReplicas,
@@ -299,7 +299,7 @@ cacertsFile: {4}
 	$valuesFile = 'codedx-orchestration-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
 
-	helm upgrade --values $valuesFile --reuse-values $codedxReleaseName $chartFolder
+	helm -n $codedxNamespace upgrade --values $valuesFile --reuse-values $codedxReleaseName $chartFolder
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to upgrade Code Dx release for tool orchestration, helm exited with code $LASTEXITCODE."
 	}

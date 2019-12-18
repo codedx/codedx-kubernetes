@@ -21,7 +21,7 @@ The Code Dx Helm chart creates Kubernetes resources for a secure, production-rea
 
 ```
 $ helm repo add codedx https://codedx.github.io/codedx-kubernetes
-$ helm install codedx/codedx --name codedx
+$ helm install codedx codedx/codedx
 ```
 
 We recommend keeping any extra installation options in your own `values.yaml` file and using `helm install/upgrade ... -f my-values.yaml`, to prevent accidental changes to the installation when a configuration property is forgotten or missed. Check out the [example YAML files](sample-values) for common use-cases.
@@ -29,7 +29,7 @@ We recommend keeping any extra installation options in your own `values.yaml` fi
 ## Prerequisite Details
 
 - Kubernetes 1.8+
-- Code Dx license ([purchase](https://codedx.com/purchase-application/) or [request a free trial](https://codedx.com/free-trial/)) 
+- Code Dx license ([purchase](https://codedx.com/purchase-application/) or [request a free trial](https://codedx.com/free-trial/))
 
 ## Chart Details
 
@@ -45,7 +45,7 @@ This chart will:
 
 ## Installing the Chart
 
-Using this chart requires [Helm](https://docs.helm.sh/), a Kubernetes package manager. You can find instructions for installing and initializing Helm [here](https://docs.helm.sh/using_helm/).
+Using this chart requires [Helm v3](https://docs.helm.sh/), a Kubernetes package manager. You can find instructions for installing Helm [here](https://helm.sh/docs/intro/install/).
 
 This chart contains a reference to stable/mariadb chart version 5.5.0, and deploys MariaDB 10.2.22. (Note that "chart version" does not correspond to "app version".)
 

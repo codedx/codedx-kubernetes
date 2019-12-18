@@ -10,7 +10,6 @@ This document should be accompanied by the following files, used as examples or 
 
 -	[codedx-values.yaml](resources/codedx-values.yaml)
 -	[create-cluster.sh](resources/create-cluster.sh)
--	[helm-rbac.yaml](resources/helm-rbac.yaml)
 -	[production-issuer.yaml](resources/production-issuer.yaml)
 -	[staging-issuer.yaml](resources/staging-issuer.yaml)
 
@@ -233,8 +232,6 @@ In this section we will use Let’s Encrypt (https://letsencrypt.org) as our iss
 
 We will be following the documentation provided by the cert-manager project: https://docs.cert-manager.io/en/latest/getting-started/install/kubernetes.html#installing-with-helm
 
-The RBAC resources we created when installing Helm will cover the permissions needed to deploy cert-manager.
-
 Before installing cert-manager with helm, we must create the CustomResourceDefinition objects that it requires:
 
 ```bash
@@ -257,7 +254,7 @@ helm repo add jetstack https://charts.jetstack.io
 Finally, we can install cert-manager:
 
 ```bash
-helm install --name cert-manager --namespace cert-manager jetstack/cert-manager
+helm install cert-manager --namespace cert-manager jetstack/cert-manager
 ```
 
 Use `kubectl get pods -n cert-manager --watch` to monitor the status of the deployment. Installation is complete when all pods in that namespace reach “1/1 READY”.
@@ -326,7 +323,7 @@ Licensing can be done through configuration in these values, or after installati
 Copy your codedx-values.yaml file to your Azure Cloud Shell environment and run the command:
 
 ```bash
-helm install --name codedx codedx/codedx -f codedx-values.yaml
+helm install codedx codedx/codedx -f codedx-values.yaml
 ```
 
 If the installation completes successfully, you must **immediately** run the following command to get the randomly generated password for the default “admin” account:

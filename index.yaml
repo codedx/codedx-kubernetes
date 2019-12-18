@@ -1,9 +1,35 @@
 apiVersion: v1
 entries:
+  argo:
+  - apiVersion: v1
+    appVersion: v2.4.2
+    created: "2019-12-17T23:31:08.9261291-05:00"
+    dependencies:
+    - condition: minio.install
+      name: minio
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 1.3.3
+    description: A Helm chart for Argo Workflows
+    digest: a55010cc7998267ab18a6b4510eb338b954f4993653ae3fa57005956da5e86f9
+    home: https://github.com/argoproj/argo-helm
+    icon: https://raw.githubusercontent.com/argoproj/argo/master/argo.png
+    maintainers:
+    - name: alexec
+    - name: alexmt
+    - name: jessesuen
+    - name: benjaminws
+    name: argo
+    urls:
+    - https://codedx.github.io/codedx-kubernetes/argo-0.6.3.tgz
+    version: 0.6.3
   codedx:
   - apiVersion: v1
     appVersion: 4.3.5
-    created: "2019-12-13T15:27:27.5487798-05:00"
+    created: "2019-12-17T23:31:09.0598388-05:00"
+    dependencies:
+    - name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
     description: A Helm chart for Code Dx
     digest: 74b7942d93297a4fc4447953c932f32885a21fc69fc6491be756f4d0484e5967
     home: https://github.com/codedx/codedx-kubernetes
@@ -30,7 +56,11 @@ entries:
     version: 0.4.20
   - apiVersion: v1
     appVersion: 4.3.4
-    created: "2019-12-13T15:27:27.5407801-05:00"
+    created: "2019-12-17T23:31:09.0471508-05:00"
+    dependencies:
+    - name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
     description: A Helm chart for Code Dx
     digest: 7203f68e626398740bc6e8cb5eab6b7bd3f9e73306e3ec5c73a013a731a1b262
     home: https://github.com/codedx/codedx-kubernetes
@@ -57,7 +87,11 @@ entries:
     version: 0.4.19
   - apiVersion: v1
     appVersion: 4.3.3
-    created: "2019-12-13T15:27:27.5337794-05:00"
+    created: "2019-12-17T23:31:09.038367-05:00"
+    dependencies:
+    - name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
     description: A Helm chart for Code Dx
     digest: 4c111632c1fc66ae513761b8d7db1e8aab08147d97cb4a72620e6fccabc9f03e
     home: https://github.com/codedx/codedx-kubernetes
@@ -84,7 +118,11 @@ entries:
     version: 0.4.18
   - apiVersion: v1
     appVersion: 4.3.2
-    created: "2019-12-13T15:27:27.52778-05:00"
+    created: "2019-12-17T23:31:09.0286082-05:00"
+    dependencies:
+    - name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
     description: A Helm chart for Code Dx
     digest: 9b87d2c3c9e30af1ac5b66472eb6bbfc637f5ec1ad2c8e8403482c3c223c58be
     home: https://github.com/codedx/codedx-kubernetes
@@ -111,7 +149,11 @@ entries:
     version: 0.4.17
   - apiVersion: v1
     appVersion: 4.3.1
-    created: "2019-12-13T15:27:27.5217791-05:00"
+    created: "2019-12-17T23:31:09.0198208-05:00"
+    dependencies:
+    - name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
     description: A Helm chart for Code Dx
     digest: bcf3be4ec4f1efe552b9686078327dcd2c4b8b965e16dc23aa83d3de4b14b0da
     home: https://github.com/codedx/codedx-kubernetes
@@ -138,7 +180,11 @@ entries:
     version: 0.4.16
   - apiVersion: v1
     appVersion: 4.3.0
-    created: "2019-12-13T15:27:27.5157811-05:00"
+    created: "2019-12-17T23:31:09.0110392-05:00"
+    dependencies:
+    - name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
     description: A Helm chart for Code Dx
     digest: 59b0793dd4a454df945cc8aed1ca65f9d49ebeff854547b26e073b139d0ec38d
     home: https://github.com/codedx/codedx-kubernetes
@@ -165,7 +211,11 @@ entries:
     version: 0.4.15
   - apiVersion: v1
     appVersion: 4.2.4
-    created: "2019-12-13T15:27:27.5097792-05:00"
+    created: "2019-12-17T23:31:09.0012797-05:00"
+    dependencies:
+    - name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
     description: A Helm chart for Code Dx
     digest: aee9f31aadd7da5e0e1cf8fbaa18d0f3cfc53c68fa4aa9aef32e1742be55b71e
     home: https://github.com/codedx/codedx-kubernetes
@@ -192,7 +242,11 @@ entries:
     version: 0.4.14
   - apiVersion: v1
     appVersion: 4.2.4
-    created: "2019-12-13T15:27:27.5027799-05:00"
+    created: "2019-12-17T23:31:08.988594-05:00"
+    dependencies:
+    - name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
     description: A Helm chart for Code Dx
     digest: c49db488de69c8f6a3517e7eed5231a875f3da2310a37e6e87090fa0cfa8bf9a
     home: https://github.com/codedx/codedx-kubernetes
@@ -219,7 +273,11 @@ entries:
     version: 0.4.13
   - apiVersion: v1
     appVersion: 4.2.4
-    created: "2019-12-13T15:27:27.4957801-05:00"
+    created: "2019-12-17T23:31:08.9778548-05:00"
+    dependencies:
+    - name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
     description: A Helm chart for Code Dx
     digest: 7cb913ef8faf42b500624f041c3ab1150736a38e9cf53a77581e792d903f5c7a
     home: https://github.com/codedx/codedx-kubernetes
@@ -246,7 +304,11 @@ entries:
     version: 0.4.12
   - apiVersion: v1
     appVersion: 4.2.4
-    created: "2019-12-13T15:27:27.4897799-05:00"
+    created: "2019-12-17T23:31:08.9680997-05:00"
+    dependencies:
+    - name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
     description: A Helm chart for Code Dx
     digest: 8353b6ee15a1708e7c05ae95508a4f1d7aa8f1426a2bb95c06bcfec40194a473
     home: https://github.com/codedx/codedx-kubernetes
@@ -273,7 +335,11 @@ entries:
     version: 0.4.11
   - apiVersion: v1
     appVersion: 4.2.2
-    created: "2019-12-13T15:27:27.4837808-05:00"
+    created: "2019-12-17T23:31:08.9593156-05:00"
+    dependencies:
+    - name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
     description: A Helm chart for Code Dx
     digest: 1cb8b7edbd0ec322c36d7646ef9287cc8994e675904ec4f5955928471541372a
     home: https://github.com/codedx/codedx-kubernetes
@@ -300,7 +366,11 @@ entries:
     version: 0.4.10
   - apiVersion: v1
     appVersion: 4.2.1
-    created: "2019-12-13T15:27:27.5867802-05:00"
+    created: "2019-12-17T23:31:09.1189635-05:00"
+    dependencies:
+    - name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
     description: A Helm chart for Code Dx
     digest: ed9fb96a771eb368b4af1b979b4cde63b9f612e9d68c0d914d7526f6ba916a9b
     home: https://github.com/codedx/codedx-kubernetes
@@ -327,7 +397,11 @@ entries:
     version: 0.4.9
   - apiVersion: v1
     appVersion: 4.2.0
-    created: "2019-12-13T15:27:27.5807794-05:00"
+    created: "2019-12-17T23:31:09.1096148-05:00"
+    dependencies:
+    - name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
     description: A Helm chart for Code Dx
     digest: 47699e34412aa9947efa58aabc0fd8aca2be4e79dd21da4ddefa3441d036955f
     home: https://github.com/codedx/codedx-kubernetes
@@ -354,7 +428,11 @@ entries:
     version: 0.4.8
   - apiVersion: v1
     appVersion: 4.1.2
-    created: "2019-12-13T15:27:27.5737795-05:00"
+    created: "2019-12-17T23:31:09.1008311-05:00"
+    dependencies:
+    - name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
     description: A Helm chart for Code Dx
     digest: 86f0f1c61bbfc3d1e3ee9eb9c55317111e713943745b9359092480260bfee7b3
     home: https://github.com/codedx/codedx-kubernetes
@@ -381,7 +459,11 @@ entries:
     version: 0.4.7
   - apiVersion: v1
     appVersion: 4.1.1
-    created: "2019-12-13T15:27:27.5677804-05:00"
+    created: "2019-12-17T23:31:09.0881431-05:00"
+    dependencies:
+    - name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
     description: A Helm chart for Code Dx
     digest: 6750e5ecb29cc75e55c7e2a887528ffbc74a7074eeb42a67803a04c46517d918
     home: https://github.com/codedx/codedx-kubernetes
@@ -408,7 +490,11 @@ entries:
     version: 0.4.6
   - apiVersion: v1
     appVersion: 4.1.0
-    created: "2019-12-13T15:27:27.56078-05:00"
+    created: "2019-12-17T23:31:09.0783829-05:00"
+    dependencies:
+    - name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
     description: A Helm chart for Code Dx
     digest: 391f0f7eb15b71e860a812b215afcd8cf9f6b12ee1acc29ebd317ff8fa939c34
     home: https://github.com/codedx/codedx-kubernetes
@@ -435,7 +521,11 @@ entries:
     version: 0.4.5
   - apiVersion: v1
     appVersion: 4.1.0
-    created: "2019-12-13T15:27:27.5547789-05:00"
+    created: "2019-12-17T23:31:09.0696001-05:00"
+    dependencies:
+    - name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
     description: A Helm chart for Code Dx
     digest: 6328ea5885b21193ee50af36486c0263c7bf354c4b8c46d762bbf50b56b41ac9
     home: https://github.com/codedx/codedx-kubernetes
@@ -462,7 +552,11 @@ entries:
     version: 0.4.4
   - apiVersion: v1
     appVersion: 4.0.0
-    created: "2019-12-13T15:27:27.5417796-05:00"
+    created: "2019-12-17T23:31:09.0510581-05:00"
+    dependencies:
+    - name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
     description: A Helm chart for Code Dx
     digest: 6888e5b9742b5e96ea6e923b50117118e959e0c87e095a1d25ca4bb02522afb1
     home: https://github.com/codedx/codedx-kubernetes
@@ -489,7 +583,11 @@ entries:
     version: 0.4.2
   - apiVersion: v1
     appVersion: 3.7.0
-    created: "2019-12-13T15:27:27.4777795-05:00"
+    created: "2019-12-17T23:31:08.9495239-05:00"
+    dependencies:
+    - name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
     description: A Helm chart for Code Dx (not suitable for production use)
     digest: 5d24f78a9e7d8e3092a597cf79c58cdab856a5fc915382a04a35bbc532024a26
     home: https://github.com/codedx/codedx-kubernetes
@@ -514,7 +612,11 @@ entries:
     version: 0.4.0
   - apiVersion: v1
     appVersion: 3.7.0
-    created: "2019-12-13T15:27:27.4757802-05:00"
+    created: "2019-12-17T23:31:08.9456196-05:00"
+    dependencies:
+    - name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
     description: A Helm chart for Code Dx (not suitable for production use)
     digest: 0295859c2371da6a25a56168a79d118e9c6244e342e0ca22f05bc643cfc3e249
     home: https://github.com/codedx/codedx-kubernetes
@@ -539,7 +641,11 @@ entries:
     version: 0.3.0
   - apiVersion: v1
     appVersion: 3.6.1
-    created: "2019-12-13T15:27:27.4747809-05:00"
+    created: "2019-12-17T23:31:08.9407396-05:00"
+    dependencies:
+    - name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
     description: A Helm chart for Code Dx (not suitable for production use)
     digest: b414b7fc1c7f11ff73b06e5df5bde85873429244a58f7288a351bec6eceec875
     home: https://github.com/codedx/codedx-kubernetes
@@ -564,7 +670,11 @@ entries:
     version: 0.2.1
   - apiVersion: v1
     appVersion: 3.6.1
-    created: "2019-12-13T15:27:27.4737785-05:00"
+    created: "2019-12-17T23:31:08.9349106-05:00"
+    dependencies:
+    - name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
     description: A Helm chart for Code Dx
     digest: 21d64333e2b2e9cdbc68aebb792f905e094f8aa68ffdea6b0910dcfe5dfbc74b
     home: https://github.com/codedx/codedx-kubernetes
@@ -587,4 +697,29 @@ entries:
     urls:
     - https://codedx.github.io/codedx-kubernetes/codedx-0.1.3.tgz
     version: 0.1.3
-generated: "2019-12-13T15:27:27.4667806-05:00"
+  minio:
+  - apiVersion: v1
+    appVersion: 2019.9.26
+    created: "2019-12-17T23:31:09.1224248-05:00"
+    description: MinIO is an object storage server, compatible with Amazon S3 cloud
+      storage service, mainly used for storing unstructured data (such as photos,
+      videos, log files, etc.)
+    digest: d255fd2103d81eee4ebf6909cd4419a675bf06b737fe7468b3011c12feeb05d7
+    home: https://min.io
+    icon: https://codedx.com/wp-content/uploads/2017/03/CodeDx-logo.png
+    keywords:
+    - minio
+    - storage
+    - object-storage
+    - s3
+    - cluster
+    maintainers:
+    - email: support@codedx.com
+      name: CodeDx
+    name: minio
+    sources:
+    - https://github.com/codedx/charts
+    urls:
+    - https://codedx.github.io/codedx-kubernetes/minio-1.2.13.tgz
+    version: 1.2.13
+generated: "2019-12-17T23:31:08.9192677-05:00"

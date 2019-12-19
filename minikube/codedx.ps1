@@ -162,6 +162,9 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 	}
 
 	$values = @'
+argo:
+  installCRD: false
+
 minio:
   global:
     minio:

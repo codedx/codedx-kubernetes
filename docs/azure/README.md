@@ -482,8 +482,8 @@ _Some common helpful commands and troubleshooting steps for working with your cl
 
 `kubectl edit <type> <resource>` - Opens an editor for the YAML definition of a deployed Kubernetes resource, which you can modify and save to change the resource directly. This uses the editor specified by the `$EDITOR` environment variable, which is unspecified by default and uses _vim_.
 
-`helm list` – Lists charts currently installed on the cluster
+`helm -n <namespace> list` – Lists charts currently installed on the cluster in the specified namespace
 
-`helm del --purge <name>` – Uninstalls the given application and allows reuse of the given `<name>` (by default, installation names cannot be reused later)
+`helm -n <namespace> del <name>` – Uninstalls the given application in the specified namespace and allows reuse of the given `<name>`
 
 `helm repo update` – Updates the list of available charts and their versions from the registered repositories. New chart versions aren’t pulled automatically, you’ll need to do a repo update to get the latest changes.

@@ -3,14 +3,14 @@ entries:
   argo:
   - apiVersion: v1
     appVersion: v2.4.2
-    created: "2019-12-17T23:31:08.9261291-05:00"
+    created: "2019-12-19T08:16:42.8127173-05:00"
     dependencies:
     - condition: minio.install
       name: minio
       repository: https://kubernetes-charts.storage.googleapis.com/
       version: 1.3.3
     description: A Helm chart for Argo Workflows
-    digest: a55010cc7998267ab18a6b4510eb338b954f4993653ae3fa57005956da5e86f9
+    digest: 655af30e378ccae0edd9a62ee73cada6250e01313ae891b8b051d3adafb03554
     home: https://github.com/argoproj/argo-helm
     icon: https://raw.githubusercontent.com/argoproj/argo/master/argo.png
     maintainers:
@@ -25,7 +25,7 @@ entries:
   codedx:
   - apiVersion: v1
     appVersion: 4.3.5
-    created: "2019-12-17T23:31:09.0598388-05:00"
+    created: "2019-12-19T08:16:42.8985146-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -56,7 +56,7 @@ entries:
     version: 0.4.20
   - apiVersion: v1
     appVersion: 4.3.4
-    created: "2019-12-17T23:31:09.0471508-05:00"
+    created: "2019-12-19T08:16:42.8905373-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -87,7 +87,7 @@ entries:
     version: 0.4.19
   - apiVersion: v1
     appVersion: 4.3.3
-    created: "2019-12-17T23:31:09.038367-05:00"
+    created: "2019-12-19T08:16:42.8845521-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -118,7 +118,7 @@ entries:
     version: 0.4.18
   - apiVersion: v1
     appVersion: 4.3.2
-    created: "2019-12-17T23:31:09.0286082-05:00"
+    created: "2019-12-19T08:16:42.8775722-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -149,7 +149,7 @@ entries:
     version: 0.4.17
   - apiVersion: v1
     appVersion: 4.3.1
-    created: "2019-12-17T23:31:09.0198208-05:00"
+    created: "2019-12-19T08:16:42.8715862-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -180,7 +180,7 @@ entries:
     version: 0.4.16
   - apiVersion: v1
     appVersion: 4.3.0
-    created: "2019-12-17T23:31:09.0110392-05:00"
+    created: "2019-12-19T08:16:42.864605-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -211,7 +211,7 @@ entries:
     version: 0.4.15
   - apiVersion: v1
     appVersion: 4.2.4
-    created: "2019-12-17T23:31:09.0012797-05:00"
+    created: "2019-12-19T08:16:42.8586208-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -242,7 +242,7 @@ entries:
     version: 0.4.14
   - apiVersion: v1
     appVersion: 4.2.4
-    created: "2019-12-17T23:31:08.988594-05:00"
+    created: "2019-12-19T08:16:42.8516397-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -273,7 +273,7 @@ entries:
     version: 0.4.13
   - apiVersion: v1
     appVersion: 4.2.4
-    created: "2019-12-17T23:31:08.9778548-05:00"
+    created: "2019-12-19T08:16:42.8446598-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -304,7 +304,7 @@ entries:
     version: 0.4.12
   - apiVersion: v1
     appVersion: 4.2.4
-    created: "2019-12-17T23:31:08.9680997-05:00"
+    created: "2019-12-19T08:16:42.8386821-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -335,7 +335,7 @@ entries:
     version: 0.4.11
   - apiVersion: v1
     appVersion: 4.2.2
-    created: "2019-12-17T23:31:08.9593156-05:00"
+    created: "2019-12-19T08:16:42.8326871-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -366,7 +366,7 @@ entries:
     version: 0.4.10
   - apiVersion: v1
     appVersion: 4.2.1
-    created: "2019-12-17T23:31:09.1189635-05:00"
+    created: "2019-12-19T08:16:42.9364134-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -397,7 +397,7 @@ entries:
     version: 0.4.9
   - apiVersion: v1
     appVersion: 4.2.0
-    created: "2019-12-17T23:31:09.1096148-05:00"
+    created: "2019-12-19T08:16:42.9304302-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -428,7 +428,7 @@ entries:
     version: 0.4.8
   - apiVersion: v1
     appVersion: 4.1.2
-    created: "2019-12-17T23:31:09.1008311-05:00"
+    created: "2019-12-19T08:16:42.9244477-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -459,7 +459,7 @@ entries:
     version: 0.4.7
   - apiVersion: v1
     appVersion: 4.1.1
-    created: "2019-12-17T23:31:09.0881431-05:00"
+    created: "2019-12-19T08:16:42.9184337-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -490,7 +490,7 @@ entries:
     version: 0.4.6
   - apiVersion: v1
     appVersion: 4.1.0
-    created: "2019-12-17T23:31:09.0783829-05:00"
+    created: "2019-12-19T08:16:42.9104544-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -521,7 +521,7 @@ entries:
     version: 0.4.5
   - apiVersion: v1
     appVersion: 4.1.0
-    created: "2019-12-17T23:31:09.0696001-05:00"
+    created: "2019-12-19T08:16:42.9044981-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -552,7 +552,7 @@ entries:
     version: 0.4.4
   - apiVersion: v1
     appVersion: 4.0.0
-    created: "2019-12-17T23:31:09.0510581-05:00"
+    created: "2019-12-19T08:16:42.891533-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -583,7 +583,7 @@ entries:
     version: 0.4.2
   - apiVersion: v1
     appVersion: 3.7.0
-    created: "2019-12-17T23:31:08.9495239-05:00"
+    created: "2019-12-19T08:16:42.8257089-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -612,7 +612,7 @@ entries:
     version: 0.4.0
   - apiVersion: v1
     appVersion: 3.7.0
-    created: "2019-12-17T23:31:08.9456196-05:00"
+    created: "2019-12-19T08:16:42.8237136-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -641,7 +641,7 @@ entries:
     version: 0.3.0
   - apiVersion: v1
     appVersion: 3.6.1
-    created: "2019-12-17T23:31:08.9407396-05:00"
+    created: "2019-12-19T08:16:42.8216928-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -670,7 +670,7 @@ entries:
     version: 0.2.1
   - apiVersion: v1
     appVersion: 3.6.1
-    created: "2019-12-17T23:31:08.9349106-05:00"
+    created: "2019-12-19T08:16:42.8196982-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -700,7 +700,7 @@ entries:
   minio:
   - apiVersion: v1
     appVersion: 2019.9.26
-    created: "2019-12-17T23:31:09.1224248-05:00"
+    created: "2019-12-19T08:16:42.9374129-05:00"
     description: MinIO is an object storage server, compatible with Amazon S3 cloud
       storage service, mainly used for storing unstructured data (such as photos,
       videos, log files, etc.)
@@ -722,4 +722,4 @@ entries:
     urls:
     - https://codedx.github.io/codedx-kubernetes/minio-1.2.13.tgz
     version: 1.2.13
-generated: "2019-12-17T23:31:08.9192677-05:00"
+generated: "2019-12-19T08:16:42.810749-05:00"

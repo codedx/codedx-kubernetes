@@ -84,7 +84,7 @@ From a bash shell, download the server tool-orchestration certificate with the f
 kubectl get csr toolsvc-tool-orchestration -o jsonpath='{.status.certificate}' | base64 -d > toolsvc-tool-orchestration.crt
 ```
 
-Add the certificate chain to toolsvc-tool-orchestration.pem
+From a bash shell, add the certificate chain to toolsvc-tool-orchestration.pem
 
 ```
 cat toolsvc-tool-orchestration.crt k8s-ca.pem > toolsvc-tool-orchestration.pem
@@ -157,7 +157,7 @@ From a bash shell, download the server certificate for toolsvc-minio with the fo
 kubectl get csr toolsvc-minio -o jsonpath='{.status.certificate}' | base64 -d > toolsvc-minio.crt
 ```
 
-Add the certificate chain to toolsvc-minio.pem
+From a bash shell, add the certificate chain to toolsvc-minio.pem
 
 ```
 cat toolsvc-minio.crt k8s-ca.pem > toolsvc-minio.pem

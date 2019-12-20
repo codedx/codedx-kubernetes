@@ -28,7 +28,7 @@ spec:
       {{- if .Values.codedxTomcatImagePullSecrets }}
       imagePullSecrets:
       {{- toYaml .Values.codedxTomcatImagePullSecrets | nindent 6 }}
-      {{ end -}}
+      {{- end }}
       serviceAccountName: {{ include "codedx.serviceAccountName" . | quote }}
       serviceAccount: {{ include "codedx.serviceAccountName" . | quote }}
       containers:

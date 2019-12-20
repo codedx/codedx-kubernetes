@@ -24,7 +24,7 @@ spec:
       {{- if .Values.toolServiceImagePullSecrets }}
       imagePullSecrets:
       {{- toYaml .Values.toolServiceImagePullSecrets | nindent 6 }}
-      {{ end -}}
+      {{- end }}
       serviceAccountName: {{ include "codedx-tool-orchestration.serviceAccountName" . | quote }}
       serviceAccount: {{ include "codedx-tool-orchestration.serviceAccountName" . | quote }}
       containers:

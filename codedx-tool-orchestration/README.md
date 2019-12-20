@@ -448,5 +448,5 @@ Run the following command after replacing codedx-app with the Helm release name 
 
 ```
 helm dependency update path-to-code-dx-chart
-helm upgrade codedx-app --values codedx-orchestration-values.yaml --reuse-values path-to-code-dx-chart
+helm upgrade --namespace cdx-app codedx-app --values codedx-orchestration-values.yaml --reuse-values path-to-code-dx-chart
 ```

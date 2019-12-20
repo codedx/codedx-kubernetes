@@ -11,16 +11,7 @@ Installation instructions can be found [in their official documentation](https:/
 
 ## Installing Helm
 
-Go to the [official installation guide](https://helm.sh/docs/using_helm/) to install Helm to your cluster. Helm only needs to be installed to your cluster once, but the Helm client will need to be installed on any machine that wants to use it for managing installations.
-
-If you have Pod Security Policies enabled and enforced in your cluster, Helm will fail to deploy any charts. The file [helm-tiller-resources.yaml](../sample-values/helm-tiller-resources.yaml) with this repository can be used to define a Pod Security Policy, Service Account, and Role Binding for Helm. Download the file, modify as necessary for your configuration, and run:
-
-```bash
-$ kubectl create -f helm-tiller-resources.yaml
-$ helm init --upgrade --service-account helm-tiller
-```
-
-This will create the described resources, and update Helm to use the new Service Account when running.
+Go to the [official installation guide](https://helm.sh/docs/using_helm/) to install Helm v3 to your cluster. Helm only needs to be installed to your cluster once, but the Helm client will need to be installed on any machine that wants to use it for managing installations.
 
 ## Registering the Code Dx Repository
 
@@ -33,15 +24,17 @@ $ helm repo add codedx https://codedx.github.io/codedx-kubernetes
 Test that it installed correctly by running:
 
 ```bash
-$ helm install codedx/codedx --dry-run
-NAME:   mouthy-boxer
+$ helm install --generate-name codedx/codedx --dry-run
+NAME: codedx-1576808222
+metadata...
+resources...
 ```
 
-This command with `--dry-run` will not install Code Dx, but will try to evaluate the kubernetes resources with the `codedx/codedx` chart. If it runs successfully, it will output a randomly-generated name for the Code Dx installation that would have been deployed. Each deployment managed by Helm has a name that is referred to for later operations like upgrading and deleting.
+This command with `--dry-run` will not install Code Dx, but will try to evaluate the kubernetes resources with the `codedx/codedx` chart. If it runs successfully, it will output a randomly-generated name for the Code Dx installation and the resources that would have been deployed. Each deployment managed by Helm has a name that is referred to for later operations like upgrading and deleting.
 
 ## Making a Configuration File
 
-The Code Dx Helm chart has many configuration options. When installing or updating Code Dx with Helm, customized options must be specified each time you update. If Code Dx is installed with a license file, and its configuration is later updated without that license file, Helm will remove that license from Kubernetes.
+The Code Dx Helm chart has many configuration options. When installing or updating Code Dx with Helm, customized options must be specified each time you update. If Code Dx is installed with a license file, and its configuration is later updated without that license file, Helm will remove that license from Kubernetes if you do not reuse previous configuration.
 
 To simplify configuration, and to prevent mistakes, we will start by creating a `values.yaml` file containing our options. This is not required but highly recommended. We will give this file to Helm when performing any operations.
 
@@ -58,16 +51,14 @@ The complete set of configuration options are documented and available in the de
 With your `values.yaml` file in your current directory, run the command:
 
 ```bash
-$ helm install codedx/codedx --name codedx -f values.yaml
+$ helm install codedx codedx/codedx -f values.yaml
 ```
 
 > Note: The file does not specifically need to be named `values.yaml`, so long as the correct file name is passed to the `-f` parameter.
 
 > Note: You can install Code Dx to a specific namespace with the `--namespace "..."` flag.
 
-> Note: `--name codedx` is not required, but makes it simpler to refer to this specific installation instance later on. If omitted, a random name will be selected and output to your console.
-
-Running this command will create various resources, output the list of generated resources to the console, and also provide instructions for Code Dx based on your configuration. If installation fails due to a configuration issue, you may need to run `helm del --purge "name"` to remove the previous, failed installation before trying again.
+Running this command will create various resources, output the list of generated resources to the console, and also provide instructions for Code Dx based on your configuration. If installation fails due to a configuration issue, you may need to run `helm uninstall "name"` to remove the previous, failed installation before trying again.
 
 ## Retrieve Auto-Generated Credentials
 
@@ -102,7 +93,7 @@ $ helm upgrade codedx codedx/codedx -f values.yaml
 
 > Note: The standalone "codedx" part of the command will be the name of your existing installation.
 
-> Note: The namespace does not need to be specified again when using `helm upgrade`.
+> Note: If you installed Code Dx into a namespace other than default, you must specify the namespace with the `--namespace "..."` flag when running `helm upgrade`.
 
 > Note: If a new Code Dx version is released and you have not manually assigned a Code Dx version, this will automatically update your installation to the new version. We recommend setting `codedxTomcatImage` in your `values.yaml` to prevent accidental version upgrades.
 

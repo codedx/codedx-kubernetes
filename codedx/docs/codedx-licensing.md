@@ -14,7 +14,7 @@ license:
 
 ```bash
 # Direct call
-helm install codedx/codedx --name codedx --set license.file="my-codedx-license.lic"
+helm install {my-codedx} codedx/codedx --set license.file="my-codedx-license.lic"
 ```
 
 Code Dx will create a Secret containing the contents of `my-codedx-license.lic`, which is mounted as a file and read by Code Dx during installation.
@@ -31,5 +31,5 @@ license:
 
 ```bash
 # Direct call
-helm install codedx/codedx --name {my-codedx} --set license.secret="my-codedx-license-secret"
+helm install {my-codedx} codedx/codedx --set license.secret="my-codedx-license-secret"
 ```

@@ -19,7 +19,7 @@ helm upgrade {my-codedx} codedx/codedx --set codedxProps.file=my-codedx-props
 
 ## Sensitive Information
 
-Some properties, such as MariaDB or LDAP connection information, is stored in Secrets instead. These Secrets contain similar `codedx.props`-formatted content, which are also mounted as files. The file paths are then passed to Code Dx and loaded during installation and startup.
+Some properties, such as MariaDB or LDAP connection information, are stored in Secrets instead. These Secrets contain similar `codedx.props`-formatted content, which are also mounted as files. The file paths are then passed to Code Dx and loaded during installation and startup.
 
 Check the example file [for setting up LDAP configuration](../sample-values/values-ldap.yaml) for an example on how to load your own properties stored in a secret. Make your changes, and call `helm upgrade ...` with those changes.
 

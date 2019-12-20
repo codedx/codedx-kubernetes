@@ -193,8 +193,8 @@ We will use Helm to install the NGINX Ingress controller and its resources. Use 
 
 ```bash
 helm install \
+   nginx \
    stable/nginx-ingress \
-   --name nginx \
    --namespace nginx \
    --set controller.service.loadBalancerIP=<RESERVED-IP>
 ```
@@ -438,15 +438,17 @@ You can use the following command to apply any changes:
 helm upgrade codedx codedx/codedx -f codedx-values.yaml
 ```
 
-_Note: If you used a different namespace during installation, it does not need to be specified again for upgrade operations._
+_Note: If you used a different namespace during installation, it needs to be specified again for upgrade operations._
 
 ## Uninstalling Code Dx
 
 Use the following command to remove Code Dx and its resources from your cluster:
 
 ```bash
-helm del --purge codedx
+helm uninstall codedx
 ```
+
+_Note: If you used a different namespace during installation, it needs to be specified again during uninstall._
 
 For technical reason, the storage volumes for MariaDB will remain after Code Dx is removed. These must be removed manually.
 Check which volumes are remaining with:
@@ -484,6 +486,6 @@ _Some common helpful commands and troubleshooting steps for working with your cl
 
 `helm -n <namespace> list` – Lists charts currently installed on the cluster in the specified namespace
 
-`helm -n <namespace> del <name>` – Uninstalls the given application in the specified namespace and allows reuse of the given `<name>`
+`helm -n <namespace> uninstall <name>` – Uninstalls the given application in the specified namespace and allows reuse of the given `<name>`
 
 `helm repo update` – Updates the list of available charts and their versions from the registered repositories. New chart versions aren’t pulled automatically, you’ll need to do a repo update to get the latest changes.

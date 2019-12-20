@@ -58,7 +58,7 @@ A complete installation guide can be found [here.](docs/installation-walkthrough
 ### Installation Recommendations
 
 #### values.yaml
-For consistency, a custom `values.yaml` file should be used instead of passing each option manually. When using `helm upgrade`, changes are not persisted between runs - if you specify a license file while installing, but don't specify it again when using `helm upgrade`, Helm will delete the license resource from your cluster. Placing your configuration options in a `values.yaml` and passing that each time with `helm upgrade ... -f values.yaml` will simplify the process of making changes.
+We recommend placing any configuration changes in a custom `values.yaml` and using the `-f` option to specify your values file with each call to `helm upgrade`. Otherwise, remember to use the `--reuse-values` when running `helm upgrade` so that you do not lose your changes during an upgrade.
 
 **Some sample files are available in the [sample-values](sample-values) folder.**
 
@@ -66,7 +66,7 @@ For consistency, a custom `values.yaml` file should be used instead of passing e
 When installing the chart in a public-facing environment, be sure to change the passwords for MariaDB Admin and MariaDB Replication. These passwords are not randomly generated and are nontrivial to change after installation. These should be assigned using a `values.yaml` file, either as plaintext, or preferably, in pre-defined secrets. An example of using predefined secrets can be found [here.](sample-values/values-secure-data.yaml)
 
 ```
-$ helm install codedx/codedx --name codedx --set mariadb.rootUser.password=X --set mariadb.replication.password=Y
+$ helm install codedx codedx/codedx --set mariadb.rootUser.password=X --set mariadb.replication.password=Y
 ```
 
 #### Network Policies and PSPs
@@ -83,10 +83,10 @@ Code Dx does not officially support horizontal scaling. Attempting to use more t
 
 ## Uninstalling the Chart
 
-To uninstall a chart with a `codedx` release name, run the following command (add `--purge` to permit the reuse of the `codedx` release name):
+To uninstall a chart with a `codedx` release name, run the following command:
 
 ```
-$ helm delete codedx
+$ helm uninstall codedx
 ```
 
 To remove the MariaDB persistent volume claims, run the following command:

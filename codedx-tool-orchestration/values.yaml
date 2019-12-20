@@ -122,6 +122,7 @@ podSecurityPolicy:
 
 # NOTE: These are setting attributes for the `argo` dependency
 argo:
+  installCRD: false
   images:
     namespace: codedx
     executor: codedx-argoexec

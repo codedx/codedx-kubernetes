@@ -74,7 +74,7 @@ metadata...
 resources...
 ```
 
-This command with `--dry-run` will simulate an install and show the Kubernetes resources that would be generated from the `codedx/codedx-tool-orchestration` chart. If it runs successfully, it will output a randomly-generated name for the installation and the resources that would have been deployed (the name may appear after messages about an unknown hook named crd-install). Each deployment managed by Helm has a name that is referred to for later operations like upgrading and deleting.
+This command with `--dry-run` will simulate an install and show the Kubernetes resources that would be generated from the `codedx/codedx-tool-orchestration` chart. If it runs successfully, it will output a randomly-generated name for the installation and the resources that would have been deployed. Each deployment managed by Helm has a name that is referred to for later operations like upgrading and deleting.
 
 ### Your Installation Options File
 

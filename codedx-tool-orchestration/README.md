@@ -8,6 +8,7 @@ The Code Dx Tool Orchestration Helm chart installs the Code Dx components that c
 ## Prerequisite Details
 
 - Kubernetes v1.8 to v1.14 (v1.16 unsupported)
+- Helm v3
 - Code Dx license with Orchestration feature ([purchase](https://codedx.com/purchase-application/) or [request a free trial](https://codedx.com/free-trial/))
 
 ### Tool Orchestration Namespace
@@ -26,7 +27,7 @@ This document assumes that you have installed Code Dx in a separate Kubernetes n
 kubectl create namespace cdx-app
 ```
 
-This document also assumes that the Kubernetes namespace where Code Dx is installed has the label name=cdx-app. If you have not yet  applied a namespace label to the Kubernetes namespace where Code Dx is installed, do so now with the following command.
+This document also assumes that the Kubernetes namespace where Code Dx is installed has the label name=cdx-app. If you have not yet applied a namespace label to the Kubernetes namespace where Code Dx is installed, do so now with the following command.
 
 ```
 kubectl label namespace cdx-app name=cdx-app
@@ -56,13 +57,24 @@ The following sections will assume you have a toolsvc-minio.pem file and a tools
 
 Using this chart requires [Helm v3](https://docs.helm.sh/), a Kubernetes package manager. You can find instructions for installing Helm [here](https://helm.sh/docs/intro/install/).
 
-### Add Required Repositories
+## Registering the Code Dx Repository
 
-This chart contains references to MinIO and Argo, so you must add the following Helm repository before installing the chart.
+Once Helm is installed, the Code Dx Charts repository must be registered for Helm to know about the chart. Run this command to register the Code Dx repository:
 
+```bash
+$ helm repo add codedx https://codedx.github.io/codedx-kubernetes
 ```
-helm repo add minio https://codedx.github.io/codedx-kubernetes
+
+Test that it installed correctly by running:
+
+```bash
+$ helm install --generate-name codedx/codedx-tool-orchestration --dry-run
+NAME: codedx-tool-orchestration-1576865171
+metadata...
+resources...
 ```
+
+This command with `--dry-run` will simulate an install and show the Kubernetes resources that would be generated from the `codedx/codedx-tool-orchestration` chart. If it runs successfully, it will output a randomly-generated name for the installation and the resources that would have been deployed (the name may appear after messages about an unknown hook named crd-install). Each deployment managed by Helm has a name that is referred to for later operations like upgrading and deleting.
 
 ### Your Installation Options File
 
@@ -262,7 +274,15 @@ toolServiceTls:
 
 ### Grant Access to a Private Docker Registry
 
-The Tool Orchestration service may require access to a private Docker registry, something that's necessary when using the Burp Suite automation as an example. Create a Kubernetes secret containing your Docker registry credentials. Your YAML file will look similar to what follows, but you must specify your own content for #value# - refer to [Pull an Image from a Private Registry](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/) for more details.
+The Tool Orchestration service may require access to a private Docker registry, something that's necessary when using the Burp Suite automation as an example. Create a Kubernetes secret containing your Docker registry credentials.
+
+You can create a Kubernetes secret with your Docker registry credential from the command line by running the following command, replacing #server#, #username#, #password#, and #email# with your own values:
+
+```
+kubectl -n cdx-svc create secret docker-registry my-docker-registry --docker-server=#server# --docker-username=#username# --docker-password=#password# --docker-email=#email#
+```
+
+Alternatively, you can create a Kubernetes secret containing your Docker registry credentials from a YAML file. Your file will look similar to what follows, but you must specify your own content for #value# - refer to [Pull an Image from a Private Registry](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/) for more details.
 
 ```
 apiVersion: v1
@@ -280,7 +300,7 @@ Save your YAML in a file named my-docker-registry.yaml and create your Kubernete
 kubectl create -n cdx-svc -f my-docker-registry.yaml
 ```
 
-Assuming you named your Kubernetes secret my-docker-registry, append the following imagePullSecretKey configuration to your `toolsvc-values.yaml` file.
+Since you named your Kubernetes secret my-docker-registry, append the following imagePullSecretKey configuration to your `toolsvc-values.yaml` file.
 
 ```
 minio:
@@ -317,12 +337,14 @@ imagePullSecretKey: 'my-docker-registry'
 
 ### Run Helm Install
 
-After completing the sections above, you can now install the chart using your `toolsvc-values.yaml` file by running the following command. Run the following commands to obtain the chart and start the install, specifying the correct path to toolsvc-values.yaml if it's not in your current directory.
+After completing the sections above, you can now install the chart using your `toolsvc-values.yaml` file.
+
+Note: The argo controller service account name is not based on release name, so multiple installs of argo to the same namespace will cause conflicts unless `argo.controller.serviceAccount` is assigned to a new value.
+
+Run the following command to start the install, specifying the correct path to toolsvc-values.yaml if it's not in your current directory.
 
 ```
-git clone https://github.com/codedx/codedx-kubernetes -b develop
-helm dependency update ./codedx-kubernetes/codedx-tool-orchestration
-helm install toolsvc --namespace cdx-svc --values toolsvc-values.yaml ./codedx-kubernetes/codedx-tool-orchestration
+helm install toolsvc --namespace cdx-svc --values toolsvc-values.yaml codedx/codedx-tool-orchestration
 ```
 
 Repeatedly issue the following command until all pods show a "Running" STATUS with a "1/1" READY value.
@@ -330,26 +352,6 @@ Repeatedly issue the following command until all pods show a "Running" STATUS wi
 ```
 kubectl -n cdx-svc get pod
 ```
-
-### Enter License Key
-
-You must license the Tool Orchestration software before using it with Code Dx. The request to license the software must originate from a Kubernetes pod that meets the requirements of the network policy applied to the Tool Orchestration service. If you followed the instructions in this document, you will run a pod in the cdx-app namespace with the label name=cdx-app (see the Code Dx Information section).
-
-To license the software, run the following commands, replacing the Tool Orchestration API key (5eb6fbe3-8126-452c-95e9-83faa87453d4) with the value from your `toolsvc-values.yaml` file and replacing the license key path (codedx.lic-path) with the path to a valid license file that includes the Orchestration feature.
-
-```
-From Terminal 1: kubectl -n cdx-app run --rm=true -it license-install --image=ubuntu:18.04 --restart=Never
-From Terminal 2: kubectl -n cdx-app cp codedx.lic-path license-install:/tmp/codedx.lic
-From Terminal 1: root@license-install:/# apt-get update && apt-get install -y curl
-From Terminal 1: root@license-install:/# curl -k -X POST -H API-Key:5eb6fbe3-8126-452c-95e9-83faa87453d4 -F license=@/tmp/codedx.lic https://toolsvc-codedx-tool-orchestration.cdx-svc.svc.cluster.local:3333/license
-From Terminal 1: root@license-install:/# # To check for successful license activate, look for "license":"LICENSED" in the output of the following command.
-From Terminal 1: root@license-install:/# curl -k -H API-Key:5eb6fbe3-8126-452c-95e9-83faa87453d4 https://toolsvc-codedx-tool-orchestration.cdx-svc.svc.cluster.local:3333/info
-From Terminal 1: exit
-```
-
-### Notes
-
-- Argo controller service account name is not based on release name, so multiple installs of argo to the same namespace will cause conflicts unless `argo.controller.serviceAccount` is assigned to a new value.
 
 ## Connect Code Dx to Tool Orchestration
 
@@ -416,10 +418,12 @@ keytool -import -trustcacerts -keystore cacerts -file .\k8s-ca.pem
 Download the Code Dx Kubernetes chart with the following command.
 
 ```
-git clone https://github.com/codedx/codedx-orchestration -b develop
+helm pull codedx/codedx --untar
 ```
 
-Copy your updated cacerts file to the chart directory, and append the following cacertsFile configuration to your `codedx-orchestration-values.yaml` file.
+NOTE: Add the `--version` parameter if you did not install Code Dx using the latest Code Dx chart.
+
+Copy your updated cacerts file to the codedx chart directory created by the previous command, and append the following cacertsFile configuration to your `codedx-orchestration-values.yaml` file.
 
 ```
 codedxProps:
@@ -444,9 +448,12 @@ cacertsFile: 'cacerts'
 
 ### Upgrade Code Dx
 
-Run the following command after replacing codedx-app with the Helm release name you used for your Code Dx install, path-to-code-dx-chart with the directory containing your Code Dx chart and cacerts file. Specify the correct path to your `codedx-orchestration-values.yaml` file if it's not in your current directory.
+Run the following command after replacing codedx-app with the Helm release name you used for your Code Dx install, path-to-code-dx-chart with the directory containing your Code Dx chart and cacerts file. Specify the correct path to your `codedx-orchestration-values.yaml` file if it's not in your chart directory.
 
 ```
-helm dependency update path-to-code-dx-chart
 helm upgrade --namespace cdx-app codedx-app --values codedx-orchestration-values.yaml --reuse-values path-to-code-dx-chart
 ```
+
+### Enter License Key
+
+You must license the Tool Orchestration software before using it with Code Dx. Upload a Code Dx license with the Tool Orchestration feature enabled by following the instructions [here](https://codedx.com/Documentation/InstallGuide.html#LicenseFile).

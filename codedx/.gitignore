@@ -3,4 +3,4 @@
 *.pem
 *.
 charts/
-requirements.lock
+Chart.lock

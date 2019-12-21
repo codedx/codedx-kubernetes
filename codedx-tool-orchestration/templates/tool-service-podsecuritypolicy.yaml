@@ -11,7 +11,7 @@ metadata:
 spec:
   privileged: false
   allowPrivilegeEscalation: false
-  volumes: ["secret", "emptyDir"]
+  volumes: ["secret", "emptyDir", "configMap"]
   hostNetwork: false
   hostIPC: false
   hostPID: false

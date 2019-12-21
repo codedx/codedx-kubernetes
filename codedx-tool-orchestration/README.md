@@ -412,7 +412,7 @@ networkPolicy:
 Acquire the cacerts file from your Code Dx application pod using the following command:
 
 ```
-kubectl -n cdx-app CODE-DX-POD-NAME:/etc/ssl/certs/java/cacerts ./cacerts
+kubectl -n cdx-app cp CODE-DX-POD-NAME:/etc/ssl/certs/java/cacerts ./cacerts
 ```
 
 Add the CA for the Tool Orchestration certificate if it is not already in cacerts. If you followed this document, you will add the k8s-ca.pem file with the following command.

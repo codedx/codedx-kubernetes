@@ -141,8 +141,8 @@ if ($createCluster) {
 	}
 
 	if ($useNetworkPolicies) {
-		Write-Verbose "Adding Cilium network policy provider..."
-		Add-CiliumNetworkPolicyProvider $minikubeProfile $waitTimeSeconds $vmDriver
+		Write-Verbose "Adding network policy provider..."
+		Add-CalicoNetworkPolicyProvider $waitTimeSeconds
 	}
 
 	Write-Verbose 'Stopping minikube cluster...'

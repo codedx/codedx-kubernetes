@@ -9,9 +9,9 @@ ingress:
     # Remove file size limit, Code Dx enforces this internally
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
 
-    # Extra annotations for certmanager, if used
+    # Extra annotations for cert-manager, if used
     kubernetes.io/tls-acme: true
-    certmanager.k8s.io/cluster-issuer: letsencrypt-prod
+    cert-manager.io/cluster-issuer: letsencrypt-prod
   
   hosts:
     # With this setup, Code Dx will be available at https://codedx.mywebsite.com/codedx.

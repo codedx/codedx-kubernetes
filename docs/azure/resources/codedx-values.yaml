@@ -65,7 +65,7 @@ ingress:
 
     # Choose the issuer we want to use
     #
-    certmanager.k8s.io/cluster-issuer: "letsencrypt-staging"
+    cert-manager.io/cluster-issuer: "letsencrypt-staging"
   
   # Specify one or more hostnames to specify in our ingress
   hosts:

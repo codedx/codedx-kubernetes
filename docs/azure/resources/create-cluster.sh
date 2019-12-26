@@ -95,5 +95,6 @@ az aks create \
     --service-principal $SP_ID \
     --client-secret $SP_PASSWORD \
     --network-policy azure \
+    --load-balancer-sku basic \
     --kubernetes-version 1.14.7 \
     --node-vm-size $NODE_SIZE

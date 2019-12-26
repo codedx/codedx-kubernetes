@@ -147,6 +147,12 @@ _Figure 6 - Output of “helm version” indicating helm v3_
 
 If you do not have Helm v3 pre-installed, download helm v3 from the [helm releases](https://github.com/helm/helm/releases) page.
 
+Before continuing, add the stable repository by running the following command:
+
+```bash
+helm repo add stable https://kubernetes-charts.storage.googleapis.com
+```
+
 ### Installing nginx-ingress
 
 -	https://github.com/helm/charts/tree/master/stable/nginx-ingress
@@ -192,11 +198,12 @@ _Figure 11 - View of the created "Public IP address" resource and the address as
 We will use Helm to install the NGINX Ingress controller and its resources. Use the following command:
 
 ```bash
+kubectl create namespace nginx
 helm install \
    nginx \
    stable/nginx-ingress \
    --namespace nginx \
-   --set controller.service.loadBalancerIP=<RESERVED-IP>
+   --set controller.service.loadBalancerIP="<RESERVED-IP>"
 ```
 
 ... where `<RESERVED-IP>` should be replaced with the static IP you created in the previous section.
@@ -232,20 +239,7 @@ In this section we will use Let’s Encrypt (https://letsencrypt.org) as our iss
 
 We will be following the documentation provided by the cert-manager project: https://docs.cert-manager.io/en/latest/getting-started/install/kubernetes.html#installing-with-helm
 
-Before installing cert-manager with helm, we must create the CustomResourceDefinition objects that it requires:
-
-```bash
-kubectl apply \
-    -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.10/deploy/manifests/00-crds.yaml
-```
-
-_Check the cert-manager docs for the latest version of that command to run._
-
-![](images/certmanager-crds.PNG)
-
-_Figure 14 – Command output after creating the cert-manager CustomResourceDefinitions_
-
-Then you’ll need to add the JetStack helm repository, since the cert-manager package isn’t available on the default repository:
+Before installing cert-manager with helm, you’ll need to add the JetStack helm repository, since the cert-manager package isn’t available on the default repository:
 
 ```bash
 helm repo add jetstack https://charts.jetstack.io
@@ -254,18 +248,19 @@ helm repo add jetstack https://charts.jetstack.io
 Finally, we can install cert-manager:
 
 ```bash
-helm install cert-manager --namespace cert-manager jetstack/cert-manager
+kubectl create namespace cert-manager
+helm install cert-manager --namespace cert-manager jetstack/cert-manager --version v0.12.0
 ```
 
 Use `kubectl get pods -n cert-manager --watch` to monitor the status of the deployment. Installation is complete when all pods in that namespace reach “1/1 READY”.
 
 ![](images/certmanager-install.PNG)
 
-_Figure 15 - Partial output of the "helm install" command for cert-manager_
+_Figure 14 - Partial output of the "helm install" command for cert-manager_
 
 ![](images/certmanager-install-watch.PNG)
 
-_Figure 16 - Using "kubectl get pods" to check the status of the new cert-manager pods_
+_Figure 15 - Using "kubectl get pods" to check the status of the new cert-manager pods_
 
 #### Creating Cert Issuers
 
@@ -288,13 +283,13 @@ kubectl create -f production-issuer.yaml
 
 ![](images/certmanager-issuers.PNG)
 
-_Figure 17 - Command output after creating the Staging and Production ClusterIssuer resources_
+_Figure 16 - Command output after creating the Staging and Production ClusterIssuer resources_
 
 After these have been created, you can run `kubectl get clusterissuer` to see that the issuers were successfully installed and `kubectl describe clusterissuer letsencrypt-staging letsencrypt-prod` to confirm there are no errors. These won’t do anything yet, but we’ll refer to these by name when configuring the Code Dx Ingress.
 
 ![](images/certmanager-issuers-confirm.PNG)
 
-_Figure 18 - Confirming that the ClusterIssuers were created and using "kubectl describe clusterissuer" to check the status of the "letsencrypt-prod" issuer (partial command output is displayed)_
+_Figure 17 - Confirming that the ClusterIssuers were created and using "kubectl describe clusterissuer" to check the status of the "letsencrypt-prod" issuer (partial command output is displayed)_
 
 ## Installing Code Dx
 
@@ -334,7 +329,7 @@ kubectl get secret --namespace default codedx-admin-secret -o jsonpath="{.data.p
 
 ![](images/codedx-adminpass.PNG)
 
-_Figure 19 - Example command and partial output for retrieving the randomly-generated Code Dx Admin password_
+_Figure 18 - Example command and partial output for retrieving the randomly-generated Code Dx Admin password_
 
 ... if you gave your Code Dx installation a different name or installed to a different namespace, you can find the appropriate command in the output of the helm install command.
 
@@ -346,17 +341,17 @@ Use `kubectl get pods --watch` to see the MariaDB and Code Dx pods start. This c
 
 ![](images/codedx-pods-1.PNG)
 
-_Figure 20 - Using "kubectl get pods" to check the status of the new pods created by the Code Dx chart_
+_Figure 19 - Using "kubectl get pods" to check the status of the new pods created by the Code Dx chart_
 
 ![](images/codedx-pods-2.PNG)
 
-_Figure 21 - Example output of a successful initialization of MariaDB and Code Dx. The MariaDB "slave" has restarted once and finished its initialization successfully_
+_Figure 20 - Example output of a successful initialization of MariaDB and Code Dx. The MariaDB "slave" has restarted once and finished its initialization successfully_
 
 The applications have started once they’ve reached the “0/1 READY” state and will be ready once they’ve reached “1/1 READY”. You can use `kubectl logs -f <pod-name>` to monitor the logs of any of the pods. Use `kubectl get networkpolicy` and check that there are three policies created – one for Code Dx, one for MariaDB Master, and one for MariaDB Slave.
 
 ![](images/network-policies.PNG)
 
-_Figure 22 - Using "kubectl get networkpolicy" to confirm that the NetworkPolicy resources were deployed by the Code Dx chart_
+_Figure 21 - Using "kubectl get networkpolicy" to confirm that the NetworkPolicy resources were deployed by the Code Dx chart_
 
 
 ##### Ingress
@@ -365,7 +360,7 @@ Use kubectl get ing to check that the Ingress resource was created appropriately
 
 ![](images/codedx-ing.PNG)
 
-_Figure 23 - Using "kubectl get ing" to confirm that the Ingress resource was created properly by the Code Dx chart_
+_Figure 22 - Using "kubectl get ing" to confirm that the Ingress resource was created properly by the Code Dx chart_
 
 ##### TLS/cert-manager
 
@@ -373,7 +368,7 @@ If using cert-manager, use kubectl get certs to check that a Certificate was aut
 
 ![](images/codedx-ing-cert-staging.PNG)
 
-_Figure 24 - Using "kubectl get certs" to check that cert-manager automatically provisioned a certificate for our Ingress. The cert has its "READY" state set to "True", and will be used automatically by our Ingress_
+_Figure 23 - Using "kubectl get certs" to check that cert-manager automatically provisioned a certificate for our Ingress. The cert has its "READY" state set to "True", and will be used automatically by our Ingress_
 
 
 #### Connect to Code Dx
@@ -382,7 +377,7 @@ Once installation is complete, Code Dx should be available at the hostname speci
 
 ![](images/codedx-installed-staging.PNG)
 
-_Figure 25 - Code Dx web page after installation has completed. The browser warns that the HTTPS connection is "Not secure", due to the use of the Let's Encrypt Staging issuer which uses an untrusted CA. Code Dx was installed without a license, causing it to prompt for a license before use_
+_Figure 24 - Code Dx web page after installation has completed. The browser warns that the HTTPS connection is "Not secure", due to the use of the Let's Encrypt Staging issuer which uses an untrusted CA. Code Dx was installed without a license, causing it to prompt for a license before use_
 
 ##### Change from Staging to Production Cert Issuer
 
@@ -400,11 +395,11 @@ Then run `kubectl get cert` to see that the TLS certificate has had its “READY
 
 ![](images/codedx-ing-cert-prod-monitor.PNG)
 
-_Figure 26 - The existing Certificate has been reset after changing the ClusterIssuer assigned to it. Its "READY" state has returned to "False" while regenerating the cert, and is automatically updated to "True" after successful provisioning_
+_Figure 25 - The existing Certificate has been reset after changing the ClusterIssuer assigned to it. Its "READY" state has returned to "False" while regenerating the cert, and is automatically updated to "True" after successful provisioning_
 
 ![](images/codedx-installed-prod.PNG)
 
-_Figure 27 - The Code Dx web page no longer creates the "Not secure" message due to using the Let's Encrypt Production issue with a trusted CA_
+_Figure 26 - The Code Dx web page no longer creates the "Not secure" message due to using the Let's Encrypt Production issue with a trusted CA_
 
 #### First Log-in
 
@@ -420,7 +415,7 @@ At this point we have deployed a working Code Dx installation, and you can move 
 
 ![](images/codedx-installed-final.PNG)
 
-_Figure 28 - Code Dx "Projects" page after providing a license and signing in with the "admin" user and password generated during installation_
+_Figure 27 - Code Dx "Projects" page after providing a license and signing in with the "admin" user and password generated during installation_
 
 
 ## Modifying/Upgrading Code Dx
@@ -458,7 +453,7 @@ kubectl get pvc
 ```
 ![](images/uninstall-lingering-pvcs.PNG)
 
-_Figure 29 - Using "kubectl get pvc" to check that the MariaDB PVCs still remain after uninstalling Code Dx from the cluster_
+_Figure 28 - Using "kubectl get pvc" to check that the MariaDB PVCs still remain after uninstalling Code Dx from the cluster_
 
 ... then delete the MariaDB volumes with:
 
@@ -468,7 +463,7 @@ kubectl delete pvc <master-pvc-name> <slave-pvc-name>
 
 ![](images/uninstall-delete-pvcs.PNG)
 
-_Figure 30 - Using "kubectl delete pvc" to manually delete the storage volumes_
+_Figure 29 - Using "kubectl delete pvc" to manually delete the storage volumes_
 
 ## Helpful Commands
 

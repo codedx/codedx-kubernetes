@@ -4,20 +4,22 @@ By default, Code Dx will be installed without a license. When you first navigate
 
 ## Using a File
 
-If you have a Code Dx license file that you want to use, copy it to your current working directory and install Code Dx using helm:
+If you have a Code Dx license file that you want to use, copy it to your current working directory specifying a .txt file extension, and install Code Dx using helm:
+
+> Note: The Code Dx chart will ignore a license file with a .lic file extension. 
 
 ```yaml
 # values.yaml
 license:
-  file: my-codedx-license.lic
+  file: my-codedx-license.txt
 ```
 
 ```bash
 # Direct call
-helm install {my-codedx} codedx/codedx --set license.file="my-codedx-license.lic"
+helm install {my-codedx} codedx/codedx --set license.file="my-codedx-license.txt"
 ```
 
-Code Dx will create a Secret containing the contents of `my-codedx-license.lic`, which is mounted as a file and read by Code Dx during installation.
+Code Dx will create a Secret containing the contents of `my-codedx-license.txt`, which is mounted as a file and read by Code Dx during installation.
 
 ## Using a Pre-Existing Secret
 

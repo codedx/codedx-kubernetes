@@ -1,11 +1,26 @@
-# This file is an example in using Code Dx with a database named codedx that's hosted
-# by an external MariaDB instance.
+# This file is an example in using Code Dx with a database named codedxdb that's hosted
+# by an external MariaDB instance named host.docker.internal.
 #
 # This file relies on a pre-existing secret in a specific format. See the resource
-# definition in the 'values-external-db-resources.yaml' file, which can be modified 
+# definition in the 'values-external-db-resources.yaml' example file, which can be modified 
 # and used directly with `kubectl create -f ...`
 #
-# The contents of this file can be added to your own custom values.yaml file.
+# The contents of this file can be added to your own custom values.yaml file or can be used
+# with helm install (e.g., helm install codedx codedx/codedx -f values-external-db.yaml).
+#
+# The MariaDB host (e.g., host.docker.internal) in externalDbUrl must permit remote connections
+# by the user referenced in the related Kubernetes Secret (e.g., codedx-database-credential-secret).
+#
+# You must create the MariaDB database (e.g., codedxdb) before running Code Dx and grant privileges
+# on the database to the database user you specified in codedx-database-credential-secret. You can 
+# customize the following statements to create a database named codedxdb, a Code Dx database user 
+# named codedx, and grant required privileges to codedx on codedxdb:
+#
+#   CREATE USER 'codedx'@'%' IDENTIFIED BY 'enter-a-password-here'; 
+#   CREATE DATABASE codedxdb; 
+#   GRANT SELECT, INSERT, UPDATE, DELETE,  CREATE, ALTER, REFERENCES, INDEX, DROP ON codedxdb.* to 'codedx'@'%'; 
+#   FLUSH PRIVILEGES; 
+#
 
 codedxProps:
   dbconnection:

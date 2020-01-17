@@ -70,7 +70,11 @@ spec:
   {{- if or .Values.networkPolicy.codedx.ingressSelectors .Values.networkPolicy.codedx.toolService }}
   ingress:
   - ports:
+    {{- if .Values.codedxTls.enabled }}
+    - port: 8443
+    {{- else }}
     - port: 8080
+    {{- end }}
     {{- if or .Values.networkPolicy.codedx.ingressSelectors .Values.networkPolicy.codedx.toolServiceSelectors }}
     from:
     {{- if .Values.networkPolicy.codedx.ingressSelectors }}

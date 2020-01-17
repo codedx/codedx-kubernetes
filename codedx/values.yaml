@@ -226,6 +226,10 @@ ingress:
     # Remove file size limit, Code Dx enforces this internally
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
 
+  # Assume nginx ingress controller when configuring ingress annotations
+  #
+  assumeNginxIngressController: true
+
   # Use ingress.hosts to specify the set of hosts to create Ingress resources for.
   #
   hosts:

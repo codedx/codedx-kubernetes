@@ -16,7 +16,8 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[string[]] $extraValuesPaths,
 	[switch]   $enablePSPs,
 	[switch]   $enableNetworkPolicies,
-	[switch]   $configureTls) {
+	[switch]   $configureTls,
+	[switch]   $configureIngress) {
  
 	if (-not (Test-Namespace $namespace)) {
 		New-Namespace  $namespace
@@ -47,6 +48,11 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 		New-CertificateSecret 'cdx-app' $tlsSecretName $tlsCertFile $tlsKeyFile
 	}
 
+	$ingress = 'false'
+	if ($configureIngress) {
+		$ingress = 'true'
+	}
+
 	$values = @'
 codedxAdminPassword: '{0}'
 persistence:
@@ -56,6 +62,11 @@ codedxTls:
   secret: {6}
   certFile: {7}
   keyFile: {8}
+ingress:
+  enabled: {14}
+  hosts:
+  - name: {13}
+    tls: false
 podSecurityPolicy:
   codedx:
     create: {3}
@@ -86,7 +97,7 @@ mariadb:
 $psp, $networkPolicy, `
 $tlsEnabled, $tlsSecretName, $tlsCertFile, $tlsKeyFile, `
 $mariadbRootPwd, $mariadbReplicatorPwd, `
-$dbVolumeSizeGiB, $codeDxVolumeSizeGiB
+$dbVolumeSizeGiB, $codeDxVolumeSizeGiB, $codeDxDnsName, $ingress
 
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force

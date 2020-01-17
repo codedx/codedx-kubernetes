@@ -39,6 +39,7 @@ param (
 	[bool]     $useTLS  = $true,
 	[bool]     $usePSPs = $true,
 	[bool]     $useNetworkPolicies = $true,
+	[bool]     $configureIngress = $false,
 
 	[string]   $namespaceToolOrchestration = 'cdx-svc',
 	[string]   $namespaceCodeDx = 'cdx-app',
@@ -53,6 +54,8 @@ param (
 	[string]   $mariadbReplicatorPwd,
 
 	[string]   $dockerConfigJson,
+
+	[string]   $codedxRepo = 'https://codedx.github.io/codedx-kubernetes',
 
 	[string[]] $extraCodeDxValuesPaths = @(),
 	[switch]   $pauseForClusterConfig
@@ -96,7 +99,7 @@ if ($IsWindows) {
 }
 
 $helmVersionMatch = helm version | select-string 'Version:"v3'
-if ($helmVersionMatch -eq $null) {
+if ($null -eq $helmVersionMatch) {
 	write-error 'Unable to continue because helm (v3) was not found. Is it in your PATH?'
 }
 
@@ -155,7 +158,7 @@ if ($createCluster) {
 	Wait-AllRunningPods 'Start Minikube Cluster' $waitTimeSeconds
 
 	Write-Verbose 'Adding Helm repository...'
-	Add-HelmRepo 'codedx' https://codedx.github.io/codedx-kubernetes
+	Add-HelmRepo 'codedx' $codedxRepo
 
 	Write-Verbose 'Adding Ingress Addon'
 	Add-IngressAddOn $minikubeProfile $waitTimeSeconds
@@ -169,7 +172,7 @@ if ($createCluster) {
 		$mariadbRootPwd $mariadbReplicatorPwd `
 		$dbVolumeSizeGiB $codeDxVolumeSizeGiB `
 		$extraCodeDxValuesPaths `
-		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
+		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -configureIngress:$configureIngress
 
 	Write-Verbose 'Deploying Tool Orchestration...'
 	New-ToolOrchestrationDeployment $workDir $waitTimeSeconds $namespaceToolOrchestration $namespaceCodeDx $releaseNameCodeDx $toolServiceReplicas `

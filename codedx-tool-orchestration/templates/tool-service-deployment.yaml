@@ -62,7 +62,6 @@ spec:
           "-serviceTlsCertPath", "/opt/codedx/service/tls/{{ .Values.toolServiceTls.certFile }}",
           "-serviceTlsKeyPath", "/opt/codedx/service/tls/{{ .Values.toolServiceTls.keyFile }}",
           {{ end -}}
-          "-validateLicensePath", "/opt/codedx/service/bin/validate-license-1.0.0.jar",
           "-workDir", "/opt/codedx/service/work",
           "-workflowRoleNames", {{ include "codedx-tool-orchestration.workflow.role.name" . }}]
         readinessProbe:

@@ -5,6 +5,11 @@
 #
 codedxTomcatImage: codedx/codedx-tomcat:v4.4.1
 
+# codedxTomcatImagePullPolicy specifies the policy to use when pulling the Code Dx Tomcat image.
+# ref: https://kubernetes.io/docs/concepts/configuration/overview/#container-images
+#
+codedxTomcatImagePullPolicy: IfNotPresent
+
 # codedxTomcatImagePullSecrets allows you to specify names of secrets to use
 # for pulling the Code Dx image.
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-pod-that-uses-your-secret

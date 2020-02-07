@@ -5,7 +5,7 @@ metadata:
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
-    component: frontend
+    component: service
 spec:
   strategy:
 {{ toYaml (required "deploymentStrategy is required" .Values.deploymentStrategy) | indent 4 }}
@@ -14,12 +14,12 @@ spec:
     matchLabels:
       app: {{ include "codedx-tool-orchestration.name" . | quote }}
       release: {{ .Release.Name | quote }}
-      component: frontend
+      component: service
   template:
     metadata:
       labels:
         {{- include "codedx-tool-orchestration.commonLabels" . | nindent 8 }}
-        component: frontend
+        component: service
     spec:
       {{- if .Values.toolServiceImagePullSecrets }}
       imagePullSecrets:

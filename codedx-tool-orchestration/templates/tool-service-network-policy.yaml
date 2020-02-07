@@ -12,7 +12,7 @@ spec:
       app: {{ include "codedx-tool-orchestration.name" . | quote }}
       release: {{ .Release.Name | quote }}
       part-of: codedx-tool-orchestration
-      component: frontend
+      component: service
   egress:
   - ports:
     - port: {{ required "kubeapi-server target/pod port must be defined" .Values.networkPolicy.kubeApiTargetPort }}
@@ -100,12 +100,18 @@ spec:
     - podSelector:
         matchLabels:
           app: {{ include "codedx-tool-orchestration.name" . | quote }}
-          component: frontend
+          component: service
           part-of: codedx-tool-orchestration
           release: {{ .Release.Name | quote }}
     - podSelector:
         matchLabels:
           workflowOwner: {{ .Release.Name | quote }}
+    - podSelector:
+        matchLabels:
+          app: {{ include "codedx-tool-orchestration.name" . | quote }}
+          component: hook
+          part-of: codedx-tool-orchestration
+          release: {{ .Release.Name | quote }}
     ports:
     - protocol: TCP
       port: 9000

@@ -5,6 +5,7 @@ metadata:
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
+    component: hook
   annotations:
     "helm.sh/hook": pre-delete
     "helm.sh/hook-weight": "-5"
@@ -14,6 +15,7 @@ spec:
     metadata:
       labels:
         {{- include "codedx-tool-orchestration.commonLabels" . | nindent 8 }}
+        component: hook
     spec:
       {{- if .Values.toolServiceImagePullSecrets }}
       imagePullSecrets:

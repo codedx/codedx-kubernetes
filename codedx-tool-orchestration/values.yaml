@@ -10,6 +10,7 @@ imageNameCodeDxToolsMono: "codedx-toolsmono:v1.0"
 imageNameNewAnalysis: "codedx-newanalysis:v1.0"
 imageNameSendResults: "codedx-results:v1.0"
 imageNameSendErrorResults: "codedx-error-results:v1.0"
+imageNameHelmPreDelete: "codedx-cleanup:v1.0"
 imagePullSecretKey: ""
 
 toolServiceImageName: codedx-tool-service:v1.0

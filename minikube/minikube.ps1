@@ -15,6 +15,7 @@ function Test-MinikubeStatus([string] $profileName) {
 
 function New-MinikubeCluster([string] $profileName, [string] $k8sVersion, [string] $vmDriver, [int] $cpus, [string] $memory, [string] $diskSize, [string[]] $extraConfig) {
 
+	Write-Verbose "Creating new minikube instance ($profileName) with the following parameters:`n  driver=$vmDriver`n  k8s=$k8sversion`n  cpus=$cpus`n  memory=$memory`n  disk=$diskSize"
 	minikube start --vm-driver=$vmDriver -p $profileName --kubernetes-version $k8sVersion --cpus $cpus --memory $memory --disk-size $diskSize @($extraConfig)
 	
 	if ($LASTEXITCODE -ne 0) {

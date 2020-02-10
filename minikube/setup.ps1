@@ -22,6 +22,8 @@ param (
 	[string]   $vmDriver = 'virtualbox',
 
 	[int]      $dbVolumeSizeGiB = 32,
+	[int]      $dbSlaveReplicaCount = 0,
+	[int]      $dbSlaveVolumeSizeGiB = 32,
 	[int]      $minioVolumeSizeGiB = 32,
 	[int]      $codeDxVolumeSizeGiB = 32,
 
@@ -133,7 +135,7 @@ if ($createCluster) {
 
 	Write-Verbose "Determining disk size requirement..."
 	$minikubeDiskSizeGiB = 20
-	$nodeDiskSize = [string](2 * $dbVolumeSizeGiB + $minioVolumeSizeGiB + $codeDxVolumeSizeGiB + $minikubeDiskSizeGiB) + 'g'
+	$nodeDiskSize = [string]($dbVolumeSizeGiB + $dbSlaveReplicaCount * $dbSlaveVolumeSizeGiB + $minioVolumeSizeGiB + $codeDxVolumeSizeGiB + $minikubeDiskSizeGiB) + 'g'
 
 	Write-Verbose "Profile does not exist. Creating new minikube profile named $minikubeProfile for k8s version $k8sVersion..."
 	New-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $nodeCPUs $nodeMemory $nodeDiskSize $extraConfig
@@ -170,7 +172,9 @@ if ($createCluster) {
 	Write-Verbose 'Deploying Code Dx with Tool Orchestration disabled...'
 	New-CodeDxDeployment $codeDxDnsName $workDir $waitTimeSeconds $namespaceCodeDx $releaseNameCodeDx $codedxAdminPwd $imageCodeDxTomcat $imagePullSecretName $dockerConfigJson `
 		$mariadbRootPwd $mariadbReplicatorPwd `
-		$dbVolumeSizeGiB $codeDxVolumeSizeGiB `
+		$dbVolumeSizeGiB `
+		$dbSlaveReplicaCount $dbSlaveVolumeSizeGiB `
+		$codeDxVolumeSizeGiB `
 		$extraCodeDxValuesPaths `
 		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -configureIngress:$configureIngress
 
@@ -278,7 +282,7 @@ if ($vars.useTLS) {
 $ipList = Get-IPv4AddressList $vars.codeDxDnsName
 
 Write-Host "`nRun the following command to make Code Dx available at $protocol`://$($vars.codeDxDnsName)`:$($vars.codeDxPortNumber)/codedx"
-Write-Host ('pwsh -c "kubectl -n cdx-app port-forward --address {0} (kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name) {1}:{2}"' -f $ipList,$vars.codeDxPortNumber,$portNum)
+Write-Host ('pwsh -c "kubectl -n cdx-app port-forward --address {0},127.0.0.1 (kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name) {1}:{2}"' -f $ipList,$vars.codeDxPortNumber,$portNum)
 
 if ($vars.useTls) {
 	Write-Host "Note that you may need to trust the root certificate located at $(join-path $HOME '.minikube/ca.crt')"

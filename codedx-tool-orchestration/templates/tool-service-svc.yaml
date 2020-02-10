@@ -17,5 +17,5 @@ spec:
   selector:
     app: {{ include "codedx-tool-orchestration.name" . | quote }}
     release: {{ .Release.Name | quote }}
-    component: frontend
+    component: service
     part-of: codedx-tool-orchestration

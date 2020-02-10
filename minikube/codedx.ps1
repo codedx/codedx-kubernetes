@@ -12,7 +12,9 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[string]   $mariadbRootPwd,
 	[string]   $mariadbReplicatorPwd,
 	[int]      $dbVolumeSizeGiB,
-	[int]      $codeDxVolumeSizeGiB,
+	[int]      $dbSlaveReplicaCount,
+	[int]      $dbSlaveVolumeSizeGiB,
+	[int]      $codeDxVolumeSizeGiB,	
 	[string[]] $extraValuesPaths,
 	[switch]   $enablePSPs,
 	[switch]   $enableNetworkPolicies,
@@ -78,13 +80,8 @@ networkPolicy:
   mariadb:
     master:
       create: {4}
-      persistence:
-        size: {11}Gi
     slave:
       create: {4}
-      persistence:
-        size: {11}Gi
-
 codedxTomcatImage: {1}
 codedxTomcatImagePullSecrets:
 - name: '{2}'
@@ -93,11 +90,20 @@ mariadb:
     password: '{9}'
   replication:
     password: '{10}'
+  master:
+    persistence:
+      size: {11}Gi
+  slave:
+    replicas: {16}
+    persistence:
+      size: {15}Gi
+
 '@ -f $adminPwd, $tomcatImage, $tomcatImagePullSecretName, `
 $psp, $networkPolicy, `
 $tlsEnabled, $tlsSecretName, $tlsCertFile, $tlsKeyFile, `
 $mariadbRootPwd, $mariadbReplicatorPwd, `
-$dbVolumeSizeGiB, $codeDxVolumeSizeGiB, $codeDxDnsName, $ingress
+$dbVolumeSizeGiB, $codeDxVolumeSizeGiB, $codeDxDnsName, $ingress, `
+$dbSlaveVolumeSizeGiB, $dbSlaveReplicaCount
 
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force

@@ -39,6 +39,8 @@ You can use the default values for many of the setup.ps1 script parameters. When
 | codedxAdminPwd | The password for the Code Dx admin account. | R8Cx3o$ptVQ1 |
 | dockerConfigJson | The .dockerconfigjson value allowing access to a private Docker registry. | See .dockerconfigjson at https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#registry-secret-existing-credentials |
 
+>Note: You must specify dockerConfigJson when using the dockerImagePullSecretName parameter.
+
 When the script completes, it will display a port-forward command that you can use to access your Code Dx instance.
 
 To use the Code Dx Tool Orchestration feature, upload a Code Dx license with the Orchestration feature enabled when prompted by the Code Dx web application.

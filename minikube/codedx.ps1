@@ -26,7 +26,14 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	}
 	Set-NamespaceLabel $namespace 'name' $namespace
 
-	if ($null -ne $tomcatImagePullSecretName) {
+	$imagePullSecretYaml = 'codedxTomcatImagePullSecrets: []'
+	if (-not ([string]::IsNullOrWhiteSpace($tomcatImagePullSecretName))) {
+
+		$imagePullSecretYaml = @'
+codedxTomcatImagePullSecrets:
+- name: {0}
+'@ -f $tomcatImagePullSecretName
+
 		New-ImagePullSecret $namespace $tomcatImagePullSecretName $dockerConfigJson
 	}
 
@@ -83,8 +90,7 @@ networkPolicy:
     slave:
       create: {4}
 codedxTomcatImage: {1}
-codedxTomcatImagePullSecrets:
-- name: '{2}'
+{2}
 mariadb:
   rootUser:
     password: '{9}'
@@ -98,7 +104,7 @@ mariadb:
     persistence:
       size: {15}Gi
 
-'@ -f $adminPwd, $tomcatImage, $tomcatImagePullSecretName, `
+'@ -f $adminPwd, $tomcatImage, $imagePullSecretYaml, `
 $psp, $networkPolicy, `
 $tlsEnabled, $tlsSecretName, $tlsCertFile, $tlsKeyFile, `
 $mariadbRootPwd, $mariadbReplicatorPwd, `
@@ -165,7 +171,14 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 	}
 	$codedxBaseUrl = '{0}://{1}-codedx.{2}.svc.cluster.local:{3}/codedx' -f $protocol,$codedxReleaseName,$codedxNamespace,$codedxPort
 
-	if ($null -ne $imagePullSecretName) {
+	$imagePullSecretYaml = 'toolServiceImagePullSecrets: []'
+	if (-not ([string]::IsNullOrWhiteSpace($imagePullSecretName))) {
+
+		$imagePullSecretYaml = @'
+toolServiceImagePullSecrets:
+- name: {0}
+'@ -f $imagePullSecretName
+
 		New-ImagePullSecret $namespace $imagePullSecretName $dockerConfigJson
 	}
 
@@ -240,11 +253,10 @@ imageNameNewAnalysis: '{8}'
 imageNameSendResults: '{9}' 
 imageNameSendErrorResults: '{10}' 
 toolServiceImageName: '{11}' 
-toolServiceImagePullSecrets: 
-- name: '{5}'
+{5}
 '@ -f $minioUsername,`
 $minioPwd,$codedxNamespace,$codedxReleaseName,$apiKey,`
-$imagePullSecretName,$toolsImage,$toolsMonoImage,$newAnalysisImage,$sendResultsImage,$sendErrorResultsImage,$toolServiceImage,$numReplicas,
+$imagePullSecretYaml,$toolsImage,$toolsMonoImage,$newAnalysisImage,$sendResultsImage,$sendErrorResultsImage,$toolServiceImage,$numReplicas,
 $tlsConfig,$tlsMinioCertSecret,$tlsToolServiceCertSecret,
 $psp,$networkPolicy,$codedxBaseUrl,`
 $tlsConfig,$codedxCaConfigMap,$minioVolumeSizeGiB

@@ -27,7 +27,6 @@ param (
 	[int]      $minioVolumeSizeGiB = 32,
 	[int]      $codeDxVolumeSizeGiB = 32,
 
-	[string]   $imagePullSecretName = 'codedx-docker-registry',
 	[string]   $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:latest',
 	[string]   $imageCodeDxTools = 'codedxregistry.azurecr.io/codedx/codedx-tools:latest',
 	[string]   $imageCodeDxToolsMono = 'codedxregistry.azurecr.io/codedx/codedx-toolsmono:latest',
@@ -40,7 +39,7 @@ param (
 
 	[bool]     $useTLS  = $true,
 	[bool]     $usePSPs = $true,
-	[bool]     $useNetworkPolicies = $true,
+	[bool]     $skipNetworkPolicies = $true,
 	[bool]     $configureIngress = $false,
 
 	[string]   $namespaceToolOrchestration = 'cdx-svc',
@@ -55,6 +54,7 @@ param (
 	[string]   $mariadbRootPwd,
 	[string]   $mariadbReplicatorPwd,
 
+	[string]   $dockerImagePullSecretName = 'codedx-docker-registry',
 	[string]   $dockerConfigJson,
 
 	[string]   $codedxRepo = 'https://codedx.github.io/codedx-kubernetes',
@@ -118,7 +118,7 @@ if ($createCluster) {
 	if ($mariadbReplicatorPwd -eq '') { $mariadbReplicatorPwd = Get-SecureStringText 'Enter a password for the MariaDB replicator user' 0 }
 	if ($codedxAdminPwd -eq '') { $codedxAdminPwd = Get-SecureStringText 'Enter a password for the Code Dx admin account' 6 }
 	if ($toolServiceApiKey -eq '') { $toolServiceApiKey = Get-SecureStringText 'Enter an API key for the Code Dx Tool Orchestration service' 8 }
-	if ($dockerConfigJson -eq '') { $dockerConfigJson = Get-SecureStringText 'Enter a dockerconfigjson value for your private Docker registry' 0 }	
+	if ($dockerImagePullSecretName -ne '' -and $dockerConfigJson -eq '') { $dockerConfigJson = Get-SecureStringText 'Enter a dockerconfigjson value for your private Docker registry' 0 }	
 
 	Write-Verbose "Creating new minikube cluster using profile $minikubeProfile..."
 
@@ -145,6 +145,7 @@ if ($createCluster) {
 		Read-Host -Prompt "Apply any custom cluster configuration and then press Enter to continue setup"
 	}
 
+	$useNetworkPolicies = -not $skipNetworkPolicies
 	if ($useNetworkPolicies) {
 		Write-Verbose "Adding network policy provider..."
 		Add-CalicoNetworkPolicyProvider $waitTimeSeconds
@@ -170,7 +171,7 @@ if ($createCluster) {
 	Invoke-GitClone 'https://github.com/codedx/codedx-kubernetes' 'develop'
 
 	Write-Verbose 'Deploying Code Dx with Tool Orchestration disabled...'
-	New-CodeDxDeployment $codeDxDnsName $workDir $waitTimeSeconds $namespaceCodeDx $releaseNameCodeDx $codedxAdminPwd $imageCodeDxTomcat $imagePullSecretName $dockerConfigJson `
+	New-CodeDxDeployment $codeDxDnsName $workDir $waitTimeSeconds $namespaceCodeDx $releaseNameCodeDx $codedxAdminPwd $imageCodeDxTomcat $dockerImagePullSecretName $dockerConfigJson `
 		$mariadbRootPwd $mariadbReplicatorPwd `
 		$dbVolumeSizeGiB `
 		$dbSlaveReplicaCount $dbSlaveVolumeSizeGiB `
@@ -183,7 +184,7 @@ if ($createCluster) {
 		$minioAdminUsername $minioAdminPwd $toolServiceApiKey `
 		$imageCodeDxTools $imageCodeDxToolsMono `
 		$imageNewAnalysis $imageSendResults $imageSendErrorResults $imageToolService `
-		$imagePullSecretName $dockerConfigJson $minioVolumeSizeGiB `
+		$dockerImagePullSecretName $dockerConfigJson $minioVolumeSizeGiB `
 		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
 
 	Write-Verbose 'Updating Code Dx deployment by enabling Tool Orchestration...'

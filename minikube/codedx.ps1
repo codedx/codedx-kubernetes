@@ -253,13 +253,13 @@ imageNameNewAnalysis: '{8}'
 imageNameSendResults: '{9}' 
 imageNameSendErrorResults: '{10}' 
 toolServiceImageName: '{11}' 
-{5}
+{22}
 '@ -f $minioUsername,`
 $minioPwd,$codedxNamespace,$codedxReleaseName,$apiKey,`
-$imagePullSecretYaml,$toolsImage,$toolsMonoImage,$newAnalysisImage,$sendResultsImage,$sendErrorResultsImage,$toolServiceImage,$numReplicas,
+$imagePullSecretName,$toolsImage,$toolsMonoImage,$newAnalysisImage,$sendResultsImage,$sendErrorResultsImage,$toolServiceImage,$numReplicas,
 $tlsConfig,$tlsMinioCertSecret,$tlsToolServiceCertSecret,
 $psp,$networkPolicy,$codedxBaseUrl,`
-$tlsConfig,$codedxCaConfigMap,$minioVolumeSizeGiB
+$tlsConfig,$codedxCaConfigMap,$minioVolumeSizeGiB,$imagePullSecretYaml
 
 	$valuesFile = 'toolsvc-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force

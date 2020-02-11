@@ -204,3 +204,41 @@ function Stop-MinikubeCluster([string] $profileName) {
 		throw "Unable to stop minikube cluster. Minikube exited with code $LASTEXITCODE."
 	}
 }
+
+function New-ReadWriteOncePersistentVolume([int] $sizeInGiB) {
+
+	$pvID = [guid]::NewGuid().ToString()
+	$pvPath = '/srv/minikube-pvs/pv-{0}' -f $pvID
+
+	Write-Verbose "Creating directory '$pvPath' for a PV with size $($sizeInGiB)GiB..."
+	New-Item -ItemType Directory -Path $pvPath
+
+	if ($IsLinux) {
+		Write-Verbose "Changing mode of '$pvPath' to 777..."
+		/bin/chmod 777 $pvPath
+	}
+
+	$pvDefinition = @'
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-{0}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: {1}Gi
+  hostPath:
+    path: {2}
+    type: ""
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: standard
+  volumeMode: Filesystem
+'@ -f $pvID, $sizeInGiB, $pvPath
+
+	$pvTempFile = New-TemporaryFile
+	$pvDefinition | Out-File -Encoding ascii -LiteralPath $pvTempFile.FullName
+
+	Write-Verbose "Creating PV from file $($pvTempFile.FullName)..."
+	kubectl create -f $pvTempFile.FullName
+}

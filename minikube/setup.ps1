@@ -145,6 +145,15 @@ if ($createCluster) {
 		Read-Host -Prompt "Apply any custom cluster configuration and then press Enter to continue setup"
 	}
 
+	if ($vmDriver -eq 'none') {
+		New-ReadWriteOncePersistentVolume $minioVolumeSizeGiB
+		New-ReadWriteOncePersistentVolume $codeDxVolumeSizeGiB
+		New-ReadWriteOncePersistentVolume $dbVolumeSizeGiB
+		for ($i = 0; $i -lt $dbSlaveReplicaCount; $i++) {
+			New-ReadWriteOncePersistentVolume $dbSlaveVolumeSizeGiB
+		}
+	}
+
 	$useNetworkPolicies = -not $skipNetworkPolicies
 	if ($useNetworkPolicies) {
 		Write-Verbose "Adding network policy provider..."

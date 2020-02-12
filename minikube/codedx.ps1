@@ -73,9 +73,15 @@ codedxTls:
   keyFile: {8}
 ingress:
   enabled: {14}
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    kubernetes.io/tls-acme: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-staging"
   hosts:
   - name: {13}
-    tls: false
+    tls: true
+    tlsSecret: ingress-tls-secret
 podSecurityPolicy:
   codedx:
     create: {3}

@@ -40,7 +40,8 @@ param (
 	[bool]     $useTLS  = $true,
 	[bool]     $usePSPs = $true,
 	[bool]     $skipNetworkPolicies = $true,
-	[bool]     $configureIngress = $false,
+
+	[string]   $ingressRegistrationEmailAddress = '',
 
 	[string]   $namespaceToolOrchestration = 'cdx-svc',
 	[string]   $namespaceCodeDx = 'cdx-app',
@@ -172,8 +173,15 @@ if ($createCluster) {
 	Write-Verbose 'Adding Helm repository...'
 	Add-HelmRepo 'codedx' $codedxRepo
 
-	Write-Verbose 'Adding Ingress Addon'
-	Add-IngressAddOn $minikubeProfile $waitTimeSeconds
+	$configureIngress = $ingressRegistrationEmailAddress -ne ''
+	if ($configureIngress) {
+
+		Write-Verbose 'Adding nginx Ingress...'
+		Add-IngressAddon $minikubeProfile $waitTimeSeconds
+	
+		Write-Verbose 'Adding Cert Manager...'
+		Add-CertManager $ingressRegistrationEmailAddress 'cluster-issuer.yaml' $waitTimeSeconds
+	}
 
 	Write-Verbose 'Fetching Code Dx Helm charts...'
 	Remove-Item .\codedx-kubernetes -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue

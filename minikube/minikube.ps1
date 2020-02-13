@@ -43,61 +43,6 @@ function Add-IngressAddon([string] $profileName, [int] $waitSeconds) {
 	Wait-Deployment 'Ingress Addon' $waitSeconds 'kube-system' 'nginx-ingress-controller' 1
 }
 
-function Add-CertManager([string] $registrationEmailAddress, [string] $issuerFile, [string] $waitSeconds) {
-
-	kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/v0.13.0/deploy/manifests/00-crds.yaml
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to add cert-manager CRDs, helm exited with code $LASTEXITCODE."
-	}
-
-	$namespace = 'cert-manager'
-	if (-not (Test-Namespace $namespace)) {
-		New-Namespace  $namespace
-	}
-
-	helm repo add jetstack https://charts.jetstack.io
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to add jetstack repo, helm exited with code $LASTEXITCODE."
-	}
-
-	helm repo update
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to run helm repo update, helm exited with code $LASTEXITCODE."
-	}
-
-	helm install cert-manager --namespace $namespace jetstack/cert-manager --version v0.13.0
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to install cert-manager, helm exited with code $LASTEXITCODE."
-	}
-
-	Wait-Deployment 'Add cert-manager' $waitSeconds $namespace 'cert-manager' 1
-	Wait-Deployment 'Add cert-manager (cert-manager-cainjector)' $waitSeconds $namespace 'cert-manager-cainjector' 1
-	Wait-Deployment 'Add cert-manager (cert-manager-webhook)' $waitSeconds $namespace 'cert-manager-webhook' 1
-
-	$stagingIssuer = @'
-apiVersion: cert-manager.io/v1alpha2
-kind: ClusterIssuer
-metadata:
-  name: letsencrypt-staging
-spec:
-  acme:
-    server: https://acme-staging-v02.api.letsencrypt.org/directory
-    email: {0}
-    privateKeySecretRef:
-      name: letsencrypt-staging
-    solvers:
-    - http01:
-        ingress:
-          class: nginx
-'@ -f $registrationEmailAddress
-
-	$stagingIssuer | out-file $issuerFile -Encoding ascii -Force
-	kubectl -n $namespace create -f $issuerFile
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to create ClusterIssuer. kubectl exited with code $LASTEXITCODE."
-	}
-}
-
 function Add-DefaultPodSecurityPolicy([string] $pspFile, [string] $roleFile, [string] $roleBindingFile) {
 
 	$psp = @'

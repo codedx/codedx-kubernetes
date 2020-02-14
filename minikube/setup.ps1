@@ -292,7 +292,7 @@ if ($createCluster) {
 	Write-Host "Done.`n`n***Note: '$($vars.workDir)' contains values.yaml data that should be kept private.`n`n"
 }
 
-if ($vars.configureIngress) {
+if (-not ($vars.configureIngress)) {
 	$portNum = 8080
 	$protocol = 'http'
 	if ($vars.useTLS) {

@@ -37,8 +37,10 @@ codedxAdminPassword: ""
 
 # cacertsFile can be used to provide a set of custom Java certificates for Code Dx to use. This is
 # necessary for LDAPS and integration with some external tools. This value is the path to a local
-# file that will be mounted in the Code Dx container at /etc/ssl/certs/java/cacerts. If undefined
+# file that will be mounted in the Code Dx container at `/etc/ssl/certs/java/cacerts`. If undefined
 # (or empty), the default `cacerts` file will be used.
+#
+# _Note: This is a Local File Value and will only work if installing this chart from source._
 # ref: https://codedx.com/Documentation/InstallGuide.html#TrustingSelfSignedCertificates
 #
 cacertsFile: ""
@@ -264,6 +266,7 @@ ingress:
 
   #   # ingress.secrets[].keyFile specifies the location of a file containing the TLS key, which will be base64-encoded.
   #   # This value is ignored if `key` is defined.
+  #   # _Note: This is a Local File Value and will only work if installing this chart from source._
   #   #
   #   keyFile:
 
@@ -273,6 +276,7 @@ ingress:
 
   #   # ingress.secrets[].certificateFile specifies the location of a file containing the TLS certificate, which will
   #   # be base64-encoded. This value is ignored if `certificate` is defined.
+  #   # _Note: This is a Local File Value and will only work if installing this chart from source._
   #   #
   #   certificateFile:
 
@@ -305,6 +309,7 @@ serviceType:
 
 codedxProps:
   # Specify 'codedx.props.file' to create a config-map for Code Dx based on the given 'codedx.props' file
+  # _Note: This is a Local File Value and will only work if installing this chart from source._
   file: codedx.props
 
   # Specify 'codedxProps.configMap' to use an existing config-map for Code Dx.
@@ -393,6 +398,7 @@ codedxProps:
 license: {}
   # Specify 'codedx.license.file' to automatically create a secret based on the given license
   #
+  # _Note: This is a Local File Value and will only work if installing this chart from source._
   # file: my-license-file.lic
 
   # Specify 'codedx.license.secret' to use an existing secret for the Code Dx license. This secret MUST
@@ -412,13 +418,14 @@ license: {}
 
 # Use `loggingConfigFile` to specify a local "logback.xml" file to be inserted into the Code Dx configmap and used,
 # allowing you to customize how Code Dx filters its logs. The logback.xml file provided with this chart logs to both
-# stdout and to a rolling log file.
+# stdout and to a rolling log file. This file mounts to `/opt/codedx/logback.xml`.
+# _Note: This is a Local File Value and will only work if installing this chart from source._
 # ref: https://logback.qos.ch/manual/configuration.html
 #
 loggingConfigFile: logback.xml
 
 # Use 'saml.idpXmlFile' to provide an XML file for your Identity Provider when using SAML. The contents
-# of this file will be mounted at /opt/codedx/saml-idp.xml. 
+# of this file will be mounted at `/opt/codedx/saml-idp.xml`.
 #
 # If using SAML, the `auth.saml2.identityProviderMetadataPath` Code Dx property will automatically
 # be assigned. You'll still need to provide the following props in a separate secret:
@@ -427,6 +434,7 @@ loggingConfigFile: logback.xml
 # - auth.hostBasePath
 #
 # Use the "codedxProps.extra" value to provide the needed configuration.
+# _Note: This is a Local File Value and will only work if installing this chart from source._
 #
 samlIdpXmlFile:
 
@@ -461,7 +469,9 @@ resources: {}
 codedxTls:
   enabled: false
   secret: 'codedx-tls-secret'
+  # _Note: This is a Local File Value and will only work if installing this chart from source._
   certFile: 'codedx-cert.pem'
+  # _Note: This is a Local File Value and will only work if installing this chart from source._
   keyFile: 'codedx-cert.key'
 
 # Code Dx-specific MariaDB configuration. This should usually be left untouched, unless changing database passwords or

@@ -22,6 +22,13 @@ The Code Dx Helm chart creates Kubernetes resources for a secure, production-rea
 ```
 $ helm repo add codedx https://codedx.github.io/codedx-kubernetes
 $ helm install codedx codedx/codedx
+
+OR
+
+$ git clone https://github.com/codedx/codedx-kubernetes.git
+$ cd codedx-kubernetes/codedx
+$ helm dependency update
+$ helm install codedx .
 ```
 
 We recommend keeping any extra installation options in your own `values.yaml` file and using `helm install/upgrade ... -f my-values.yaml`, to prevent accidental changes to the installation when a configuration property is forgotten or missed. Check out the [example YAML files](sample-values) for common use-cases.
@@ -48,6 +55,11 @@ This chart will:
 Using this chart requires [Helm v3](https://docs.helm.sh/), a Kubernetes package manager. You can find instructions for installing Helm [here](https://helm.sh/docs/intro/install/).
 
 This chart contains a reference to stable/mariadb chart version 5.5.0, and deploys MariaDB 10.2.22. (Note that "chart version" does not correspond to "app version".)
+
+You can use this chart by either registering the Code Dx Helm Repository with `helm repo add` (described above) or by cloning the repository locally.
+
+- Installation using the helm repository helps keep you up to date and doesn't require manually maintaining a copy of the chart
+- Installation from a cloned copy of the chart can be helpful with troubleshooting and allows you to directly use files during configuration, instead of needing to store additional files beforehand (eg cacerts, license, etc.)
 
 After installation, you'll be given commands to retrieve the Code Dx admin credentials that were generated. Use `kubectl get pods --watch` to check the status of the Code Dx installation. **Change the Code Dx admin password once installation is complete.** The secret used to get the admin credentials are only used for the first installation of Code Dx, and can change automatically when using `helm upgrade`. After installation and changing the admin password, the secret can be ignored entirely.
 
@@ -81,6 +93,14 @@ The default volume sizes for Code Dx and MariaDB are `32Gi` - `96Gi` total for t
 
 Code Dx does not officially support horizontal scaling. Attempting to use more than one replica for the Code Dx deployment can lead to bugs while using Code Dx, and possibly corruption of your database. Work is being done within Code Dx to better support this.
 
+#### Providing Data Files
+
+This chart contains options for handling various customized files for Code Dx, referred to as _Local File Options_. This includes `codedx.props`, `cacerts`, license files, and logging configuration files. These local file options are provided but will only work when installing the chart from source with `helm install codedx .`; if using the helm chart repository `helm install codedx codedx/codedx`, these options are effectively disabled.
+
+When using the direct source code with a local file option, the file should be stored _inside the chart folder_ and file path values are relative to the chart folder. If the chart has been cloned to `/codedx-kubernetes/codedx`, new files should be placed in `/codedx-kubernetes/codedx`.
+
+When using the packaged chart, local files can instead be provided through the `extraMounts` option. Create a ConfigMap or Secret manually and store your file's contents in it, then use the `extraMounts` option for Code Dx to use it. Files provided this way must be manually assigned a path to mount to, unlike the local file options which automatically provide the path. To find the right path for your file, look for the associated local file option in the chart's default `values.yaml` file. Each value has comments describing its use, and local file options will also include the location of the mount point in their comments.
+
 ## Uninstalling the Chart
 
 To uninstall a chart with a `codedx` release name, run the following command:
@@ -98,6 +118,8 @@ $ kubectl delete pvc data-codedx-mariadb-master-0 data-codedx-mariadb-slave-0
 ## Configuration
 
 The following table lists the configurable parameters of the Code Dx chart and their default values.
+
+Any values that require locally cloning the chart will be labeled with _"LFV"_ ("Local File Value") in their description.
 
 | Parameter                               | Description                                                                                                                                                                                        | Default                              |
 |-----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------|
@@ -136,11 +158,11 @@ The following table lists the configurable parameters of the Code Dx chart and t
 | `ingress.secrets`                       | List of secrets to generate for use in TLS                                                                                                                                                         | `[]`                                 |
 | `ingress.secrets[i].name`               | Name of the secret to be created                                                                                                                                                                   |                                      |
 | `ingress.secrets[i].key`                | Base64-encoded encryption key                                                                                                                                                                      |                                      |
-| `ingress.secrets[i].keyFile`            | Path to encryption key file (ignored if `key` is specified)                                                                                                                                        |                                      |
+| `ingress.secrets[i].keyFile`            | _(LFV)_ Path to encryption key file (ignored if `key` is specified)                                                                                                                                |                                      |
 | `ingress.secrets[i].certificate`        | Base64-encoded encryption certificate                                                                                                                                                              |                                      |
-| `ingress.secrets[i].certificateFile`    | Path to encryption certificate file (ignored if `certificate` is specified)                                                                                                                        |                                      |
+| `ingress.secrets[i].certificateFile`    | _(LFV)_ Path to encryption certificate file (ignored if `certificate` is specified)                                                                                                                |                                      |
 | `serviceType`                           | Service type for Code Dx                                                                                                                                                                           | Based on Ingress config              |
-| `codedxProps.file`                      | Location of a Code Dx `props` file for configuration                                                                                                                                               | `codedx.props`                       |
+| `codedxProps.file`                      | _(LFV)_ Location of a Code Dx `props` file for configuration                                                                                                                                       | `codedx.props`                       |
 | `codedxProps.configMap`                 | Name of the ConfigMap that will store the Code Dx `props` file                                                                                                                                     |                                      |
 | `codedxProps.annotations`               | Extra annotations attached to a generated codedx `props` ConfigMap                                                                                                                                 | `{}`                                 |
 | `codedxProps.dbconnection.createSecret` | Whether to create a secret containing MariaDB creds                                                                                                                                                | `true`                               |
@@ -149,11 +171,11 @@ The following table lists the configurable parameters of the Code Dx chart and t
 | `codedxProps.extra`                     | List of extra secrets containing Code Dx props to be loaded                                                                                                                                        | `[]`                                 |
 | `codedxProps.extra[i].secretName`       | Name of the secret to be loaded and mounted                                                                                                                                                        |                                      |
 | `codedxProps.extra[i].key`              | Name of the key within the secret that contains Code Dx props text                                                                                                                                 |                                      |
-| `license.file`                          | Location of a license for Code Dx to use during installation (the license file must not have a .lic file extension)                                                                                |                                      |
+| `license.file`                          | _(LFV)_ Location of a license for Code Dx to use during installation (the license file must not have a .lic file extension)                                                                        |                                      |
 | `license.secret`                        | Name of the secret that will store the Code Dx license                                                                                                                                             |                                      |
 | `license.annotations`                   | Extra annotations attached to a Code Dx License secret                                                                                                                                             |                                      |
-| `loggingConfigFile`                     | Location of a `logback.xml` file to customize Code Dx logging                                                                                                                                      |                                      |
-| `samlIdpXmlFile`                        | Name of the XML file containing SAML IdP information.                                                                                                                                              |                                      |
+| `loggingConfigFile`                     | _(LFV)_ Location of a `logback.xml` file to customize Code Dx logging                                                                                                                              |                                      |
+| `samlIdpXmlFile`                        | _(LFV)_ Name of the XML file containing SAML IdP information.                                                                                                                                      |                                      |
 | `extraMounts`                           | List of additional mounts to use                                                                                                                                                                   | `[]`                                 |
 | `resources`                             | Defines resource requests and limits for Code Dx                                                                                                                                                   |                                      |
 | `mariadb.enabled`                       | Whether to install the MariaDB Helm chart                                                                                                                                                          | `true`                               |

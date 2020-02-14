@@ -227,6 +227,7 @@ if ($createCluster) {
 	$vars = @{
 		'codeDxDnsName' = $codeDxDnsName;
 		'codeDxPortNumber' = $codeDxPortNumber;
+		'configureIngress' = $configureIngress;
 		'namespaceCodeDx' = $namespaceCodeDx;
 		'namespaceToolOrchestration' = $namespaceToolOrchestration;
 		'releaseNameCodeDx' = $releaseNameCodeDx;
@@ -249,6 +250,7 @@ if (-not (Test-Path $varsPath)) {
 
 Write-Verbose 'Reading saved startup configuration...'
 $vars = Import-Csv -LiteralPath $varsPath
+$vars.configureIngress = [convert]::ToBoolean($vars.configureIngress)
 $vars.useNetworkPolicies = [convert]::ToBoolean($vars.useNetworkPolicies)
 $vars.usePSPs = [convert]::ToBoolean($vars.usePSPs)
 $vars.useTLS = [convert]::ToBoolean($vars.useTLS)
@@ -290,18 +292,20 @@ if ($createCluster) {
 	Write-Host "Done.`n`n***Note: '$($vars.workDir)' contains values.yaml data that should be kept private.`n`n"
 }
 
-$portNum = 8080
-$protocol = 'http'
-if ($vars.useTLS) {
-	$portNum = 8443
-	$protocol = 'https'
-}
+if ($vars.configureIngress) {
+	$portNum = 8080
+	$protocol = 'http'
+	if ($vars.useTLS) {
+		$portNum = 8443
+		$protocol = 'https'
+	}
 
-$ipList = Get-IPv4AddressList $vars.codeDxDnsName
+	$ipList = Get-IPv4AddressList $vars.codeDxDnsName
 
-Write-Host "`nRun the following command to make Code Dx available at $protocol`://$($vars.codeDxDnsName)`:$($vars.codeDxPortNumber)/codedx"
-Write-Host ('pwsh -c "kubectl -n cdx-app port-forward --address {0},127.0.0.1 (kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name) {1}:{2}"' -f $ipList,$vars.codeDxPortNumber,$portNum)
+	Write-Host "`nRun the following command to make Code Dx available at $protocol`://$($vars.codeDxDnsName)`:$($vars.codeDxPortNumber)/codedx"
+	Write-Host ('pwsh -c "kubectl -n cdx-app port-forward --address {0},127.0.0.1 (kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name) {1}:{2}"' -f $ipList,$vars.codeDxPortNumber,$portNum)
 
-if ($vars.useTls) {
-	Write-Host "Note that you may need to trust the root certificate located at $(join-path $HOME '.minikube/ca.crt')"
+	if ($vars.useTls) {
+		Write-Host "Note that you may need to trust the root certificate located at $(join-path $HOME '.minikube/ca.crt')"
+	}
 }

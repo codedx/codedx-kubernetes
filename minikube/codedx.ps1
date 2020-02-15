@@ -403,4 +403,45 @@ spec:
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create production ClusterIssuer. kubectl exited with code $LASTEXITCODE."
 	}
+
+	$certManagerFile = 'cert-manager-rbac.yaml'
+	@'
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cert-manager-psp-role
+rules:
+- apiGroups:
+  - extensions
+  resourceNames:
+  - privileged
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cert-manager-psp
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cert-manager-psp-role
+subjects:
+- kind: ServiceAccount
+  name: cert-manager
+  namespace: cert-manager
+- kind: ServiceAccount
+  name: cert-manager-cainjector
+  namespace: cert-manager
+- kind: ServiceAccount
+  name: cert-manager-webhook
+  namespace: cert-manager
+'@ | out-file $certManagerFile -Encoding ascii -Force
+
+	kubectl -n $namespace create -f $certManagerFile
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to create cert-manager RBAC resources. kubectl exited with code $LASTEXITCODE."
+	}
 }

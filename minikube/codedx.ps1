@@ -345,7 +345,10 @@ cacertsFile: {4}
 	Wait-Deployment 'Helm Upgrade' $waitSeconds $codedxNamespace "$codedxReleaseName-codedx" 1
 }
 
-function Add-CertManager([string] $namespace, [string] $registrationEmailAddress, [string] $stagingIssuerFile, [string] $productionIssuerFile, [string] $waitSeconds) {
+function Add-CertManager([string] $namespace, [string] $codeDxNamespace,
+	[string] $registrationEmailAddress, [string] $stagingIssuerFile, [string] $productionIssuerFile,
+	[string] $certManagerRoleFile, [string] $certManagerRoleBindingFile, [string] $httpSolverRoleBindingFile,
+	[string] $waitSeconds) {
 
 	kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/v0.13.0/deploy/manifests/00-crds.yaml
 	if ($LASTEXITCODE -ne 0) {
@@ -354,6 +357,10 @@ function Add-CertManager([string] $namespace, [string] $registrationEmailAddress
 
 	if (-not (Test-Namespace $namespace)) {
 		New-Namespace  $namespace
+	}
+
+	if (-not (Test-Namespace $codeDxNamespace)) {
+		New-Namespace  $codeDxNamespace
 	}
 
 	helm repo add jetstack https://charts.jetstack.io
@@ -391,20 +398,9 @@ spec:
         ingress:
           class: nginx
 '@
-
 	$issuerTemplate -f $registrationEmailAddress,'staging','https://acme-staging-v02.api.letsencrypt.org/directory' | out-file $stagingIssuerFile -Encoding ascii -Force
-	kubectl -n $namespace create -f $stagingIssuerFile
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to create staging ClusterIssuer. kubectl exited with code $LASTEXITCODE."
-	}
-
 	$issuerTemplate -f $registrationEmailAddress,'prod','https://acme-v02.api.letsencrypt.org/directory' | out-file $productionIssuerFile -Encoding ascii -Force
-	kubectl -n $namespace create -f $productionIssuerFile
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to create production ClusterIssuer. kubectl exited with code $LASTEXITCODE."
-	}
 
-	$certManagerFile = 'cert-manager-rbac.yaml'
 	@'
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -419,7 +415,9 @@ rules:
   - podsecuritypolicies
   verbs:
   - use
----
+'@ | out-file $certManagerRoleFile -Encoding ascii -Force
+
+	@'
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -431,17 +429,42 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: cert-manager
-  namespace: cert-manager
+  namespace: {0}
 - kind: ServiceAccount
   name: cert-manager-cainjector
-  namespace: cert-manager
+  namespace: {0}
 - kind: ServiceAccount
   name: cert-manager-webhook
-  namespace: cert-manager
-'@ | out-file $certManagerFile -Encoding ascii -Force
+  namespace: {0}
+'@ -f $namespace | out-file $certManagerRoleBindingFile -Encoding ascii -Force
 
-	kubectl -n $namespace create -f $certManagerFile
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to create cert-manager RBAC resources. kubectl exited with code $LASTEXITCODE."
+	@'
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cert-manager-psp
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cert-manager-psp-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: {0}
+'@ -f $codeDxNamespace | out-file $httpSolverRoleBindingFile -Encoding ascii -Force
+	
+	($namespace,       $stagingIssuerFile),
+	($namespace,       $productionIssuerFile),
+	($namespace,       $certManagerRoleFile),
+	($codeDxNamespace, $certManagerRoleFile),
+	($namespace,       $certManagerRoleBindingFile),
+	($codeDxNamespace, $httpSolverRoleBindingFile) | 
+	ForEach-Object {
+		$namespace = $_[0]
+		$file = $_[1]
+		kubectl -n $namespace create -f $file
+		if ($LASTEXITCODE -ne 0) {
+			throw "Unable to create cert-manager resource in namespace '$namespace' from file '$file'. kubectl exited with code $LASTEXITCODE."
+		}
 	}
 }

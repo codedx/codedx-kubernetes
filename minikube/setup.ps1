@@ -180,7 +180,10 @@ if ($createCluster) {
 		Add-IngressAddon $minikubeProfile $waitTimeSeconds
 	
 		Write-Verbose 'Adding Cert Manager...'
-		Add-CertManager 'cert-manager' $ingressRegistrationEmailAddress 'staging-cluster-issuer.yaml' 'production-cluster-issuer.yaml' $waitTimeSeconds
+		Add-CertManager 'cert-manager' $namespaceCodeDx `
+			$ingressRegistrationEmailAddress 'staging-cluster-issuer.yaml' 'production-cluster-issuer.yaml' `
+			'cert-manager-role.yaml' 'cert-manager-role-binding.yaml' 'cert-manager-http-solver-role-binding.yaml' `
+			$waitTimeSeconds
 	}
 
 	Write-Verbose 'Fetching Code Dx Helm charts...'

@@ -468,12 +468,26 @@ extraMounts: []
 #
 resources: {}
 
+# Use 'codedxTls' properties to enable and configure HTTPS on Code Dx directly through Tomcat. If
+# an Ingress is being used and is configured in this chart, the Ingress will also use HTTPS when
+# communicating with Code Dx.
+#
 codedxTls:
+  # 'codedxTls.enabled' determines whether or not to enable TLS support directly within Code Dx.
+  # A secret must be created beforehand to store the certificate data.
+  #
   enabled: false
+  # 'codedxTls.secret' is the name of the secret containing the certificate for Code Dx to use
+  # when accepting requests over HTTPS.
+  #
   secret: 'codedx-tls-secret'
-  # _Note: This is a Local File Value and will only work if installing this chart from source._
+  # 'codedxTls.certFile' is the name of the entry within the provided secret containing
+  # the certificate file.
+  #
   certFile: 'codedx-cert.pem'
-  # _Note: This is a Local File Value and will only work if installing this chart from source._
+  # 'codedxTls.keyFile' is the name of the entry within the provided secret containing
+  # the key file.
+  #
   keyFile: 'codedx-cert.key'
 
 # Code Dx-specific MariaDB configuration. This should usually be left untouched, unless changing database passwords or

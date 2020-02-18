@@ -405,7 +405,7 @@ spec:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: cert-manager-psp-role
+  name: privileged-psp-role
 rules:
 - apiGroups:
   - extensions
@@ -425,7 +425,7 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: cert-manager-psp-role
+  name: privileged-psp-role
 subjects:
 - kind: ServiceAccount
   name: cert-manager
@@ -446,7 +446,7 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: cert-manager-psp-role
+  name: privileged-psp-role
 subjects:
 - kind: ServiceAccount
   name: default
@@ -462,7 +462,7 @@ subjects:
 	ForEach-Object {
 		$namespace = $_[0]
 		$file = $_[1]
-		kubectl -n $namespace create -f $file
+		kubectl -n $namespace apply -f $file
 		if ($LASTEXITCODE -ne 0) {
 			throw "Unable to create cert-manager resource in namespace '$namespace' from file '$file'. kubectl exited with code $LASTEXITCODE."
 		}

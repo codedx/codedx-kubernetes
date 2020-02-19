@@ -504,9 +504,6 @@ mariadb:
   db:
     # Name of the database for MariaDB to create automatically
     name: codedx
-  # Use default storage class for master/slave PVCs
-  global:
-    storageClass: 
   rootUser:
     password: 5jqJL2b8hqn3
   replication:
@@ -520,6 +517,8 @@ mariadb:
   # with some changes made to optimize Code Dx performance.
   master:
     persistence:
+      # Use default storage class for master/slave PVCs
+      storageClass: 
       size: 32Gi
     config: |-
       [mysqld]
@@ -549,6 +548,8 @@ mariadb:
       pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
   slave:
     persistence:
+      # Use default storage class for master/slave PVCs
+      storageClass: 
       size: 32Gi
     config: |-
       [mysqld]

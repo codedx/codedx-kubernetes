@@ -13,6 +13,7 @@ The Code Dx Helm chart creates Kubernetes resources for a secure, production-rea
 - [Code Dx Licensing](docs/codedx-licensing.md)
 - [Ingress](docs/ingress.md)
 - [Installation Guide](docs/installation-walkthrough.md)
+- [Code Dx Native HTTPS](docs/codedx-https.md)
 - [Upgrading Code Dx](docs/upgrading.md)
 
 **Sample installation values can be found [here.](sample-values)**
@@ -185,6 +186,12 @@ Any values that require locally cloning the chart will be labeled with _"LFV"_ (
 | `samlIdpXmlFile`                        | _(LFV)_ Name of the XML file containing SAML IdP information.                                                                                                                                      |                                      |
 | `extraMounts`                           | List of additional mounts to use                                                                                                                                                                   | `[]`                                 |
 | `resources`                             | Defines [resource requests and limits](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) for Code Dx                                                          |                                      |
+
+| `codedxTls.enabled` | Defines [resource requests and limits](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) for Code Dx                                                          |                                      |
+| `resources`                             | Defines [resource requests and limits](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) for Code Dx                                                          |                                      |
+| `resources`                             | Defines [resource requests and limits](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) for Code Dx                                                          |                                      |
+| `resources`                             | Defines [resource requests and limits](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) for Code Dx                                                          |                                      |
+
 | `mariadb.enabled`                       | Whether to install the MariaDB Helm chart                                                                                                                                                          | `true`                               |
 | `mariadb.rootUser.password`             | Password for the MariaDB root user                                                                                                                                                                 | `5jqJL2b8hqn3`                       |
 | `mariadb.replication.password`          | Password for the MariaDB replication server                                                                                                                                                        | `11uAQKLgv4JM`                       |

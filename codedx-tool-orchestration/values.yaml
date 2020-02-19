@@ -155,6 +155,7 @@ minio:
       privateKey: "minio.key"
   persistence:
     size: 50Gi
+    storageClass: 
 
 # Options for configuring clients to explicitly trust certificate data for the MinIO TLS configuration. This section
 # does not apply when minio.tls.enabled=false.

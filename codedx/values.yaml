@@ -504,6 +504,9 @@ mariadb:
   db:
     # Name of the database for MariaDB to create automatically
     name: codedx
+  # Use default storage class for master/slave PVCs
+  global:
+    storageClass: 
   rootUser:
     password: 5jqJL2b8hqn3
   replication:

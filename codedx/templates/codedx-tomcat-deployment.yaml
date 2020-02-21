@@ -31,6 +31,9 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "codedx.serviceAccountName" . | quote }}
       serviceAccount: {{ include "codedx.serviceAccountName" . | quote }}
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
       containers:
       - env:
         - name: SUPERUSER_NAME
@@ -41,6 +44,7 @@ spec:
               name: {{ include "codedx.adminSecretName" . | quote }}
               key: password
         image: {{ required "A tomcat image must be provided! Assign codedxTomcatImage!" .Values.codedxTomcatImage | quote }}
+        imagePullPolicy: {{ default "IfNotPresent" .Values.codedxTomcatImagePullPolicy | quote }}
         name: "{{ include "codedx.name" . }}"
         readinessProbe:
           httpGet:

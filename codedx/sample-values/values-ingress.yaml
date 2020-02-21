@@ -26,3 +26,17 @@ ingress:
   - name: my-secret
     key: "Replace this with your base64-encoded TLS key."
     certificate: "Replace this with your base64-encoded TLS certificate."
+
+# If network policies are enabled on your cluster and enabled in the Code Dx
+# chart (which is enabled by default in the chart) we'll need to make some changes
+# so that the ingress controller can reach Code Dx.
+networkPolicy:
+  codedx:
+    http: true
+    https: true
+    # This assumes the controller is installed to a namespace with the label
+    # "name=nginx". (can use `kubectl label ns <name> key=value`)
+    ingressSelectors:
+    - namespaceSelector:
+        matchLabels:
+          name: nginx

@@ -3,10 +3,13 @@
 #
 # The contents of this file can be added to your own custom values.yaml file.
 
-codedxTomcatImage: codedx/codedx-tomcat:v4.4.0
+codedxTomcatImage: codedx/codedx-tomcat:v4.4.3
 
 persistence:
   size: 32Gi
+  # May be useful to specify a custom storage class, eg in Azure Kubernetes Service
+  # we want to use managed-premium for much faster SSD-backed storage.
+  #storageClass: managed-premium
 
 license:
   secret: codedx-secret
@@ -28,6 +31,13 @@ networkPolicy:
     ldaps: true
     http: true
     https: true
+    # Extra ingress selector to allow connections from nginx-ingress. This
+    # assumes the controller is installed to a namespace with the label
+    # "name=nginx". (can use `kubectl label ns <name> key=value`)
+    ingressSelectors:
+    - namespaceSelector:
+        matchLabels:
+          name: nginx
 
 ingress:
   enabled: true
@@ -47,7 +57,9 @@ mariadb:
   master:
     persistence:
       size: 32Gi
+      #storageClass: managed-premium
   slave:
     replicas: 1
     persistence:
       size: 32Gi
+      #storageClass: managed-premium

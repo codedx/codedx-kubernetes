@@ -1,7 +1,6 @@
 apiVersion: v2
 name: codedx
 version: 0.8.0
-kubeVersion: ">=1.8.0"
 appVersion: "4.4.3"
 description: A Helm chart for Code Dx
 icon: https://codedx.com/wp-content/uploads/2017/03/CodeDx-logo.png

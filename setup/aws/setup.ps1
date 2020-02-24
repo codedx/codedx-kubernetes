@@ -57,8 +57,8 @@ $VerbosePreference = 'Continue'
 
 Set-PSDebug -Strict
 
-. (join-path $PSScriptRoot helm.ps1)
-. (join-path $PSScriptRoot codedx.ps1)
+. (join-path $PSScriptRoot ../common/helm.ps1)
+. (join-path $PSScriptRoot ../common/codedx.ps1)
 . (join-path $PSScriptRoot aws.ps1)
 
 if (-not (Test-IsCore)) {

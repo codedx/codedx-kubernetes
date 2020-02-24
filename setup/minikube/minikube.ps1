@@ -1,4 +1,4 @@
-. (join-path $PSScriptRoot k8s.ps1)
+. (join-path $PSScriptRoot ../common/k8s.ps1)
 
 function Test-MinikubeProfile([string] $profileName, [string] $vmDriver, [string] $k8sVersion) {
 

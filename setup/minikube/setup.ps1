@@ -73,9 +73,9 @@ $VerbosePreference = 'Continue'
 
 Set-PSDebug -Strict
 
-. (join-path $PSScriptRoot helm.ps1)
+. (join-path $PSScriptRoot ../common/helm.ps1)
 . (join-path $PSScriptRoot minikube.ps1)
-. (join-path $PSScriptRoot codedx.ps1)
+. (join-path $PSScriptRoot ../common/codedx.ps1)
 
 if (-not (Test-IsCore)) {
 	write-error 'Unable to continue because you must run this script with PowerShell Core (pwsh)'

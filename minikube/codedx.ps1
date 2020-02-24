@@ -1,8 +1,8 @@
-. (join-path $PSScriptRoot minikube.ps1)
 
 function New-CodeDxDeployment([string] $codeDxDnsName,
     [string]   $workDir, 
 	[int]      $waitSeconds,
+	[string]   $clusterCertificateAuthorityCertPath,
 	[string]   $namespace,
 	[string]   $releaseName,
 	[string]   $adminPwd,
@@ -15,7 +15,9 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[int]      $dbSlaveReplicaCount,
 	[int]      $dbSlaveVolumeSizeGiB,
 	[int]      $codeDxVolumeSizeGiB,	
+	[string]   $storageClassName,
 	[string[]] $extraValuesPaths,
+	[string]   $ingressControllerNamespace,
 	[switch]   $enablePSPs,
 	[switch]   $enableNetworkPolicies,
 	[switch]   $configureTls,
@@ -53,19 +55,27 @@ codedxTomcatImagePullSecrets:
 	if ($configureTls) {
 		$tlsEnabled = 'true'
 
-		New-Certificate 'codedx-app-codedx' 'codedx-app-codedx' 'cdx-app' @($codeDxDnsName)
-		New-CertificateSecret 'cdx-app' $tlsSecretName $tlsCertFile $tlsKeyFile
+		New-Certificate $clusterCertificateAuthorityCertPath 'codedx-app-codedx' 'codedx-app-codedx' $namespace @()
+		New-CertificateSecret $namespace $tlsSecretName $tlsCertFile $tlsKeyFile
 	}
 
+	$ingressNamespaceSelector = ''
 	$ingress = 'false'
 	if ($configureIngress) {
 		$ingress = 'true'
+		$ingressNamespaceSelector = @'
+    ingressSelectors:
+    - namespaceSelector:
+        matchLabels:
+          name: {0}
+'@ -f $ingressControllerNamespace
 	}
 
 	$values = @'
 codedxAdminPassword: '{0}'
 persistence:
   size: {12}Gi
+  storageClass: {18}
 codedxTls:
   enabled: {5}
   secret: {6}
@@ -90,6 +100,11 @@ podSecurityPolicy:
 networkPolicy:
   codedx:
     create: {4}
+    ldap: {4}
+    ldaps: {4}
+    http: {4}
+    https: {4}
+{17}
   mariadb:
     master:
       create: {4}
@@ -104,10 +119,12 @@ mariadb:
     password: '{10}'
   master:
     persistence:
+      storageClass: {18}
       size: {11}Gi
   slave:
     replicas: {16}
     persistence:
+      storageClass: {18}
       size: {15}Gi
 
 '@ -f $adminPwd, $tomcatImage, $imagePullSecretYaml, `
@@ -115,7 +132,7 @@ $psp, $networkPolicy, `
 $tlsEnabled, $tlsSecretName, $tlsCertFile, $tlsKeyFile, `
 $mariadbRootPwd, $mariadbReplicatorPwd, `
 $dbVolumeSizeGiB, $codeDxVolumeSizeGiB, $codeDxDnsName, $ingress, `
-$dbSlaveVolumeSizeGiB, $dbSlaveReplicaCount
+$dbSlaveVolumeSizeGiB, $dbSlaveReplicaCount, $ingressNamespaceSelector, $storageClassName
 
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
@@ -126,6 +143,7 @@ $dbSlaveVolumeSizeGiB, $dbSlaveReplicaCount
 
 function New-ToolOrchestrationDeployment([string] $workDir, 
 	[int]    $waitSeconds,
+	[string] $clusterCertificateAuthorityCertPath,
 	[string] $namespace,
 	[string] $codedxNamespace,
 	[string] $codedxReleaseName,
@@ -139,9 +157,12 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 	[string] $sendResultsImage,
 	[string] $sendErrorResultsImage,
 	[string] $toolServiceImage,
+	[string] $preDeleteImageName,
 	[string] $imagePullSecretName,
 	[string] $dockerConfigJson,
 	[int]    $minioVolumeSizeGiB,
+	[string] $storageClassName,
+	[int]    $kubeApiTargetPort,
 	[switch] $enablePSPs,
 	[switch] $enableNetworkPolicies,
 	[switch] $configureTls) {
@@ -166,14 +187,14 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 		$tlsToolServiceCertSecret = 'cdx-toolsvc-codedx-tool-orchestration-tls'
 		$codedxCaConfigMap = 'cdx-codedx-ca-cert'
 
-		New-Certificate 'toolsvc-codedx-tool-orchestration' 'toolsvc-codedx-tool-orchestration' $namespace @()
-		New-Certificate 'toolsvc-minio' 'toolsvc-minio' $namespace @()
+		New-Certificate $clusterCertificateAuthorityCertPath 'toolsvc-codedx-tool-orchestration' 'toolsvc-codedx-tool-orchestration' $namespace @()
+		New-Certificate $clusterCertificateAuthorityCertPath 'toolsvc-minio' 'toolsvc-minio' $namespace @()
 
 		New-CertificateSecret $namespace $tlsMinioCertSecret 'toolsvc-minio.pem' 'toolsvc-minio.key'
 		New-CertificateConfigMap $namespace 'cdx-toolsvc-minio-cert' 'toolsvc-minio.pem'
 		New-CertificateSecret $namespace $tlsToolServiceCertSecret 'toolsvc-codedx-tool-orchestration.pem' 'toolsvc-codedx-tool-orchestration.key'
 
-		New-CertificateConfigMap $namespace $codedxCaConfigMap (Get-MinikubeCaCertPath)
+		New-CertificateConfigMap $namespace $codedxCaConfigMap $clusterCertificateAuthorityCertPath
 	}
 	$codedxBaseUrl = '{0}://{1}-codedx.{2}:{3}/codedx' -f $protocol,$codedxReleaseName,$codedxNamespace,$codedxPort
 
@@ -212,6 +233,7 @@ minio:
       publicCrt: 'toolsvc-minio.pem'
       privateKey: 'toolsvc-minio.key'
   persistence:
+    storageClass: {24}
     size: {21}Gi
 
 minioTlsTrust:
@@ -235,7 +257,7 @@ networkPolicy:
   twsWorkflowsEnabled: {17}
   argoEnabled: {17}
   minioEnabled: {17}      
-  kubeApiTargetPort: 8443
+  kubeApiTargetPort: {25}
   codedxSelectors:
   - namespaceSelector:
       matchLabels:
@@ -259,13 +281,14 @@ imageNameNewAnalysis: '{8}'
 imageNameSendResults: '{9}' 
 imageNameSendErrorResults: '{10}' 
 toolServiceImageName: '{11}' 
+imageNameHelmPreDelete: '{23}' 
 {22}
 '@ -f $minioUsername,`
 $minioPwd,$codedxNamespace,$codedxReleaseName,$apiKey,`
 $imagePullSecretName,$toolsImage,$toolsMonoImage,$newAnalysisImage,$sendResultsImage,$sendErrorResultsImage,$toolServiceImage,$numReplicas,
 $tlsConfig,$tlsMinioCertSecret,$tlsToolServiceCertSecret,
 $psp,$networkPolicy,$codedxBaseUrl,`
-$tlsConfig,$codedxCaConfigMap,$minioVolumeSizeGiB,$imagePullSecretYaml
+$tlsConfig,$codedxCaConfigMap,$minioVolumeSizeGiB,$imagePullSecretYaml,$preDeleteImageName,$storageClassName, $kubeApiTargetPort
 
 	$valuesFile = 'toolsvc-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
@@ -276,6 +299,7 @@ $tlsConfig,$codedxCaConfigMap,$minioVolumeSizeGiB,$imagePullSecretYaml
 
 function Set-UseToolOrchestration([string] $workDir, 
 	[string] $waitSeconds,
+	[string] $clusterCertificateAuthorityCertPath,
 	[string] $namespace, [string] $codedxNamespace,
 	[string] $toolServiceUrl, [string] $toolServiceApiKey,
 	[string] $codedxReleaseName,
@@ -295,7 +319,9 @@ function Set-UseToolOrchestration([string] $workDir,
 	}
 
 	# update cacerts file
-	keytool -import -trustcacerts -keystore cacerts -file (Get-MinikubeCaCertPath) -noprompt -storepass changeit
+	$aliasName = 'codedx-ca'
+	keytool -delete -alias $aliasName -keystore cacerts -storepass changeit
+	keytool -import -trustcacerts -keystore cacerts -file $clusterCertificateAuthorityCertPath -alias $aliasName -noprompt -storepass changeit
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to import CA certificate into cacerts file, keytool exited with code $LASTEXITCODE."
 	}
@@ -363,19 +389,11 @@ function Add-CertManager([string] $namespace, [string] $codeDxNamespace,
 		New-Namespace  $codeDxNamespace
 	}
 
-	helm repo add jetstack https://charts.jetstack.io
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to add jetstack repo, helm exited with code $LASTEXITCODE."
-	}
+	Add-HelmRepo jetstack https://charts.jetstack.io
 
-	helm repo update
+	helm upgrade --namespace $namespace --install --reuse-values cert-manager jetstack/cert-manager --version v0.13.0
 	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to run helm repo update, helm exited with code $LASTEXITCODE."
-	}
-
-	helm install cert-manager --namespace $namespace jetstack/cert-manager --version v0.13.0
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to install cert-manager, helm exited with code $LASTEXITCODE."
+		throw "Unable to upgrade/install cert-manager, helm exited with code $LASTEXITCODE."
 	}
 
 	Wait-Deployment 'Add cert-manager' $waitSeconds $namespace 'cert-manager' 1
@@ -466,5 +484,115 @@ subjects:
 		if ($LASTEXITCODE -ne 0) {
 			throw "Unable to create cert-manager resource in namespace '$namespace' from file '$file'. kubectl exited with code $LASTEXITCODE."
 		}
+	}
+}
+
+function Add-NginxIngressLoadBalancerIP([string] $loadBalancerIP,
+	[string] $namespace,
+	[int] $waitSeconds,
+	[string] $nginxFile) {
+	
+	@'
+controller:
+  service:
+    loadBalancerIP: {0}
+'@ -f $loadBalancerIP | out-file $nginxFile -Encoding ascii -Force
+
+	Add-NginxIngress $namespace $waitSeconds $nginxFile
+}
+
+function Add-NginxIngress([string] [string] $namespace,
+	[int] $waitSeconds,
+	[string] $valuesFile) {
+
+	if (-not (Test-Namespace $namespace)) {
+		New-Namespace  $namespace
+	}
+	Set-NamespaceLabel $namespace 'name' $namespace
+	
+	Add-HelmRepo 'stable' 'https://kubernetes-charts.storage.googleapis.com'
+	Invoke-HelmSingleDeployment 'nginx-ingress' $waitTimeSeconds $namespace 'nginx' 'stable/nginx-ingress' $valuesFile 'nginx-nginx-ingress-controller' 1
+}
+
+function Add-DefaultPodSecurityPolicy([string] $pspFile, [string] $roleFile, [string] $roleBindingFile) {
+
+	$psp = @'
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: privileged
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
+spec:
+  privileged: true
+  allowPrivilegeEscalation: true
+  allowedCapabilities:
+  - '*'
+  volumes:
+  - '*'
+  hostNetwork: true
+  hostPorts:
+  - min: 0
+    max: 65535
+  hostIPC: true
+  hostPID: true
+  runAsUser:
+    rule: 'RunAsAny'
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'RunAsAny'
+  fsGroup:
+    rule: 'RunAsAny'
+'@
+
+	$psp | out-file $pspFile -Encoding ascii -Force
+	kubectl apply -f $pspFile
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to apply PodSecurityPolicy. kubectl exited with code $LASTEXITCODE."
+	}
+
+	$role = @'
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: psp:privileged
+rules:
+- apiGroups: ['policy']
+  resources: ['podsecuritypolicies']
+  verbs:     ['use']
+  resourceNames:
+  - privileged
+'@
+
+	$role | out-file $roleFile -Encoding ascii -Force
+	kubectl apply -f $roleFile
+    	if ($LASTEXITCODE -ne 0) {
+    		throw "Unable to apply PodSecurityPolicy ClusterRole. kubectl exited with code $LASTEXITCODE."
+    	}
+
+	$roleBinding = @'
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: psp:privileged-rolebinding
+  namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: psp:privileged
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: Group
+  apiGroup: rbac.authorization.k8s.io
+  name: system:serviceaccounts
+- kind: Group
+  apiGroup: rbac.authorization.k8s.io
+  name: system:nodes
+'@
+
+	$roleBinding | out-file $roleBindingFile -Encoding ascii -Force
+	kubectl apply -f $roleBindingFile
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to apply default PodSecurityPolicy RoleBinding. kubectl exited with code $LASTEXITCODE."
 	}
 }

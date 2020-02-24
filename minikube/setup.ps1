@@ -26,6 +26,7 @@ param (
 	[int]      $dbSlaveVolumeSizeGiB = 32,
 	[int]      $minioVolumeSizeGiB = 32,
 	[int]      $codeDxVolumeSizeGiB = 32,
+	[string]   $storageClassName = '',
 
 	[string]   $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:latest',
 	[string]   $imageCodeDxTools = 'codedxregistry.azurecr.io/codedx/codedx-tools:latest',
@@ -34,6 +35,7 @@ param (
 	[string]   $imageSendResults = 'codedxregistry.azurecr.io/codedx/codedx-results:latest',
 	[string]   $imageSendErrorResults = 'codedxregistry.azurecr.io/codedx/codedx-error-results:latest',
 	[string]   $imageToolService = 'codedxregistry.azurecr.io/codedx/codedx-tool-service:latest',
+	[string]   $imagePreDelete = 'codedxregistry.azurecr.io/codedx/codedx-cleanup:latest',
 
 	[int]      $toolServiceReplicas = 3,
 
@@ -45,6 +47,7 @@ param (
 
 	[string]   $namespaceToolOrchestration = 'cdx-svc',
 	[string]   $namespaceCodeDx = 'cdx-app',
+	[string]   $namespaceIngressController = 'nginx',
 	[string]   $releaseNameCodeDx = 'codedx-app',
 	[string]   $releaseNameToolOrchestration = 'toolsvc-codedx-tool-orchestration',
 
@@ -60,8 +63,9 @@ param (
 
 	[string]   $codedxRepo = 'https://codedx.github.io/codedx-kubernetes',
 
-	[string[]] $extraCodeDxValuesPaths = @(),
-	[switch]   $pauseForClusterConfig
+	[int]      $kubeApiTargetPort = 8443,
+
+	[string[]] $extraCodeDxValuesPaths = @()
 )
 
 $ErrorActionPreference = 'Stop'
@@ -70,6 +74,7 @@ $VerbosePreference = 'Continue'
 Set-PSDebug -Strict
 
 . (join-path $PSScriptRoot helm.ps1)
+. (join-path $PSScriptRoot minikube.ps1)
 . (join-path $PSScriptRoot codedx.ps1)
 
 if (-not (Test-IsCore)) {
@@ -141,11 +146,6 @@ if ($createCluster) {
 	Write-Verbose "Profile does not exist. Creating new minikube profile named $minikubeProfile for k8s version $k8sVersion..."
 	New-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $nodeCPUs $nodeMemory $nodeDiskSize $extraConfig
 
-	if ($pauseForClusterConfig) {
-		Write-Verbose "Pausing to provide opportunity for cluster customizations..."
-		Read-Host -Prompt "Apply any custom cluster configuration and then press Enter to continue setup"
-	}
-
 	if ($vmDriver -eq 'none') {
 		New-ReadWriteOncePersistentVolume $minioVolumeSizeGiB
 		New-ReadWriteOncePersistentVolume $codeDxVolumeSizeGiB
@@ -190,21 +190,31 @@ if ($createCluster) {
 	Remove-Item .\codedx-kubernetes -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
 	Invoke-GitClone 'https://github.com/codedx/codedx-kubernetes' 'develop'
 
+	$minikubeCaCertPath = Get-MinikubeCaCertPath
+
 	Write-Verbose 'Deploying Code Dx with Tool Orchestration disabled...'
-	New-CodeDxDeployment $codeDxDnsName $workDir $waitTimeSeconds $namespaceCodeDx $releaseNameCodeDx $codedxAdminPwd $imageCodeDxTomcat $dockerImagePullSecretName $dockerConfigJson `
+	New-CodeDxDeployment $codeDxDnsName $workDir $waitTimeSeconds `
+		$minikubeCaCertPath `
+		$namespaceCodeDx $releaseNameCodeDx $codedxAdminPwd $imageCodeDxTomcat $dockerImagePullSecretName $dockerConfigJson `
 		$mariadbRootPwd $mariadbReplicatorPwd `
 		$dbVolumeSizeGiB `
 		$dbSlaveReplicaCount $dbSlaveVolumeSizeGiB `
 		$codeDxVolumeSizeGiB `
+		$storageClassName `
 		$extraCodeDxValuesPaths `
+		$namespaceIngressController `
 		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -configureIngress:$configureIngress
 
 	Write-Verbose 'Deploying Tool Orchestration...'
-	New-ToolOrchestrationDeployment $workDir $waitTimeSeconds $namespaceToolOrchestration $namespaceCodeDx $releaseNameCodeDx $toolServiceReplicas `
+	New-ToolOrchestrationDeployment $workDir $waitTimeSeconds `
+		$minikubeCaCertPath `
+		$namespaceToolOrchestration $namespaceCodeDx $releaseNameCodeDx $toolServiceReplicas `
 		$minioAdminUsername $minioAdminPwd $toolServiceApiKey `
 		$imageCodeDxTools $imageCodeDxToolsMono `
-		$imageNewAnalysis $imageSendResults $imageSendErrorResults $imageToolService `
-		$dockerImagePullSecretName $dockerConfigJson $minioVolumeSizeGiB `
+		$imageNewAnalysis $imageSendResults $imageSendErrorResults $imageToolService $imagePreDelete `
+		$dockerImagePullSecretName $dockerConfigJson `
+		$minioVolumeSizeGiB $storageClassName `
+		$kubeApiTargetPort `
 		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
 
 	Write-Verbose 'Updating Code Dx deployment by enabling Tool Orchestration...'
@@ -214,6 +224,7 @@ if ($createCluster) {
 	}
 	Set-UseToolOrchestration $workDir `
 		$waitTimeSeconds `
+		$minikubeCaCertPath `
 		$namespaceToolOrchestration $namespaceCodeDx `
 		"$protocol`://$releaseNameToolOrchestration.$namespaceToolOrchestration.svc.cluster.local:3333" $toolServiceApiKey `
 		$releaseNameCodeDx -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
@@ -306,7 +317,7 @@ if (-not ($vars.configureIngress)) {
 	$ipList = Get-IPv4AddressList $vars.codeDxDnsName
 
 	Write-Host "`nRun the following command to make Code Dx available at $protocol`://$($vars.codeDxDnsName)`:$($vars.codeDxPortNumber)/codedx"
-	Write-Host ('pwsh -c "kubectl -n cdx-app port-forward --address {0},127.0.0.1 (kubectl -n cdx-app get pod -l app=codedx --field-selector=status.phase=Running -o name) {1}:{2}"' -f $ipList,$vars.codeDxPortNumber,$portNum)
+	Write-Host ('pwsh -c "kubectl -n {3} port-forward --address {0},127.0.0.1 (kubectl -n {3} get pod -l app=codedx --field-selector=status.phase=Running -o name) {1}:{2}"' -f $ipList,$vars.codeDxPortNumber,$portNum,$namespaceCodeDx)
 
 	if ($vars.useTls) {
 		Write-Host "Note that you may need to trust the root certificate located at $(join-path $HOME '.minikube/ca.crt')"

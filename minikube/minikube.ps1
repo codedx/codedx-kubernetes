@@ -43,89 +43,6 @@ function Add-IngressAddon([string] $profileName, [int] $waitSeconds) {
 	Wait-Deployment 'Ingress Addon' $waitSeconds 'kube-system' 'nginx-ingress-controller' 1
 }
 
-function Add-DefaultPodSecurityPolicy([string] $pspFile, [string] $roleFile, [string] $roleBindingFile) {
-
-	$psp = @'
-apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  name: privileged
-  annotations:
-    seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
-spec:
-  privileged: true
-  allowPrivilegeEscalation: true
-  allowedCapabilities:
-  - '*'
-  volumes:
-  - '*'
-  hostNetwork: true
-  hostPorts:
-  - min: 0
-    max: 65535
-  hostIPC: true
-  hostPID: true
-  runAsUser:
-    rule: 'RunAsAny'
-  seLinux:
-    rule: 'RunAsAny'
-  supplementalGroups:
-    rule: 'RunAsAny'
-  fsGroup:
-    rule: 'RunAsAny'
-'@
-
-	$psp | out-file $pspFile -Encoding ascii -Force
-	kubectl create -f $pspFile
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to create PodSecurityPolicy. kubectl exited with code $LASTEXITCODE."
-	}
-
-	$role = @'
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: psp:privileged
-rules:
-- apiGroups: ['policy']
-  resources: ['podsecuritypolicies']
-  verbs:     ['use']
-  resourceNames:
-  - privileged
-'@
-
-	$role | out-file $roleFile -Encoding ascii -Force
-	kubectl create -f $roleFile
-    	if ($LASTEXITCODE -ne 0) {
-    		throw "Unable to create PodSecurityPolicy ClusterRole. kubectl exited with code $LASTEXITCODE."
-    	}
-
-	$roleBinding = @'
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: psp:privileged-rolebinding
-  namespace: kube-system
-roleRef:
-  kind: ClusterRole
-  name: psp:privileged
-  apiGroup: rbac.authorization.k8s.io
-subjects:
-- kind: Group
-  apiGroup: rbac.authorization.k8s.io
-  name: system:serviceaccounts
-- kind: Group
-  apiGroup: rbac.authorization.k8s.io
-  name: system:nodes
-'@
-
-	$roleBinding | out-file $roleBindingFile -Encoding ascii -Force
-	kubectl create -f $roleBindingFile
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to create default PodSecurityPolicy RoleBinding. kubectl exited with code $LASTEXITCODE."
-	}
-}
-
 function Start-MinikubeCluster([string] $profileName, [string] $k8sVersion, [string] $vmDriver, [int] $waitSeconds, [switch] $usePsp, [switch] $useNetworkPolicy, [string[]] $extraConfig) {
 
 	$pspConfig = ''
@@ -168,33 +85,8 @@ function Wait-MinikubeNodeReady([string] $message, [int] $waitSeconds) {
 	}
 }
 
-function New-Certificate([string] $resourceName, [string] $dnsName, [string] $namespace, [string[]] $alternativeNames){
-
-	$altNames = @()
-	$altNames = $altNames + "$dnsName.$namespace" + "$dnsName.$namespace.svc.cluster.local" + $alternativeNames
-
-	New-Csr $dnsName `
-		$altNames `
-		"$dnsName.conf" `
-		"$dnsName.csr" `
-		"$dnsName.key"
-
-	New-CsrResource $resourceName "$dnsName.csr" "$dnsName.csrr"
-	New-CsrApproval $resourceName
-
-	$certText = Get-Certificate $resourceName
-	$caCertText = Get-MinikubeCaCert
-	"$certText`n$caCertText" | out-file "$resourceName.pem" -Encoding ascii -Force
-}
-
 function Get-MinikubeCaCertPath {
 	join-path $HOME '.minikube/ca.crt'
-}
-
-function Get-MinikubeCaCert {
-
-	$caCertFile = Get-MinikubeCaCertPath
-	[io.file]::ReadAllText($caCertFile)
 }
 
 function Stop-MinikubeCluster([string] $profileName) {
@@ -239,6 +131,6 @@ spec:
 	$pvTempFile = New-TemporaryFile
 	$pvDefinition | Out-File -Encoding ascii -LiteralPath $pvTempFile.FullName
 
-	Write-Verbose "Creating PV from file $($pvTempFile.FullName)..."
-	kubectl create -f $pvTempFile.FullName
+	Write-Verbose "Applying PV from file $($pvTempFile.FullName)..."
+	kubectl apply -f $pvTempFile.FullName
 }

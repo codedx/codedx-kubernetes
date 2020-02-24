@@ -28,7 +28,26 @@ function Test-ClusterInfo([string] $profileName) {
 	0 -eq $LASTEXITCODE
 }
 
-function New-Csr([string] $dns, [string[]] $altNames, [string] $requestFile, [string] $csrFile, [string] $keyFile) {
+function New-Certificate([string] $caCertPath, [string] $resourceName, [string] $dnsName, [string] $namespace, [string[]] $alternativeNames){
+
+	$altNames = @()
+	$altNames = $altNames + $dnsName + "$dnsName.$namespace" + $alternativeNames
+
+	New-Csr "$dnsName.$namespace.svc.cluster.local" `
+		$altNames `
+		"$dnsName.conf" `
+		"$dnsName.csr" `
+		"$dnsName.key"
+
+	New-CsrResource $resourceName "$dnsName.csr" "$dnsName.csrr"
+	New-CsrApproval $resourceName
+
+	$certText = Get-Certificate $resourceName
+	$caCertText = [io.file]::ReadAllText($caCertPath)
+	"$certText`n$caCertText" | out-file "$resourceName.pem" -Encoding ascii -Force
+}
+
+function New-Csr([string] $subjectName, [string[]] $subjectAlternativeNames, [string] $requestFile, [string] $csrFile, [string] $keyFile) {
 
 	$request = @'
 [ req ]
@@ -46,10 +65,10 @@ subjectAltName = @alt_names
 
 [ alt_names ]
 DNS.1 = {0}
-'@ -f $dns
+'@ -f $subjectName
 
 $i = 2
-$altNames | ForEach-Object {
+$subjectAlternativeNames | ForEach-Object {
 	$request = $request + ("`nDNS.{0} = {1}" -f $i,$_)
 	$i += 1
 }
@@ -104,9 +123,9 @@ spec:
 
 	$resourceRequest | out-file  $csrResourceFile -Encoding ascii -Force
 
-	kubectl create -f $csrResourceFile
+	kubectl apply -f $csrResourceFile
 	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to create CSR resource, kubectl exited with code $LASTEXITCODE."
+		throw "Unable to apply CSR resource, kubectl exited with code $LASTEXITCODE."
 	}
 }
 

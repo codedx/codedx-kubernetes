@@ -1,4 +1,4 @@
-. (join-path $PSScriptRoot utils.ps1)
+. (join-path $PSScriptRoot 'utils.ps1')
 
 function New-Namespace([string] $namespace) {
 

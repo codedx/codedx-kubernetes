@@ -1,4 +1,4 @@
-. (join-path $PSScriptRoot k8s.ps1)
+. (join-path $PSScriptRoot 'k8s.ps1')
 
 function Add-HelmRepo([string] $name, [string] $url) {
 

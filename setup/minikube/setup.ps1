@@ -12,60 +12,36 @@
 # 7 socat (when using $vmDriver 'none')
 #
 param (
+	[string]   $clusterCertificateAuthorityCertPath="$HOME/.minikube/ca.crt",
 	[string]   $codeDxDnsName = (hostname),
 	[int]      $codeDxPortNumber = 8443,
-	[string]   $k8sVersion = 'v1.14.6',
-	[string]   $minikubeProfile = 'minikube-1-14-6',
-	[int]      $nodeCPUs = 4,
-	[string]   $nodeMemory = '16g',
 	[int]      $waitTimeSeconds = 600,
-	[string]   $vmDriver = 'virtualbox',
 
 	[int]      $dbVolumeSizeGiB = 32,
 	[int]      $dbSlaveReplicaCount = 0,
 	[int]      $dbSlaveVolumeSizeGiB = 32,
 	[int]      $minioVolumeSizeGiB = 32,
 	[int]      $codeDxVolumeSizeGiB = 32,
-	[string]   $storageClassName = '',
-
-	[string]   $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:latest',
-	[string]   $imageCodeDxTools = 'codedxregistry.azurecr.io/codedx/codedx-tools:latest',
-	[string]   $imageCodeDxToolsMono = 'codedxregistry.azurecr.io/codedx/codedx-toolsmono:latest',
-	[string]   $imageNewAnalysis = 'codedxregistry.azurecr.io/codedx/codedx-newanalysis:latest',
-	[string]   $imageSendResults = 'codedxregistry.azurecr.io/codedx/codedx-results:latest',
-	[string]   $imageSendErrorResults = 'codedxregistry.azurecr.io/codedx/codedx-error-results:latest',
-	[string]   $imageToolService = 'codedxregistry.azurecr.io/codedx/codedx-tool-service:latest',
-	[string]   $imagePreDelete = 'codedxregistry.azurecr.io/codedx/codedx-cleanup:latest',
-
+	
 	[int]      $toolServiceReplicas = 3,
 
 	[bool]     $useTLS  = $true,
 	[bool]     $usePSPs = $true,
+
 	[bool]     $skipNetworkPolicies = $true,
-
-	[string]   $ingressRegistrationEmailAddress = '',
-
+	
 	[string]   $namespaceToolOrchestration = 'cdx-svc',
 	[string]   $namespaceCodeDx = 'cdx-app',
-	[string]   $namespaceIngressController = 'nginx',
 	[string]   $releaseNameCodeDx = 'codedx-app',
 	[string]   $releaseNameToolOrchestration = 'toolsvc-codedx-tool-orchestration',
 
-	[string]   $toolServiceApiKey = [guid]::newguid().toString(),
-	[string]   $codedxAdminPwd,
-	[string]   $minioAdminUsername,
-	[string]   $minioAdminPwd,
-	[string]   $mariadbRootPwd,
-	[string]   $mariadbReplicatorPwd,
-
-	[string]   $dockerImagePullSecretName = 'codedx-docker-registry',
-	[string]   $dockerConfigJson,
-
-	[string]   $codedxRepo = 'https://codedx.github.io/codedx-kubernetes',
-
 	[int]      $kubeApiTargetPort = 8443,
 
-	[string[]] $extraCodeDxValuesPaths = @()
+	[string]   $k8sVersion = 'v1.14.6',
+	[string]   $minikubeProfile = 'minikube-1-14-6',
+	[int]      $nodeCPUs = 4,
+	[string]   $nodeMemory = '16g',
+	[string]   $vmDriver = 'virtualbox'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -73,9 +49,9 @@ $VerbosePreference = 'Continue'
 
 Set-PSDebug -Strict
 
-. (join-path $PSScriptRoot ../common/helm.ps1)
-. (join-path $PSScriptRoot minikube.ps1)
-. (join-path $PSScriptRoot ../common/codedx.ps1)
+. (join-path $PSScriptRoot '../common/helm.ps1')
+. (join-path $PSScriptRoot '../common/codedx.ps1')
+. (join-path $PSScriptRoot 'minikube.ps1')
 
 if (-not (Test-IsCore)) {
 	write-error 'Unable to continue because you must run this script with PowerShell Core (pwsh)'
@@ -99,40 +75,15 @@ if ($IsWindows) {
 	}
 }
 
-
-'minikube','helm','kubectl','openssl','git','keytool' | foreach-object {
-	if ($null -eq (Get-AppCommandPath $_)) {
-		write-error "Unable to continue because $_ cannot be found. Is $_ installed and included in your PATH?"
-	}
-}
-
-$helmVersionMatch = helm version | select-string 'Version:"v3'
-if ($null -eq $helmVersionMatch) {
-	write-error 'Unable to continue because helm (v3) was not found. Is it in your PATH?'
+if ($null -eq (Get-AppCommandPath 'minikube')) {
+	write-error "Unable to continue because minikube cannot be found. Is minikube installed and included in your PATH?"
 }
 
 $workDir = "$HOME/.codedx-$minikubeProfile"
 $varsPath = Join-Path $workDir 'vars.csv'
 
 $createCluster = -not (Test-MinikubeProfile $minikubeProfile $vmDriver $k8sVersion)
-
 if ($createCluster) {
-
-	if ($minioAdminUsername -eq '') { $minioAdminUsername = Get-SecureStringText 'Enter a username for the MinIO admin account' 5 }
-	if ($minioAdminPwd -eq '') { $minioAdminPwd = Get-SecureStringText 'Enter a password for the MinIO admin account' 8 }
-	if ($mariadbRootPwd -eq '') { $mariadbRootPwd = Get-SecureStringText 'Enter a password for the MariaDB root user' 0 }
-	if ($mariadbReplicatorPwd -eq '') { $mariadbReplicatorPwd = Get-SecureStringText 'Enter a password for the MariaDB replicator user' 0 }
-	if ($codedxAdminPwd -eq '') { $codedxAdminPwd = Get-SecureStringText 'Enter a password for the Code Dx admin account' 6 }
-	if ($toolServiceApiKey -eq '') { $toolServiceApiKey = Get-SecureStringText 'Enter an API key for the Code Dx Tool Orchestration service' 8 }
-	if ($dockerImagePullSecretName -ne '' -and $dockerConfigJson -eq '') { $dockerConfigJson = Get-SecureStringText 'Enter a dockerconfigjson value for your private Docker registry' 0 }	
-
-	Write-Verbose "Creating new minikube cluster using profile $minikubeProfile..."
-
-	Write-Verbose "Creating directory $workDir..."
-	New-Item -Type Directory $workDir -Force
-
-	Write-Verbose "Switching to directory $workDir..."
-	Push-Location $workDir
 
 	$extraConfig = @()
 	if ($vmDriver -eq 'none') {
@@ -168,71 +119,32 @@ if ($createCluster) {
 	Start-MinikubeCluster $minikubeProfile $k8sVersion $vmDriver $waitTimeSeconds -useNetworkPolicy:$useNetworkPolicies $extraConfig
 
 	Write-Verbose 'Waiting for running pods...'
-	Wait-AllRunningPods 'Start Minikube Cluster' $waitTimeSeconds
+	Wait-AllRunningPods 'Cluster Ready' $waitTimeSeconds
 
-	Write-Verbose 'Adding Helm repository...'
-	Add-HelmRepo 'codedx' $codedxRepo
+	$provisionIngress = { Add-IngressAddon $minikubeProfile $waitTimeSeconds }
 
-	$configureIngress = $ingressRegistrationEmailAddress -ne ''
-	if ($configureIngress) {
-
-		Write-Verbose 'Adding nginx Ingress...'
-		Add-IngressAddon $minikubeProfile $waitTimeSeconds
-	
-		Write-Verbose 'Adding Cert Manager...'
-		Add-CertManager 'cert-manager' $namespaceCodeDx `
-			$ingressRegistrationEmailAddress 'staging-cluster-issuer.yaml' 'production-cluster-issuer.yaml' `
-			'cert-manager-role.yaml' 'cert-manager-role-binding.yaml' 'cert-manager-http-solver-role-binding.yaml' `
-			$waitTimeSeconds
-	}
-
-	Write-Verbose 'Fetching Code Dx Helm charts...'
-	Remove-Item .\codedx-kubernetes -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
-	Invoke-GitClone 'https://github.com/codedx/codedx-kubernetes' 'develop'
-
-	$minikubeCaCertPath = Get-MinikubeCaCertPath
-
-	Write-Verbose 'Deploying Code Dx with Tool Orchestration disabled...'
-	New-CodeDxDeployment $codeDxDnsName $workDir $waitTimeSeconds `
-		$minikubeCaCertPath `
-		$namespaceCodeDx $releaseNameCodeDx $codedxAdminPwd $imageCodeDxTomcat $dockerImagePullSecretName $dockerConfigJson `
-		$mariadbRootPwd $mariadbReplicatorPwd `
-		$dbVolumeSizeGiB `
-		$dbSlaveReplicaCount $dbSlaveVolumeSizeGiB `
-		$codeDxVolumeSizeGiB `
-		$storageClassName `
-		$extraCodeDxValuesPaths `
-		$namespaceIngressController `
-		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -configureIngress:$configureIngress
-
-	Write-Verbose 'Deploying Tool Orchestration...'
-	New-ToolOrchestrationDeployment $workDir $waitTimeSeconds `
-		$minikubeCaCertPath `
-		$namespaceToolOrchestration $namespaceCodeDx $releaseNameCodeDx $toolServiceReplicas `
-		$minioAdminUsername $minioAdminPwd $toolServiceApiKey `
-		$imageCodeDxTools $imageCodeDxToolsMono `
-		$imageNewAnalysis $imageSendResults $imageSendErrorResults $imageToolService $imagePreDelete `
-		$dockerImagePullSecretName $dockerConfigJson `
-		$minioVolumeSizeGiB $storageClassName `
-		$kubeApiTargetPort `
-		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
-
-	Write-Verbose 'Updating Code Dx deployment by enabling Tool Orchestration...'
-	$protocol = 'http'
-	if ($useTLS) {
-		$protocol = 'https'
-	}
-	Set-UseToolOrchestration $workDir `
-		$waitTimeSeconds `
-		$minikubeCaCertPath `
-		$namespaceToolOrchestration $namespaceCodeDx `
-		"$protocol`://$releaseNameToolOrchestration.$namespaceToolOrchestration.svc.cluster.local:3333" $toolServiceApiKey `
-		$releaseNameCodeDx -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
-
-	if ($usePSPs) {
-		Write-Verbose 'Adding default PSP...'
-		Add-DefaultPodSecurityPolicy 'psp.yaml' 'psp-role.yaml' 'psp-role-binding.yaml'
-	}
+	& (join-path $PSScriptRoot '../setup.ps1') `
+		-workDir $workDir `
+		-clusterCertificateAuthorityCertPath $clusterCertificateAuthorityCertPath `
+		-codeDxDnsName $codeDxDnsName `
+		-codeDxPortNumber $codeDxPortNumber `
+		-waitTimeSeconds $waitTimeSeconds `
+		-dbVolumeSizeGiB $dbVolumeSizeGiB `
+		-dbSlaveReplicaCount $dbSlaveReplicaCount `
+		-dbSlaveVolumeSizeGiB $dbSlaveVolumeSizeGiB `
+		-minioVolumeSizeGiB $minioVolumeSizeGiB `
+		-codeDxVolumeSizeGiB $codeDxVolumeSizeGiB `
+		-toolServiceReplicas $toolServiceReplicas `
+		-useTLS $useTLS `
+		-usePSPs $usePSPs `
+		-skipNetworkPolicies $skipNetworkPolicies `
+		-namespaceToolOrchestration $namespaceToolOrchestration `
+		-namespaceCodeDx $namespaceCodeDx `
+		-releaseNameCodeDx $releaseNameCodeDx `
+		-releaseNameToolOrchestration $releaseNameToolOrchestration `
+		-kubeApiTargetPort $kubeApiTargetPort `
+		-provisionIngress $provisionIngress `
+		@args
 
 	Write-Verbose 'Shutting down cluster...'
 	Stop-MinikubeCluster $minikubeProfile
@@ -241,7 +153,6 @@ if ($createCluster) {
 	$vars = @{
 		'codeDxDnsName' = $codeDxDnsName;
 		'codeDxPortNumber' = $codeDxPortNumber;
-		'configureIngress' = $configureIngress;
 		'namespaceCodeDx' = $namespaceCodeDx;
 		'namespaceToolOrchestration' = $namespaceToolOrchestration;
 		'releaseNameCodeDx' = $releaseNameCodeDx;
@@ -264,7 +175,6 @@ if (-not (Test-Path $varsPath)) {
 
 Write-Verbose 'Reading saved startup configuration...'
 $vars = Import-Csv -LiteralPath $varsPath
-$vars.configureIngress = [convert]::ToBoolean($vars.configureIngress)
 $vars.useNetworkPolicies = [convert]::ToBoolean($vars.useNetworkPolicies)
 $vars.usePSPs = [convert]::ToBoolean($vars.usePSPs)
 $vars.useTLS = [convert]::ToBoolean($vars.useTLS)
@@ -306,20 +216,20 @@ if ($createCluster) {
 	Write-Host "Done.`n`n***Note: '$($vars.workDir)' contains values.yaml data that should be kept private.`n`n"
 }
 
-if (-not ($vars.configureIngress)) {
-	$portNum = 8080
-	$protocol = 'http'
-	if ($vars.useTLS) {
-		$portNum = 8443
-		$protocol = 'https'
-	}
-
-	$ipList = Get-IPv4AddressList $vars.codeDxDnsName
-
-	Write-Host "`nRun the following command to make Code Dx available at $protocol`://$($vars.codeDxDnsName)`:$($vars.codeDxPortNumber)/codedx"
-	Write-Host ('pwsh -c "kubectl -n {3} port-forward --address {0},127.0.0.1 (kubectl -n {3} get pod -l app=codedx --field-selector=status.phase=Running -o name) {1}:{2}"' -f $ipList,$vars.codeDxPortNumber,$portNum,$namespaceCodeDx)
-
-	if ($vars.useTls) {
-		Write-Host "Note that you may need to trust the root certificate located at $(join-path $HOME '.minikube/ca.crt')"
-	}
+$portNum = 8080
+$protocol = 'http'
+if ($vars.useTLS) {
+	$portNum = 8443
+	$protocol = 'https'
 }
+
+$ipList = Get-IPv4AddressList $vars.codeDxDnsName
+
+Write-Host "`n"
+Write-Host "`nIf you configured an ingress, you can use it to access Code Dx.`nYou can also run the following command to make Code Dx available at $protocol`://$($vars.codeDxDnsName)`:$($vars.codeDxPortNumber)/codedx"
+Write-Host ('pwsh -c "kubectl -n {3} port-forward --address {0},127.0.0.1 (kubectl -n {3} get pod -l app=codedx --field-selector=status.phase=Running -o name) {1}:{2}"' -f $ipList,$vars.codeDxPortNumber,$portNum,$namespaceCodeDx)
+
+if ($vars.useTls) {
+	Write-Host "Note that you may need to trust the root certificate located at $(join-path $HOME '.minikube/ca.crt')"
+}
+

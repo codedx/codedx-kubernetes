@@ -85,10 +85,6 @@ function Wait-MinikubeNodeReady([string] $message, [int] $waitSeconds) {
 	}
 }
 
-function Get-MinikubeCaCertPath {
-	join-path $HOME '.minikube/ca.crt'
-}
-
 function Stop-MinikubeCluster([string] $profileName) {
 
 	minikube stop -p $profileName

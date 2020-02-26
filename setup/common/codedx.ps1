@@ -196,7 +196,7 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 
 		New-CertificateConfigMap $namespace $codedxCaConfigMap $clusterCertificateAuthorityCertPath
 	}
-	$codedxBaseUrl = '{0}://{1}-codedx.{2}:{3}/codedx' -f $protocol,$codedxReleaseName,$codedxNamespace,$codedxPort
+	$codedxBaseUrl = '{0}://{1}-codedx.{2}.svc.cluster.local:{3}/codedx' -f $protocol,$codedxReleaseName,$codedxNamespace,$codedxPort
 
 	$imagePullSecretYaml = 'toolServiceImagePullSecrets: []'
 	if (-not ([string]::IsNullOrWhiteSpace($imagePullSecretName))) {

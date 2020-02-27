@@ -3,7 +3,7 @@ entries:
   argo:
   - apiVersion: v1
     appVersion: v2.4.2
-    created: "2020-02-26T11:15:06.7407296-05:00"
+    created: "2020-02-27T15:02:38.8829972-05:00"
     dependencies:
     - condition: minio.install
       name: minio
@@ -25,7 +25,39 @@ entries:
   codedx:
   - apiVersion: v2
     appVersion: 4.4.4
-    created: "2020-02-26T11:15:06.9327303-05:00"
+    created: "2020-02-27T15:02:39.0930313-05:00"
+    dependencies:
+    - condition: mariadb.enabled
+      name: mariadb
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.5.0
+    description: A Helm chart for Code Dx
+    digest: 55eaf15b5ed6167c229215c26621e9e36e5cfffd1fc6fa7eff3648eccbe1be92
+    home: https://github.com/codedx/codedx-kubernetes
+    icon: https://codedx.com/wp-content/uploads/2017/03/CodeDx-logo.png
+    keywords:
+    - codedx
+    - security
+    - sast
+    - scan
+    - analysis
+    kubeVersion: '>=1.8.0'
+    maintainers:
+    - email: support@codedx.com
+      name: tylercamp
+    - email: support@codedx.com
+      name: ssalas
+    name: codedx
+    sources:
+    - https://hub.docker.com/r/codedx/codedx-tomcat
+    - https://hub.docker.com/_/tomcat/
+    - https://hub.docker.com/r/bitnami/mariadb
+    urls:
+    - https://codedx.github.io/codedx-kubernetes/codedx-0.8.2.tgz
+    version: 0.8.2
+  - apiVersion: v2
+    appVersion: 4.4.4
+    created: "2020-02-27T15:02:39.0850233-05:00"
     dependencies:
     - condition: mariadb.enabled
       name: mariadb
@@ -57,7 +89,7 @@ entries:
     version: 0.8.1
   - apiVersion: v2
     appVersion: 4.4.3
-    created: "2020-02-26T11:15:06.9247293-05:00"
+    created: "2020-02-27T15:02:39.0770232-05:00"
     dependencies:
     - condition: mariadb.enabled
       name: mariadb
@@ -89,7 +121,7 @@ entries:
     version: 0.8.0
   - apiVersion: v2
     appVersion: 4.4.3
-    created: "2020-02-26T11:15:06.9177293-05:00"
+    created: "2020-02-27T15:02:39.0690157-05:00"
     dependencies:
     - condition: mariadb.enabled
       name: mariadb
@@ -121,7 +153,7 @@ entries:
     version: 0.7.0
   - apiVersion: v2
     appVersion: 4.4.1
-    created: "2020-02-26T11:15:06.9097301-05:00"
+    created: "2020-02-27T15:02:39.061016-05:00"
     dependencies:
     - condition: mariadb.enabled
       name: mariadb
@@ -153,7 +185,7 @@ entries:
     version: 0.6.1
   - apiVersion: v2
     appVersion: 4.4.0
-    created: "2020-02-26T11:15:06.9027297-05:00"
+    created: "2020-02-27T15:02:39.0530159-05:00"
     dependencies:
     - condition: mariadb.enabled
       name: mariadb
@@ -185,7 +217,7 @@ entries:
     version: 0.5.0
   - apiVersion: v1
     appVersion: 4.4.0
-    created: "2020-02-26T11:15:06.8487295-05:00"
+    created: "2020-02-27T15:02:38.9980158-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -216,7 +248,7 @@ entries:
     version: 0.4.21
   - apiVersion: v1
     appVersion: 4.3.5
-    created: "2020-02-26T11:15:06.8417288-05:00"
+    created: "2020-02-27T15:02:38.9900158-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -247,7 +279,7 @@ entries:
     version: 0.4.20
   - apiVersion: v1
     appVersion: 4.3.4
-    created: "2020-02-26T11:15:06.831729-05:00"
+    created: "2020-02-27T15:02:38.9800167-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -278,7 +310,7 @@ entries:
     version: 0.4.19
   - apiVersion: v1
     appVersion: 4.3.3
-    created: "2020-02-26T11:15:06.8247292-05:00"
+    created: "2020-02-27T15:02:38.9720157-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -309,7 +341,7 @@ entries:
     version: 0.4.18
   - apiVersion: v1
     appVersion: 4.3.2
-    created: "2020-02-26T11:15:06.8167294-05:00"
+    created: "2020-02-27T15:02:38.964007-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -340,7 +372,7 @@ entries:
     version: 0.4.17
   - apiVersion: v1
     appVersion: 4.3.1
-    created: "2020-02-26T11:15:06.8097296-05:00"
+    created: "2020-02-27T15:02:38.9560065-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -371,7 +403,7 @@ entries:
     version: 0.4.16
   - apiVersion: v1
     appVersion: 4.3.0
-    created: "2020-02-26T11:15:06.8017298-05:00"
+    created: "2020-02-27T15:02:38.9480071-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -402,7 +434,7 @@ entries:
     version: 0.4.15
   - apiVersion: v1
     appVersion: 4.2.4
-    created: "2020-02-26T11:15:06.7947299-05:00"
+    created: "2020-02-27T15:02:38.9400067-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -433,7 +465,7 @@ entries:
     version: 0.4.14
   - apiVersion: v1
     appVersion: 4.2.4
-    created: "2020-02-26T11:15:06.7867294-05:00"
+    created: "2020-02-27T15:02:38.9320073-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -464,7 +496,7 @@ entries:
     version: 0.4.13
   - apiVersion: v1
     appVersion: 4.2.4
-    created: "2020-02-26T11:15:06.7787298-05:00"
+    created: "2020-02-27T15:02:38.9230068-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -495,7 +527,7 @@ entries:
     version: 0.4.12
   - apiVersion: v1
     appVersion: 4.2.4
-    created: "2020-02-26T11:15:06.7707292-05:00"
+    created: "2020-02-27T15:02:38.9150069-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -526,7 +558,7 @@ entries:
     version: 0.4.11
   - apiVersion: v1
     appVersion: 4.2.2
-    created: "2020-02-26T11:15:06.7637295-05:00"
+    created: "2020-02-27T15:02:38.9070073-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -557,7 +589,7 @@ entries:
     version: 0.4.10
   - apiVersion: v1
     appVersion: 4.2.1
-    created: "2020-02-26T11:15:06.8947303-05:00"
+    created: "2020-02-27T15:02:39.0460157-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -588,7 +620,7 @@ entries:
     version: 0.4.9
   - apiVersion: v1
     appVersion: 4.2.0
-    created: "2020-02-26T11:15:06.8867294-05:00"
+    created: "2020-02-27T15:02:39.0380158-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -619,7 +651,7 @@ entries:
     version: 0.4.8
   - apiVersion: v1
     appVersion: 4.1.2
-    created: "2020-02-26T11:15:06.8797297-05:00"
+    created: "2020-02-27T15:02:39.0300164-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -650,7 +682,7 @@ entries:
     version: 0.4.7
   - apiVersion: v1
     appVersion: 4.1.1
-    created: "2020-02-26T11:15:06.8717294-05:00"
+    created: "2020-02-27T15:02:39.0220159-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -681,7 +713,7 @@ entries:
     version: 0.4.6
   - apiVersion: v1
     appVersion: 4.1.0
-    created: "2020-02-26T11:15:06.86373-05:00"
+    created: "2020-02-27T15:02:39.0140154-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -712,7 +744,7 @@ entries:
     version: 0.4.5
   - apiVersion: v1
     appVersion: 4.1.0
-    created: "2020-02-26T11:15:06.8557294-05:00"
+    created: "2020-02-27T15:02:39.0060157-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -743,7 +775,7 @@ entries:
     version: 0.4.4
   - apiVersion: v1
     appVersion: 4.0.0
-    created: "2020-02-26T11:15:06.8337293-05:00"
+    created: "2020-02-27T15:02:38.9820161-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -774,7 +806,7 @@ entries:
     version: 0.4.2
   - apiVersion: v1
     appVersion: 3.7.0
-    created: "2020-02-26T11:15:06.7557293-05:00"
+    created: "2020-02-27T15:02:38.8990193-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -803,7 +835,7 @@ entries:
     version: 0.4.0
   - apiVersion: v1
     appVersion: 3.7.0
-    created: "2020-02-26T11:15:06.7537296-05:00"
+    created: "2020-02-27T15:02:38.8960191-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -832,7 +864,7 @@ entries:
     version: 0.3.0
   - apiVersion: v1
     appVersion: 3.6.1
-    created: "2020-02-26T11:15:06.7507317-05:00"
+    created: "2020-02-27T15:02:38.8940191-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -861,7 +893,7 @@ entries:
     version: 0.2.1
   - apiVersion: v1
     appVersion: 3.6.1
-    created: "2020-02-26T11:15:06.7487315-05:00"
+    created: "2020-02-27T15:02:38.8920191-05:00"
     dependencies:
     - name: mariadb
       repository: https://kubernetes-charts.storage.googleapis.com/
@@ -891,7 +923,7 @@ entries:
   codedx-tool-orchestration:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2020-02-26T11:15:06.9377299-05:00"
+    created: "2020-02-27T15:02:39.0970316-05:00"
     dependencies:
     - name: argo
       repository: https://codedx.github.io/codedx-kubernetes
@@ -920,7 +952,7 @@ entries:
   minio:
   - apiVersion: v1
     appVersion: 2019.9.26
-    created: "2020-02-26T11:15:06.9387294-05:00"
+    created: "2020-02-27T15:02:39.0990315-05:00"
     description: MinIO is an object storage server, compatible with Amazon S3 cloud
       storage service, mainly used for storing unstructured data (such as photos,
       videos, log files, etc.)
@@ -942,4 +974,4 @@ entries:
     urls:
     - https://codedx.github.io/codedx-kubernetes/minio-1.2.13.tgz
     version: 1.2.13
-generated: "2020-02-26T11:15:06.7387298-05:00"
+generated: "2020-02-27T15:02:38.8809974-05:00"

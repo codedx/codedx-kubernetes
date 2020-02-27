@@ -55,7 +55,7 @@ This chart will:
 
 Using this chart requires [Helm v3](https://docs.helm.sh/), a Kubernetes package manager. You can find instructions for installing Helm [here](https://helm.sh/docs/intro/install/).
 
-This chart contains a reference to stable/mariadb chart version 5.5.0, and deploys MariaDB 10.2.22. (Note that "chart version" does not correspond to "app version".)
+This chart contains a reference to stable/mariadb chart version 5.5.0, and deploys MariaDB 10.3.22. (Note that "chart version" does not correspond to "app version".)
 
 You can use this chart by either registering the Code Dx Helm Repository with `helm repo add` (described above) or by cloning the repository locally.
 

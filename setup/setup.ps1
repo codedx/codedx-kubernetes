@@ -1,10 +1,10 @@
 param (
 	[string]   $workDir = "$HOME/.k8s-codedx",
-	
+
 	[string]   $clusterCertificateAuthorityCertPath,
 	[string]   $codeDxDnsName,
 	[int]      $codeDxPortNumber = 8443,
-	[int]      $waitTimeSeconds = 600,
+	[int]      $waitTimeSeconds = 900,
 
 	[int]      $dbVolumeSizeGiB = 32,
 	[int]      $dbSlaveReplicaCount = 0,
@@ -41,7 +41,7 @@ param (
 	[string]   $toolServiceApiKey = [guid]::newguid().toString(),
 
 	[string]   $codedxAdminPwd,
-	[string]   $minioAdminUsername,
+	[string]   $minioAdminUsername = 'admin',
 	[string]   $minioAdminPwd,
 	[string]   $mariadbRootPwd,
 	[string]   $mariadbReplicatorPwd,
@@ -90,7 +90,11 @@ if ($mariadbRootPwd -eq '') { $mariadbRootPwd = Get-SecureStringText 'Enter a pa
 if ($mariadbReplicatorPwd -eq '') { $mariadbReplicatorPwd = Get-SecureStringText 'Enter a password for the MariaDB replicator user' 0 }
 if ($codedxAdminPwd -eq '') { $codedxAdminPwd = Get-SecureStringText 'Enter a password for the Code Dx admin account' 6 }
 if ($toolServiceApiKey -eq '') { $toolServiceApiKey = Get-SecureStringText 'Enter an API key for the Code Dx Tool Orchestration service' 8 }
-if ($dockerImagePullSecretName -ne '' -and $dockerConfigJson -eq '') { $dockerConfigJson = Get-SecureStringText 'Enter a dockerconfigjson value for your private Docker registry' 0 }	
+if ($dockerImagePullSecretName -ne '' -and $dockerConfigJson -eq '') { $dockerConfigJson = Get-SecureStringText 'Enter a dockerconfigjson value for your private Docker registry' 0 }
+
+if (-not (test-path $clusterCertificateAuthorityCertPath -PathType Leaf)) {
+	write-error "Unable to continue because path '$clusterCertificateAuthorityCertPath' cannot be found."
+}
 
 Write-Verbose "Creating directory $workDir..."
 New-Item -Type Directory $workDir -Force

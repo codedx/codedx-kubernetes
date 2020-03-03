@@ -39,6 +39,15 @@ data:
   {{- end }}
   {{- end }}
 
+  {{ range .Values.codedxProps.internalExtra }}
+  {{ if eq (required "codedxProps.internalExtra entries must have a 'type' defined!" .type) "values" -}}
+  {{ .key }}: |-
+    {{- range .values -}}
+    {{- . | nindent 4 }}
+    {{- end -}}
+  {{- end }}
+  {{- end }}
+
   {{ if .Values.samlIdpXmlFile -}}
   saml-idp.xml: |-
     {{- (required "samlIdpXmlFile cannot be an empty file!" (.Files.Get .Values.samlIdpXmlFile)) | nindent 4 }}

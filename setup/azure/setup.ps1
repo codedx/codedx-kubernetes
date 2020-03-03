@@ -7,7 +7,7 @@ $VerbosePreference = 'Continue'
 
 Set-PSDebug -Strict
 
-# Note: Avoid '[Parameter(Mandatory=$true)]'' due to @args affect
+# Note: Avoid '[Parameter(Mandatory=$true)]' due to @args affect
 if ($ingressLoadBalancerIP -eq '') {
   $ingressLoadBalancerIP = read-host -prompt 'Enter ingress load balancer IP:'
 }

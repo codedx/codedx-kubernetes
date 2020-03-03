@@ -32,7 +32,7 @@ This section describes the setup.ps1 script parameters.
 | imagePreDelete | imagePreDelete specifies the name of the Code Dx Tool Service pre-delete Docker image | codedxregistry.azurecr.io/codedx/codedx-cleanup:latest | |
 | toolServiceReplicas | toolServiceReplicas specifies the number of tool service copies to run concurrently | 3 | |
 | useTLS | useTLS specifies whether Code Dx endpoints use TLS | $true | |
-| useTLS | usePSPs specifies whether to create Code Dx pod security policies | $true | |
+| usePSPs | usePSPs specifies whether to create Code Dx pod security policies | $true | |
 | skipNetworkPolicies | skipNetworkPolicies specifies whether to skip creating Code Dx network policies | $false | |
 | ingressRegistrationEmailAddress | ingressRegistrationEmailAddress specifies the email address for the Let's Encrypt configuration | | |
 | ingressLoadBalancerIP | ingressLoadBalancerIP specifies the static IP address for the nginx ingress service | | |

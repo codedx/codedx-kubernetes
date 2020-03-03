@@ -28,6 +28,7 @@ function Invoke-HelmSingleDeployment([string] $message, [int] $waitSeconds, [str
 
 	Wait-AllRunningPods "Pre-Helm Install: $message" $waitSeconds
 
+	# NOTE: Latter values files take precedence over former ones
 	$valuesPaths = $extraValuesPaths
 	if ($valuesFile -ne '') {
 		$valuesPaths = @($valuesFile) + $extraValuesPaths

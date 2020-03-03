@@ -198,6 +198,18 @@ function New-CertificateSecret([string] $namespace, [string] $name, [string] $ce
 	}
 }
 
+function New-FileSecret([string] $namespace, [string] $name, [string] $file) {
+
+	if (Test-Secret $namespace $name) {
+		Remove-Secret $namespace $name
+	}
+
+	kubectl -n $namespace create secret generic $name --from-file`=$file
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to create secret named $name, kubectl exited with code $LASTEXITCODE."
+	}
+}
+
 function Test-ConfigMap([string] $namespace, [string] $name) {
 
 	kubectl -n $namespace get configmap $name | out-null

@@ -339,26 +339,31 @@ function Set-UseToolOrchestration([string] $workDir,
 		$cacertsFile = 'cacerts'
 	}
 
+	$codedxOrchestrationPropsKey = 'codedx-orchestration-props-key'
+	"tws.api-key = $toolServiceApiKey" | Out-File $codedxOrchestrationPropsKey -Encoding ascii -Force
+
+	New-FileSecret $codedxNamespace $codedxOrchestrationPropsKey $codedxOrchestrationPropsKey
+
 	$values = @'
 codedxProps:
-  extra:
+  internalExtra:
+  - type: secret
+    name: {4}
+    key: {4}
   - type: values
-    key: cdx-tool-orchestration
+    key: codedx-orchestration-props
     values:
     - "tws.enabled = true"
     - "tws.service-url = {0}"
-    - "tws.api-key = {1}"
-
 networkPolicy:
   codedx:
-    toolService: {3}
+    toolService: {2}
     toolServiceSelectors:
     - namespaceSelector:
         matchLabels:
-          name: {2}
-
-cacertsFile: {4}
-'@ -f $toolServiceUrl, $toolServiceApiKey, $namespace, $networkPolicy, $cacertsFile
+          name: {1}
+cacertsFile: {3}
+'@ -f $toolServiceUrl, $namespace, $networkPolicy, $cacertsFile, $codedxOrchestrationPropsKey
 
 	$valuesFile = 'codedx-orchestration-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force

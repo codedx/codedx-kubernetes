@@ -116,16 +116,6 @@ Determine the name of the configmap to create and/or use for holding the regular
 {{- end -}}
 {{- end -}}
 
-{{- define "codedx.props.config.usesDefaultExtra" -}}
-{{- $usesDefault := "false" -}}
-{{- range .Values.codedxProps.extra -}}
-{{- if and (eq .type "values") (not .name) -}}
-{{- $usesDefault := "true" -}}
-{{- end -}}
-{{- end -}}
-{{- eq $usesDefault "true" -}}
-{{- end -}}
-
 {{/*
 Create the name of the service account to use for Code Dx.
 */}}
@@ -196,6 +186,9 @@ be passed to the Code Dx installer and webapp. The parameters tell Code Dx to lo
 {{- range .Values.codedxProps.extra -}}
 {{- printf " -Dcodedx.additional-props-%s=\"/opt/codedx/%s\"" .key .key -}}
 {{- end -}}
+{{- range .Values.codedxProps.internalExtra -}}
+{{- printf " -Dcodedx.additional-props-%s=\"/opt/codedx/%s\"" .key .key -}}
+{{- end -}}
 {{- include "codedx.props.saml.params" . -}}
 {{- end -}}
 
@@ -212,6 +205,9 @@ Create a separated YAML list of all parameters to pass to Code Dx for loading ad
 {{- define "codedx.props.params.separated" -}}
 - "-Dcodedx.additional-props-mariadb={{ include "codedx.mariadb.props.path" . }}"
 {{- range .Values.codedxProps.extra }}
+- "-Dcodedx.additional-props-{{ .key }}=/opt/codedx/{{ .key }}"
+{{- end -}}
+{{- range .Values.codedxProps.internalExtra }}
 - "-Dcodedx.additional-props-{{ .key }}=/opt/codedx/{{ .key }}"
 {{- end -}}
 {{- end -}}

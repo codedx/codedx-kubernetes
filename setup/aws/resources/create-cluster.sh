@@ -59,5 +59,5 @@ check_exit $? 'autoscaler' 5
 kubectl -n kube-system set image deployment.apps/cluster-autoscaler cluster-autoscaler=k8s.gcr.io/cluster-autoscaler:v1.14.7
 check_exit $? 'autoscaler' 6
 
-echo "`n`nUse the following command to view the cluster autoscaler log:"
+printf "\n\nUse the following command to view the cluster autoscaler log:"
 echo '  kubectl -n kube-system logs -f deployment.apps/cluster-autoscaler'

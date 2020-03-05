@@ -7,7 +7,7 @@ The Code Dx Tool Orchestration Helm chart installs the Code Dx components that c
 
 ## Prerequisite Details
 
-- Kubernetes v1.8 to v1.14 (v1.16 unsupported)
+- Kubernetes v1.14 (v1.16 unsupported)
 - Helm v3
 - Code Dx license with Orchestration feature ([purchase](https://codedx.com/purchase-application/) or [request a free trial](https://codedx.com/free-trial/))
 

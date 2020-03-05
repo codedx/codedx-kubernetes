@@ -7,6 +7,8 @@
 
 The Code Dx Helm chart creates Kubernetes resources for a secure, production-ready Code Dx deployment and environment. To make the most of this, check that Network Policies and Pod Security Policies are enabled and enforced on your cluster.
 
+>Note: This chart is compatible with a cluster running Kubernetes v1.14.
+
 **This repository contains various in-depth guides in the [docs](docs) folder, outlined below.**
 
 - [Code Dx Config](docs/codedx-config.md)

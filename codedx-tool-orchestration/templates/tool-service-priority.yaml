@@ -1,0 +1,15 @@
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: codedx-workflow
+value: 10000 
+globalDefault: false
+description: "The priority class for Code Dx Tool Orchestration workflows."
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: codedx-tool-service
+value: 10100 
+globalDefault: false
+description: "The priority class for the Code Dx Tool Orchestration service."

@@ -99,6 +99,7 @@ spec:
         ports:
         - containerPort: 3333
           name: http
+      priorityClassName: codedx-tool-service
       volumes:
       - name: tool-service-secret-volume
         secret:

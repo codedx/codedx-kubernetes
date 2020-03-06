@@ -26,7 +26,7 @@ function Invoke-HelmSingleDeployment([string] $message, [int] $waitSeconds, [str
 		}
 	}
 
-	Wait-AllRunningPods "Pre-Helm Install: $message" $waitSeconds
+	Wait-AllRunningPods "Pre-Helm Install: $message" $waitSeconds $namespace
 
 	# NOTE: Latter values files take precedence over former ones
 	$valuesPaths = $extraValuesPaths

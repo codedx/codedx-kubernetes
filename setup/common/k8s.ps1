@@ -259,15 +259,26 @@ type: kubernetes.io/dockerconfigjson
 	}
 }
 
-function Wait-AllRunningPods([string] $message, [int] $waitSeconds) {
+function Wait-AllRunningPods([string] $message, [int] $waitSeconds, [string] $namespace) {
 
 	$sleepSeconds = [math]::min(60, ($waitSeconds * .05))
 	$timeoutTime = [datetime]::Now.AddSeconds($waitSeconds)
 	while ($true) {
 
 		Write-Verbose "Checking for pods that are not in a Running status ($message)..."
-		kubectl get pod --all-namespaces
-		$results = kubectl get pod --field-selector=status.phase!=Running --all-namespaces
+
+		if ('' -eq $namespace) {
+			kubectl get pod --all-namespaces
+		} else {
+			kubectl get pod -n $namespace
+		}
+		
+		if ('' -eq $namespace) {
+			$results = kubectl get pod --field-selector=status.phase!=Running --all-namespaces
+		} else {
+			$results = kubectl get pod --field-selector=status.phase!=Running -n $namespace
+		}
+		
 		if ($null -eq $results) {
 			Write-Verbose 'All pods show a Running status...'
 			break

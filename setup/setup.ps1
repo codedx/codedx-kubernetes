@@ -35,6 +35,7 @@ param (
 	[string]   $namespaceToolOrchestration = 'cdx-svc',
 	[string]   $namespaceCodeDx = 'cdx-app',
 	[string]   $namespaceIngressController = 'nginx',
+	[string]   $namespaceCertManager = 'cert-manager',
 	[string]   $releaseNameCodeDx = 'codedx-app',
 	[string]   $releaseNameToolOrchestration = 'toolsvc-codedx-tool-orchestration',
 
@@ -110,7 +111,9 @@ if ($useNetworkPolicies -and $provisionNetworkPolicy -ne $null) {
 }
 
 Write-Verbose 'Waiting for running pods...'
-Wait-AllRunningPods 'Cluster Ready' $waitTimeSeconds
+$namespaceToolOrchestration,$namespaceCodeDx,$namespaceIngressController,$namespaceCertManager | ForEach-Object {
+	Wait-AllRunningPods "Cluster Ready (namespace $_)" $waitTimeSeconds $_	
+}
 
 Write-Verbose 'Adding Helm repository...'
 Add-HelmRepo 'codedx' $codedxRepo
@@ -130,7 +133,7 @@ if ($configureIngress) {
 	}
 
 	Write-Verbose 'Adding Cert Manager...'
-	Add-CertManager 'cert-manager' $namespaceCodeDx `
+	Add-CertManager $namespaceCertManager $namespaceCodeDx `
 		$ingressRegistrationEmailAddress 'staging-cluster-issuer.yaml' 'production-cluster-issuer.yaml' `
 		'cert-manager-role.yaml' 'cert-manager-role-binding.yaml' 'cert-manager-http-solver-role-binding.yaml' `
 		$waitTimeSeconds

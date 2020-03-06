@@ -12,7 +12,7 @@ function Add-AwsCalicoNetworkPolicyProvider([int] $waitTimeSeconds) {
 	#   daemonset.apps/calico-node created
 	#   deployment.apps/calico-typha
 	#   deployment.apps/calico-typha-horizontal-autoscaler
-	Wait-AllRunningPods 'Calico (aws/amazon-vpc-cni-k8s)' $waitTimeSeconds
+	Wait-AllRunningPods 'Calico (aws/amazon-vpc-cni-k8s)' $waitTimeSeconds 'kube-system'
 }
 
 function Remove-AwsCalicoNetworkPolicyProvider() {

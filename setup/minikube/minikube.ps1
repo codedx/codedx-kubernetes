@@ -30,7 +30,7 @@ function Add-CalicoNetworkPolicyProvider([string] $waitSeconds) {
 		throw "Unable to add Calico. kubectl exited with code $LASTEXITCODE."
 	}
 
-	Wait-AllRunningPods 'Add Network Policy' $waitSeconds
+	Wait-AllRunningPods 'Add Network Policy' $waitSeconds 'kube-system'
 }
 
 function Add-IngressAddon([string] $profileName, [int] $waitSeconds) {

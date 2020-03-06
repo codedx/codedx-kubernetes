@@ -168,6 +168,7 @@ minio:
   persistence:
     size: 50Gi
     storageClass: 
+  priorityClassName: 'codedx-workflow-storage'
 
 # Options for configuring clients to explicitly trust certificate data for the MinIO TLS configuration. This section
 # does not apply when minio.tls.enabled=false.

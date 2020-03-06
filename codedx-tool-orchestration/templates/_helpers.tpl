@@ -112,7 +112,7 @@ Duplicates of a Minio template helper so we can reference Minio's service name
 {{- end -}}
 
 {{- define "minio.ref.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create -}}
+{{- if .Values.minio.serviceAccount.create -}}
 {{- default (include "minio.ref.fullname" .) .Values.minio.serviceAccount.name | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
 {{- default "default" .Values.minio.serviceAccount.name -}}

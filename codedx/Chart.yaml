@@ -17,8 +17,8 @@ sources:
 - https://hub.docker.com/r/bitnami/mariadb
 dependencies:
 - name: mariadb
-  version: 5.5.0
-  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 7.3.12
+  repository: https://codedx.github.io/codedx-kubernetes
   condition: mariadb.enabled
 maintainers:
 - name: tylercamp

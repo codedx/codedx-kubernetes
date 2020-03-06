@@ -23,6 +23,16 @@ toolServiceTls:
   certFile: "tool-service.pem"
   keyFile: "tool-service.key"
 
+requests:
+  tool:
+    cpu: '500m'
+    memory: '500Mi'
+
+limits:
+  tool:
+    cpu: '2'
+    memory: '2G'
+
 logs:
   # Maximum size in MB for each log file
   maxSizeMB: 10
@@ -129,6 +139,8 @@ argo:
     executor: codedx-argoexec
     controller: codedx-workflow-controller
     tag: v2.4.2
+  controller:
+    priorityClassName: 'codedx-workflow-controller'
   ui:
     enabled: false
   minio:

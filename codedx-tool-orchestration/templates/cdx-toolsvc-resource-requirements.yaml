@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cdx-toolsvc-resource-requirements
+data:
+  requests.cpu: {{ .Values.requests.tool.cpu | quote }}
+  limits.cpu: {{ .Values.limits.tool.cpu | quote }}
+  requests.memory: {{ .Values.requests.tool.memory | quote }}
+  limits.memory: {{ .Values.limits.tool.memory | quote }}

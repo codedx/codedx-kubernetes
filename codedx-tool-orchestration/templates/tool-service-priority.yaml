@@ -13,3 +13,11 @@ metadata:
 value: 10100 
 globalDefault: false
 description: "The priority class for the Code Dx Tool Orchestration service."
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: codedx-workflow-controller
+value: 10100
+globalDefault: false
+description: "The priority class for the Code Dx Argo Workflow controller."

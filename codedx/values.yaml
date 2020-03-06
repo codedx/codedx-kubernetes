@@ -520,6 +520,7 @@ mariadb:
       # Use default storage class for master/slave PVCs
       storageClass: 
       size: 32Gi
+    priorityClassName: 'codedx-mariadb-master'
     config: |-
       [mysqld]
       skip-name-resolve
@@ -551,6 +552,7 @@ mariadb:
       # Use default storage class for master/slave PVCs
       storageClass: 
       size: 32Gi
+    priorityClassName: 'codedx-mariadb-slave'
     config: |-
       [mysqld]
       skip-name-resolve

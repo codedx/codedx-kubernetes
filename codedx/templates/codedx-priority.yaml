@@ -5,3 +5,19 @@ metadata:
 value: 10200 
 globalDefault: false
 description: "The priority class for the Code Dx web application."
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: codedx-mariadb-master
+value: 10200 
+globalDefault: false
+description: "The priority class for the Code Dx MariaDB master database."
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: codedx-mariadb-slave
+value: 10200 
+globalDefault: false
+description: "The priority class for the Code Dx MariaDB slave database(s)."

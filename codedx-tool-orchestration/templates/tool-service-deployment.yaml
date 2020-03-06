@@ -48,7 +48,7 @@ spec:
           "-minioAdminClientPath", "/opt/codedx/service/tools/mc",
           "-minioAdminPasswordPath", "/opt/codedx/service/secrets/minioAdminPassword",
           "-minioAdminUsernamePath", "/opt/codedx/service/secrets/minioAdminUsername",
-          "-minioEndpoint", "{{ template "minio.ref.fullname" . }}:{{.Values.minio.service.port}}",
+          "-minioEndpoint", "{{ template "minio.ref.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{.Values.minio.service.port}}",
           {{ if .Values.minio.tls.enabled -}}
           "-minioTlsEnabled",
           {{ if .Values.minioTlsTrust.configMapName -}}

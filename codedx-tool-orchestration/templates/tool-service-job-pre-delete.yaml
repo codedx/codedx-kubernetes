@@ -35,7 +35,7 @@ spec:
           "-minioAdminClientPath", "/opt/codedx/cleanup/tools/mc",
           "-minioAdminPasswordPath", "/opt/codedx/cleanup/secrets/minioAdminPassword",
           "-minioAdminUsernamePath", "/opt/codedx/cleanup/secrets/minioAdminUsername",
-          "-minioEndpoint", "{{ template "minio.ref.fullname" . }}:{{.Values.minio.service.port}}",
+          "-minioEndpoint", "{{ template "minio.ref.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{.Values.minio.service.port}}",
           {{ if .Values.minio.tls.enabled -}}
           "-minioTlsEnabled",
           {{ if .Values.minioTlsTrust.configMapName -}}

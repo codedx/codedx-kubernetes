@@ -227,11 +227,11 @@ minio:
     minio:
       accessKeyGlobal: '{0}'
       secretKeyGlobal: '{1}'
-    tls:
-      enabled: {13}
-      certSecret: {14}
-      publicCrt: 'toolsvc-minio.pem'
-      privateKey: 'toolsvc-minio.key'
+  tls:
+    enabled: {13}
+    certSecret: {14}
+    publicCrt: 'toolsvc-minio.pem'
+    privateKey: 'toolsvc-minio.key'
   persistence:
     storageClass: {24}
     size: {21}Gi

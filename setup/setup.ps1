@@ -56,6 +56,8 @@ param (
 
 	[string[]] $extraCodeDxValuesPaths = @(),
 
+	[switch]   $skipToolOrchestration,
+
 	[management.automation.scriptBlock] $provisionNetworkPolicy,
 	[management.automation.scriptBlock] $provisionIngress
 )
@@ -85,12 +87,12 @@ if ($null -eq $helmVersionMatch) {
 
 if ($codeDxDnsName -eq '') { $codeDxDnsName = Read-Host -Prompt 'Enter Code Dx domain name (e.g., www.codedx.io)' }
 if ($clusterCertificateAuthorityCertPath -eq '') { $clusterCertificateAuthorityCertPath = Read-Host -Prompt 'Enter path to cluster CA certificate' }
-if ($minioAdminUsername -eq '') { $minioAdminUsername = Get-SecureStringText 'Enter a username for the MinIO admin account' 5 }
-if ($minioAdminPwd -eq '') { $minioAdminPwd = Get-SecureStringText 'Enter a password for the MinIO admin account' 8 }
+if ((-not $skipToolOrchestration) -and $minioAdminUsername -eq '') { $minioAdminUsername = Get-SecureStringText 'Enter a username for the MinIO admin account' 5 }
+if ((-not $skipToolOrchestration) -and $minioAdminPwd -eq '') { $minioAdminPwd = Get-SecureStringText 'Enter a password for the MinIO admin account' 8 }
 if ($mariadbRootPwd -eq '') { $mariadbRootPwd = Get-SecureStringText 'Enter a password for the MariaDB root user' 0 }
 if ($mariadbReplicatorPwd -eq '') { $mariadbReplicatorPwd = Get-SecureStringText 'Enter a password for the MariaDB replicator user' 0 }
 if ($codedxAdminPwd -eq '') { $codedxAdminPwd = Get-SecureStringText 'Enter a password for the Code Dx admin account' 6 }
-if ($toolServiceApiKey -eq '') { $toolServiceApiKey = Get-SecureStringText 'Enter an API key for the Code Dx Tool Orchestration service' 8 }
+if ((-not $skipToolOrchestration) -and $toolServiceApiKey -eq '') { $toolServiceApiKey = Get-SecureStringText 'Enter an API key for the Code Dx Tool Orchestration service' 8 }
 if ($dockerImagePullSecretName -ne '' -and $dockerConfigJson -eq '') { $dockerConfigJson = Get-SecureStringText 'Enter a dockerconfigjson value for your private Docker registry' 0 }
 
 if (-not (test-path $clusterCertificateAuthorityCertPath -PathType Leaf)) {
@@ -111,8 +113,12 @@ if ($useNetworkPolicies -and $provisionNetworkPolicy -ne $null) {
 }
 
 Write-Verbose 'Waiting for running pods...'
-$namespaceToolOrchestration,$namespaceCodeDx,$namespaceIngressController,$namespaceCertManager | ForEach-Object {
+$namespaceCodeDx,$namespaceIngressController,$namespaceCertManager | ForEach-Object {
 	Wait-AllRunningPods "Cluster Ready (namespace $_)" $waitTimeSeconds $_	
+}
+
+if (-not $skipToolOrchestration) {
+	Wait-AllRunningPods "Cluster Ready (namespace $namespaceToolOrchestration)" $waitTimeSeconds $namespaceToolOrchestration
 }
 
 Write-Verbose 'Adding Helm repository...'
@@ -157,29 +163,32 @@ New-CodeDxDeployment $codeDxDnsName $workDir $waitTimeSeconds `
 	$namespaceIngressController `
 	-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -configureIngress:$configureIngress
 
-Write-Verbose 'Deploying Tool Orchestration...'
-New-ToolOrchestrationDeployment $workDir $waitTimeSeconds `
-	$clusterCertificateAuthorityCertPath `
-	$namespaceToolOrchestration $namespaceCodeDx $releaseNameCodeDx $toolServiceReplicas `
-	$minioAdminUsername $minioAdminPwd $toolServiceApiKey `
-	$imageCodeDxTools $imageCodeDxToolsMono `
-	$imageNewAnalysis $imageSendResults $imageSendErrorResults $imageToolService $imagePreDelete `
-	$dockerImagePullSecretName $dockerConfigJson `
-	$minioVolumeSizeGiB $storageClassName `
-	$kubeApiTargetPort `
-	-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
+if (-not $skipToolOrchestration) {
 
-Write-Verbose 'Updating Code Dx deployment by enabling Tool Orchestration...'
-$protocol = 'http'
-if ($useTLS) {
-	$protocol = 'https'
+	Write-Verbose 'Deploying Tool Orchestration...'
+	New-ToolOrchestrationDeployment $workDir $waitTimeSeconds `
+		$clusterCertificateAuthorityCertPath `
+		$namespaceToolOrchestration $namespaceCodeDx $releaseNameCodeDx $toolServiceReplicas `
+		$minioAdminUsername $minioAdminPwd $toolServiceApiKey `
+		$imageCodeDxTools $imageCodeDxToolsMono `
+		$imageNewAnalysis $imageSendResults $imageSendErrorResults $imageToolService $imagePreDelete `
+		$dockerImagePullSecretName $dockerConfigJson `
+		$minioVolumeSizeGiB $storageClassName `
+		$kubeApiTargetPort `
+		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
+
+	Write-Verbose 'Updating Code Dx deployment by enabling Tool Orchestration...'
+	$protocol = 'http'
+	if ($useTLS) {
+		$protocol = 'https'
+	}
+	Set-UseToolOrchestration $workDir `
+		$waitTimeSeconds `
+		$clusterCertificateAuthorityCertPath `
+		$namespaceToolOrchestration $namespaceCodeDx `
+		"$protocol`://$releaseNameToolOrchestration.$namespaceToolOrchestration.svc.cluster.local:3333" $toolServiceApiKey `
+		$releaseNameCodeDx -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
 }
-Set-UseToolOrchestration $workDir `
-	$waitTimeSeconds `
-	$clusterCertificateAuthorityCertPath `
-	$namespaceToolOrchestration $namespaceCodeDx `
-	"$protocol`://$releaseNameToolOrchestration.$namespaceToolOrchestration.svc.cluster.local:3333" $toolServiceApiKey `
-	$releaseNameCodeDx -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
 
 if ($usePSPs) {
 	Write-Verbose 'Adding default PSP...'

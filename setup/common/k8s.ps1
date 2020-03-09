@@ -329,3 +329,16 @@ function Wait-Deployment([string] $message, [int] $waitSeconds, [string] $namesp
 	}
 }
 
+function Test-PriorityClass([string] $name) {
+
+	kubectl get priorityclass $name | out-null
+	$LASTEXITCODE -eq 0
+}
+
+function New-PriorityClass([string] $name, [int] $value) {
+
+	kubectl create priorityclass $name --value=$value
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to create PriorityClass, kubectl exited with code $LASTEXITCODE."
+	}
+}

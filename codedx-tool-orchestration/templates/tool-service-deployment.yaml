@@ -31,6 +31,8 @@ spec:
       - name: tool-service
         image: {{ .Values.toolServiceImageName | quote }}
         imagePullPolicy: Always
+        resources:
+          {{- toYaml .Values.resources | trim | nindent 10 }}
         command: ["/opt/codedx/service/bin/service"]
         args: ["-adminApiKeyPath", "/opt/codedx/service/secrets/adminApiKey",
           "-codeDxBaseUrl", "{{ required "codedxBaseUrl is required" .Values.codedxBaseUrl }}",

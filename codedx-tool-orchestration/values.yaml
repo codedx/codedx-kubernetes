@@ -131,6 +131,11 @@ podSecurityPolicy:
     bind: true
     annotations: {}
 
+# Specify CPU/memory resource requests/limits for the Tool Orchestration service.
+# ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
+#
+resources: {}
+
 # NOTE: These are setting attributes for the `argo` dependency
 argo:
   installCRD: false

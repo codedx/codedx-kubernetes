@@ -122,11 +122,12 @@ $configureIngress = $ingressRegistrationEmailAddress -ne ''
 if ($configureIngress) {
 
 	Write-Verbose 'Adding nginx Ingress...'
+	$priorityValuesFile = 'nginx-ingress-priority.yaml'
 	if ($provisionIngress -eq $null) {
 		if ($ingressLoadBalancerIP -ne '') {
-			Add-NginxIngressLoadBalancerIP $ingressLoadBalancerIP $namespaceIngressController $waitTimeSeconds 'nginx-ingress.yaml'
+			Add-NginxIngressLoadBalancerIP $ingressLoadBalancerIP $namespaceIngressController $waitTimeSeconds 'nginx-ingress.yaml' $priorityValuesFile
 		} else {
-			Add-NginxIngress $namespaceIngressController $waitTimeSeconds ''
+			Add-NginxIngress $namespaceIngressController $waitTimeSeconds '' $priorityValuesFile
 		}
 	} else {
 		& $provisionIngress

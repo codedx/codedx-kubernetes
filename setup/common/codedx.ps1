@@ -495,7 +495,8 @@ subjects:
 function Add-NginxIngressLoadBalancerIP([string] $loadBalancerIP,
 	[string] $namespace,
 	[int] $waitSeconds,
-	[string] $nginxFile) {
+	[string] $nginxFile,
+	[string] $priorityValuesFile) {
 	
 	@'
 controller:
@@ -503,20 +504,36 @@ controller:
     loadBalancerIP: {0}
 '@ -f $loadBalancerIP | out-file $nginxFile -Encoding ascii -Force
 
-	Add-NginxIngress $namespace $waitSeconds $nginxFile
+	Add-NginxIngress $namespace $waitSeconds $nginxFile $priorityValuesFile
 }
 
 function Add-NginxIngress([string] [string] $namespace,
 	[int] $waitSeconds,
-	[string] $valuesFile) {
+	[string] $valuesFile,
+	[string] $priorityValuesFile) {
 
 	if (-not (Test-Namespace $namespace)) {
 		New-Namespace  $namespace
 	}
 	Set-NamespaceLabel $namespace 'name' $namespace
+
+	$priorityClassName = 'nginx'
+	if (-not (Test-PriorityClass $priorityClassName)) {
+		New-PriorityClass $priorityClassName 20000
+	}
+	
+	@'
+controller:
+  priorityClassName: {0}
+  admissionWebhooks:
+    patch:
+      priorityClassName: {0}
+defaultBackend:
+  priorityClassName: {0}
+'@ -f $priorityClassName | out-file $priorityValuesFile -Encoding ascii -Force
 	
 	Add-HelmRepo 'stable' 'https://kubernetes-charts.storage.googleapis.com'
-	Invoke-HelmSingleDeployment 'nginx-ingress' $waitTimeSeconds $namespace 'nginx' 'stable/nginx-ingress' $valuesFile 'nginx-nginx-ingress-controller' 1
+	Invoke-HelmSingleDeployment 'nginx-ingress' $waitTimeSeconds $namespace 'nginx' 'stable/nginx-ingress' $valuesFile 'nginx-nginx-ingress-controller' 1 $priorityValuesFile
 }
 
 function Add-DefaultPodSecurityPolicy([string] $pspFile, [string] $roleFile, [string] $roleBindingFile) {

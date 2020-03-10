@@ -16,6 +16,8 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[int]      $dbSlaveVolumeSizeGiB,
 	[int]      $codeDxVolumeSizeGiB,	
 	[string]   $storageClassName,
+	[string]   $codeDxMemoryLimit,
+	[string]   $dbMemoryLimit,
 	[string[]] $extraValuesPaths,
 	[string]   $ingressControllerNamespace,
 	[switch]   $enablePSPs,
@@ -112,6 +114,7 @@ networkPolicy:
       create: {4}
 codedxTomcatImage: {1}
 {2}
+{19}
 mariadb:
   rootUser:
     password: '{9}'
@@ -121,18 +124,21 @@ mariadb:
     persistence:
       storageClass: {18}
       size: {11}Gi
+{20}
   slave:
     replicas: {16}
     persistence:
       storageClass: {18}
       size: {15}Gi
-
+{20}
 '@ -f $adminPwd, $tomcatImage, $imagePullSecretYaml, `
 $psp, $networkPolicy, `
 $tlsEnabled, $tlsSecretName, $tlsCertFile, $tlsKeyFile, `
 $mariadbRootPwd, $mariadbReplicatorPwd, `
 $dbVolumeSizeGiB, $codeDxVolumeSizeGiB, $codeDxDnsName, $ingress, `
-$dbSlaveVolumeSizeGiB, $dbSlaveReplicaCount, $ingressNamespaceSelector, $storageClassName
+$dbSlaveVolumeSizeGiB, $dbSlaveReplicaCount, $ingressNamespaceSelector, $storageClassName, `
+(Format-ResourceLimitRequest -limitMemory $codeDxMemoryLimit), `
+(Format-ResourceLimitRequest -limitMemory $dbMemoryLimit -indent 4)
 
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
@@ -162,6 +168,9 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 	[string] $dockerConfigJson,
 	[int]    $minioVolumeSizeGiB,
 	[string] $storageClassName,
+	[string] $toolServiceMemoryLimit,
+	[string] $minioMemoryLimit,
+	[string] $workflowMemoryLimit,
 	[int]    $kubeApiTargetPort,
 	[switch] $enablePSPs,
 	[switch] $enableNetworkPolicies,
@@ -221,6 +230,8 @@ toolServiceImagePullSecrets:
 	$values = @'
 argo:
   installCRD: false
+  controller:
+{27}
 
 minio:
   global:
@@ -235,6 +246,7 @@ minio:
   persistence:
     storageClass: {24}
     size: {21}Gi
+{28}
 
 minioTlsTrust:
   configMapName: 'cdx-toolsvc-minio-cert'
@@ -283,12 +295,17 @@ imageNameSendErrorResults: '{10}'
 toolServiceImageName: '{11}' 
 imageNameHelmPreDelete: '{23}' 
 {22}
+
+{26}
 '@ -f $minioUsername,`
 $minioPwd,$codedxNamespace,$codedxReleaseName,$apiKey,`
 $imagePullSecretName,$toolsImage,$toolsMonoImage,$newAnalysisImage,$sendResultsImage,$sendErrorResultsImage,$toolServiceImage,$numReplicas,
 $tlsConfig,$tlsMinioCertSecret,$tlsToolServiceCertSecret,
 $psp,$networkPolicy,$codedxBaseUrl,`
-$tlsConfig,$codedxCaConfigMap,$minioVolumeSizeGiB,$imagePullSecretYaml,$preDeleteImageName,$storageClassName, $kubeApiTargetPort
+$tlsConfig,$codedxCaConfigMap,$minioVolumeSizeGiB,$imagePullSecretYaml,$preDeleteImageName,$storageClassName, $kubeApiTargetPort, `
+(Format-ResourceLimitRequest -limitMemory $toolServiceMemoryLimit), `
+(Format-ResourceLimitRequest -limitMemory $workflowMemoryLimit -indent 4), `
+(Format-ResourceLimitRequest -limitMemory $minioMemoryLimit -indent 2)
 
 	$valuesFile = 'toolsvc-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force

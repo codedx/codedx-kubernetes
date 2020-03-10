@@ -13,6 +13,12 @@ param (
 	[int]      $codeDxVolumeSizeGiB = 32,
 	[string]   $storageClassName = '',
 
+	[string]   $codeDxMemoryReservation = '',
+	[string]   $dbMemoryReservation = '',
+	[string]   $toolServiceMemoryReservation = '',
+	[string]   $minioMemoryReservation = '',
+	[string]   $workflowMemoryReservation = '',
+
 	[string]   $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:latest',
 	[string]   $imageCodeDxTools = 'codedxregistry.azurecr.io/codedx/codedx-tools:latest',
 	[string]   $imageCodeDxToolsMono = 'codedxregistry.azurecr.io/codedx/codedx-toolsmono:latest',
@@ -159,6 +165,7 @@ New-CodeDxDeployment $codeDxDnsName $workDir $waitTimeSeconds `
 	$dbSlaveReplicaCount $dbSlaveVolumeSizeGiB `
 	$codeDxVolumeSizeGiB `
 	$storageClassName `
+	$codeDxMemoryReservation $dbMemoryReservation `
 	$extraCodeDxValuesPaths `
 	$namespaceIngressController `
 	-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -configureIngress:$configureIngress
@@ -174,6 +181,7 @@ if (-not $skipToolOrchestration) {
 		$imageNewAnalysis $imageSendResults $imageSendErrorResults $imageToolService $imagePreDelete `
 		$dockerImagePullSecretName $dockerConfigJson `
 		$minioVolumeSizeGiB $storageClassName `
+		$toolServiceMemoryReservation $minioMemoryReservation $workflowMemoryReservation `
 		$kubeApiTargetPort `
 		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
 

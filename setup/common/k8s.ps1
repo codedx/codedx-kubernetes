@@ -342,3 +342,24 @@ function New-PriorityClass([string] $name, [int] $value) {
 		throw "Unable to create PriorityClass, kubectl exited with code $LASTEXITCODE."
 	}
 }
+
+function Format-ResourceLimitRequest([string] $requestMemory, [string] $requestCpu, [string] $limitMemory, [string] $limitCpu, [int] $indent) {
+
+	$resources = @'
+resources:
+  requests:
+    memory: {0}
+    cpu: {1}
+  limits:
+    memory: {2}
+    cpu: {3}
+'@ -f $requestMemory,$requestCpu,$limitMemory,$limitCpu
+
+	$resources = $resources.split("`n") | Where-Object { 
+		$_ -notmatch 'memory:\s$' -and $_ -notmatch 'cpu:\s$' 
+	} | ForEach-Object { 
+		"{0}{1}" -f ([string]::new(' ', $indent)),$_ 
+	}
+
+	[string]::join("`n", $resources)
+}

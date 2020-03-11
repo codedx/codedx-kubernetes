@@ -64,3 +64,24 @@ check_exit $? 'autoscaler priority' 7
 
 printf "\n\nUse the following command to view the cluster autoscaler log:"
 echo '  kubectl -n kube-system logs -f deployment.apps/cluster-autoscaler'
+
+# Note: Uncomment this section to install Prometheus and Grafana after specifying your own adminPassword value.
+#
+# kubectl create namespace prometheus
+# helm install prometheus stable/prometheus \
+# 	--namespace prometheus \
+# 	--set alertmanager.persistentVolume.storageClass="gp2" \
+# 	--set server.persistentVolume.storageClass="gp2"
+# 
+# kubectl create namespace grafana
+# helm install grafana stable/grafana \
+#     --namespace grafana \
+#     --set persistence.storageClassName="gp2" \
+#     --set adminPassword='m8F2^eJ*#0c' \
+#     --set datasources."datasources\.yaml".apiVersion=1 \
+#     --set datasources."datasources\.yaml".datasources[0].name=Prometheus \
+#     --set datasources."datasources\.yaml".datasources[0].type=prometheus \
+#     --set datasources."datasources\.yaml".datasources[0].url=http://prometheus-server.prometheus.svc.cluster.local \
+#     --set datasources."datasources\.yaml".datasources[0].access=proxy \
+#     --set datasources."datasources\.yaml".datasources[0].isDefault=true \
+#     --set service.type=LoadBalancer

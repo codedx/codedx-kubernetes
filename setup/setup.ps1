@@ -19,6 +19,12 @@ param (
 	[string]   $minioMemoryReservation = '',
 	[string]   $workflowMemoryReservation = '',
 
+	[string]   $codeDxCPUReservation = '',
+	[string]   $dbCPUReservation = '',
+	[string]   $toolServiceCPUReservation = '',
+	[string]   $minioCPUReservation = '',
+	[string]   $workflowCPUReservation = '',
+
 	[string]   $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:latest',
 	[string]   $imageCodeDxTools = 'codedxregistry.azurecr.io/codedx/codedx-tools:latest',
 	[string]   $imageCodeDxToolsMono = 'codedxregistry.azurecr.io/codedx/codedx-toolsmono:latest',
@@ -166,6 +172,7 @@ New-CodeDxDeployment $codeDxDnsName $workDir $waitTimeSeconds `
 	$codeDxVolumeSizeGiB `
 	$storageClassName `
 	$codeDxMemoryReservation $dbMemoryReservation `
+	$codeDxCPUReservation $dbCPUReservation `
 	$extraCodeDxValuesPaths `
 	$namespaceIngressController `
 	-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -configureIngress:$configureIngress
@@ -182,6 +189,7 @@ if (-not $skipToolOrchestration) {
 		$dockerImagePullSecretName $dockerConfigJson `
 		$minioVolumeSizeGiB $storageClassName `
 		$toolServiceMemoryReservation $minioMemoryReservation $workflowMemoryReservation `
+		$toolServiceCPUReservation $minioCPUReservation $workflowCPUReservation `
 		$kubeApiTargetPort `
 		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
 

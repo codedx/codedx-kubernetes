@@ -18,6 +18,8 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[string]   $storageClassName,
 	[string]   $codeDxMemoryLimit,
 	[string]   $dbMemoryLimit,
+	[string]   $codeDxCPULimit,
+	[string]   $dbCPULimit,
 	[string[]] $extraValuesPaths,
 	[string]   $ingressControllerNamespace,
 	[switch]   $enablePSPs,
@@ -137,8 +139,8 @@ $tlsEnabled, $tlsSecretName, $tlsCertFile, $tlsKeyFile, `
 $mariadbRootPwd, $mariadbReplicatorPwd, `
 $dbVolumeSizeGiB, $codeDxVolumeSizeGiB, $codeDxDnsName, $ingress, `
 $dbSlaveVolumeSizeGiB, $dbSlaveReplicaCount, $ingressNamespaceSelector, $storageClassName, `
-(Format-ResourceLimitRequest -limitMemory $codeDxMemoryLimit), `
-(Format-ResourceLimitRequest -limitMemory $dbMemoryLimit -indent 4)
+(Format-ResourceLimitRequest -limitMemory $codeDxMemoryLimit -limitCPU $codeDxCPULimit), `
+(Format-ResourceLimitRequest -limitMemory $dbMemoryLimit -limitCPU $dbCPULimit -indent 4)
 
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
@@ -171,6 +173,9 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 	[string] $toolServiceMemoryLimit,
 	[string] $minioMemoryLimit,
 	[string] $workflowMemoryLimit,
+	[string] $toolServiceCPULimit,
+	[string] $minioCPULimit,
+	[string] $workflowCPULimit,	
 	[int]    $kubeApiTargetPort,
 	[switch] $enablePSPs,
 	[switch] $enableNetworkPolicies,
@@ -303,9 +308,9 @@ $imagePullSecretName,$toolsImage,$toolsMonoImage,$newAnalysisImage,$sendResultsI
 $tlsConfig,$tlsMinioCertSecret,$tlsToolServiceCertSecret,
 $psp,$networkPolicy,$codedxBaseUrl,`
 $tlsConfig,$codedxCaConfigMap,$minioVolumeSizeGiB,$imagePullSecretYaml,$preDeleteImageName,$storageClassName, $kubeApiTargetPort, `
-(Format-ResourceLimitRequest -limitMemory $toolServiceMemoryLimit), `
-(Format-ResourceLimitRequest -limitMemory $workflowMemoryLimit -indent 4), `
-(Format-ResourceLimitRequest -limitMemory $minioMemoryLimit -indent 2)
+(Format-ResourceLimitRequest -limitMemory $toolServiceMemoryLimit -limitCPU $toolServiceCPULimit), `
+(Format-ResourceLimitRequest -limitMemory $workflowMemoryLimit -limitCPU $workflowCPULimit -indent 4), `
+(Format-ResourceLimitRequest -limitMemory $minioMemoryLimit -limitCPU $minioCPULimit -indent 2)
 
 	$valuesFile = 'toolsvc-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force

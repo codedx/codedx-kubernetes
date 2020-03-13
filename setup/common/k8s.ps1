@@ -280,7 +280,8 @@ function Wait-AllRunningPods([string] $message, [int] $waitSeconds, [string] $na
 		}
 		
 		if ($null -eq $results) {
-			Write-Verbose 'All pods show a Running status...'
+			Write-Verbose "Wait is over with $($timeoutTime.Subtract([datetime]::Now).TotalSeconds) second(s) remaining before timeout"
+			Write-Verbose 'All pods show a Running status'
 			break
 		}
 
@@ -313,6 +314,7 @@ function Wait-Deployment([string] $message, [int] $waitSeconds, [string] $namesp
 			
 			Write-Verbose "Found $readyReplicas of $totalReplicas ready"
 			if ($totalReplicas -eq $readyReplicas) {
+				Write-Verbose "Wait is over with $($timeoutTime.Subtract([datetime]::Now).TotalSeconds) second(s) remaining before timeout"
 				break
 			}
 

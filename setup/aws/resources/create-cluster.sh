@@ -52,6 +52,7 @@ kubectl -n kube-system annotate deployment.apps/cluster-autoscaler cluster-autos
 check_exit $? 'autoscaler' 4
 
 echo 'Configure deployment resource based on https://docs.aws.amazon.com/eks/latest/userguide/cluster-autoscaler.html#ca-ng-considerations'
+echo 'See Step 3 of the Deploy the Cluster Autoscaler section'
 read -p "Press Enter to continue..."
 kubectl -n kube-system edit deployment.apps/cluster-autoscaler
 check_exit $? 'autoscaler' 5

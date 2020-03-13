@@ -73,6 +73,7 @@ function Wait-MinikubeNodeReady([string] $message, [int] $waitSeconds) {
 		Write-Verbose "Waiting for ready node ($message)..."
 		$results = kubectl get node
 		if ($null -ne ($results | select-string 'minikube\s+Ready')) {
+			Write-Verbose "Wait is over with $($timeoutTime.Subtract([datetime]::Now).TotalSeconds) second(s) remaining before timeout"
 			Write-Verbose "Node is ready ($message)"
 			break
 		}

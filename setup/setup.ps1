@@ -18,12 +18,14 @@ param (
 	[string]   $toolServiceMemoryReservation = '',
 	[string]   $minioMemoryReservation = '',
 	[string]   $workflowMemoryReservation = '',
+	[string]   $nginxMemoryReservation = '',
 
 	[string]   $codeDxCPUReservation = '',
 	[string]   $dbCPUReservation = '',
 	[string]   $toolServiceCPUReservation = '',
 	[string]   $minioCPUReservation = '',
 	[string]   $workflowCPUReservation = '',
+	[string]   $nginxCPUReservation = '',
 
 	[string]   $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:latest',
 	[string]   $imageCodeDxTools = 'codedxregistry.azurecr.io/codedx/codedx-tools:latest',
@@ -143,9 +145,9 @@ if ($configureIngress) {
 	$priorityValuesFile = 'nginx-ingress-priority.yaml'
 	if ($provisionIngress -eq $null) {
 		if ($ingressLoadBalancerIP -ne '') {
-			Add-NginxIngressLoadBalancerIP $ingressLoadBalancerIP $namespaceIngressController $waitTimeSeconds 'nginx-ingress.yaml' $priorityValuesFile
+			Add-NginxIngressLoadBalancerIP $ingressLoadBalancerIP $namespaceIngressController $waitTimeSeconds 'nginx-ingress.yaml' $priorityValuesFile $nginxCPUReservation $nginxMemoryReservation
 		} else {
-			Add-NginxIngress $namespaceIngressController $waitTimeSeconds '' $priorityValuesFile
+			Add-NginxIngress $namespaceIngressController $waitTimeSeconds '' $priorityValuesFile $nginxCPUReservation $nginxMemoryReservation
 		}
 	} else {
 		& $provisionIngress

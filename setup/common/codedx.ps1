@@ -518,7 +518,9 @@ function Add-NginxIngressLoadBalancerIP([string] $loadBalancerIP,
 	[string] $namespace,
 	[int] $waitSeconds,
 	[string] $nginxFile,
-	[string] $priorityValuesFile) {
+	[string] $priorityValuesFile,
+	[string] $cpuLimit,
+	[string] $memoryLimit) {
 	
 	@'
 controller:
@@ -526,13 +528,15 @@ controller:
     loadBalancerIP: {0}
 '@ -f $loadBalancerIP | out-file $nginxFile -Encoding ascii -Force
 
-	Add-NginxIngress $namespace $waitSeconds $nginxFile $priorityValuesFile
+	Add-NginxIngress $namespace $waitSeconds $nginxFile $priorityValuesFile $cpuLimit $memoryLimit
 }
 
 function Add-NginxIngress([string] [string] $namespace,
 	[int] $waitSeconds,
 	[string] $valuesFile,
-	[string] $priorityValuesFile) {
+	[string] $priorityValuesFile,
+	[string] $cpuLimit,
+	[string] $memoryLimit) {
 
 	if (-not (Test-Namespace $namespace)) {
 		New-Namespace  $namespace
@@ -547,12 +551,13 @@ function Add-NginxIngress([string] [string] $namespace,
 	@'
 controller:
   priorityClassName: {0}
+{1}
   admissionWebhooks:
     patch:
       priorityClassName: {0}
 defaultBackend:
   priorityClassName: {0}
-'@ -f $priorityClassName | out-file $priorityValuesFile -Encoding ascii -Force
+'@ -f $priorityClassName,(Format-ResourceLimitRequest -limitMemory $memoryLimit -limitCPU $cpuLimit -indent 2) | out-file $priorityValuesFile -Encoding ascii -Force
 	
 	Add-HelmRepo 'stable' 'https://kubernetes-charts.storage.googleapis.com'
 	Invoke-HelmSingleDeployment 'nginx-ingress' $waitTimeSeconds $namespace 'nginx' 'stable/nginx-ingress' $valuesFile 'nginx-nginx-ingress-controller' 1 $priorityValuesFile

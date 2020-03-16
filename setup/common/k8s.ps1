@@ -363,5 +363,11 @@ resources:
 		"{0}{1}" -f ([string]::new(' ', $indent)),$_ 
 	}
 
-	[string]::join("`n", $resources)
+	$resourceSpec = [string]::join("`n", $resources)
+
+	if ($resourceSpec -match '\s+requests:\n\s+limits:') { $resourceSpec = $resourceSpec -replace '\s+requests:','' }
+	if ($resourceSpec -notmatch '\s+limits:\n') { $resourceSpec = $resourceSpec -replace '\s+limits:$','' }
+	if ($resourceSpec -eq 'resources:') { $resourceSpec = '' }
+
+	$resourceSpec
 }

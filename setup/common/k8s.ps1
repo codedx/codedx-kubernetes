@@ -274,9 +274,9 @@ function Wait-AllRunningPods([string] $message, [int] $waitSeconds, [string] $na
 		}
 		
 		if ('' -eq $namespace) {
-			$results = kubectl get pod --field-selector=status.phase!=Running --all-namespaces
+			$results = kubectl get pod --field-selector=status.phase!=Running,status.phase!=Succeeded,status.phase!=Failed --all-namespaces
 		} else {
-			$results = kubectl get pod --field-selector=status.phase!=Running -n $namespace
+			$results = kubectl get pod --field-selector=status.phase!=Running,status.phase!=Succeeded,status.phase!=Failed -n $namespace
 		}
 		
 		if ($null -eq $results) {
@@ -286,7 +286,7 @@ function Wait-AllRunningPods([string] $message, [int] $waitSeconds, [string] $na
 		}
 
 		if ([datetime]::now -gt $timeoutTime) {
-			throw "Unable to continue because a timeout occurred while waiting for all pods to be in a Running state ($message)."
+			throw "Unable to continue because a timeout occurred while waiting for all pods to be in a ready status. One or more pods have a status other than Running, Succeeded, or Failed. ($message)."
 		}
 		Write-Verbose "Some pods are not running. Another check will occur in $sleepSeconds seconds ($message)."
 		start-sleep -seconds $sleepSeconds

@@ -328,6 +328,11 @@ function Set-UseToolOrchestration([string] $workDir,
 	[switch] $enableNetworkPolicies,
 	[switch] $configureTls) {
 
+	$caCertsFilePath = './cacerts'
+	if (test-path $caCertsFilePath) {
+		remove-item $caCertsFilePath -force
+	}
+
 	# access cacerts file
 	$podName = kubectl -n $codedxNamespace get pod -l app=codedx --field-selector=status.phase=Running -o name
 	if ($LASTEXITCODE -ne 0) {
@@ -335,7 +340,7 @@ function Set-UseToolOrchestration([string] $workDir,
 	}
 
 	$podFile = "$($podName.Replace('pod/', ''))`:/etc/ssl/certs/java/cacerts"
-	kubectl -n $codedxNamespace cp $podFile './cacerts'
+	kubectl -n $codedxNamespace cp $podFile $caCertsFilePath
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to copy out cacerts file, kubectl exited with code $LASTEXITCODE."
 	}

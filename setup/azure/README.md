@@ -17,7 +17,7 @@ This script is compatible with a cluster running Kubernetes v1.14. You must inst
 
 You will also need access to a Domain Name System where you can register an entry for your Code Dx domain name. The setup script will configure https access to the Code Dx web applicaiton using the Let's Encrypt certificate authority.
 
-## Setup AKS Cluster
+## Setup Azure Cluster
 
 You can use the resources/create-cluster.sh script to create an AKS cluster. You should also enable Pod Security Policies on your AKS cluster.
 

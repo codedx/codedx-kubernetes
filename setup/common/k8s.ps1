@@ -355,7 +355,7 @@ resources:
   limits:
     memory: {2}
     cpu: {3}
-'@ -f $requestMemory,$requestCpu,$limitMemory,$limitCpu
+'@ -f $requestMemory.trim(),$requestCpu.trim(),$limitMemory.trim(),$limitCpu.trim()
 
 	$resources = $resources.split("`n") | Where-Object { 
 		$_ -notmatch 'memory:\s$' -and $_ -notmatch 'cpu:\s$' 
@@ -367,7 +367,7 @@ resources:
 
 	if ($resourceSpec -match '\s+requests:\n\s+limits:') { $resourceSpec = $resourceSpec -replace '\s+requests:','' }
 	if ($resourceSpec -notmatch '\s+limits:\n') { $resourceSpec = $resourceSpec -replace '\s+limits:$','' }
-	if ($resourceSpec -eq 'resources:') { $resourceSpec = '' }
+	if ($resourceSpec -match '\s*resources:$') { $resourceSpec = '' }
 
 	$resourceSpec
 }

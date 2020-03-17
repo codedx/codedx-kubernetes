@@ -357,13 +357,13 @@ resources:
     cpu: {3}
 '@ -f $requestMemory.trim(),$requestCpu.trim(),$limitMemory.trim(),$limitCpu.trim()
 
-	$resources = $resources.split("`n") | Where-Object { 
+	$resourcesLines = $resources.split("`n") | Where-Object { 
 		$_ -notmatch 'memory:\s$' -and $_ -notmatch 'cpu:\s$' 
 	} | ForEach-Object { 
 		"{0}{1}" -f ([string]::new(' ', $indent)),$_ 
 	}
 
-	$resourceSpec = [string]::join("`n", $resources)
+	$resourceSpec = [string]::join("`n", $resourcesLines)
 	Write-Verbose "Resources: `n$resourceSpec"
 
 	if ($resourceSpec -match '\s+requests:\n\s+limits:') { $resourceSpec = $resourceSpec -replace '\s+requests:','' }

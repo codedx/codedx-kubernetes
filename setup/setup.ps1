@@ -45,6 +45,7 @@ param (
 
 	[string]   $ingressRegistrationEmailAddress = '',
 	[string]   $ingressLoadBalancerIP = '',
+	[string]   $ingressClusterIssuer = 'letsencrypt-staging',
 
 	[string]   $namespaceToolOrchestration = 'cdx-svc',
 	[string]   $namespaceCodeDx = 'cdx-app',
@@ -177,6 +178,7 @@ New-CodeDxDeployment $codeDxDnsName $workDir $waitTimeSeconds `
 	$codeDxCPUReservation $dbCPUReservation `
 	$extraCodeDxValuesPaths `
 	$namespaceIngressController `
+	$ingressClusterIssuer `
 	-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -configureIngress:$configureIngress
 
 if (-not $skipToolOrchestration) {

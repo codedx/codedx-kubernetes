@@ -22,6 +22,7 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[string]   $dbCPULimit,
 	[string[]] $extraValuesPaths,
 	[string]   $ingressControllerNamespace,
+	[string]   $ingressClusterIssuer,
 	[switch]   $enablePSPs,
 	[switch]   $enableNetworkPolicies,
 	[switch]   $configureTls,
@@ -91,7 +92,7 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
     kubernetes.io/tls-acme: "true"
-    cert-manager.io/cluster-issuer: "letsencrypt-staging"
+    cert-manager.io/cluster-issuer: "{21}"
   hosts:
   - name: {13}
     tls: true
@@ -140,7 +141,8 @@ $mariadbRootPwd, $mariadbReplicatorPwd, `
 $dbVolumeSizeGiB, $codeDxVolumeSizeGiB, $codeDxDnsName, $ingress, `
 $dbSlaveVolumeSizeGiB, $dbSlaveReplicaCount, $ingressNamespaceSelector, $storageClassName, `
 (Format-ResourceLimitRequest -limitMemory $codeDxMemoryLimit -limitCPU $codeDxCPULimit), `
-(Format-ResourceLimitRequest -limitMemory $dbMemoryLimit -limitCPU $dbCPULimit -indent 4)
+(Format-ResourceLimitRequest -limitMemory $dbMemoryLimit -limitCPU $dbCPULimit -indent 4), `
+$ingressClusterIssuer
 
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force

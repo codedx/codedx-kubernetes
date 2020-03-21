@@ -154,7 +154,7 @@ argo:
 # NOTE: These are setting attributes for the `minio` dependency
 minio:
   image:
-    tag: 2019.9.26-debian-9-r3
+    tag: 2020.3.5-debian-10-r0
   global:
     minio:
       accessKeyGlobal: "231a5aab-7ffc-49ff-a954-83f97ee416a4"

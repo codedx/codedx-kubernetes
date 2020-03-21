@@ -34,6 +34,8 @@ spec:
       securityContext:
         fsGroup: 1000
         runAsUser: 1000
+      nodeSelector:
+      {{- toYaml .Values.nodeSelectors.codedx | trim | nindent 8 }}
       containers:
       - env:
         - name: SUPERUSER_NAME

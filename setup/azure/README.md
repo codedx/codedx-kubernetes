@@ -69,10 +69,20 @@ From your running PowerShell Core shell, run the following command by replacing 
 
 ## Post Setup Tasks
 
-The setup.ps1 script configures Code Dx for the Let's Encrypt staging environment. You can switch from the staging environment to the production environment by running the following command after specifing the correct ingress and namespace name. Do not make the switch until you are certain that the Code Dx application runs correctly with the certificate issued by the staging environment.
+The setup.ps1 script configures Code Dx for the Let's Encrypt staging environment. You can switch from the staging environment to the production environment by rerunning setup.ps1. Do not make the switch until you are certain that the Code Dx application runs correctly with the certificate issued by the staging environment. When you're ready, rerun setup.ps1 with the same parameter set and include a new parameter named ingressClusterIssuer with value letsencrypt-prod like in the following example.
 
 ```
-kubectl -n <code-dx-namespace> annotate ingress <coded-dx-ingress-name> cert-manager.io/cluster-issuer='letsencrypt-prod' --overwrite
+./setup.ps1 `
+  -codeDxDnsName '<dns-name>' `
+  -clusterCertificateAuthorityCertPath '<path-to-azure-aks.pem>' `
+  -minioAdminPwd '<minio-password>' `
+  -mariadbRootPwd '<mariadb-root-password>' `
+  -mariadbReplicatorPwd '<mariadb-replication-password>' `
+  -codedxAdminPwd '<codedx-admin-password>' `
+  -dockerConfigJson '<docker-config-json>' `
+  -ingressRegistrationEmailAddress '<email-address>' `
+  -ingressLoadBalancerIP '<static-ip>' `
+  -ingressClusterIssuer 'letsencrypt-prod'
 ```
 
 ## Cleanup

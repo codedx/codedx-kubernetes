@@ -59,10 +59,19 @@ To access Code Dx by the domain name you specified, create a new CNAME DNS recor
 kubectl -n <nginx-namespace> get svc nginx-nginx-ingress-controller
 ```
 
-The setup.ps1 script configures Code Dx for the Let's Encrypt staging environment. You can switch from the staging environment to the production environment by running the following command after specifing the correct ingress and namespace name. Do not make the switch until you are certain that the Code Dx application runs correctly with the certificate issued by the staging environment.
+The setup.ps1 script configures Code Dx for the Let's Encrypt staging environment. You can switch from the staging environment to the production environment by rerunning setup.ps1. Do not make the switch until you are certain that the Code Dx application runs correctly with the certificate issued by the staging environment. When you're ready, rerun setup.ps1 with the same parameter set and include a new parameter named ingressClusterIssuer with value letsencrypt-prod like in the following example.
 
 ```
-kubectl -n <code-dx-namespace> annotate ingress <coded-dx-ingress-name> cert-manager.io/cluster-issuer='letsencrypt-prod' --overwrite
+./setup.ps1 `
+  -codeDxDnsName '<dns-name>' `
+  -clusterCertificateAuthorityCertPath '<path-to-aws-eks.pem>' `
+  -minioAdminPwd '<minio-password>' `
+  -mariadbRootPwd '<mariadb-root-password>' `
+  -mariadbReplicatorPwd '<mariadb-replication-password>' `
+  -codedxAdminPwd '<codedx-admin-password>' `
+  -dockerConfigJson '<docker-config-json>' `
+  -ingressRegistrationEmailAddress '<email-address>' `
+  -ingressClusterIssuer 'letsencrypt-prod'
 ```
 
 ## Cleanup

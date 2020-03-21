@@ -468,6 +468,20 @@ extraMounts: []
 #
 resources: {}
 
+# Use nodeSelectors to influence the scheduling of your Code Dx pod.
+#
+# For example, run this command to tag a node with codedx-app-node:
+# kubectl label nodes cluster-node tag=codedx-app-node 
+#
+# Then use this configuration to create a node selector for the Code Dx application:
+#
+# nodeSelectors
+#   codedx:
+#     tag: codedx-app-node
+#
+nodeSelectors:
+  codedx: {}
+
 # Use 'codedxTls' properties to enable and configure HTTPS on Code Dx directly through Tomcat. If
 # an Ingress is being used and is configured in this chart, the Ingress will also use HTTPS when
 # communicating with Code Dx.

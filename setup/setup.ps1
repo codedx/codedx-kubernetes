@@ -72,6 +72,7 @@ param (
 	[string[]] $extraCodeDxValuesPaths = @(),
 
 	[switch]   $skipToolOrchestration,
+	[switch]   $addDefaultPodSecurityPolicyForAuthenticatedUsers,
 
 	[management.automation.scriptBlock] $provisionNetworkPolicy,
 	[management.automation.scriptBlock] $provisionIngress
@@ -138,6 +139,11 @@ if (-not $skipToolOrchestration) {
 
 Write-Verbose 'Adding Helm repository...'
 Add-HelmRepo 'codedx' $codedxRepo
+
+if ($usePSPs -and $addDefaultPodSecurityPolicyForAuthenticatedUsers) {
+	Write-Verbose 'Adding default PSP...'
+	Add-DefaultPodSecurityPolicy 'psp.yaml' 'psp-role.yaml' 'psp-role-binding.yaml'
+}
 
 $configureIngress = $ingressRegistrationEmailAddress -ne ''
 if ($configureIngress) {
@@ -210,7 +216,4 @@ if (-not $skipToolOrchestration) {
 		$releaseNameCodeDx -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
 }
 
-if ($usePSPs) {
-	Write-Verbose 'Adding default PSP...'
-	Add-DefaultPodSecurityPolicy 'psp.yaml' 'psp-role.yaml' 'psp-role-binding.yaml'
-}
+

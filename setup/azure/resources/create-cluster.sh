@@ -20,10 +20,10 @@
 # The Cluster resource will be deployed to the
 # given resource group, while it will manage the sub-resources
 # of the cluster in a new resource group.
-RESOURCE_GROUP_NAME=myResourceGroup-NP
+RESOURCE_GROUP_NAME=CodeDx
 
 # Name of the Cluster resource to create
-CLUSTER_NAME=myAKSCluster
+CLUSTER_NAME=codedx
 
 # Physical location of the cluster
 # Get the available locations in your subscription with the command:
@@ -34,9 +34,12 @@ LOCATION=eastus
 # VM size for the cluster nodes
 # Get the available sizes for your location with the command:
 #    az vm list-sizes -l $LOCATION -o table
-# (Use 'name', case-sensitive. Nodes must have at least 2 cores
-#  and 8GB of memory.)
-NODE_SIZE=Standard_B2ms
+#
+# (Specify a case-sensitive VM size from the 'Name' column)
+#
+# Note: The Code Dx web application requires a node with at least 2 vCPUs 
+# and 8 GiB of memory.)
+NODE_SIZE=Standard_D2s_v3
 
 # Number of nodes to start the cluster with. Nodes can be
 # added or removed after cluster creation. The Azure-recommended
@@ -45,8 +48,8 @@ NODE_COUNT=2
 
 
 # (Resource name options that are unimportant but useful to have)
-K8S_VNET_NAME=k8s-vnet
-K8S_SUBNET_NAME=k8s-subnet
+K8S_VNET_NAME=codedx-vnet
+K8S_SUBNET_NAME=codedx-subnet
 
 
 ######
@@ -71,7 +74,7 @@ az network vnet create \
     --name $K8S_VNET_NAME \
     --address-prefixes 10.0.0.0/8 \
     --subnet-name $K8S_SUBNET_NAME \
-    --subnet-prefix 10.240.0.0/16
+    --subnet-prefix 10.227.0.0/16
 check_exit $? 'network create' 3
 
 # Create a service principal and read in the application ID
@@ -115,7 +118,10 @@ az aks create \
     --service-principal $SP_ID \
     --client-secret $SP_PASSWORD \
     --network-policy azure \
-    --load-balancer-sku basic \
+    --load-balancer-sku standard \
     --kubernetes-version 1.14.7 \
     --node-vm-size $NODE_SIZE
 check_exit $? 'aks create' 7
+
+echo 'Done'
+echo "Recommendation: Enable the Pod Security Policy feature preview and enable it on your cluster (see https://docs.microsoft.com/en-us/azure/aks/use-pod-security-policies). Use the -addDefaultPodSecurityPolicyForAuthenticatedUsers setup.ps1 parameter if your cluster's Pod Security Policy configuration will prevent pods without a policy from running."

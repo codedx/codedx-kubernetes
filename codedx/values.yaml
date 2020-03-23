@@ -476,11 +476,24 @@ resources: {}
 # Then use this configuration to create a node selector for the Code Dx application:
 #
 # nodeSelectors
-#   codedx:
-#     tag: codedx-app-node
+#   tag: codedx-app-node
 #
-nodeSelectors:
-  codedx: {}
+nodeSelectors: {}
+
+# Use tolerations to influence the scheduling of your Code Dx pod.
+#
+# For example, run this command to add a codedx-app-node taint to a node:
+# kubectl taint nodes cluster-node dedicated=codedx-app-node:NoSchedule
+#
+# Then use this configuration to create a toleration for codedx-app-node:
+#
+# tolerations
+# - key: 'dedicated'
+#   operator: 'Equal'
+#   value: 'codedx-app-node'
+#   effect: 'NoSchedule'
+#
+tolerations: {}
 
 # Use 'codedxTls' properties to enable and configure HTTPS on Code Dx directly through Tomcat. If
 # an Ingress is being used and is configured in this chart, the Ingress will also use HTTPS when

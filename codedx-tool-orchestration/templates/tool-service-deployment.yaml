@@ -27,6 +27,14 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "codedx-tool-orchestration.serviceAccountName" . | quote }}
       serviceAccount: {{ include "codedx-tool-orchestration.serviceAccountName" . | quote }}
+      {{- if .Values.nodeSelectors }}
+      nodeSelector:
+      {{- toYaml .Values.nodeSelectors | trim | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations:
+      {{- toYaml .Values.tolerations | trim | nindent 8 }}
+      {{- end }}
       containers:
       - name: tool-service
         image: {{ .Values.toolServiceImageName | quote }}

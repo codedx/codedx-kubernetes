@@ -33,6 +33,33 @@ limits:
     cpu: '2'
     memory: '2G'
 
+# Use nodeSelectors to influence the scheduling of tool service pods.
+#
+# For example, run this command to tag a node with codedx-tool-service-node:
+# kubectl label nodes cluster-node tag=codedx-tool-service-node 
+#
+# Then use this configuration to create a node selector for tool service instances:
+#
+# nodeSelectors
+#   tag: codedx-tool-service-node
+#
+nodeSelectors: {}
+
+# Use tolerations to influence the scheduling of tool service pods
+#
+# For example, run this command to add a codedx-tool-service-node taint to a node:
+# kubectl taint nodes cluster-node dedicated=codedx-tool-service-node:NoSchedule
+#
+# Then use this configuration to create a toleration for codedx-tool-service-node:
+#
+# tolerations
+# - key: 'dedicated'
+#   operator: 'Equal'
+#   value: 'codedx-tool-service-node'
+#   effect: 'NoSchedule'
+#
+tolerations: {}    
+
 logs:
   # Maximum size in MB for each log file
   maxSizeMB: 10

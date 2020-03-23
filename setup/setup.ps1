@@ -70,6 +70,7 @@ param (
 	[int]      $kubeApiTargetPort = 443,
 
 	[string[]] $extraCodeDxValuesPaths = @(),
+	[string[]] $extraToolOrchestrationValuesPath = @(),
 
 	[switch]   $skipToolOrchestration,
 	[switch]   $addDefaultPodSecurityPolicyForAuthenticatedUsers,
@@ -201,6 +202,7 @@ if (-not $skipToolOrchestration) {
 		$toolServiceMemoryReservation $minioMemoryReservation $workflowMemoryReservation `
 		$toolServiceCPUReservation $minioCPUReservation $workflowCPUReservation `
 		$kubeApiTargetPort `
+		$extraToolOrchestrationValuesPath `
 		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
 
 	Write-Verbose 'Updating Code Dx deployment by enabling Tool Orchestration...'

@@ -179,6 +179,7 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 	[string] $minioCPULimit,
 	[string] $workflowCPULimit,	
 	[int]    $kubeApiTargetPort,
+	[string[]] $extraValuesPaths,
 	[switch] $enablePSPs,
 	[switch] $enableNetworkPolicies,
 	[switch] $configureTls) {
@@ -318,7 +319,7 @@ $tlsConfig,$codedxCaConfigMap,$minioVolumeSizeGiB,$imagePullSecretYaml,$preDelet
 	$values | out-file $valuesFile -Encoding ascii -Force
 
 	$chartFolder = (join-path $workDir codedx-kubernetes/codedx-tool-orchestration)
-	Invoke-HelmSingleDeployment 'Tool Orchestration' $waitSeconds $namespace 'toolsvc' $chartFolder $valuesFile 'toolsvc-codedx-tool-orchestration' $numReplicas @()
+	Invoke-HelmSingleDeployment 'Tool Orchestration' $waitSeconds $namespace 'toolsvc' $chartFolder $valuesFile 'toolsvc-codedx-tool-orchestration' $numReplicas $extraValuesPaths
 }
 
 function Set-UseToolOrchestration([string] $workDir, 

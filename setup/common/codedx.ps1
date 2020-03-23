@@ -628,11 +628,10 @@ rules:
     	}
 
 	$roleBinding = @'
-kind: RoleBinding
+kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: psp:privileged-rolebinding
-  namespace: kube-system
+  name: psp:privileged:authenticated
 roleRef:
   kind: ClusterRole
   name: psp:privileged
@@ -640,10 +639,7 @@ roleRef:
 subjects:
 - kind: Group
   apiGroup: rbac.authorization.k8s.io
-  name: system:serviceaccounts
-- kind: Group
-  apiGroup: rbac.authorization.k8s.io
-  name: system:nodes
+  name: system:authenticated
 '@
 
 	$roleBinding | out-file $roleBindingFile -Encoding ascii -Force

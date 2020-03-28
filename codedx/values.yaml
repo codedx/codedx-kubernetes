@@ -482,8 +482,10 @@ nodeSelectors: {}
 
 # Use tolerations to influence the scheduling of your Code Dx pod.
 #
-# For example, run this command to add a codedx-app-node taint to a node:
+# For example, run these commands to add codedx-app-node taints to a node:
+#
 # kubectl taint nodes cluster-node dedicated=codedx-app-node:NoSchedule
+# kubectl taint nodes cluster-node dedicated=codedx-app-node:NoExecute
 #
 # Then use this configuration to create a toleration for codedx-app-node:
 #
@@ -492,6 +494,10 @@ nodeSelectors: {}
 #   operator: 'Equal'
 #   value: 'codedx-app-node'
 #   effect: 'NoSchedule'
+# - key: 'dedicated'
+#   operator: 'Equal'
+#   value: 'codedx-app-node'
+#   effect: 'NoExecute'
 #
 tolerations: {}
 

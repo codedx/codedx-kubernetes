@@ -47,8 +47,10 @@ nodeSelectors: {}
 
 # Use tolerations to influence the scheduling of tool service pods
 #
-# For example, run this command to add a codedx-tool-service-node taint to a node:
+# For example, run these commands to add codedx-tool-service-node taints to a node:
+#
 # kubectl taint nodes cluster-node dedicated=codedx-tool-service-node:NoSchedule
+# kubectl taint nodes cluster-node dedicated=codedx-tool-service-node:NoExecute
 #
 # Then use this configuration to create a toleration for codedx-tool-service-node:
 #
@@ -57,6 +59,10 @@ nodeSelectors: {}
 #   operator: 'Equal'
 #   value: 'codedx-tool-service-node'
 #   effect: 'NoSchedule'
+# - key: 'dedicated'
+#   operator: 'Equal'
+#   value: 'codedx-tool-service-node'
+#   effect: 'NoExecute'
 #
 tolerations: {}    
 

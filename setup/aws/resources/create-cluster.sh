@@ -30,6 +30,7 @@ check_param() {
 check_param "$PUBLIC_KEY_PATH" 'PUBLIC_KEY_PATH'
 check_param "$CLUSTER_NAME" 'CLUSTER_NAME'
 
+# creates a cluster with a single managed group that spans availability zones
 eksctl create cluster \
 	--name $CLUSTER_NAME \
 	--version 1.14 \
@@ -66,13 +67,15 @@ check_exit $? 'autoscaler priority' 7
 printf "\n\nUse the following command to view the cluster autoscaler log:"
 echo '  kubectl -n kube-system logs -f deployment.apps/cluster-autoscaler'
 
-# Note: Uncomment this section to install Prometheus and Grafana after specifying your own adminPassword value.
+# Uncomment this section to install Prometheus and Grafana after specifying your own adminPassword value. Note that the
+# node exporter will tolerate all node taints.
 #
 # kubectl create namespace prometheus
 # helm install prometheus stable/prometheus \
 # 	--namespace prometheus \
 # 	--set alertmanager.persistentVolume.storageClass="gp2" \
-# 	--set server.persistentVolume.storageClass="gp2"
+# 	--set server.persistentVolume.storageClass="gp2" \
+#   --set nodeExporter.tolerations[0].operator=Exists
 # 
 # kubectl create namespace grafana
 # helm install grafana stable/grafana \

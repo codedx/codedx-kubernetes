@@ -4,12 +4,22 @@ PUBLIC_KEY_PATH=$1
 CLUSTER_NAME=$2
 
 LOCATION='us-east-2'
-NODETYPE='t3.medium'
 
-NODECOUNT=1
-NODECOUNTMIN=1
-NODECOUNTMAX=4
-NODEGROUPNAME='standard-workers'
+# node pool settings for the Code Dx nodes (db and app)
+CODEDX_ZONE='us-east-2a'
+CODEDX_NODEGROUPNAME='codedx-nodes'
+CODEDX_NODETYPE='t3.2xlarge'
+CODEDX_NODECOUNT=1
+CODEDX_NODECOUNTMIN=1
+CODEDX_NODECOUNTMAX=1
+
+# node pool settings for the workflow nodes (MinIO and workflows)
+WORKFLOW_ZONE='us-east-2b'
+WORKFLOW_NODEGROUPNAME='workflow-nodes'
+WORKFLOW_NODETYPE='t3.large'
+WORKFLOW_NODECOUNT=1
+WORKFLOW_NODECOUNTMIN=1
+WORKFLOW_NODECOUNTMAX=4
 
 check_exit() {
         local EC=$1
@@ -30,21 +40,51 @@ check_param() {
 check_param "$PUBLIC_KEY_PATH" 'PUBLIC_KEY_PATH'
 check_param "$CLUSTER_NAME" 'CLUSTER_NAME'
 
-# creates a cluster with a single managed group that spans availability zones
+echo "Time now is $(date)"
 eksctl create cluster \
 	--name $CLUSTER_NAME \
 	--version 1.14 \
 	--region $LOCATION \
-	--nodegroup-name $NODEGROUPNAME \
-	--node-type $NODETYPE \
-	--nodes $NODECOUNT \
-	--nodes-min $NODECOUNTMIN \
-	--nodes-max $NODECOUNTMAX \
+	--without-nodegroup
+check_exit $? 'cluster' 2
+
+echo "Time now is $(date)"
+eksctl create nodegroup \
+	--region $LOCATION \
+	--node-zones $CODEDX_ZONE \
+	--name $CODEDX_NODEGROUPNAME \
+	--node-type $CODEDX_NODETYPE \
+	--nodes $CODEDX_NODECOUNT \
+	--nodes-min $CODEDX_NODECOUNTMIN \
+	--nodes-max $CODEDX_NODECOUNTMAX \
+	--cluster $CLUSTER_NAME \
 	--ssh-access \
 	--ssh-public-key $PUBLIC_KEY_PATH \
-	--managed \
-	--asg-access
-check_exit $? 'cluster' 2
+	--node-labels 'codedx=app-db' \
+	--asg-access \
+	--managed
+check_exit $? 'cluster-nodes-codedx' 2
+
+echo "Time now is $(date)"
+eksctl create nodegroup \
+	--region $LOCATION \
+	--node-zones $WORKFLOW_ZONE \
+	--name $WORKFLOW_NODEGROUPNAME \
+	--node-type $WORKFLOW_NODETYPE \
+	--nodes $WORKFLOW_NODECOUNT \
+	--nodes-min $WORKFLOW_NODECOUNTMIN \
+	--nodes-max $WORKFLOW_NODECOUNTMAX \
+	--cluster $CLUSTER_NAME \
+	--ssh-access \
+	--ssh-public-key $PUBLIC_KEY_PATH \
+	--node-labels 'codedx=workflow' \
+	--asg-access \
+	--managed
+check_exit $? 'cluster-nodes-workflow' 2
+
+ID=$(aws eks describe-nodegroup --cluster-name $CLUSTER_NAME --nodegroup-name $WORKFLOW_NODEGROUPNAME | grep nodegroupArn | grep -Po 'arn\:[^"]+')
+aws eks tag-resource --resource-arn $ID --tags "k8s.io/cluster-autoscaler/enabled=true,k8s.io/cluster-autoscaler/$CLUSTER_NAME=owned"
+check_exit $? 'cluster-nodes-workflow-config' 2
 
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/master/cluster-autoscaler/cloudprovider/aws/examples/cluster-autoscaler-autodiscover.yaml
 check_exit $? 'autoscaler' 3
@@ -52,6 +92,7 @@ check_exit $? 'autoscaler' 3
 kubectl -n kube-system annotate deployment.apps/cluster-autoscaler cluster-autoscaler.kubernetes.io/safe-to-evict="false"
 check_exit $? 'autoscaler' 4
 
+echo "Time now is $(date)"
 echo 'Configure deployment resource based on https://docs.aws.amazon.com/eks/latest/userguide/cluster-autoscaler.html#ca-ng-considerations'
 echo 'See Step 3 of the Deploy the Cluster Autoscaler section'
 read -p "Press Enter to continue..."
@@ -67,6 +108,8 @@ check_exit $? 'autoscaler priority' 7
 printf "\n\nUse the following command to view the cluster autoscaler log:"
 echo '  kubectl -n kube-system logs -f deployment.apps/cluster-autoscaler'
 
+echo "Time now is $(date)"
+
 # Uncomment this section to install Prometheus and Grafana after specifying your own adminPassword value. Note that the
 # node exporter will tolerate all node taints.
 #
@@ -77,9 +120,8 @@ echo '  kubectl -n kube-system logs -f deployment.apps/cluster-autoscaler'
 # 	--set server.persistentVolume.storageClass="gp2" \
 #   --set nodeExporter.tolerations[0].operator=Exists
 # 
-# kubectl create namespace grafana
 # helm install grafana stable/grafana \
-#     --namespace grafana \
+#     --namespace cdx-app \
 #     --set persistence.storageClassName="gp2" \
 #     --set adminPassword='m8F2^eJ*#0c' \
 #     --set datasources."datasources\.yaml".apiVersion=1 \

@@ -21,7 +21,19 @@ This section describes the setup.ps1 script parameters.
 | dbSlaveVolumeSizeGiB | dbSlaveVolumeSizeGiB specifies the size of the volume for each MariaDB slave instance | 32 | |
 | minioVolumeSizeGiB | minioVolumeSizeGiB specifies the size of the volume for the MinIO storage application | 32 | |
 | codeDxVolumeSizeGiB | codeDxVolumeSizeGiB specifies the size of the volume for the Code Dx web application | 32 | |
-| storageClassName | storageClassName specifies the name of the storage class for persistance volume claims | | managed-premium |
+| storageClassName | storageClassName specifies the name of the storage class for persistance volumes | | |
+| codeDxMemoryReservation | codeDxMemoryReservation specifies the memory resource request and limit for Code Dx | |
+| dbMemoryReservation | dbMemoryReservation specifies the memory resource request and limit for MariaDB | |
+| toolServiceMemoryReservation | toolServiceMemoryReservation specifies the memory resource request and limit for the tool service  | |
+| minioMemoryReservation | minioMemoryReservation specifies the memory resource request and limit for MinIO | |
+| workflowMemoryReservation | workflowMemoryReservation specifies the memory resource request and limit for the workflow controller | |
+| nginxMemoryReservation | nginxMemoryReservation specifies the memory resource request and limit for nginx | |
+| codeDxCPUReservation | codeDxCPUReservation specifies the CPU resource request and limit for Code Dx | |
+| dbCPUReservation | dbCPUReservation specifies the CPU resource request and limit for MariaDB | |
+| toolServiceCPUReservation | toolServiceCPUReservation specifies the CPU resource request and limit for the tool service  | |
+| minioCPUReservation | minioCPUReservation specifies the CPU resource request and limit for MinIO | |
+| workflowCPUReservation | workflowCPUReservation specifies the CPU resource request and limit for the workflow controller | |
+| nginxCPUReservation | nginxCPUReservation specifies the CPU resource request and limit for nginx | |
 | imageCodeDxTomcat | imageCodeDxTomcat specifies the name of the Code Dx Docker image | codedxregistry.azurecr.io/codedx/codedx-tomcat:latest |
 | imageCodeDxTools | imageCodeDxTools specifies the name of the Code Dx Tools Docker image | codedxregistry.azurecr.io/codedx/codedx-tools:latest | |
 | imageCodeDxToolsMono | imageCodeDxToolsMono specifies the name of the Code Dx Tools Mono Docker image | codedxregistry.azurecr.io/codedx/codedx-toolsmono:latest | |
@@ -36,9 +48,11 @@ This section describes the setup.ps1 script parameters.
 | skipNetworkPolicies | skipNetworkPolicies specifies whether to skip creating Code Dx network policies | $false | |
 | ingressRegistrationEmailAddress | ingressRegistrationEmailAddress specifies the email address for the Let's Encrypt configuration | | |
 | ingressLoadBalancerIP | ingressLoadBalancerIP specifies the static IP address for the nginx ingress service | | |
+| ingressClusterIssuer | ingressClusterIssuer specifies the name of the Cert Manager cluster issuer | letsencrypt-staging | letsencrypt-staging or letsencrypt-prod |
 | namespaceToolOrchestration | namespaceToolOrchestration specifies the namespace for the tool orchestration components | cdx-svc | |
 | namespaceCodeDx | namespaceCodeDx specifies the namespace for the Code Dx application | cdx-app | |
-| namespaceIngressController | namespaceIngressController specifies the namespace for the nginx ingress controller | nginx | |
+| namespaceIngressController | namespaceIngressController specifies the namespace for the nginx Helm chart installation | nginx | |
+| namespaceCertManager | namespaceCertManager specifies the namespace for the cert manager Helm chart installation | cert-manager | |
 | releaseNameCodeDx | releaseNameCodeDx specifies the name for the Code Dx Helm release | codedx-app | |
 | releaseNameToolOrchestration | releaseNameToolOrchestration specifies the name for the Code Dx Tool Orchestration Helm release | toolsvc-codedx-tool-orchestration | |
 | toolServiceApiKey | toolServiceApiKey specifies the API key for the Code Dx Tool Orchestration service | [guid]::newguid() | |
@@ -52,5 +66,8 @@ This section describes the setup.ps1 script parameters.
 | codedxRepo | codedxRepo specifies the Code Dx Kubernetes URL | https://codedx.github.io/codedx-kubernetes | |
 | kubeApiTargetPort | kubeApiTargetPort specifies the port of the Kubernetes API | 443 | |
 | extraCodeDxValuesPaths | extraCodeDxValuesPaths specifies one or more extra values.yaml files for the Code Dx Helm chart | | |
+| extraToolOrchestrationValuesPaths | extraToolOrchestrationValuesPaths specifies one or more extra values.yaml files for the Code Dx Tool Orchestration Helm chart | | |
+| skipToolOrchestration | skipToolOrchestration specifies whether to skip installing the Tool Orchestration feature | $false | |
+| addDefaultPodSecurityPolicyForAuthenticatedUsers | addDefaultPodSecurityPolicyForAuthenticatedUsers specifies whether to install a default, privileged pod security policy | $false | required if your cluster does not include a default, privilged psp |
 | provisionNetworkPolicy | provisionNetworkPolicy specifies a script block to call for any required network policy provisioning | | |
 | provisionIngress | provisionIngress specifies a script block to call for any required ingress controller provisioning | | |

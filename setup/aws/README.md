@@ -74,6 +74,10 @@ The setup.ps1 script configures Code Dx for the Let's Encrypt staging environmen
   -ingressClusterIssuer 'letsencrypt-prod'
 ```
 
+## Installing Updates
+
+You can rerun your setup.ps1 script to install updates or change configuration parameters. Always restart the Code Dx deployments after rerunning setup.ps1 to make sure that components use updated dependencies like configuration maps.
+
 ## Cleanup
 
 You can delete the EKS cluster by running the following command after specifying the cluster name.

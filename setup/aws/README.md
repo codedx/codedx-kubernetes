@@ -74,6 +74,31 @@ The setup.ps1 script configures Code Dx for the Let's Encrypt staging environmen
   -ingressClusterIssuer 'letsencrypt-prod'
 ```
 
+If you used create-cluster.sh to build your EKS cluster, use the following setup.ps1 command after specifying required parameters.
+
+```
+./setup.ps1 `
+  -toolServiceApiKey '<api-key>' `
+  -codeDxDnsName '<dns-name>' `
+  -ingressRegistrationEmailAddress '<email-address>' `
+  -minioAdminPwd '<minio-password>' `
+  -mariadbRootPwd '<mariadb-root-password>' `
+  -mariadbReplicatorPwd '<mariadb-replication-password>' `
+  -codedxAdminPwd '<codedx-admin-password>' `
+  -clusterCertificateAuthorityCertPath '<path-to-aws-eks.pem>' `
+  -toolServiceReplicas 2 `
+  -dbSlaveReplicaCount 0 `
+  -codeDxCPUReservation 3600m `
+  -codeDxMemoryReservation 13Gi `
+  -dbCPUReservation 3600m `
+  -dbMemoryReservation 13Gi `
+  -minioCPUReservation 1700m `
+  -minioMemoryReservation 5Gi `
+  -nginxMemoryReservation 500Mi `
+  -toolServiceMemoryReservation 500Mi `
+  -workflowMemoryReservation 500Mi
+```
+
 ## Installing Updates
 
 You can rerun your setup.ps1 script to install updates or change configuration parameters. Always restart the Code Dx deployments after rerunning setup.ps1 to make sure that components use updated dependencies like configuration maps.

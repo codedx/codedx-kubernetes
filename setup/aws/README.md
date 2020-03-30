@@ -51,29 +51,6 @@ From your running PowerShell Core shell, run the following command by replacing 
   -ingressRegistrationEmailAddress '<email-address>'
 ```
 
-## Post Setup Tasks
-
-To access Code Dx by the domain name you specified, create a new CNAME DNS record that maps your Code Dx domain name to the public DNS name associated with the nginx ingress controller service. Run the following command after specifying the correct nginx namespace (nginx is the default) to find the public DNS name under EXTERNAL-IP.
-
-```
-kubectl -n <nginx-namespace> get svc nginx-nginx-ingress-controller
-```
-
-The setup.ps1 script configures Code Dx for the Let's Encrypt staging environment. You can switch from the staging environment to the production environment by rerunning setup.ps1. Do not make the switch until you are certain that the Code Dx application runs correctly with the certificate issued by the staging environment. When you're ready, rerun setup.ps1 with the same parameter set and include a new parameter named ingressClusterIssuer with value letsencrypt-prod like in the following example.
-
-```
-./setup.ps1 `
-  -codeDxDnsName '<dns-name>' `
-  -clusterCertificateAuthorityCertPath '<path-to-aws-eks.pem>' `
-  -minioAdminPwd '<minio-password>' `
-  -mariadbRootPwd '<mariadb-root-password>' `
-  -mariadbReplicatorPwd '<mariadb-replication-password>' `
-  -codedxAdminPwd '<codedx-admin-password>' `
-  -dockerConfigJson '<docker-config-json>' `
-  -ingressRegistrationEmailAddress '<email-address>' `
-  -ingressClusterIssuer 'letsencrypt-prod'
-```
-
 If you used create-cluster.sh to build your EKS cluster, use the following setup.ps1 command after specifying required parameters.
 
 ```
@@ -98,6 +75,30 @@ If you used create-cluster.sh to build your EKS cluster, use the following setup
   -toolServiceMemoryReservation 500Mi `
   -workflowMemoryReservation 500Mi
 ```
+
+## Post Setup Tasks
+
+To access Code Dx by the domain name you specified, create a new CNAME DNS record that maps your Code Dx domain name to the public DNS name associated with the nginx ingress controller service. Run the following command after specifying the correct nginx namespace (nginx is the default) to find the public DNS name under EXTERNAL-IP.
+
+```
+kubectl -n <nginx-namespace> get svc nginx-nginx-ingress-controller
+```
+
+The setup.ps1 script configures Code Dx for the Let's Encrypt staging environment. You can switch from the staging environment to the production environment by rerunning setup.ps1. Do not make the switch until you are certain that the Code Dx application runs correctly with the certificate issued by the staging environment. When you're ready, rerun setup.ps1 with the same parameter set and include a new parameter named ingressClusterIssuer with value letsencrypt-prod like in the following example.
+
+```
+./setup.ps1 `
+  -codeDxDnsName '<dns-name>' `
+  -clusterCertificateAuthorityCertPath '<path-to-aws-eks.pem>' `
+  -minioAdminPwd '<minio-password>' `
+  -mariadbRootPwd '<mariadb-root-password>' `
+  -mariadbReplicatorPwd '<mariadb-replication-password>' `
+  -codedxAdminPwd '<codedx-admin-password>' `
+  -dockerConfigJson '<docker-config-json>' `
+  -ingressRegistrationEmailAddress '<email-address>' `
+  -ingressClusterIssuer 'letsencrypt-prod'
+```
+>Note: Use the alternate setup.ps1 command line, adding the ingressClusterIssuer parameter and 'letsencrypt-prod' value, if you used the setup.ps1 create-cluster.sh version from above.
 
 ## Installing Updates
 

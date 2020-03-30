@@ -17,8 +17,8 @@ CODEDX_NODECOUNTMAX=1
 WORKFLOW_ZONE='us-east-2b'
 WORKFLOW_NODEGROUPNAME='workflow-nodes'
 WORKFLOW_NODETYPE='t3.large'
-WORKFLOW_NODECOUNT=1
-WORKFLOW_NODECOUNTMIN=1
+WORKFLOW_NODECOUNT=2
+WORKFLOW_NODECOUNTMIN=2
 WORKFLOW_NODECOUNTMAX=4
 
 check_exit() {
@@ -51,23 +51,6 @@ check_exit $? 'cluster' 2
 echo "Time now is $(date)"
 eksctl create nodegroup \
 	--region $LOCATION \
-	--node-zones $CODEDX_ZONE \
-	--name $CODEDX_NODEGROUPNAME \
-	--node-type $CODEDX_NODETYPE \
-	--nodes $CODEDX_NODECOUNT \
-	--nodes-min $CODEDX_NODECOUNTMIN \
-	--nodes-max $CODEDX_NODECOUNTMAX \
-	--cluster $CLUSTER_NAME \
-	--ssh-access \
-	--ssh-public-key $PUBLIC_KEY_PATH \
-	--node-labels 'codedx=app-db' \
-	--asg-access \
-	--managed
-check_exit $? 'cluster-nodes-codedx' 2
-
-echo "Time now is $(date)"
-eksctl create nodegroup \
-	--region $LOCATION \
 	--node-zones $WORKFLOW_ZONE \
 	--name $WORKFLOW_NODEGROUPNAME \
 	--node-type $WORKFLOW_NODETYPE \
@@ -85,6 +68,23 @@ check_exit $? 'cluster-nodes-workflow' 2
 ID=$(aws eks describe-nodegroup --cluster-name $CLUSTER_NAME --nodegroup-name $WORKFLOW_NODEGROUPNAME | grep nodegroupArn | grep -Po 'arn\:[^"]+')
 aws eks tag-resource --resource-arn $ID --tags "k8s.io/cluster-autoscaler/enabled=true,k8s.io/cluster-autoscaler/$CLUSTER_NAME=owned"
 check_exit $? 'cluster-nodes-workflow-config' 2
+
+echo "Time now is $(date)"
+eksctl create nodegroup \
+	--region $LOCATION \
+	--node-zones $CODEDX_ZONE \
+	--name $CODEDX_NODEGROUPNAME \
+	--node-type $CODEDX_NODETYPE \
+	--nodes $CODEDX_NODECOUNT \
+	--nodes-min $CODEDX_NODECOUNTMIN \
+	--nodes-max $CODEDX_NODECOUNTMAX \
+	--cluster $CLUSTER_NAME \
+	--ssh-access \
+	--ssh-public-key $PUBLIC_KEY_PATH \
+	--node-labels 'codedx=app-db' \
+	--asg-access \
+	--managed
+check_exit $? 'cluster-nodes-codedx' 2
 
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/master/cluster-autoscaler/cloudprovider/aws/examples/cluster-autoscaler-autodiscover.yaml
 check_exit $? 'autoscaler' 3

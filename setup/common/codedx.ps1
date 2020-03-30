@@ -134,6 +134,7 @@ mariadb:
       storageClass: {18}
       size: {15}Gi
 {20}
+cacertsFile: ''
 '@ -f $adminPwd, $tomcatImage, $imagePullSecretYaml, `
 $psp, $networkPolicy, `
 $tlsEnabled, $tlsSecretName, $tlsCertFile, $tlsKeyFile, `

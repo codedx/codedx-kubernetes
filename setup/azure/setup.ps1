@@ -16,3 +16,5 @@ if ($ingressLoadBalancerIP -eq '') {
   -storageClassName $storageClassName `
   -ingressLoadBalancerIP $ingressLoadBalancerIP `
   @args
+
+Write-Verbose 'Deployment complete!'

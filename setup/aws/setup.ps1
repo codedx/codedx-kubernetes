@@ -16,3 +16,5 @@ $provisionNetworkPolicy = {
 & (join-path $PSScriptRoot '../setup.ps1') `
   -storageClassName $storageClassName `
   -provisionNetworkPolicy $provisionNetworkPolicy @args
+
+Write-Verbose 'Deployment complete!'

@@ -187,7 +187,9 @@ argo:
 # NOTE: These are setting attributes for the `minio` dependency
 minio:
   image:
-    tag: 2020.3.5-debian-10-r0
+    # https://github.com/minio/minio/releases
+    # https://github.com/bitnami/bitnami-docker-minio/releases
+    tag: 2020.3.14-debian-10-r8
   global:
     minio:
       accessKeyGlobal: "231a5aab-7ffc-49ff-a954-83f97ee416a4"

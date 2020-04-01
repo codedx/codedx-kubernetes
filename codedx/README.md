@@ -22,16 +22,18 @@ The Code Dx Helm chart creates Kubernetes resources for a secure, production-rea
 
 ## TL;DR
 
+Run the following commands after replacing `<root-password>` and `<replication-password>` with your MariaDB root and replication passwords.
+
 ```
 $ helm repo add codedx https://codedx.github.io/codedx-kubernetes
-$ helm install codedx codedx/codedx
+$ helm install codedx codedx/codedx --set mariadb.rootUser.password=<root-password> --set mariadb.replication.password=<replication-password>
 
 OR
 
 $ git clone https://github.com/codedx/codedx-kubernetes.git
 $ cd codedx-kubernetes/codedx
 $ helm dependency update
-$ helm install codedx .
+$ helm install codedx . --set mariadb.rootUser.password=<root-password> --set mariadb.replication.password=<replication-password>
 ```
 
 We recommend keeping any extra installation options in your own `values.yaml` file and using `helm install/upgrade ... -f my-values.yaml`, to prevent accidental changes to the installation when a configuration property is forgotten or missed. Check out the [example YAML files](sample-values) for common use-cases.

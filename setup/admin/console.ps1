@@ -70,8 +70,16 @@ $choices = @(
             }
         };
         valid = {$toolOrchestrationNamespace -ne ''}  
-    }    
+    }
 
+    @{id="A5"; name='Show Workflow Detail';
+        action={
+            $workflowName = read-host -prompt 'Enter workflow ID'
+            argo -n $toolOrchestrationNamespace get $workflowName
+        };
+        valid = {$toolOrchestrationNamespace -ne ''}
+    }
+    
     @{id="C1"; name='Get Code Dx Namespace Pods'; 
         action={ 
             kubectl -n $codedxNamespace get pod -o wide

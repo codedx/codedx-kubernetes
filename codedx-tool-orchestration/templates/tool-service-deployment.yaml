@@ -75,23 +75,27 @@ spec:
           "-workDir", "/opt/codedx/service/work",
           "-workflowRoleNames", {{ include "codedx-tool-orchestration.workflow.role.name" . }}]
         readinessProbe:
-          {{ if .Values.toolServiceTls.secret -}}
-          tcpSocket:
-            port: 3333
-          {{ end -}}
-          {{ if not .Values.toolServiceTls.secret -}}
           httpGet:
+            port: 3333
             path: /alive
-            port: 3333
-          {{ end -}}
-          initialDelaySeconds: 3
-          periodSeconds: 1
-          failureThreshold: 60
+          {{- if .Values.toolServiceTls.secret }}
+            scheme: HTTPS
+          {{- end }}
+          initialDelaySeconds: 15
+          periodSeconds: 15
+          failureThreshold: 4
+          timeoutSeconds: 10
         livenessProbe:
-          tcpSocket:
+          httpGet:
             port: 3333
-          initialDelaySeconds: 30
-          periodSeconds: 5
+            path: /alive
+          {{- if .Values.toolServiceTls.secret }}
+            scheme: HTTPS
+          {{- end }}
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          failureThreshold: 4
+          timeoutSeconds: 10
         volumeMounts:
         - name: tool-service-secret-volume
           mountPath: "/opt/codedx/service/secrets"

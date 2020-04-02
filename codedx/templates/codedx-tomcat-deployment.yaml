@@ -57,13 +57,23 @@ spec:
         readinessProbe:
           httpGet:
             path: /codedx/login
+            {{- if .Values.codedxTls.enabled }}
+            scheme: HTTPS
+            port: 8443
+            {{- else }}
             port: 8080
+            {{- end }}
           initialDelaySeconds: 10
           periodSeconds: 3
         livenessProbe:
           httpGet:
             path: /codedx/login
+            {{- if .Values.codedxTls.enabled }}
+            scheme: HTTPS
+            port: 8443
+            {{- else }}
             port: 8080
+            {{- end }}
           initialDelaySeconds: 600
           periodSeconds: 15
           timeoutSeconds: 10

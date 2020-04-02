@@ -27,14 +27,14 @@ param (
 	[string]   $workflowCPUReservation = '',
 	[string]   $nginxCPUReservation = '',
 
-	[string]   $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:v159-akkaask',
+	[string]   $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:v5.0.0-RC3',
 	[string]   $imageCodeDxTools = 'codedxregistry.azurecr.io/codedx/codedx-tools:v130',
 	[string]   $imageCodeDxToolsMono = 'codedxregistry.azurecr.io/codedx/codedx-toolsmono:v130',
-	[string]   $imageNewAnalysis = 'codedxregistry.azurecr.io/codedx/codedx-newanalysis:90b648077e',
-	[string]   $imageSendResults = 'codedxregistry.azurecr.io/codedx/codedx-results:90b648077e',
-	[string]   $imageSendErrorResults = 'codedxregistry.azurecr.io/codedx/codedx-error-results:90b648077e',
-	[string]   $imageToolService = 'codedxregistry.azurecr.io/codedx/codedx-tool-service:90b648077e',
-	[string]   $imagePreDelete = 'codedxregistry.azurecr.io/codedx/codedx-cleanup:90b648077e',
+	[string]   $imageNewAnalysis = 'codedxregistry.azurecr.io/codedx/codedx-newanalysis:487894ca3b',
+	[string]   $imageSendResults = 'codedxregistry.azurecr.io/codedx/codedx-results:487894ca3b',
+	[string]   $imageSendErrorResults = 'codedxregistry.azurecr.io/codedx/codedx-error-results:487894ca3b',
+	[string]   $imageToolService = 'codedxregistry.azurecr.io/codedx/codedx-tool-service:487894ca3b',
+	[string]   $imagePreDelete = 'codedxregistry.azurecr.io/codedx/codedx-cleanup:487894ca3b',
 
 	[int]      $toolServiceReplicas = 3,
 

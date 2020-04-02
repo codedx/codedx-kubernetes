@@ -30,11 +30,11 @@ param (
 	[string]   $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:v5.0.0-RC3',
 	[string]   $imageCodeDxTools = 'codedxregistry.azurecr.io/codedx/codedx-tools:v130',
 	[string]   $imageCodeDxToolsMono = 'codedxregistry.azurecr.io/codedx/codedx-toolsmono:v130',
-	[string]   $imageNewAnalysis = 'codedxregistry.azurecr.io/codedx/codedx-newanalysis:487894ca3b',
-	[string]   $imageSendResults = 'codedxregistry.azurecr.io/codedx/codedx-results:487894ca3b',
-	[string]   $imageSendErrorResults = 'codedxregistry.azurecr.io/codedx/codedx-error-results:487894ca3b',
-	[string]   $imageToolService = 'codedxregistry.azurecr.io/codedx/codedx-tool-service:487894ca3b',
-	[string]   $imagePreDelete = 'codedxregistry.azurecr.io/codedx/codedx-cleanup:487894ca3b',
+	[string]   $imageNewAnalysis = 'codedxregistry.azurecr.io/codedx/codedx-newanalysis:8b0f5e29bd',
+	[string]   $imageSendResults = 'codedxregistry.azurecr.io/codedx/codedx-results:8b0f5e29bd',
+	[string]   $imageSendErrorResults = 'codedxregistry.azurecr.io/codedx/codedx-error-results:8b0f5e29bd',
+	[string]   $imageToolService = 'codedxregistry.azurecr.io/codedx/codedx-tool-service:8b0f5e29bd',
+	[string]   $imagePreDelete = 'codedxregistry.azurecr.io/codedx/codedx-cleanup:8b0f5e29bd',
 
 	[int]      $toolServiceReplicas = 3,
 

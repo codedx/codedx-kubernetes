@@ -77,7 +77,7 @@ spec:
         readinessProbe:
           httpGet:
             port: 3333
-            path: /alive
+            path: /ready
           {{- if .Values.toolServiceTls.secret }}
             scheme: HTTPS
           {{- end }}

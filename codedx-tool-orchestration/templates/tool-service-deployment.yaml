@@ -81,10 +81,10 @@ spec:
           {{- if .Values.toolServiceTls.secret }}
             scheme: HTTPS
           {{- end }}
-          initialDelaySeconds: 15
-          periodSeconds: 15
+          initialDelaySeconds: 20
+          periodSeconds: 60
           failureThreshold: 4
-          timeoutSeconds: 10
+          timeoutSeconds: 30
         livenessProbe:
           httpGet:
             port: 3333
@@ -92,10 +92,10 @@ spec:
           {{- if .Values.toolServiceTls.secret }}
             scheme: HTTPS
           {{- end }}
-          initialDelaySeconds: 60
-          periodSeconds: 15
+          initialDelaySeconds: 120
+          periodSeconds: 60
           failureThreshold: 4
-          timeoutSeconds: 10
+          timeoutSeconds: 30
         volumeMounts:
         - name: tool-service-secret-volume
           mountPath: "/opt/codedx/service/secrets"

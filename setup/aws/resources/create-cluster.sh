@@ -12,6 +12,7 @@ CODEDX_NODETYPE='t3.2xlarge'
 CODEDX_NODECOUNT=1
 CODEDX_NODECOUNTMIN=1
 CODEDX_NODECOUNTMAX=1
+CODEDX_NODEDISKSIZE=20
 
 # node pool settings for the workflow nodes (MinIO and workflows)
 WORKFLOW_ZONE='us-east-2b'
@@ -20,6 +21,7 @@ WORKFLOW_NODETYPE='t3.large'
 WORKFLOW_NODECOUNT=2
 WORKFLOW_NODECOUNTMIN=2
 WORKFLOW_NODECOUNTMAX=4
+WORKFLOW_NODEDISKSIZE=20
 
 check_exit() {
         local EC=$1
@@ -61,6 +63,7 @@ eksctl create nodegroup \
 	--ssh-access \
 	--ssh-public-key $PUBLIC_KEY_PATH \
 	--node-labels 'codedx=workflow' \
+	--node-volume-size $CODEDX_NODEDISKSIZE \
 	--asg-access \
 	--managed
 check_exit $? 'cluster-nodes-workflow' 2
@@ -82,6 +85,7 @@ eksctl create nodegroup \
 	--ssh-access \
 	--ssh-public-key $PUBLIC_KEY_PATH \
 	--node-labels 'codedx=app-db' \
+	--node-volume-size $WORKFLOW_NODEDISKSIZE \
 	--asg-access \
 	--managed
 check_exit $? 'cluster-nodes-codedx' 2

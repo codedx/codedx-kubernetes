@@ -294,6 +294,13 @@ $choices = @(
         };
         valid = {$toolOrchestrationNamespace -ne ''}  
     }    
+
+    @{id="T3"; name='Describe Tool Orchestration Pod(s)'; 
+        action={ 
+            kubectl -n $toolOrchestrationNamespace describe pod -l component=service
+        };
+        valid = {$toolOrchestrationNamespace -ne ''}
+    }   
 )
 
 kubectl config use-context $kubeContext

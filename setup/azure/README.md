@@ -13,8 +13,6 @@ This script is compatible with a cluster running Kubernetes v1.14. You must inst
 - [git](https://git-scm.com/)
 - [keytool](https://adoptopenjdk.net/installation.html)
 
->Note: The setup.ps1 script currently requires a private Docker registry.
-
 You will also need access to a Domain Name System where you can register an entry for your Code Dx domain name. The setup script will configure https access to the Code Dx web applicaiton using the Let's Encrypt certificate authority.
 
 ## Setup Azure Cluster

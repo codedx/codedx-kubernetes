@@ -27,7 +27,7 @@ function Get-SecureStringText([string] $prompt, [int] $minimumLength) {
 	while ($true) {
 		$secureString = Read-Host -Prompt $prompt -AsSecureString
 		$bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureString)
-		$text = [Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+		$text = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($BSTR)
 		if (($text -ne '') -and ($text.Length -ge $minimumLength)) {
 			return $text
 		}

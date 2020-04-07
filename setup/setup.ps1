@@ -27,14 +27,14 @@ param (
 	[string]   $workflowCPUReservation = '',
 	[string]   $nginxCPUReservation = '',
 
-	[string]   $imageCodeDxTomcat = 'codedxregistry.azurecr.io/codedx/codedx-tomcat:v5.0.0-RC3',
-	[string]   $imageCodeDxTools = 'codedxregistry.azurecr.io/codedx/codedx-tools:v130',
-	[string]   $imageCodeDxToolsMono = 'codedxregistry.azurecr.io/codedx/codedx-toolsmono:v130',
-	[string]   $imageNewAnalysis = 'codedxregistry.azurecr.io/codedx/codedx-newanalysis:3ba0f0d627',
-	[string]   $imageSendResults = 'codedxregistry.azurecr.io/codedx/codedx-results:3ba0f0d627',
-	[string]   $imageSendErrorResults = 'codedxregistry.azurecr.io/codedx/codedx-error-results:3ba0f0d627',
-	[string]   $imageToolService = 'codedxregistry.azurecr.io/codedx/codedx-tool-service:3ba0f0d627',
-	[string]   $imagePreDelete = 'codedxregistry.azurecr.io/codedx/codedx-cleanup:3ba0f0d627',
+	[string]   $imageCodeDxTomcat = 'codedx/codedx-tomcat:v5.0.0',
+	[string]   $imageCodeDxTools = 'codedx/codedx-tools:v1.0.0',
+	[string]   $imageCodeDxToolsMono = 'codedx/codedx-toolsmono:v1.0.0',
+	[string]   $imageNewAnalysis = 'codedx/codedx-newanalysis:v1.0.0',
+	[string]   $imageSendResults = 'codedx/codedx-results:v1.0.0',
+	[string]   $imageSendErrorResults = 'codedx/codedx-error-results:v1.0.0',
+	[string]   $imageToolService = 'codedx/codedx-tool-service:v1.0.0',
+	[string]   $imagePreDelete = 'codedx/codedx-cleanup:v1.0.0',
 
 	[int]      $toolServiceReplicas = 3,
 
@@ -62,7 +62,7 @@ param (
 	[string]   $mariadbRootPwd,
 	[string]   $mariadbReplicatorPwd,
 
-	[string]   $dockerImagePullSecretName = 'codedx-docker-registry',
+	[string]   $dockerImagePullSecretName = '',
 	[string]   $dockerConfigJson,
 
 	[string]   $codedxRepo = 'https://codedx.github.io/codedx-kubernetes',

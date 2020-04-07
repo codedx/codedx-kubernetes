@@ -3,7 +3,7 @@
 #
 # The contents of this file can be added to your own custom values.yaml file.
 
-codedxTomcatImage: codedx/codedx-tomcat:v4.4.5
+codedxTomcatImage: codedx/codedx-tomcat:v5.0.0
 
 persistence:
   size: 32Gi

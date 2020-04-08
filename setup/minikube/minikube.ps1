@@ -71,8 +71,14 @@ function Wait-MinikubeNodeReady([string] $message, [int] $waitSeconds) {
 	while ($true) {
 
 		Write-Verbose "Waiting for ready node ($message)..."
-		$results = kubectl get node
-		if ($null -ne ($results | select-string 'minikube\s+Ready')) {
+
+		$nodeJson = kubectl get node -o json | convertfrom-json
+		if ($nodeJson.items.count -ne 1) {
+			throw "Expected to find a single node, not $($nodeJson.items.count) nodes"
+		}
+
+		$lastReadyStatus = $nodeJson.items.status.conditions | where-object { $_.type -eq 'Ready' } | select-object -last 1
+		if ($null -ne $lastReadyStatus -and $lastReadyStatus.status) {
 			Write-Verbose "Wait is over with $($timeoutTime.Subtract([datetime]::Now).TotalSeconds) second(s) remaining before timeout"
 			Write-Verbose "Node is ready ($message)"
 			break

@@ -40,7 +40,7 @@ limits:
 #
 # Then use this configuration to create a node selector for tool service instances:
 #
-# nodeSelectors
+# nodeSelectors:
 #   tag: codedx-tool-service-node
 #
 nodeSelectors: {}
@@ -54,7 +54,7 @@ nodeSelectors: {}
 #
 # Then use this configuration to create a toleration for codedx-tool-service-node:
 #
-# tolerations
+# tolerations:
 # - key: 'dedicated'
 #   operator: 'Equal'
 #   value: 'codedx-tool-service-node'

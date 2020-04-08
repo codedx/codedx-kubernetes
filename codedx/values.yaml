@@ -475,7 +475,7 @@ resources: {}
 #
 # Then use this configuration to create a node selector for the Code Dx application:
 #
-# nodeSelectors
+# nodeSelectors:
 #   tag: codedx-app-node
 #
 nodeSelectors: {}
@@ -489,7 +489,7 @@ nodeSelectors: {}
 #
 # Then use this configuration to create a toleration for codedx-app-node:
 #
-# tolerations
+# tolerations:
 # - key: 'dedicated'
 #   operator: 'Equal'
 #   value: 'codedx-app-node'

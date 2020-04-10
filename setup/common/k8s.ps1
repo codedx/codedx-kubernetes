@@ -14,9 +14,18 @@ function Test-Namespace([string] $namespace) {
 	0 -eq $LASTEXITCODE
 }
 
-function Set-KubectlContext([string] $profileName) {
+function Get-KubectlContext() {
 
-	kubectl config use-context $profileName
+	$contextName = kubectl config current-context
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to get kubectl context, kubectl exited with code $LASTEXITCODE."
+	}
+	$contextName
+}
+
+function Set-KubectlContext([string] $contextName) {
+
+	kubectl config use-context $contextName
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to change kubectl context, kubectl exited with code $LASTEXITCODE."
 	}

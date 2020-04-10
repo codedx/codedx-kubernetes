@@ -51,6 +51,11 @@ spec:
             secretKeyRef:
               name: {{ include "codedx.adminSecretName" . | quote }}
               key: password
+        - name: KEYSTORE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "codedx.cacerts.pwd.secretName" . | quote }}
+              key: password
         image: {{ required "A tomcat image must be provided! Assign codedxTomcatImage!" .Values.codedxTomcatImage | quote }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.codedxTomcatImagePullPolicy | quote }}
         name: "{{ include "codedx.name" . }}"

@@ -1,5 +1,6 @@
 param (
 	[string]   $workDir = "$HOME/.k8s-codedx",
+	[string]   $kubeContextName = '',
 
 	[string]   $clusterCertificateAuthorityCertPath,
 	[string]   $codeDxDnsName,
@@ -62,10 +63,16 @@ param (
 	[string]   $mariadbRootPwd,
 	[string]   $mariadbReplicatorPwd,
 
+	[string]   $caCertsFilePwd = 'changeit',
+	[string]   $caCertsFileNewPwd = '',
+
 	[string]   $dockerImagePullSecretName = '',
 	[string]   $dockerConfigJson,
 
-	[string]   $codedxRepo = 'https://codedx.github.io/codedx-kubernetes',
+	[string]   $codedxHelmRepo = 'https://codedx.github.io/codedx-kubernetes',
+	
+	[string]   $codedxGitRepo = 'https://github.com/codedx/codedx-kubernetes.git',
+	[string]   $codedxGitRepoBranch = 'master',
 
 	[int]      $kubeApiTargetPort = 443,
 
@@ -86,6 +93,7 @@ Set-PSDebug -Strict
 
 . (join-path $PSScriptRoot './common/helm.ps1')
 . (join-path $PSScriptRoot './common/codedx.ps1')
+. (join-path $PSScriptRoot './common/keytool.ps1')
 
 if (-not (Test-IsCore)) {
 	write-error 'Unable to continue because you must run this script with PowerShell Core (pwsh)'
@@ -102,6 +110,11 @@ if ($null -eq $helmVersionMatch) {
 	write-error 'Unable to continue because helm (v3) was not found. Is it in your PATH?'
 }
 
+if ($kubeContextName -ne '') {
+	Set-KubectlContext $kubeContextName
+}
+Write-Verbose "Using kubeconfig context entry named $(Get-KubectlContext)"
+
 if ($codeDxDnsName -eq '') { $codeDxDnsName = Read-Host -Prompt 'Enter Code Dx domain name (e.g., www.codedx.io)' }
 if ($clusterCertificateAuthorityCertPath -eq '') { $clusterCertificateAuthorityCertPath = Read-Host -Prompt 'Enter path to cluster CA certificate' }
 if ((-not $skipToolOrchestration) -and $minioAdminUsername -eq '') { $minioAdminUsername = Get-SecureStringText 'Enter a username for the MinIO admin account' 5 }
@@ -111,6 +124,7 @@ if ($mariadbReplicatorPwd -eq '') { $mariadbReplicatorPwd = Get-SecureStringText
 if ($codedxAdminPwd -eq '') { $codedxAdminPwd = Get-SecureStringText 'Enter a password for the Code Dx admin account' 6 }
 if ((-not $skipToolOrchestration) -and $toolServiceApiKey -eq '') { $toolServiceApiKey = Get-SecureStringText 'Enter an API key for the Code Dx Tool Orchestration service' 8 }
 if ($dockerImagePullSecretName -ne '' -and $dockerConfigJson -eq '') { $dockerConfigJson = Get-SecureStringText 'Enter a dockerconfigjson value for your private Docker registry' 0 }
+if ($caCertsFileNewPwd -ne '' -and $caCertsFileNewPwd.length -lt 6) { $caCertsFileNewPwd = Get-SecureStringText 'Enter a password to protect the cacerts file' 6 }
 
 if (-not (test-path $clusterCertificateAuthorityCertPath -PathType Leaf)) {
 	write-error "Unable to continue because path '$clusterCertificateAuthorityCertPath' cannot be found."
@@ -139,7 +153,7 @@ if (-not $skipToolOrchestration) {
 }
 
 Write-Verbose 'Adding Helm repository...'
-Add-HelmRepo 'codedx' $codedxRepo
+Add-HelmRepo 'codedx' $codedxHelmRepo
 
 if ($usePSPs -and $addDefaultPodSecurityPolicyForAuthenticatedUsers) {
 	Write-Verbose 'Adding default PSP...'
@@ -170,7 +184,7 @@ if ($configureIngress) {
 
 Write-Verbose 'Fetching Code Dx Helm charts...'
 Remove-Item .\codedx-kubernetes -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
-Invoke-GitClone 'https://github.com/codedx/codedx-kubernetes' 'develop'
+Invoke-GitClone $codedxGitRepo $codedxGitRepoBranch
 
 Write-Verbose 'Deploying Code Dx with Tool Orchestration disabled...'
 New-CodeDxDeployment $codeDxDnsName $workDir $waitTimeSeconds `
@@ -215,7 +229,9 @@ if (-not $skipToolOrchestration) {
 		$clusterCertificateAuthorityCertPath `
 		$namespaceToolOrchestration $namespaceCodeDx `
 		"$protocol`://$releaseNameToolOrchestration.$namespaceToolOrchestration.svc.cluster.local:3333" $toolServiceApiKey `
-		$releaseNameCodeDx -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
+		$releaseNameCodeDx `
+		$caCertsFilePwd $caCertsFileNewPwd `
+		-enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
 }
 
 

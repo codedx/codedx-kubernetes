@@ -45,6 +45,11 @@ codedxAdminPassword: ""
 #
 cacertsFile: ""
 
+# cacertsFilePwd provides the password for the cacertsFile specified. Set to 'changeit' when the
+# cacertsFile value is unset/empty so that Code Dx can access the default Java cacerts file.
+#
+cacertsFilePwd: 'changeit'
+
 # serviceAccount options for Code Dx.
 # Determine the name of the service account to run Code Dx with, and whether to create the ServiceAccount.
 # - If create=true but name=undefined - Will create and use an auto-named service account

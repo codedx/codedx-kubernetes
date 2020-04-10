@@ -2,7 +2,7 @@
 function New-CodeDxDeployment([string] $codeDxDnsName,
     [string]   $workDir, 
 	[int]      $waitSeconds,
-	[string]   $clusterCertificateAuthorityCertPath,
+	[string]   $caCertPathCodeDx,
 	[string]   $namespace,
 	[string]   $releaseName,
 	[string]   $adminPwd,
@@ -60,7 +60,7 @@ codedxTomcatImagePullSecrets:
 	if ($configureTls) {
 		$tlsEnabled = 'true'
 
-		New-Certificate $clusterCertificateAuthorityCertPath 'codedx-app-codedx' 'codedx-app-codedx' $namespace @()
+		New-Certificate $caCertPathCodeDx 'codedx-app-codedx' 'codedx-app-codedx' $namespace @()
 		New-CertificateSecret $namespace $tlsSecretName $tlsCertFile $tlsKeyFile
 	}
 
@@ -75,6 +75,8 @@ codedxTomcatImagePullSecrets:
           name: {0}
 '@ -f $ingressControllerNamespace
 	}
+
+	$defaultKeyStorePwd = 'changeit'
 
 	$values = @'
 codedxAdminPassword: '{0}'
@@ -135,6 +137,7 @@ mariadb:
       size: {15}Gi
 {20}
 cacertsFile: ''
+cacertsFilePwd: '{22}'
 '@ -f $adminPwd, $tomcatImage, $imagePullSecretYaml, `
 $psp, $networkPolicy, `
 $tlsEnabled, $tlsSecretName, $tlsCertFile, $tlsKeyFile, `
@@ -143,7 +146,8 @@ $dbVolumeSizeGiB, $codeDxVolumeSizeGiB, $codeDxDnsName, $ingress, `
 $dbSlaveVolumeSizeGiB, $dbSlaveReplicaCount, $ingressNamespaceSelector, $storageClassName, `
 (Format-ResourceLimitRequest -limitMemory $codeDxMemoryLimit -limitCPU $codeDxCPULimit), `
 (Format-ResourceLimitRequest -limitMemory $dbMemoryLimit -limitCPU $dbCPULimit -indent 4), `
-$ingressClusterIssuer
+$ingressClusterIssuer, `
+$defaultKeyStorePwd
 
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
@@ -154,7 +158,7 @@ $ingressClusterIssuer
 
 function New-ToolOrchestrationDeployment([string] $workDir, 
 	[int]    $waitSeconds,
-	[string] $clusterCertificateAuthorityCertPath,
+	[string] $caCertPathOrchestrationComponents,
 	[string] $namespace,
 	[string] $codedxNamespace,
 	[string] $codedxReleaseName,
@@ -205,14 +209,14 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 		$tlsToolServiceCertSecret = 'cdx-toolsvc-codedx-tool-orchestration-tls'
 		$codedxCaConfigMap = 'cdx-codedx-ca-cert'
 
-		New-Certificate $clusterCertificateAuthorityCertPath 'toolsvc-codedx-tool-orchestration' 'toolsvc-codedx-tool-orchestration' $namespace @()
-		New-Certificate $clusterCertificateAuthorityCertPath 'toolsvc-minio' 'toolsvc-minio' $namespace @()
+		New-Certificate $caCertPathOrchestrationComponents 'toolsvc-codedx-tool-orchestration' 'toolsvc-codedx-tool-orchestration' $namespace @()
+		New-Certificate $caCertPathOrchestrationComponents 'toolsvc-minio' 'toolsvc-minio' $namespace @()
 
 		New-CertificateSecret $namespace $tlsMinioCertSecret 'toolsvc-minio.pem' 'toolsvc-minio.key'
 		New-CertificateConfigMap $namespace 'cdx-toolsvc-minio-cert' 'toolsvc-minio.pem'
 		New-CertificateSecret $namespace $tlsToolServiceCertSecret 'toolsvc-codedx-tool-orchestration.pem' 'toolsvc-codedx-tool-orchestration.key'
 
-		New-CertificateConfigMap $namespace $codedxCaConfigMap $clusterCertificateAuthorityCertPath
+		New-CertificateConfigMap $namespace $codedxCaConfigMap $caCertPathOrchestrationComponents
 	}
 	$codedxBaseUrl = '{0}://{1}-codedx.{2}.svc.cluster.local:{3}/codedx' -f $protocol,$codedxReleaseName,$codedxNamespace,$codedxPort
 
@@ -325,10 +329,12 @@ $tlsConfig,$codedxCaConfigMap,$minioVolumeSizeGiB,$imagePullSecretYaml,$preDelet
 
 function Set-UseToolOrchestration([string] $workDir, 
 	[string] $waitSeconds,
-	[string] $clusterCertificateAuthorityCertPath,
+	[string] $caCertPathToolService,
 	[string] $namespace, [string] $codedxNamespace,
 	[string] $toolServiceUrl, [string] $toolServiceApiKey,
 	[string] $codedxReleaseName,
+	[string] $caCertsFilePwd,
+	[string] $caCertsFileNewPwd,
 	[switch] $enableNetworkPolicies,
 	[switch] $configureTls) {
 
@@ -337,37 +343,44 @@ function Set-UseToolOrchestration([string] $workDir,
 		remove-item $caCertsFilePath -force
 	}
 
-	# access cacerts file
+	# fetch name of pod with cacerts file
 	$podName = kubectl -n $codedxNamespace get pod -l app=codedx --field-selector=status.phase=Running -o name
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to get for name of Code Dx pod, kubectl exited with code $LASTEXITCODE."
 	}
 
+	# copy cacerts file from pod
 	$podFile = "$($podName.Replace('pod/', ''))`:/etc/ssl/certs/java/cacerts"
 	kubectl -n $codedxNamespace cp $podFile $caCertsFilePath
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to copy out cacerts file, kubectl exited with code $LASTEXITCODE."
 	}
 
-	# update cacerts file
+	# set cacerts password
+	$keystorePwd = $caCertsFilePwd
+	if ('' -ne $caCertsFileNewPwd -and $caCertsFilePwd -ne $caCertsFileNewPwd) {
+		$keystorePwd = $caCertsFileNewPwd
+	}
+	Set-KeystorePassword $caCertsFilePath $caCertsFilePwd $keystorePwd 
+
+	# remove CA cert for tool service
 	$aliasName = 'codedx-ca'
-	keytool -delete -alias $aliasName -keystore cacerts -storepass changeit
-	keytool -import -trustcacerts -keystore cacerts -file $clusterCertificateAuthorityCertPath -alias $aliasName -noprompt -storepass changeit
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to import CA certificate into cacerts file, keytool exited with code $LASTEXITCODE."
+	Remove-KeystoreAlias $caCertsFilePath $keystorePwd $aliasName
+
+	$cacertsFile = ''
+	if ($configureTls) {
+		# specify cacerts for helm upgrade and store tool service CA cert
+		$cacertsFile = 'cacerts'
+		Add-KeystoreAlias $caCertsFilePath $keystorePwd $aliasName $caCertPathToolService
 	}
 
+	# move edited cacerts file to chart directory
 	$chartFolder = (join-path $workDir codedx-kubernetes/codedx)
 	copy-item cacerts $chartFolder -Force
 
 	$networkPolicy = 'false'
 	if ($enableNetworkPolicies) {
 		$networkPolicy = 'true'
-	}
-
-	$cacertsFile = ''
-	if ($configureTls) {
-		$cacertsFile = 'cacerts'
 	}
 
 	$codedxOrchestrationPropsKey = 'codedx-orchestration-props-key'
@@ -394,7 +407,8 @@ networkPolicy:
         matchLabels:
           name: {1}
 cacertsFile: {3}
-'@ -f $toolServiceUrl, $namespace, $networkPolicy, $cacertsFile, $codedxOrchestrationPropsKey
+cacertsFilePwd: {5}
+'@ -f $toolServiceUrl, $namespace, $networkPolicy, $cacertsFile, $codedxOrchestrationPropsKey, $keystorePwd
 
 	$valuesFile = 'codedx-orchestration-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force

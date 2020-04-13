@@ -65,6 +65,9 @@ param (
 
 	[string]   $caCertsFilePwd = 'changeit',
 	[string]   $caCertsFileNewPwd = '',
+	
+	[string[]] $extraCodeDxChartFilesPaths = @(),
+	[string[]] $extraCodeDxTrustedCaCertPaths = @(),
 
 	[string]   $dockerImagePullSecretName = '',
 	[string]   $dockerConfigJson,
@@ -186,6 +189,10 @@ Write-Verbose 'Fetching Code Dx Helm charts...'
 Remove-Item .\codedx-kubernetes -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
 Invoke-GitClone $codedxGitRepo $codedxGitRepoBranch
 
+if ($extraCodeDxChartFilesPaths.Count -gt 0) {
+	Copy-Item $extraCodeDxChartFilesPaths .\codedx-kubernetes\codedx
+}
+
 Write-Verbose 'Deploying Code Dx with Tool Orchestration disabled...'
 New-CodeDxDeployment $codeDxDnsName $workDir $waitTimeSeconds `
 	$clusterCertificateAuthorityCertPath `
@@ -201,6 +208,21 @@ New-CodeDxDeployment $codeDxDnsName $workDir $waitTimeSeconds `
 	$namespaceIngressController `
 	$ingressClusterIssuer `
 	-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -configureIngress:$configureIngress
+
+$caCertPaths = $extraCodeDxTrustedCaCertPaths
+if ($useTLS -and -not $skipToolOrchestration) {
+	$caCertPaths += $clusterCertificateAuthorityCertPath
+}
+
+if ($caCertPaths.count -gt 0) {
+	Set-TrustedCerts $workDir `
+		$waitTimeSeconds `
+		$namespaceCodeDx `
+		$releaseNameCodeDx `
+		$caCertsFilePwd `
+		$caCertsFileNewPwd `
+		$caCertPaths
+}
 
 if (-not $skipToolOrchestration) {
 
@@ -231,7 +253,7 @@ if (-not $skipToolOrchestration) {
 		"$protocol`://$releaseNameToolOrchestration.$namespaceToolOrchestration.svc.cluster.local:3333" $toolServiceApiKey `
 		$releaseNameCodeDx `
 		$caCertsFilePwd $caCertsFileNewPwd `
-		-enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
+		-enableNetworkPolicies:$useNetworkPolicies
 }
 
 

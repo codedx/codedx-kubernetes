@@ -327,33 +327,39 @@ $tlsConfig,$codedxCaConfigMap,$minioVolumeSizeGiB,$imagePullSecretYaml,$preDelet
 	Invoke-HelmSingleDeployment 'Tool Orchestration' $waitSeconds $namespace 'toolsvc' $chartFolder $valuesFile 'toolsvc-codedx-tool-orchestration' $numReplicas $extraValuesPaths
 }
 
-function Set-UseToolOrchestration([string] $workDir, 
-	[string] $waitSeconds,
-	[string] $caCertPathToolService,
-	[string] $namespace, [string] $codedxNamespace,
-	[string] $toolServiceUrl, [string] $toolServiceApiKey,
-	[string] $codedxReleaseName,
-	[string] $caCertsFilePwd,
-	[string] $caCertsFileNewPwd,
-	[switch] $enableNetworkPolicies,
-	[switch] $configureTls) {
+function Set-TrustedCerts([string] $workDir, 
+	[string]   $waitSeconds,
+	[string]   $codedxNamespace,
+	[string]   $codedxReleaseName,
+	[string]   $caCertsFilePwd,
+	[string]   $caCertsFileNewPwd,
+	[string[]] $trustedCertPaths) {
 
 	$caCertsFilePath = './cacerts'
 	if (test-path $caCertsFilePath) {
 		remove-item $caCertsFilePath -force
 	}
 
-	# fetch name of pod with cacerts file
-	$podName = kubectl -n $codedxNamespace get pod -l app=codedx --field-selector=status.phase=Running -o name
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to get for name of Code Dx pod, kubectl exited with code $LASTEXITCODE."
-	}
+	$chartFolder = (join-path $workDir codedx-kubernetes/codedx)
+	$chartFolderCaCertsFilePath = join-path $chartFolder $caCertsFilePath
 
-	# copy cacerts file from pod
-	$podFile = "$($podName.Replace('pod/', ''))`:/etc/ssl/certs/java/cacerts"
-	kubectl -n $codedxNamespace cp $podFile $caCertsFilePath
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to copy out cacerts file, kubectl exited with code $LASTEXITCODE."
+	# if cacerts already exists in the chart folder via -extraCodeDxChartFilesPaths, use 
+	# that copy; otherwise, pull a copy from the running Code Dx pod
+	if (test-path $chartFolderCaCertsFilePath) {
+		copy-item $chartFolderCaCertsFilePath $caCertsFilePath
+	} else {
+		# fetch name of pod with cacerts file
+		$podName = kubectl -n $codedxNamespace get pod -l app=codedx --field-selector=status.phase=Running -o name
+		if ($LASTEXITCODE -ne 0) {
+			throw "Unable to get for name of Code Dx pod, kubectl exited with code $LASTEXITCODE."
+		}
+
+		# copy cacerts file from pod
+		$podFile = "$($podName.Replace('pod/', ''))`:/etc/ssl/certs/java/cacerts"
+		kubectl -n $codedxNamespace cp $podFile $caCertsFilePath
+		if ($LASTEXITCODE -ne 0) {
+			throw "Unable to copy out cacerts file, kubectl exited with code $LASTEXITCODE."
+		}
 	}
 
 	# set cacerts password
@@ -363,20 +369,37 @@ function Set-UseToolOrchestration([string] $workDir,
 	}
 	Set-KeystorePassword $caCertsFilePath $caCertsFilePwd $keystorePwd 
 
-	# remove CA cert for tool service
-	$aliasName = 'codedx-ca'
-	Remove-KeystoreAlias $caCertsFilePath $keystorePwd $aliasName
+	Import-TrustedCaCerts $caCertsFilePath $keystorePwd $trustedCertPaths
 
-	$cacertsFile = ''
-	if ($configureTls) {
-		# specify cacerts for helm upgrade and store tool service CA cert
-		$cacertsFile = 'cacerts'
-		Add-KeystoreAlias $caCertsFilePath $keystorePwd $aliasName $caCertPathToolService
+	# move edited cacerts file to chart directory where it can be found during chart install
+	copy-item $caCertsFilePath $chartFolder -Force
+
+	$values = @'
+cacertsFile: cacerts
+cacertsFilePwd: {0}
+'@ -f $keystorePwd
+
+	$valuesFile = 'codedx-cacert-values.yaml'
+	$values | out-file $valuesFile -Encoding ascii -Force
+
+	helm -n $codedxNamespace upgrade --values $valuesFile --reuse-values $codedxReleaseName $chartFolder
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to upgrade Code Dx for trusted certs, helm exited with code $LASTEXITCODE."
 	}
 
-	# move edited cacerts file to chart directory
-	$chartFolder = (join-path $workDir codedx-kubernetes/codedx)
-	copy-item cacerts $chartFolder -Force
+	Wait-Deployment 'Helm Upgrade' $waitSeconds $codedxNamespace "$codedxReleaseName-codedx" 1	
+}
+
+function Set-UseToolOrchestration([string] $workDir, 
+	[string] $waitSeconds,
+	[string] $caCertPathToolService,
+	[string] $namespace, [string] $codedxNamespace,
+	[string] $toolServiceUrl, [string] $toolServiceApiKey,
+	[string] $codedxReleaseName,
+	[string] $caCertsFilePwd,
+	[string] $caCertsFileNewPwd,
+	[switch] $enableNetworkPolicies) {
+
 
 	$networkPolicy = 'false'
 	if ($enableNetworkPolicies) {
@@ -392,8 +415,8 @@ function Set-UseToolOrchestration([string] $workDir,
 codedxProps:
   internalExtra:
   - type: secret
-    name: {4}
-    key: {4}
+    name: {3}
+    key: {3}
   - type: values
     key: codedx-orchestration-props
     values:
@@ -406,13 +429,12 @@ networkPolicy:
     - namespaceSelector:
         matchLabels:
           name: {1}
-cacertsFile: {3}
-cacertsFilePwd: {5}
-'@ -f $toolServiceUrl, $namespace, $networkPolicy, $cacertsFile, $codedxOrchestrationPropsKey, $keystorePwd
+'@ -f $toolServiceUrl, $namespace, $networkPolicy, $codedxOrchestrationPropsKey
 
 	$valuesFile = 'codedx-orchestration-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
 
+	$chartFolder = (join-path $workDir codedx-kubernetes/codedx)
 	helm -n $codedxNamespace upgrade --values $valuesFile --reuse-values $codedxReleaseName $chartFolder
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to upgrade Code Dx release for tool orchestration, helm exited with code $LASTEXITCODE."

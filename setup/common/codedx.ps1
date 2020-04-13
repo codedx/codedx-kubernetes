@@ -327,6 +327,15 @@ $tlsConfig,$codedxCaConfigMap,$minioVolumeSizeGiB,$imagePullSecretYaml,$preDelet
 	Invoke-HelmSingleDeployment 'Tool Orchestration' $waitSeconds $namespace 'toolsvc' $chartFolder $valuesFile 'toolsvc-codedx-tool-orchestration' $numReplicas $extraValuesPaths
 }
 
+function Get-RunningCodeDxPodName([string] $codedxNamespace) {
+
+	$name = kubectl -n $codedxNamespace get pod -l app=codedx --field-selector=status.phase=Running -o jsonpath='{.items[0].metadata.name}'
+	if (0 -ne $LASTEXITCODE) {
+		throw "Unable to get the name of a running Code Dx pod, kubectl returned exit code $LASTEXITCODE."
+	}
+	$name
+}
+
 function Set-TrustedCerts([string] $workDir, 
 	[string]   $waitSeconds,
 	[string]   $codedxNamespace,
@@ -348,14 +357,9 @@ function Set-TrustedCerts([string] $workDir,
 	if (test-path $chartFolderCaCertsFilePath) {
 		copy-item $chartFolderCaCertsFilePath $caCertsFilePath
 	} else {
-		# fetch name of pod with cacerts file
-		$podName = kubectl -n $codedxNamespace get pod -l app=codedx --field-selector=status.phase=Running -o name
-		if ($LASTEXITCODE -ne 0) {
-			throw "Unable to get for name of Code Dx pod, kubectl exited with code $LASTEXITCODE."
-		}
+		$podName = Get-RunningCodeDxPodName $codedxNamespace
+		$podFile = "$podName`:/etc/ssl/certs/java/cacerts"
 
-		# copy cacerts file from pod
-		$podFile = "$($podName.Replace('pod/', ''))`:/etc/ssl/certs/java/cacerts"
 		kubectl -n $codedxNamespace cp $podFile $caCertsFilePath
 		if ($LASTEXITCODE -ne 0) {
 			throw "Unable to copy out cacerts file, kubectl exited with code $LASTEXITCODE."

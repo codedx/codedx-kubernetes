@@ -262,7 +262,7 @@ type: kubernetes.io/dockerconfigjson
 '@ -f $name, $dockerConfigJson
 
 	$imagePullSecret | out-file "$name.yaml" -Encoding ascii -Force
-	kubectl -n $namespace create -f "$name.yaml"
+	kubectl -n $namespace apply -f "$name.yaml"
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create image pull secret named $name, kubectl exited with code $LASTEXITCODE."
 	}
@@ -311,12 +311,11 @@ function Wait-Deployment([string] $message, [int] $waitSeconds, [string] $namesp
 		if (Test-Deployment $namespace $deploymentName) {
 
 			Write-Verbose "Fetching status of deployment named $deploymentName..."
-			$deploymentJson = kubectl -n $namespace get deployment $deploymentName -o json
+			$readyReplicas = kubectl -n $namespace get deployment $deploymentName -o jsonpath='{.status.readyReplicas}'
 			if ($LASTEXITCODE -ne 0) {
 				throw "Unable to wait for deployment, kubectl exited with code $LASTEXITCODE."
 			}
 
-			$readyReplicas = ($deploymentJson | convertfrom-json).status.readyReplicas
 			if ($null -eq $readyReplicas) {
 				$readyReplicas = 0
 			}

@@ -5,10 +5,10 @@ param (
 	[string] $deploymentCodeDx = 'codedx',
 	[string] $statefulSetMariaDBMaster = 'codedx-mariadb-master',
 	[string] $statefulSetMariaDBSlave = 'codedx-mariadb-slave',
-	[int]    $statefulSetMariaDBSlaveCount = 2,
+	[int]    $statefulSetMariaDBSlaveCount = 1,
 	[string] $mariaDbSecretName = 'codedx-mariadb',
 	[string] $mariaDbMasterServiceName = 'codedx-mariadb',
-	[string] $rootPwd = 'vpI2YH5iI*8',
+	[string] $rootPwd = '',
 	[int]    $waitSeconds = 600
 )
 
@@ -19,6 +19,10 @@ Set-PSDebug -Strict
 
 . (join-path $PSScriptRoot '../common/mariadb.ps1')
 . (join-path $PSScriptRoot '../common/k8s.ps1')
+
+if ($rootPwd -eq '') { 
+	$rootPwd = Get-SecureStringText 'Enter a password for the MariaDB root user' 0 
+}
 
 Write-Verbose "Testing for work directory '$workDirectory'"
 if (-not (Test-Path $workDirectory -PathType Container)) {

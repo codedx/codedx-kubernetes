@@ -169,6 +169,10 @@ podSecurityPolicy:
 #
 resources: {}
 
+priorityClass:
+  workflowValue: 10000
+  serviceValue: 10100
+
 # NOTE: These are setting attributes for the `argo` dependency
 argo:
   installCRD: false
@@ -178,7 +182,7 @@ argo:
     controller: codedx-workflow-controller
     tag: v2.4.2
   controller:
-    priorityClassName: 'codedx-workflow-controller'
+    priorityClassValue: 10100
   ui:
     enabled: false
   minio:
@@ -208,7 +212,7 @@ minio:
   persistence:
     size: 50Gi
     storageClass: 
-  priorityClassName: 'codedx-workflow-storage'
+  priorityClassValue: 10100
 
 # Options for configuring clients to explicitly trust certificate data for the MinIO TLS configuration. This section
 # does not apply when minio.tls.enabled=false.

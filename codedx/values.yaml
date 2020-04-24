@@ -528,6 +528,8 @@ codedxTls:
   #
   keyFile: 'codedx-cert.key'
 
+priorityClassValue: 10100
+
 # Code Dx-specific MariaDB configuration. This should usually be left untouched, unless changing database passwords or
 # opting to use an external MariaDB instance by setting mariadb.enabled to false. When using an external MariaDB instance,
 # you must specify a value for codedxProps.dbconnection.externalDbUrl and create your own k8s secret containing a MariaDB 
@@ -558,7 +560,7 @@ mariadb:
       # Use default storage class for master/slave PVCs
       storageClass: 
       size: 32Gi
-    priorityClassName: 'codedx-mariadb-master'
+    priorityClassValue: 10200
     config: |-
       [mysqld]
       skip-name-resolve
@@ -590,7 +592,7 @@ mariadb:
       # Use default storage class for master/slave PVCs
       storageClass: 
       size: 32Gi
-    priorityClassName: 'codedx-mariadb-slave'
+    priorityClassValue: 10200
     config: |-
       [mysqld]
       skip-name-resolve

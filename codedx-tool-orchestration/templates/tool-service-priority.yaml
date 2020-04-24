@@ -1,31 +1,15 @@
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
-  name: codedx-workflow
-value: 10000 
+  name: {{ include "codedx-tool-orchestration.workflow.priorityClassName" . | quote }}
+value: {{ .Values.priorityClass.workflowValue }}
 globalDefault: false
 description: "The priority class for Code Dx Tool Orchestration workflows."
 ---
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
-  name: codedx-tool-service
-value: 10100 
+  name: {{ include "codedx-tool-orchestration.service.priorityClassName" . | quote }}
+value: {{ .Values.priorityClass.serviceValue }}
 globalDefault: false
 description: "The priority class for the Code Dx Tool Orchestration service."
----
-apiVersion: scheduling.k8s.io/v1
-kind: PriorityClass
-metadata:
-  name: codedx-workflow-controller
-value: 10100
-globalDefault: false
-description: "The priority class for the Code Dx Argo Workflow controller."
----
-apiVersion: scheduling.k8s.io/v1
-kind: PriorityClass
-metadata:
-  name: codedx-workflow-storage
-value: 10100
-globalDefault: false
-description: "The priority class for the Code Dx MinIO instance."

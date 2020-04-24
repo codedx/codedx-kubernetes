@@ -64,6 +64,8 @@ This section describes the setup.ps1 script parameters.
 | mariadbReplicatorPwd | mariadbReplicatorPwd specifies the password for the MariaDB replicator account | | |
 | caCertsFilePwd | caCertsFilePwd specifies the current password of the Code Dx cacerts file | changeit | |
 | caCertsFileNewPwd | caCertsFileNewPwd specifies the new password to protect the Code Dx cacerts file | | |
+| extraCodeDxChartFilesPaths | extraCodeDxChartFilesPaths specifies a list of files to copy into the Code Dx chart folder at chart install time | | |
+| extraCodeDxTrustedCaCertPaths | extraCodeDxTrustedCaCertPaths specifies a list of certificate files of trusted CAs to import into the Code Dx cacerts file | | |
 | dockerImagePullSecretName | dockerImagePullSecretName specifies the name of the Kubernetes secret to store a Docker image pull secret | | |
 | dockerConfigJson | dockerConfigJson specifies the .dockerconfigjson value allowing access to a private Docker registry | | See .dockerconfigjson at https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#registry-secret-existing-credentials |
 | codedxHelmRepo | codedxHelmRepo specifies the URL of the Code Dx Helm repository | https://codedx.github.io/codedx-kubernetes | |

@@ -1,7 +1,7 @@
 apiVersion: v2
 name: codedx
-version: 0.8.7
-appVersion: "5.0.0"
+version: 0.8.10
+appVersion: "5.0.2"
 description: A Helm chart for Code Dx
 icon: https://codedx.com/wp-content/uploads/2017/03/CodeDx-logo.png
 home: https://github.com/codedx/codedx-kubernetes
@@ -17,7 +17,7 @@ sources:
 - https://hub.docker.com/r/bitnami/mariadb
 dependencies:
 - name: mariadb
-  version: 7.3.12
+  version: 7.3.13
   repository: https://codedx.github.io/codedx-kubernetes
   condition: mariadb.enabled
 maintainers:

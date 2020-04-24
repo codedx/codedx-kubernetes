@@ -264,8 +264,10 @@ Determine the name to use to create and/or bind MariaDB's PodSecurityPolicy.
 {{- include "sanitize" $fullName -}}
 {{- end -}}
 
-
-
+{{- define "codedx.priorityClassName" -}}
+{{- $fullName := printf "%s-codedx-pc" (include "codedx.fullname" .) -}}
+{{- include "sanitize" $fullName -}}
+{{- end -}}
 
 {{/*
 Duplicates of MariaDB template helpers so we can reference service/serviceAccount names

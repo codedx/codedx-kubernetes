@@ -15,7 +15,14 @@ function Get-AppCommandPath([string] $commandName) {
 	$command.Path
 }
 
-function Get-SecureStringText([string] $prompt, [int] $minimumLength) {
+function Test-IsBlacklisted([string] $text, [string[]] $blacklist) {
+
+	$null -ne ($blacklist | Where-Object {
+		$text -ceq $_ -or $text.Contains($_)
+	})
+}
+
+function Get-StringText([string] $prompt, [int] $minimumLength, [bool] $isSecure, [string[]] $blacklist) {
 
 	if ($prompt -eq '') {
 		$prompt = ' '
@@ -25,13 +32,24 @@ function Get-SecureStringText([string] $prompt, [int] $minimumLength) {
 	}
 
 	while ($true) {
-		$secureString = Read-Host -Prompt $prompt -AsSecureString
-		$bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureString)
-		$text = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($BSTR)
+		$text = Read-Host -Prompt $prompt -AsSecureString:$isSecure
+		if ($isSecure) {
+			$bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($text)
+			$text = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($BSTR)
+		}
 		if (($text -ne '') -and ($text.Length -ge $minimumLength)) {
+			
+			if (Test-IsBlacklisted $text $blacklist) {
+				Write-Host "The value cannot contain the following values; please try again.`n$blacklist"
+				continue
+			}
 			return $text
 		}
 	}
+}
+
+function Get-SecureStringText([string] $prompt, [int] $minimumLength) {
+	Get-StringText $prompt $minimumLength $true
 }
 
 function Invoke-GitClone([string] $url, [string] $branch) {

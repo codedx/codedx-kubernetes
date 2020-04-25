@@ -15,14 +15,16 @@ param (
 	[string]   $storageClassName = '',
 
 	[string]   $codeDxMemoryReservation = '',
-	[string]   $dbMemoryReservation = '',
+	[string]   $dbMasterMemoryReservation = '',
+	[string]   $dbSlaveMemoryReservation = '',
 	[string]   $toolServiceMemoryReservation = '',
 	[string]   $minioMemoryReservation = '',
 	[string]   $workflowMemoryReservation = '',
 	[string]   $nginxMemoryReservation = '',
 
 	[string]   $codeDxCPUReservation = '',
-	[string]   $dbCPUReservation = '',
+	[string]   $dbMasterCPUReservation = '',
+	[string]   $dbSlaveCPUReservation = '',
 	[string]   $toolServiceCPUReservation = '',
 	[string]   $minioCPUReservation = '',
 	[string]   $workflowCPUReservation = '',
@@ -209,8 +211,8 @@ New-CodeDxDeployment $codeDxDnsName $workDir $waitTimeSeconds `
 	$dbSlaveReplicaCount $dbSlaveVolumeSizeGiB `
 	$codeDxVolumeSizeGiB `
 	$storageClassName `
-	$codeDxMemoryReservation $dbMemoryReservation `
-	$codeDxCPUReservation $dbCPUReservation `
+	$codeDxMemoryReservation $dbMasterMemoryReservation $dbSlaveMemoryReservation `
+	$codeDxCPUReservation $dbMasterCPUReservation $dbSlaveCPUReservation `
 	$extraCodeDxValuesPaths `
 	$namespaceIngressController `
 	$ingressClusterIssuer `

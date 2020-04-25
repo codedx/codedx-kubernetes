@@ -17,9 +17,11 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[int]      $codeDxVolumeSizeGiB,	
 	[string]   $storageClassName,
 	[string]   $codeDxMemoryLimit,
-	[string]   $dbMemoryLimit,
+	[string]   $dbMasterMemoryLimit,
+	[string]   $dbSlaveMemoryLimit,
 	[string]   $codeDxCPULimit,
-	[string]   $dbCPULimit,
+	[string]   $dbMasterCPULimit,
+	[string]   $dbSlaveCPULimit,
 	[string[]] $extraValuesPaths,
 	[string]   $ingressControllerNamespace,
 	[string]   $ingressClusterIssuer,
@@ -137,7 +139,7 @@ mariadb:
     persistence:
       storageClass: {18}
       size: {15}Gi
-{20}
+{23}
 cacertsFile: ''
 cacertsFilePwd: '{22}'
 '@ -f $adminPwd, $tomcatImage, $imagePullSecretYaml, `
@@ -147,9 +149,10 @@ $mariadbRootPwd, $mariadbReplicatorPwd, `
 $dbVolumeSizeGiB, $codeDxVolumeSizeGiB, $codeDxDnsName, $ingress, `
 $dbSlaveVolumeSizeGiB, $dbSlaveReplicaCount, $ingressNamespaceSelector, $storageClassName, `
 (Format-ResourceLimitRequest -limitMemory $codeDxMemoryLimit -limitCPU $codeDxCPULimit), `
-(Format-ResourceLimitRequest -limitMemory $dbMemoryLimit -limitCPU $dbCPULimit -indent 4), `
+(Format-ResourceLimitRequest -limitMemory $dbMasterMemoryLimit -limitCPU $dbMasterCPULimit -indent 4), `
 $ingressClusterIssuer, `
-$defaultKeyStorePwd
+$defaultKeyStorePwd, `
+(Format-ResourceLimitRequest -limitMemory $dbSlaveMemoryLimit -limitCPU $dbSlaveCPULimit -indent 4)
 
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force

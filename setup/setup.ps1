@@ -135,6 +135,10 @@ if (-not (test-path $clusterCertificateAuthorityCertPath -PathType Leaf)) {
 	write-error "Unable to continue because path '$clusterCertificateAuthorityCertPath' cannot be found."
 }
 
+if ($dbSlaveReplicaCount -eq 0) {
+	Write-Host "WARNING: You should schedule database backups when not installing MariaDB slave instance(s)."
+}
+
 $workDir = join-path $workDir "$releaseNameCodeDx-$releaseNameToolOrchestration"
 Write-Verbose "Creating directory $workDir..."
 New-Item -Type Directory $workDir -Force

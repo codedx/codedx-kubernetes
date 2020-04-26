@@ -45,6 +45,11 @@ codedxAdminPassword: ""
 #
 cacertsFile: ""
 
+# cacertsFilePwd provides the password for the cacertsFile specified. Set to 'changeit' when the
+# cacertsFile value is unset/empty so that Code Dx can access the default Java cacerts file.
+#
+cacertsFilePwd: 'changeit'
+
 # serviceAccount options for Code Dx.
 # Determine the name of the service account to run Code Dx with, and whether to create the ServiceAccount.
 # - If create=true but name=undefined - Will create and use an auto-named service account
@@ -523,6 +528,8 @@ codedxTls:
   #
   keyFile: 'codedx-cert.key'
 
+priorityClassValue: 10100
+
 # Code Dx-specific MariaDB configuration. This should usually be left untouched, unless changing database passwords or
 # opting to use an external MariaDB instance by setting mariadb.enabled to false. When using an external MariaDB instance,
 # you must specify a value for codedxProps.dbconnection.externalDbUrl and create your own k8s secret containing a MariaDB 
@@ -553,7 +560,7 @@ mariadb:
       # Use default storage class for master/slave PVCs
       storageClass: 
       size: 32Gi
-    priorityClassName: 'codedx-mariadb-master'
+    priorityClassValue: 10200
     config: |-
       [mysqld]
       skip-name-resolve
@@ -585,7 +592,7 @@ mariadb:
       # Use default storage class for master/slave PVCs
       storageClass: 
       size: 32Gi
-    priorityClassName: 'codedx-mariadb-slave'
+    priorityClassValue: 10200
     config: |-
       [mysqld]
       skip-name-resolve

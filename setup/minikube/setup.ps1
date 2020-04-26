@@ -33,7 +33,7 @@ param (
 	[string]   $namespaceToolOrchestration = 'cdx-svc',
 	[string]   $namespaceCodeDx = 'cdx-app',
 	[string]   $releaseNameCodeDx = 'codedx-app',
-	[string]   $releaseNameToolOrchestration = 'toolsvc-codedx-tool-orchestration',
+	[string]   $releaseNameToolOrchestration = 'codedx-tool-orchestration',
 
 	[int]      $kubeApiTargetPort = 8443,
 

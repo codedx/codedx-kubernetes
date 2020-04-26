@@ -15,23 +15,58 @@ function Get-AppCommandPath([string] $commandName) {
 	$command.Path
 }
 
-function Get-SecureStringText([string] $prompt, [int] $minimumLength) {
+function Test-IsBlacklisted([string] $text, [string[]] $blacklist) {
+
+	$null -ne ($blacklist | Where-Object {
+		$text -ceq $_ -or $text.Contains($_)
+	})
+}
+
+function Read-HostText([string] $prompt, [int] $minimumLength, [int] $maximumLength, [string[]] $blacklist, [bool] $isSecure) {
 
 	if ($prompt -eq '') {
 		$prompt = ' '
 	}
-	if ($minimumLength -gt 0) {
-		$prompt = "$prompt (minimum length $minimumLength)"
+
+	$instruction = ''
+	if ($minimumLength -ne 0) {
+		if ($maximumLength -ne 0) {
+			$instruction = "(length: $minimumLength-$maximumLength)"
+		} else {
+			$instruction = "(minimum length: $minimumLength)"
+		}
+	} else {
+		if ($maximumLength -ne 0) {
+			$instruction = "(maximum length: $maximumLength)"
+		}
+	}
+
+	if ($minimumLength -eq 0) {
+		$minimumLength = [int]::MinValue
+	}
+	if ($maximumLength -eq 0) {
+		$maximumLength = [int]::MaxValue
 	}
 
 	while ($true) {
-		$secureString = Read-Host -Prompt $prompt -AsSecureString
-		$bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureString)
-		$text = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($BSTR)
-		if (($text -ne '') -and ($text.Length -ge $minimumLength)) {
+		$text = Read-Host -Prompt "$prompt$instruction" -AsSecureString:$isSecure
+		if ($isSecure) {
+			$bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($text)
+			$text = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($BSTR)
+		}
+		if (($text -ne '') -and ($text.Length -ge $minimumLength) -and ($text.Length -le $maximumLength)) {
+			
+			if (Test-IsBlacklisted $text $blacklist) {
+				Write-Host "The value cannot contain the following values; please try again.`n$blacklist"
+				continue
+			}
 			return $text
 		}
 	}
+}
+
+function Read-HostSecureText([string] $prompt, [int] $minimumLength, [int] $maximumLength, [string[]] $blacklist) {
+	Read-HostText $prompt $minimumLength $maximumLength $blacklist $true
 }
 
 function Invoke-GitClone([string] $url, [string] $branch) {

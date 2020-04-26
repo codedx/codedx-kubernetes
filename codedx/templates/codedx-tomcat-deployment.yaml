@@ -51,6 +51,11 @@ spec:
             secretKeyRef:
               name: {{ include "codedx.adminSecretName" . | quote }}
               key: password
+        - name: KEYSTORE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "codedx.cacerts.pwd.secretName" . | quote }}
+              key: password
         image: {{ required "A tomcat image must be provided! Assign codedxTomcatImage!" .Values.codedxTomcatImage | quote }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.codedxTomcatImagePullPolicy | quote }}
         name: "{{ include "codedx.name" . }}"
@@ -158,7 +163,7 @@ spec:
       {{ else }}
           command: ["bash", "-c", "url='{{ .Values.codedxProps.dbconnection.externalDbUrl }}' && pat='^jdbc:mysql://([^/]+)/.+$' && [[ $url =~ $pat ]] && host=${BASH_REMATCH[1]} && for i in {1..60}; do if (timeout -t 2 bash -c </dev/tcp/$host/3306 echo $?); then echo 'Successfully connected to MariaDB port'; exit 0; else echo 'Retrying database connection...'; sleep 2; fi; done; echo 'MariaDB is unavailable'; exit 1"]
       {{ end -}}
-      priorityClassName: codedx-codedx-app
+      priorityClassName: {{ include "codedx.priorityClassName" . | quote }}
       restartPolicy: Always
       volumes:
       - name: {{ include "volume.fullname" . | quote }}

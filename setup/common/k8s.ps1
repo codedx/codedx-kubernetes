@@ -14,9 +14,18 @@ function Test-Namespace([string] $namespace) {
 	0 -eq $LASTEXITCODE
 }
 
-function Set-KubectlContext([string] $profileName) {
+function Get-KubectlContext() {
 
-	kubectl config use-context $profileName
+	$contextName = kubectl config current-context
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to get kubectl context, kubectl exited with code $LASTEXITCODE."
+	}
+	$contextName
+}
+
+function Set-KubectlContext([string] $contextName) {
+
+	kubectl config use-context $contextName
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to change kubectl context, kubectl exited with code $LASTEXITCODE."
 	}
@@ -28,7 +37,7 @@ function Test-ClusterInfo([string] $profileName) {
 	0 -eq $LASTEXITCODE
 }
 
-function New-Certificate([string] $caCertPath, [string] $resourceName, [string] $dnsName, [string] $namespace, [string[]] $alternativeNames){
+function New-Certificate([string] $caCertPath, [string] $resourceName, [string] $dnsName, [string] $certPublicKeyFile, [string] $certPrivateKeyFile, [string] $namespace, [string[]] $alternativeNames){
 
 	$altNames = @()
 	$altNames = $altNames + $dnsName + "$dnsName.$namespace" + $alternativeNames
@@ -37,14 +46,14 @@ function New-Certificate([string] $caCertPath, [string] $resourceName, [string] 
 		$altNames `
 		"$dnsName.conf" `
 		"$dnsName.csr" `
-		"$dnsName.key"
+		$certPrivateKeyFile
 
 	New-CsrResource $resourceName "$dnsName.csr" "$dnsName.csrr"
 	New-CsrApproval $resourceName
 
 	$certText = Get-Certificate $resourceName
 	$caCertText = [io.file]::ReadAllText($caCertPath)
-	"$certText`n$caCertText" | out-file "$resourceName.pem" -Encoding ascii -Force
+	"$certText`n$caCertText" | out-file $certPublicKeyFile -Encoding ascii -Force
 }
 
 function New-Csr([string] $subjectName, [string[]] $subjectAlternativeNames, [string] $requestFile, [string] $csrFile, [string] $keyFile) {
@@ -83,6 +92,11 @@ $subjectAlternativeNames | ForEach-Object {
 
 function Test-Deployment([string] $namespace, [string] $deploymentName) {
 	kubectl -n $namespace get deployment $deploymentName | out-null
+	$LASTEXITCODE -eq 0
+}
+
+function Test-StatefulSet([string] $namespace, [string] $statefulSetName) {
+	kubectl -n $namespace get statefulset $statefulSetName | out-null
 	$LASTEXITCODE -eq 0
 }
 
@@ -236,24 +250,17 @@ function New-CertificateConfigMap([string] $namespace, [string] $name, [string] 
 	}
 }
 
-function New-ImagePullSecret([string] $namespace, [string] $name, [string] $dockerConfigJson) {
+function New-ImagePullSecret([string] $namespace, `
+	[string] $name, `
+	[string] $dockerRegistry,
+	[string] $dockerRegistryUser,
+	[string] $dockerRegistryPwd) {
 
 	if (Test-Secret $namespace $name) {
 		Remove-Secret $namespace $name
 	}
 
-	$imagePullSecret = @'
-apiVersion: v1
-metadata:
-  name: {0}
-data:
-  .dockerconfigjson: {1}
-kind: Secret
-type: kubernetes.io/dockerconfigjson  
-'@ -f $name, $dockerConfigJson
-
-	$imagePullSecret | out-file "$name.yaml" -Encoding ascii -Force
-	kubectl -n $namespace create -f "$name.yaml"
+	kubectl -n $namespace create secret docker-registry $name --docker-server=$dockerRegistry --docker-username=$dockerRegistryUser --docker-password=$dockerRegistryPwd
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create image pull secret named $name, kubectl exited with code $LASTEXITCODE."
 	}
@@ -295,19 +302,55 @@ function Wait-AllRunningPods([string] $message, [int] $waitSeconds, [string] $na
 
 function Wait-Deployment([string] $message, [int] $waitSeconds, [string] $namespace, [string] $deploymentName, [string] $totalReplicas) {
 
+	Wait-ReplicasReady $message $waitSeconds $namespace 'deployment' $deploymentName $totalReplicas
+}
+
+function Wait-StatefulSet([string] $message, [int] $waitSeconds, [string] $namespace, [string] $statefulSetName, [string] $totalReplicas) {
+
+	Wait-ReplicasReady $message $waitSeconds $namespace 'statefulset' $statefulSetName $totalReplicas
+}
+
+function Wait-JobSuccess([string] $message, [int] $waitSeconds, [string] $namespace, [string] $jobName) {
+
 	$sleepSeconds = [math]::min(60, ($waitSeconds * .05))
 	$timeoutTime = [datetime]::Now.AddSeconds($waitSeconds)
 	while ($true) {
 
-		if (Test-Deployment $namespace $deploymentName) {
+		$success = kubectl -n $namespace get job $jobName -o jsonpath='{.status.succeeded}'
+		if ('1' -eq $success) {
+			break
+		}
 
-			Write-Verbose "Fetching status of deployment named $deploymentName..."
-			$deploymentJson = kubectl -n $namespace get deployment $deploymentName -o json
+		if ([datetime]::now -gt $timeoutTime) {
+			throw "Unable to continue because the job '$jobName' has not yet succeeded ($message)"
+		}
+
+		Write-Verbose "Job has not yet succeeded. Another check will occur in $sleepSeconds seconds ($message)."
+		start-sleep -seconds $sleepSeconds
+	}
+}
+
+function Wait-ReplicasReady([string] $message, [int] $waitSeconds, [string] $namespace, [string] $resourceType, [string] $resourceName, [string] $totalReplicas) {
+
+	if ($resourceType -ne 'deployment' -and $resourceType -ne 'statefulset') {
+		throw "Unable to wait for resource type '$resourceType'"
+	}
+
+	$sleepSeconds = [math]::min(60, ($waitSeconds * .05))
+	$timeoutTime = [datetime]::Now.AddSeconds($waitSeconds)
+	while ($true) {
+
+		$resourceExists = ($resourceType -eq 'deployment' -and (Test-Deployment $namespace $resourceName)) -or 
+			($resourceType -eq 'statefulset' -and (Test-StatefulSet $namespace $resourceName))
+
+		if ($resourceExists) {
+
+			Write-Verbose "Fetching status of $resourceType named $resourceName..."
+			$readyReplicas = kubectl -n $namespace get $resourceType $resourceName -o jsonpath='{.status.readyReplicas}'
 			if ($LASTEXITCODE -ne 0) {
-				throw "Unable to wait for deployment, kubectl exited with code $LASTEXITCODE."
+				throw "Unable to wait for $resourceType $resourceName, kubectl exited with code $LASTEXITCODE."
 			}
 
-			$readyReplicas = ($deploymentJson | convertfrom-json).status.readyReplicas
 			if ($null -eq $readyReplicas) {
 				$readyReplicas = 0
 			}
@@ -319,14 +362,14 @@ function Wait-Deployment([string] $message, [int] $waitSeconds, [string] $namesp
 			}
 
 		} else {
-			Write-Verbose "Deployment $deploymentName in namespace $namespace does not exist"
+			Write-Verbose "Resource $resourceName in namespace $namespace does not exist"
 		}
 
 		if ([datetime]::now -gt $timeoutTime) {
-			throw "Unable to continue because the deployment $deploymentName is not ready ($message)"
+			throw "Unable to continue because the $resourceType $resourceName is not ready ($message)"
 		}
 
-		Write-Verbose "Some replicas are not ready. Another check will occur in $sleepSeconds seconds ($message)."
+		Write-Verbose "Current replica count does not yet match desired count. Another check will occur in $sleepSeconds seconds ($message)."
 		start-sleep -seconds $sleepSeconds
 	}
 }
@@ -364,11 +407,56 @@ resources:
 	}
 
 	$resourceSpec = [string]::join("`n", $resourcesLines)
-	Write-Verbose "Resources: `n$resourceSpec"
 
 	if ($resourceSpec -match '\s+requests:\n\s+limits:') { $resourceSpec = $resourceSpec -replace '\s+requests:','' }
 	if ($resourceSpec -notmatch '\s+limits:\n') { $resourceSpec = $resourceSpec -replace '\s+limits:$','' }
 	if ($resourceSpec -match '\s*resources:$') { $resourceSpec = '' }
 
 	$resourceSpec
+}
+
+function Set-Replicas([string] $namespace,
+	[string] $resourceType,
+	[string] $resourceName,
+	[int]    $replicaCount,
+	[int]    $waitSeconds) {
+
+	kubectl -n $namespace scale --replicas=$replicaCount $resourceType $resourceName
+	if (0 -ne $LASTEXITCODE) {
+		throw "Unable to set replicas for $resourceType named $resourceName, kubectl exited with code $LASTEXITCODE."
+	}
+
+	Wait-ReplicasReady 'Replica Wait' $waitSeconds $namespace $resourceType $resourceName $replicaCount
+}
+
+function Set-DeploymentReplicas([string] $namespace,
+	[string] $resourceName,
+	[int]    $replicaCount,
+	[int]    $waitSeconds) {
+
+	Set-Replicas $namespace 'deployment' $resourceName $replicaCount $waitSeconds
+}
+
+function Set-StatefulSetReplicas([string] $namespace,
+	[string] $resourceName,
+	[int]    $replicaCount,
+	[int]    $waitSeconds) {
+
+	Set-Replicas $namespace 'statefulset' $resourceName $replicaCount $waitSeconds
+}
+
+function Test-KubernetesJob([string] $namespace,
+	[string] $resourceName) {
+
+	kubectl -n $namespace get job $resourceName | out-null
+	$LASTEXITCODE -eq 0
+}
+
+function Remove-KubernetesJob([string] $namespace,
+	[string] $resourceName) {
+	
+	kubectl delete -n $namespace job $resourceName
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to delete job, kubectl exited with code $LASTEXITCODE."
+	}
 }

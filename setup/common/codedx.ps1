@@ -2,13 +2,15 @@
 function New-CodeDxDeployment([string] $codeDxDnsName,
     [string]   $workDir, 
 	[int]      $waitSeconds,
-	[string]   $clusterCertificateAuthorityCertPath,
+	[string]   $caCertPathCodeDx,
 	[string]   $namespace,
 	[string]   $releaseName,
 	[string]   $adminPwd,
 	[string]   $tomcatImage,
 	[string]   $tomcatImagePullSecretName,
-	[string]   $dockerConfigJson,
+	[string]   $dockerRegistry,
+	[string]   $dockerRegistryUser,
+	[string]   $dockerRegistryPwd,
 	[string]   $mariadbRootPwd,
 	[string]   $mariadbReplicatorPwd,
 	[int]      $dbVolumeSizeGiB,
@@ -17,9 +19,11 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[int]      $codeDxVolumeSizeGiB,	
 	[string]   $storageClassName,
 	[string]   $codeDxMemoryLimit,
-	[string]   $dbMemoryLimit,
+	[string]   $dbMasterMemoryLimit,
+	[string]   $dbSlaveMemoryLimit,
 	[string]   $codeDxCPULimit,
-	[string]   $dbCPULimit,
+	[string]   $dbMasterCPULimit,
+	[string]   $dbSlaveCPULimit,
 	[string[]] $extraValuesPaths,
 	[string]   $ingressControllerNamespace,
 	[string]   $ingressClusterIssuer,
@@ -41,7 +45,7 @@ codedxTomcatImagePullSecrets:
 - name: {0}
 '@ -f $tomcatImagePullSecretName
 
-		New-ImagePullSecret $namespace $tomcatImagePullSecretName $dockerConfigJson
+		New-ImagePullSecret $namespace $tomcatImagePullSecretName $dockerRegistry $dockerRegistryUser $dockerRegistryPwd
 	}
 
 	$psp = 'false'
@@ -53,14 +57,16 @@ codedxTomcatImagePullSecrets:
 		$networkPolicy = 'true'
 	}
 
+	$codeDxFullName = Get-CodeDxChartFullName $releaseName
+
 	$tlsEnabled = 'false'
-	$tlsSecretName = 'cdx-codedx-app-codedx-tls'
-	$tlsCertFile = 'codedx-app-codedx.pem'
-	$tlsKeyFile = 'codedx-app-codedx.key'
+	$tlsSecretName = "$codeDxFullName-tls"
+	$tlsCertFile = "$codeDxFullName.pem"
+	$tlsKeyFile = "$codeDxFullName.key"
 	if ($configureTls) {
 		$tlsEnabled = 'true'
 
-		New-Certificate $clusterCertificateAuthorityCertPath 'codedx-app-codedx' 'codedx-app-codedx' $namespace @()
+		New-Certificate $caCertPathCodeDx $codeDxFullName $codeDxFullName $tlsCertFile $tlsKeyFile $namespace @()
 		New-CertificateSecret $namespace $tlsSecretName $tlsCertFile $tlsKeyFile
 	}
 
@@ -75,6 +81,8 @@ codedxTomcatImagePullSecrets:
           name: {0}
 '@ -f $ingressControllerNamespace
 	}
+
+	$defaultKeyStorePwd = 'changeit'
 
 	$values = @'
 codedxAdminPassword: '{0}'
@@ -133,8 +141,9 @@ mariadb:
     persistence:
       storageClass: {18}
       size: {15}Gi
-{20}
+{23}
 cacertsFile: ''
+cacertsFilePwd: '{22}'
 '@ -f $adminPwd, $tomcatImage, $imagePullSecretYaml, `
 $psp, $networkPolicy, `
 $tlsEnabled, $tlsSecretName, $tlsCertFile, $tlsKeyFile, `
@@ -142,48 +151,53 @@ $mariadbRootPwd, $mariadbReplicatorPwd, `
 $dbVolumeSizeGiB, $codeDxVolumeSizeGiB, $codeDxDnsName, $ingress, `
 $dbSlaveVolumeSizeGiB, $dbSlaveReplicaCount, $ingressNamespaceSelector, $storageClassName, `
 (Format-ResourceLimitRequest -limitMemory $codeDxMemoryLimit -limitCPU $codeDxCPULimit), `
-(Format-ResourceLimitRequest -limitMemory $dbMemoryLimit -limitCPU $dbCPULimit -indent 4), `
-$ingressClusterIssuer
+(Format-ResourceLimitRequest -limitMemory $dbMasterMemoryLimit -limitCPU $dbMasterCPULimit -indent 4), `
+$ingressClusterIssuer, `
+$defaultKeyStorePwd, `
+(Format-ResourceLimitRequest -limitMemory $dbSlaveMemoryLimit -limitCPU $dbSlaveCPULimit -indent 4)
 
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
 
 	$chartFolder = (join-path $workDir codedx-kubernetes/codedx)
-	Invoke-HelmSingleDeployment 'Code Dx' $waitSeconds $namespace $releaseName $chartFolder $valuesFile 'codedx-app-codedx' 1 $extraValuesPaths
+	Invoke-HelmSingleDeployment 'Code Dx' $waitSeconds $namespace $releaseName $chartFolder $valuesFile $codeDxFullName 1 $extraValuesPaths
 }
 
 function New-ToolOrchestrationDeployment([string] $workDir, 
-	[int]    $waitSeconds,
-	[string] $clusterCertificateAuthorityCertPath,
-	[string] $namespace,
-	[string] $codedxNamespace,
-	[string] $codedxReleaseName,
-	[int]    $numReplicas,
-	[string] $minioUsername,
-	[string] $minioPwd,
-	[string] $apiKey,
-	[string] $toolsImage,
-	[string] $toolsMonoImage,
-	[string] $newAnalysisImage,
-	[string] $sendResultsImage,
-	[string] $sendErrorResultsImage,
-	[string] $toolServiceImage,
-	[string] $preDeleteImageName,
-	[string] $imagePullSecretName,
-	[string] $dockerConfigJson,
-	[int]    $minioVolumeSizeGiB,
-	[string] $storageClassName,
-	[string] $toolServiceMemoryLimit,
-	[string] $minioMemoryLimit,
-	[string] $workflowMemoryLimit,
-	[string] $toolServiceCPULimit,
-	[string] $minioCPULimit,
-	[string] $workflowCPULimit,	
-	[int]    $kubeApiTargetPort,
+	[int]      $waitSeconds,
+	[string]   $caCertPathOrchestrationComponents,
+	[string]   $namespace,
+	[string]   $codedxNamespace,
+	[string]   $toolServiceReleaseName,
+	[string]   $codedxReleaseName,
+	[int]      $numReplicas,
+	[string]   $minioUsername,
+	[string]   $minioPwd,
+	[string]   $apiKey,
+	[string]   $toolsImage,
+	[string]   $toolsMonoImage,
+	[string]   $newAnalysisImage,
+	[string]   $sendResultsImage,
+	[string]   $sendErrorResultsImage,
+	[string]   $toolServiceImage,
+	[string]   $preDeleteImageName,
+	[string]   $imagePullSecretName,
+	[string]   $dockerRegistry,
+	[string]   $dockerRegistryUser,
+	[string]   $dockerRegistryPwd,
+	[int]      $minioVolumeSizeGiB,
+	[string]   $storageClassName,
+	[string]   $toolServiceMemoryLimit,
+	[string]   $minioMemoryLimit,
+	[string]   $workflowMemoryLimit,
+	[string]   $toolServiceCPULimit,
+	[string]   $minioCPULimit,
+	[string]   $workflowCPULimit,	
+	[int]      $kubeApiTargetPort,
 	[string[]] $extraValuesPaths,
-	[switch] $enablePSPs,
-	[switch] $enableNetworkPolicies,
-	[switch] $configureTls) {
+	[switch]   $enablePSPs,
+	[switch]   $enableNetworkPolicies,
+	[switch]   $configureTls) {
 
 	if (-not (Test-Namespace $namespace)) {
 		New-Namespace  $namespace
@@ -197,24 +211,35 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 	$tlsToolServiceCertSecret = ''
 	$codedxCaConfigMap = ''
 
+	$toolOrchestrationFullName = Get-CodeDxToolOrchestrationChartFullName $toolServiceReleaseName
+
 	if ($configureTls) {
 		$protocol = 'https'
 		$codedxPort = '9443'
 		$tlsConfig = 'true'
-		$tlsMinioCertSecret = 'cdx-toolsvc-minio-tls'
-		$tlsToolServiceCertSecret = 'cdx-toolsvc-codedx-tool-orchestration-tls'
-		$codedxCaConfigMap = 'cdx-codedx-ca-cert'
 
-		New-Certificate $clusterCertificateAuthorityCertPath 'toolsvc-codedx-tool-orchestration' 'toolsvc-codedx-tool-orchestration' $namespace @()
-		New-Certificate $clusterCertificateAuthorityCertPath 'toolsvc-minio' 'toolsvc-minio' $namespace @()
+		$tlsMinioCertSecret = '{0}-minio-tls' -f $toolOrchestrationFullName
+		$tlsToolServiceCertSecret = '{0}-tls' -f $toolOrchestrationFullName
 
-		New-CertificateSecret $namespace $tlsMinioCertSecret 'toolsvc-minio.pem' 'toolsvc-minio.key'
-		New-CertificateConfigMap $namespace 'cdx-toolsvc-minio-cert' 'toolsvc-minio.pem'
-		New-CertificateSecret $namespace $tlsToolServiceCertSecret 'toolsvc-codedx-tool-orchestration.pem' 'toolsvc-codedx-tool-orchestration.key'
+		$codedxFullName = Get-CodeDxChartFullName $codedxReleaseName
+		$codedxCaConfigMap = '{0}-ca-cert' -f $codedxFullName
 
-		New-CertificateConfigMap $namespace $codedxCaConfigMap $clusterCertificateAuthorityCertPath
+		$toolOrchestrationFullName = Get-CodeDxToolOrchestrationChartFullName $toolServiceReleaseName
+		$minioName = '{0}-minio' -f $toolServiceReleaseName
+
+		New-Certificate $caCertPathOrchestrationComponents $toolOrchestrationFullName $toolOrchestrationFullName 'toolsvc.pem' 'toolsvc.key' $namespace @()
+		New-Certificate $caCertPathOrchestrationComponents $minioName $minioName 'minio.pem' 'minio.key' $namespace @()
+
+		New-CertificateSecret $namespace $tlsMinioCertSecret 'minio.pem' 'minio.key'
+
+		$minioCertConfigMap = '{0}-minio-cert' -f $toolOrchestrationFullName
+		New-CertificateConfigMap $namespace $minioCertConfigMap 'minio.pem'
+		New-CertificateSecret $namespace $tlsToolServiceCertSecret 'toolsvc.pem' 'toolsvc.key'
+
+		New-CertificateConfigMap $namespace $codedxCaConfigMap $caCertPathOrchestrationComponents
 	}
-	$codedxBaseUrl = '{0}://{1}-codedx.{2}.svc.cluster.local:{3}/codedx' -f $protocol,$codedxReleaseName,$codedxNamespace,$codedxPort
+	$codeDxOrchestrationFullName = Get-CodeDxChartFullName $codedxReleaseName
+	$codedxBaseUrl = '{0}://{1}.{2}.svc.cluster.local:{3}/codedx' -f $protocol,$codeDxOrchestrationFullName,$codedxNamespace,$codedxPort
 
 	$imagePullSecretYaml = 'toolServiceImagePullSecrets: []'
 	if (-not ([string]::IsNullOrWhiteSpace($imagePullSecretName))) {
@@ -224,7 +249,7 @@ toolServiceImagePullSecrets:
 - name: {0}
 '@ -f $imagePullSecretName
 
-		New-ImagePullSecret $namespace $imagePullSecretName $dockerConfigJson
+		New-ImagePullSecret $namespace $imagePullSecretName $dockerRegistry $dockerRegistryUser $dockerRegistryPwd
 	}
 
 	$psp = 'false'
@@ -250,16 +275,16 @@ minio:
   tls:
     enabled: {13}
     certSecret: {14}
-    publicCrt: 'toolsvc-minio.pem'
-    privateKey: 'toolsvc-minio.key'
+    publicCrt: 'minio.pem'
+    privateKey: 'minio.key'
   persistence:
     storageClass: {24}
     size: {21}Gi
 {28}
 
 minioTlsTrust:
-  configMapName: 'cdx-toolsvc-minio-cert'
-  configMapPublicCertKeyName: 'toolsvc-minio.pem'
+  configMapName: {29}
+  configMapPublicCertKeyName: 'minio.pem'
 
 podSecurityPolicy:
   tws:
@@ -292,8 +317,8 @@ codedxTls:
 toolServiceApiKey: '{4}'
 toolServiceTls:
   secret: {15}
-  certFile: 'toolsvc-codedx-tool-orchestration.pem'
-  keyFile: 'toolsvc-codedx-tool-orchestration.key'
+  certFile: 'toolsvc.pem'
+  keyFile: 'toolsvc.key'
   
 imagePullSecretKey: '{5}'
 imageNameCodeDxTools: '{6}'
@@ -314,60 +339,99 @@ $psp,$networkPolicy,$codedxBaseUrl,`
 $tlsConfig,$codedxCaConfigMap,$minioVolumeSizeGiB,$imagePullSecretYaml,$preDeleteImageName,$storageClassName, $kubeApiTargetPort, `
 (Format-ResourceLimitRequest -limitMemory $toolServiceMemoryLimit -limitCPU $toolServiceCPULimit), `
 (Format-ResourceLimitRequest -limitMemory $workflowMemoryLimit -limitCPU $workflowCPULimit -indent 4), `
-(Format-ResourceLimitRequest -limitMemory $minioMemoryLimit -limitCPU $minioCPULimit -indent 2)
+(Format-ResourceLimitRequest -limitMemory $minioMemoryLimit -limitCPU $minioCPULimit -indent 2), `
+$minioCertConfigMap
 
 	$valuesFile = 'toolsvc-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
 
 	$chartFolder = (join-path $workDir codedx-kubernetes/codedx-tool-orchestration)
-	Invoke-HelmSingleDeployment 'Tool Orchestration' $waitSeconds $namespace 'toolsvc' $chartFolder $valuesFile 'toolsvc-codedx-tool-orchestration' $numReplicas $extraValuesPaths
+	
+	Invoke-HelmSingleDeployment 'Tool Orchestration' $waitSeconds $namespace $toolServiceReleaseName $chartFolder $valuesFile $toolOrchestrationFullName $numReplicas $extraValuesPaths
 }
 
-function Set-UseToolOrchestration([string] $workDir, 
-	[string] $waitSeconds,
-	[string] $clusterCertificateAuthorityCertPath,
-	[string] $namespace, [string] $codedxNamespace,
-	[string] $toolServiceUrl, [string] $toolServiceApiKey,
-	[string] $codedxReleaseName,
-	[switch] $enableNetworkPolicies,
-	[switch] $configureTls) {
+function Get-RunningCodeDxPodName([string] $codedxNamespace) {
+
+	$name = kubectl -n $codedxNamespace get pod -l app=codedx --field-selector=status.phase=Running -o jsonpath='{.items[0].metadata.name}'
+	if (0 -ne $LASTEXITCODE) {
+		throw "Unable to get the name of a running Code Dx pod, kubectl returned exit code $LASTEXITCODE."
+	}
+	$name
+}
+
+function Set-TrustedCerts([string] $workDir, 
+	[string]   $waitSeconds,
+	[string]   $codedxNamespace,
+	[string]   $codedxReleaseName,
+	[string]   $caCertsFilePwd,
+	[string]   $caCertsFileNewPwd,
+	[string[]] $trustedCertPaths) {
 
 	$caCertsFilePath = './cacerts'
 	if (test-path $caCertsFilePath) {
 		remove-item $caCertsFilePath -force
 	}
 
-	# access cacerts file
-	$podName = kubectl -n $codedxNamespace get pod -l app=codedx --field-selector=status.phase=Running -o name
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to get for name of Code Dx pod, kubectl exited with code $LASTEXITCODE."
-	}
-
-	$podFile = "$($podName.Replace('pod/', ''))`:/etc/ssl/certs/java/cacerts"
-	kubectl -n $codedxNamespace cp $podFile $caCertsFilePath
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to copy out cacerts file, kubectl exited with code $LASTEXITCODE."
-	}
-
-	# update cacerts file
-	$aliasName = 'codedx-ca'
-	keytool -delete -alias $aliasName -keystore cacerts -storepass changeit
-	keytool -import -trustcacerts -keystore cacerts -file $clusterCertificateAuthorityCertPath -alias $aliasName -noprompt -storepass changeit
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to import CA certificate into cacerts file, keytool exited with code $LASTEXITCODE."
-	}
-
 	$chartFolder = (join-path $workDir codedx-kubernetes/codedx)
-	copy-item cacerts $chartFolder -Force
+	$chartFolderCaCertsFilePath = join-path $chartFolder $caCertsFilePath
+
+	# if cacerts already exists in the chart folder via -extraCodeDxChartFilesPaths, use 
+	# that copy; otherwise, pull a copy from the running Code Dx pod
+	if (test-path $chartFolderCaCertsFilePath) {
+		copy-item $chartFolderCaCertsFilePath $caCertsFilePath
+	} else {
+		$podName = Get-RunningCodeDxPodName $codedxNamespace
+		$podFile = "$podName`:/etc/ssl/certs/java/cacerts"
+
+		kubectl -n $codedxNamespace cp $podFile $caCertsFilePath
+		if ($LASTEXITCODE -ne 0) {
+			throw "Unable to copy out cacerts file, kubectl exited with code $LASTEXITCODE."
+		}
+	}
+
+	# set cacerts password
+	$keystorePwd = $caCertsFilePwd
+	if ('' -ne $caCertsFileNewPwd -and $caCertsFilePwd -ne $caCertsFileNewPwd) {
+		$keystorePwd = $caCertsFileNewPwd
+	}
+	Set-KeystorePassword $caCertsFilePath $caCertsFilePwd $keystorePwd 
+
+	Import-TrustedCaCerts $caCertsFilePath $keystorePwd $trustedCertPaths
+
+	# move edited cacerts file to chart directory where it can be found during chart install
+	copy-item $caCertsFilePath $chartFolder -Force
+
+	$values = @'
+cacertsFile: cacerts
+cacertsFilePwd: {0}
+'@ -f $keystorePwd
+
+	$valuesFile = 'codedx-cacert-values.yaml'
+	$values | out-file $valuesFile -Encoding ascii -Force
+
+	helm -n $codedxNamespace upgrade --values $valuesFile --reuse-values $codedxReleaseName $chartFolder
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to upgrade Code Dx for trusted certs, helm exited with code $LASTEXITCODE."
+	}
+
+	$deploymentName = Get-CodeDxChartFullName $codedxReleaseName
+	Wait-Deployment 'Helm Upgrade' $waitSeconds $codedxNamespace $deploymentName 1	
+}
+
+function Set-UseToolOrchestration([string] $workDir, 
+	[string] $waitSeconds,
+	[string] $caCertPathToolService,
+	[string] $namespace, [string] $codedxNamespace,
+	[string] $toolServiceUrl, [string] $toolServiceApiKey,
+	[string] $codedxReleaseName,
+	[string] $caCertsFilePwd,
+	[string] $caCertsFileNewPwd,
+	[switch] $enableNetworkPolicies) {
+
 
 	$networkPolicy = 'false'
 	if ($enableNetworkPolicies) {
 		$networkPolicy = 'true'
-	}
-
-	$cacertsFile = ''
-	if ($configureTls) {
-		$cacertsFile = 'cacerts'
 	}
 
 	$codedxOrchestrationPropsKey = 'codedx-orchestration-props-key'
@@ -379,8 +443,8 @@ function Set-UseToolOrchestration([string] $workDir,
 codedxProps:
   internalExtra:
   - type: secret
-    name: {4}
-    key: {4}
+    name: {3}
+    key: {3}
   - type: values
     key: codedx-orchestration-props
     values:
@@ -393,18 +457,19 @@ networkPolicy:
     - namespaceSelector:
         matchLabels:
           name: {1}
-cacertsFile: {3}
-'@ -f $toolServiceUrl, $namespace, $networkPolicy, $cacertsFile, $codedxOrchestrationPropsKey
+'@ -f $toolServiceUrl, $namespace, $networkPolicy, $codedxOrchestrationPropsKey
 
 	$valuesFile = 'codedx-orchestration-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
 
+	$chartFolder = (join-path $workDir codedx-kubernetes/codedx)
 	helm -n $codedxNamespace upgrade --values $valuesFile --reuse-values $codedxReleaseName $chartFolder
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to upgrade Code Dx release for tool orchestration, helm exited with code $LASTEXITCODE."
 	}
 
-	Wait-Deployment 'Helm Upgrade' $waitSeconds $codedxNamespace "$codedxReleaseName-codedx" 1
+	$deploymentName = Get-CodeDxChartFullName $codedxReleaseName
+	Wait-Deployment 'Helm Upgrade' $waitSeconds $codedxNamespace $deploymentName 1
 }
 
 function Add-CertManager([string] $namespace, [string] $codeDxNamespace,
@@ -525,9 +590,10 @@ subjects:
 
 function Add-NginxIngressLoadBalancerIP([string] $loadBalancerIP,
 	[string] $namespace,
-	[int] $waitSeconds,
+	[int]    $waitSeconds,
 	[string] $nginxFile,
 	[string] $priorityValuesFile,
+	[string] $releaseName,
 	[string] $cpuLimit,
 	[string] $memoryLimit) {
 	
@@ -537,13 +603,14 @@ controller:
     loadBalancerIP: {0}
 '@ -f $loadBalancerIP | out-file $nginxFile -Encoding ascii -Force
 
-	Add-NginxIngress $namespace $waitSeconds $nginxFile $priorityValuesFile $cpuLimit $memoryLimit
+	Add-NginxIngress $namespace $waitSeconds $nginxFile $priorityValuesFile $releaseName $cpuLimit $memoryLimit
 }
 
 function Add-NginxIngress([string] [string] $namespace,
 	[int] $waitSeconds,
 	[string] $valuesFile,
 	[string] $priorityValuesFile,
+	[string] $releaseName,
 	[string] $cpuLimit,
 	[string] $memoryLimit) {
 
@@ -552,7 +619,7 @@ function Add-NginxIngress([string] [string] $namespace,
 	}
 	Set-NamespaceLabel $namespace 'name' $namespace
 
-	$priorityClassName = 'nginx'
+	$priorityClassName = Get-CommonName "$releaseName-nginx-pc"
 	if (-not (Test-PriorityClass $priorityClassName)) {
 		New-PriorityClass $priorityClassName 20000
 	}
@@ -649,4 +716,30 @@ subjects:
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to apply default PodSecurityPolicy RoleBinding. kubectl exited with code $LASTEXITCODE."
 	}
+}
+
+function Get-CodeDxChartFullName([string] $releaseName) {
+	Get-HelmChartFullname $releaseName 'codedx'
+}
+
+function Get-CodeDxToolOrchestrationChartFullName([string] $releaseName) {
+	Get-HelmChartFullname $releaseName 'codedx-tool-orchestration'
+}
+
+function Get-HelmChartFullname([string] $releaseName, [string] $chartName) {
+
+	$fullname = $releaseName
+	if ($releaseName -cne $chartName) {
+		$fullname = "$releaseName-$chartName"
+	}
+	Get-CommonName $fullname
+}
+
+function Get-CommonName([string] $name) {
+
+	# note: matches chart "sanitize" helper
+	if ($name.length -gt 63) {
+		$name = $name.Substring(0, 63)
+	}
+	$name.TrimEnd('-')
 }

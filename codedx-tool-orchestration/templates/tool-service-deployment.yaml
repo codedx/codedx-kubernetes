@@ -73,6 +73,7 @@ spec:
           "-serviceTlsKeyPath", "/opt/codedx/service/tls/{{ .Values.toolServiceTls.keyFile }}",
           {{ end -}}
           "-workDir", "/opt/codedx/service/work",
+          "-workflowPriorityClassName", {{ include "codedx-tool-orchestration.workflow.priorityClassName" . | quote }},
           "-workflowRoleNames", {{ include "codedx-tool-orchestration.workflow.role.name" . }}]
         readinessProbe:
           httpGet:
@@ -113,7 +114,7 @@ spec:
         ports:
         - containerPort: 3333
           name: http
-      priorityClassName: codedx-tool-service
+      priorityClassName: {{ include "codedx-tool-orchestration.service.priorityClassName" . | quote }}
       volumes:
       - name: tool-service-secret-volume
         secret:

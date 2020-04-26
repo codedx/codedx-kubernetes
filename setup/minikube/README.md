@@ -37,9 +37,10 @@ You can use the default values for many of the setup.ps1 script parameters. When
 | mariadbRootPwd | The password for the MariaDB root account. | B4ut!mse08h5 |
 | mariadbReplicatorPwd | The password for the MariaDB replicator account. | dEu#92@rOPYH |
 | codedxAdminPwd | The password for the Code Dx admin account. | R8Cx3o$ptVQ1 |
-| dockerConfigJson | The .dockerconfigjson value allowing access to a private Docker registry. | See .dockerconfigjson at https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#registry-secret-existing-credentials |
-
->Note: You must specify dockerConfigJson when using the dockerImagePullSecretName parameter.
+| dockerImagePullSecretName | The name of a Kubernetes image pull secret to create for a private Docker registry. | my-docker-registry |
+| dockerRegistry | Your private Docker registry server. | Required when specifying dockerImagePullSecretName |
+| dockerRegistryUsername | A username for your private Docker registry server. | Required when specifying dockerImagePullSecretName |
+| dockerRegistryPwd | The password for your private Docker registry username. | Required when specifying dockerImagePullSecretName |
 
 When the script completes, it will display a port-forward command that you can use to access your Code Dx instance.
 

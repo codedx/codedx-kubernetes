@@ -90,6 +90,14 @@ If release name contains chart name it will be used as a full name.
 {{- include "sanitize" (printf "%s-pre-delete-job" (include "codedx-tool-orchestration.fullname" .)) -}}
 {{- end -}}
 
+{{- define "codedx-tool-orchestration.workflow.priorityClassName" -}}
+{{- include "sanitize" (printf "%s-wf-pc" (include "codedx-tool-orchestration.fullname" .)) -}}
+{{- end -}}
+
+{{- define "codedx-tool-orchestration.service.priorityClassName" -}}
+{{- include "sanitize" (printf "%s-svc-pc" (include "codedx-tool-orchestration.fullname" .)) -}}
+{{- end -}}
+
 {{/*
 Duplicates of a Minio template helper so we can reference Minio's service name
 */}}

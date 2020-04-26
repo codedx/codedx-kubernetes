@@ -12,6 +12,7 @@ This section describes the setup.ps1 script parameters.
 | Parameter | Description | Default | Example |
 |---|---|---|---|
 | workDir | workDir specifies a directory to store script-generated files | $HOME/.k8s-codedx | |
+| kubeContextName | kubeContextName specifies the name of the kubeconfig context entry to select before starting the setup | |
 | clusterCertificateAuthorityCertPath | clusterCertificateAuthorityCertPath specifies a path to your cluster's CA certificate file | | ./aws-eks.pem |
 | codeDxDnsName | codeDxDnsName specifies the domain name for the Code Dx web application | | www.codedx.io |
 | codeDxPortNumber | codeDxPortNumber specifies the port number bound to the Code Dx web application | 8443 | |
@@ -23,13 +24,15 @@ This section describes the setup.ps1 script parameters.
 | codeDxVolumeSizeGiB | codeDxVolumeSizeGiB specifies the size of the volume for the Code Dx web application | 32 | |
 | storageClassName | storageClassName specifies the name of the storage class for persistance volumes | | |
 | codeDxMemoryReservation | codeDxMemoryReservation specifies the memory resource request and limit for Code Dx | |
-| dbMemoryReservation | dbMemoryReservation specifies the memory resource request and limit for MariaDB | |
+| dbMasterMemoryReservation | dbMasterMemoryReservation specifies the memory resource request and limit for the master MariaDB instance | |
+| dbSlaveMemoryReservation | dbSlaveMemoryReservation specifies the memory resource request and limit for slave MariaDB instances | |
 | toolServiceMemoryReservation | toolServiceMemoryReservation specifies the memory resource request and limit for the tool service  | |
 | minioMemoryReservation | minioMemoryReservation specifies the memory resource request and limit for MinIO | |
 | workflowMemoryReservation | workflowMemoryReservation specifies the memory resource request and limit for the workflow controller | |
 | nginxMemoryReservation | nginxMemoryReservation specifies the memory resource request and limit for nginx | |
 | codeDxCPUReservation | codeDxCPUReservation specifies the CPU resource request and limit for Code Dx | |
-| dbCPUReservation | dbCPUReservation specifies the CPU resource request and limit for MariaDB | |
+| dbMasterCPUReservation | dbMasterCPUReservation specifies the CPU resource request and limit for the master MariaDB instance | |
+| dbSlaveCPUReservation | dbSlaveCPUReservation specifies the CPU resource request and limit for slave MariaDB instances | |
 | toolServiceCPUReservation | toolServiceCPUReservation specifies the CPU resource request and limit for the tool service  | |
 | minioCPUReservation | minioCPUReservation specifies the CPU resource request and limit for MinIO | |
 | workflowCPUReservation | workflowCPUReservation specifies the CPU resource request and limit for the workflow controller | |
@@ -61,9 +64,17 @@ This section describes the setup.ps1 script parameters.
 | minioAdminPwd | minioAdminPwd specifies the password for the MinIO admin account | | |
 | mariadbRootPwd | mariadbRootPwd specifies the password for the MariaDB root account | | |
 | mariadbReplicatorPwd | mariadbReplicatorPwd specifies the password for the MariaDB replicator account | | |
-| dockerImagePullSecretName | dockerImagePullSecretName specifies the name of the Kubernetes secret to store a Docker image pull secret | | |
-| dockerConfigJson | dockerConfigJson specifies the .dockerconfigjson value allowing access to a private Docker registry | | See .dockerconfigjson at https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#registry-secret-existing-credentials |
-| codedxRepo | codedxRepo specifies the Code Dx Kubernetes URL | https://codedx.github.io/codedx-kubernetes | |
+| caCertsFilePwd | caCertsFilePwd specifies the current password of the Code Dx cacerts file | changeit | |
+| caCertsFileNewPwd | caCertsFileNewPwd specifies the new password to protect the Code Dx cacerts file | | |
+| extraCodeDxChartFilesPaths | extraCodeDxChartFilesPaths specifies a list of files to copy into the Code Dx chart folder at chart install time | | |
+| extraCodeDxTrustedCaCertPaths | extraCodeDxTrustedCaCertPaths specifies a list of certificate files of trusted CAs to import into the Code Dx cacerts file | | |
+| dockerImagePullSecretName | dockerImagePullSecretName specifies the name of a Kubernetes image pull secret to create for a private Docker registry | | |
+| dockerRegistry | dockerRegistry specifies the server value of a private Docker registry | | required when specifying dockerImagePullSecretName |
+| dockerRegistryUsername | dockerRegistryUsername specifies a username for a private Docker registry | | required when specifying dockerImagePullSecretName |
+| dockerRegistryPwd | dockerRegistryPwd specifies the password for a private Docker registry username | | required when specifying dockerImagePullSecretName |
+| codedxHelmRepo | codedxHelmRepo specifies the URL of the Code Dx Helm repository | https://codedx.github.io/codedx-kubernetes | |
+| codedxGitRepo | codedxGitRepo specifies the URL of the Code Dx Kubernetes git repository | https://github.com/codedx/codedx-kubernetes.git | |
+| codedxGitRepoBranch | codedxGitRepoBranch specifies the branch to fetch from the Code Dx Kubernetes git repository | master | |
 | kubeApiTargetPort | kubeApiTargetPort specifies the port of the Kubernetes API | 443 | |
 | extraCodeDxValuesPaths | extraCodeDxValuesPaths specifies one or more extra values.yaml files for the Code Dx Helm chart | | |
 | extraToolOrchestrationValuesPaths | extraToolOrchestrationValuesPaths specifies one or more extra values.yaml files for the Code Dx Tool Orchestration Helm chart | | |

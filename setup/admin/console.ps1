@@ -1,12 +1,12 @@
 param(
     [string] $kubeContext = 'eks',
     [string] $codedxNamespace = 'cdx-app',
-    [string] $codedxReleaseName = 'codedx-app',
+    [string] $codedxReleaseName = 'codedx',
     [string] $codedxBaseUrl = '',
     [bool]   $codedxSkipCertificateCheck = $false,
     [string] $codedxAdminApiKey = '',
     [string] $toolOrchestrationNamespace = 'cdx-svc',
-    [string] $toolOrchestrationReleaseName = 'toolsvc'
+    [string] $toolOrchestrationReleaseName = 'codedx-tool-orchestration'
 )
 
 $ErrorActionPreference = 'Stop'

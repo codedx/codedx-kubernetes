@@ -22,22 +22,39 @@ function Test-IsBlacklisted([string] $text, [string[]] $blacklist) {
 	})
 }
 
-function Get-StringText([string] $prompt, [int] $minimumLength, [bool] $isSecure, [string[]] $blacklist) {
+function Read-HostText([string] $prompt, [int] $minimumLength, [int] $maximumLength, [string[]] $blacklist, [bool] $isSecure) {
 
 	if ($prompt -eq '') {
 		$prompt = ' '
 	}
-	if ($minimumLength -gt 0) {
-		$prompt = "$prompt (minimum length $minimumLength)"
+
+	$instruction = ''
+	if ($minimumLength -ne 0) {
+		if ($maximumLength -ne 0) {
+			$instruction = "(length: $minimumLength-$maximumLength)"
+		} else {
+			$instruction = "(minimum length: $minimumLength)"
+		}
+	} else {
+		if ($maximumLength -ne 0) {
+			$instruction = "(maximum length: $maximumLength)"
+		}
+	}
+
+	if ($minimumLength -eq 0) {
+		$minimumLength = [int]::MinValue
+	}
+	if ($maximumLength -eq 0) {
+		$maximumLength = [int]::MaxValue
 	}
 
 	while ($true) {
-		$text = Read-Host -Prompt $prompt -AsSecureString:$isSecure
+		$text = Read-Host -Prompt "$prompt$instruction" -AsSecureString:$isSecure
 		if ($isSecure) {
 			$bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($text)
 			$text = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($BSTR)
 		}
-		if (($text -ne '') -and ($text.Length -ge $minimumLength)) {
+		if (($text -ne '') -and ($text.Length -ge $minimumLength) -and ($text.Length -le $maximumLength)) {
 			
 			if (Test-IsBlacklisted $text $blacklist) {
 				Write-Host "The value cannot contain the following values; please try again.`n$blacklist"
@@ -48,8 +65,8 @@ function Get-StringText([string] $prompt, [int] $minimumLength, [bool] $isSecure
 	}
 }
 
-function Get-SecureStringText([string] $prompt, [int] $minimumLength) {
-	Get-StringText $prompt $minimumLength $true
+function Read-HostSecureText([string] $prompt, [int] $minimumLength, [int] $maximumLength, [string[]] $blacklist) {
+	Read-HostText $prompt $minimumLength $maximumLength $blacklist $true
 }
 
 function Invoke-GitClone([string] $url, [string] $branch) {

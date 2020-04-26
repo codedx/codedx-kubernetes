@@ -250,24 +250,17 @@ function New-CertificateConfigMap([string] $namespace, [string] $name, [string] 
 	}
 }
 
-function New-ImagePullSecret([string] $namespace, [string] $name, [string] $dockerConfigJson) {
+function New-ImagePullSecret([string] $namespace, `
+	[string] $name, `
+	[string] $dockerRegistry,
+	[string] $dockerRegistryUser,
+	[string] $dockerRegistryPwd) {
 
 	if (Test-Secret $namespace $name) {
 		Remove-Secret $namespace $name
 	}
 
-	$imagePullSecret = @'
-apiVersion: v1
-metadata:
-  name: {0}
-data:
-  .dockerconfigjson: {1}
-kind: Secret
-type: kubernetes.io/dockerconfigjson  
-'@ -f $name, $dockerConfigJson
-
-	$imagePullSecret | out-file "$name.yaml" -Encoding ascii -Force
-	kubectl -n $namespace apply -f "$name.yaml"
+	kubectl -n $namespace create secret docker-registry $name --docker-server=$dockerRegistry --docker-username=$dockerRegistryUser --docker-password=$dockerRegistryPwd
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create image pull secret named $name, kubectl exited with code $LASTEXITCODE."
 	}

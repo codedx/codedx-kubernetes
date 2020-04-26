@@ -60,7 +60,6 @@ From your running PowerShell Core shell, run the following command by replacing 
   -mariadbRootPwd '<mariadb-root-password>' `
   -mariadbReplicatorPwd '<mariadb-replication-password>' `
   -codedxAdminPwd '<codedx-admin-password>' `
-  -dockerConfigJson '<docker-config-json>' `
   -ingressRegistrationEmailAddress '<email-address>' `
   -ingressLoadBalancerIP '<static-ip>'
 ```
@@ -77,7 +76,6 @@ The setup.ps1 script configures Code Dx for the Let's Encrypt staging environmen
   -mariadbRootPwd '<mariadb-root-password>' `
   -mariadbReplicatorPwd '<mariadb-replication-password>' `
   -codedxAdminPwd '<codedx-admin-password>' `
-  -dockerConfigJson '<docker-config-json>' `
   -ingressRegistrationEmailAddress '<email-address>' `
   -ingressLoadBalancerIP '<static-ip>' `
   -ingressClusterIssuer 'letsencrypt-prod'

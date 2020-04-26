@@ -274,34 +274,11 @@ toolServiceTls:
 
 ### Grant Access to a Private Docker Registry
 
-The Tool Orchestration service may require access to a private Docker registry, something that's necessary when using the Burp Suite automation as an example. Create a Kubernetes secret containing your Docker registry credentials using one of the two following options.
-
-#### Create Registry Credential - Command Line Option
-
-You can create a Kubernetes secret with your Docker registry credential from the command line by running the following command, replacing #server#, #username#, #password#, and #email# with your own values:
+The Tool Orchestration service may require access to a private Docker registry, something that's necessary when using the Burp Suite automation as an example. 
+You can create a Kubernetes secret with your Docker registry credential from the command line by running the following command, replacing #server#, #username#, and #password# with your own values:
 
 ```
-kubectl -n cdx-svc create secret docker-registry my-docker-registry --docker-server=#server# --docker-username=#username# --docker-password=#password# --docker-email=#email#
-```
-
-#### Create Registry Credential - YAML File Option
-
-Alternatively, you can create a Kubernetes secret containing your Docker registry credentials from a YAML file. Your file will look similar to what follows, but you must specify your own content for #value# - refer to [Pull an Image from a Private Registry](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/) for more details.
-
-```
-apiVersion: v1
-metadata:
-  name: my-docker-registry
-data:
-  .dockerconfigjson: #value#
-kind: Secret
-type: kubernetes.io/dockerconfigjson
-```
-
-Save your YAML in a file named my-docker-registry.yaml and create your Kubernetes secret with the following command.
-
-```
-kubectl create -n cdx-svc -f my-docker-registry.yaml
+kubectl -n cdx-svc create secret docker-registry my-docker-registry --docker-server=#server# --docker-username=#username# --docker-password=#password#
 ```
 
 #### Registry Credential Config

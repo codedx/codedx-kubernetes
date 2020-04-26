@@ -21,7 +21,7 @@ Set-PSDebug -Strict
 . (join-path $PSScriptRoot '../common/k8s.ps1')
 
 if ($rootPwd -eq '') { 
-	$rootPwd = Get-SecureStringText 'Enter a password for the MariaDB root user' 0 
+	$rootPwd = Read-HostSecureText 'Enter a password for the MariaDB root user' 1 
 }
 
 Write-Verbose "Testing for work directory '$workDirectory'"

@@ -8,7 +8,9 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[string]   $adminPwd,
 	[string]   $tomcatImage,
 	[string]   $tomcatImagePullSecretName,
-	[string]   $dockerConfigJson,
+	[string]   $dockerRegistry,
+	[string]   $dockerRegistryUser,
+	[string]   $dockerRegistryPwd,
 	[string]   $mariadbRootPwd,
 	[string]   $mariadbReplicatorPwd,
 	[int]      $dbVolumeSizeGiB,
@@ -43,7 +45,7 @@ codedxTomcatImagePullSecrets:
 - name: {0}
 '@ -f $tomcatImagePullSecretName
 
-		New-ImagePullSecret $namespace $tomcatImagePullSecretName $dockerConfigJson
+		New-ImagePullSecret $namespace $tomcatImagePullSecretName $dockerRegistry $dockerRegistryUser $dockerRegistryPwd
 	}
 
 	$psp = 'false'
@@ -180,7 +182,9 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 	[string]   $toolServiceImage,
 	[string]   $preDeleteImageName,
 	[string]   $imagePullSecretName,
-	[string]   $dockerConfigJson,
+	[string]   $dockerRegistry,
+	[string]   $dockerRegistryUser,
+	[string]   $dockerRegistryPwd,
 	[int]      $minioVolumeSizeGiB,
 	[string]   $storageClassName,
 	[string]   $toolServiceMemoryLimit,
@@ -245,7 +249,7 @@ toolServiceImagePullSecrets:
 - name: {0}
 '@ -f $imagePullSecretName
 
-		New-ImagePullSecret $namespace $imagePullSecretName $dockerConfigJson
+		New-ImagePullSecret $namespace $imagePullSecretName $dockerRegistry $dockerRegistryUser $dockerRegistryPwd
 	}
 
 	$psp = 'false'

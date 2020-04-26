@@ -170,7 +170,7 @@ if ($configureIngress) {
 
 Write-Verbose 'Fetching Code Dx Helm charts...'
 Remove-Item .\codedx-kubernetes -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
-Invoke-GitClone 'https://github.com/codedx/codedx-kubernetes' 'develop'
+Invoke-GitClone 'https://github.com/codedx/codedx-kubernetes' 'master'
 
 Write-Verbose 'Deploying Code Dx with Tool Orchestration disabled...'
 New-CodeDxDeployment $codeDxDnsName $workDir $waitTimeSeconds `

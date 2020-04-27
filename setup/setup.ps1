@@ -119,8 +119,8 @@ if ($null -eq $helmVersionMatch) {
 
 if ($kubeContextName -ne '') {
 	Set-KubectlContext $kubeContextName
+	Write-Verbose "Using kubeconfig context entry named $(Get-KubectlContext)"
 }
-Write-Verbose "Using kubeconfig context entry named $(Get-KubectlContext)"
 
 if ($codeDxDnsName -eq '') { $codeDxDnsName = Read-Host -Prompt 'Enter Code Dx domain name (e.g., www.codedx.io)' }
 if ($clusterCertificateAuthorityCertPath -eq '') { $clusterCertificateAuthorityCertPath = Read-Host -Prompt 'Enter path to cluster CA certificate' }

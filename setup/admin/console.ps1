@@ -1,3 +1,15 @@
+<#PSScriptInfo
+.VERSION 1.0.0
+.GUID 9b147f81-cb5d-4f13-830c-f0eb653520a7
+.AUTHOR Code Dx
+#>
+
+<# 
+.DESCRIPTION 
+This script contains helpers for Code Dx adminstration-related tasks.
+#>
+
+
 param(
     [string] $kubeContext = 'eks',
     [string] $codedxNamespace = 'cdx-app',
@@ -12,7 +24,7 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-PSDebug -Strict
 
-$toolOrchestrationNamespace -ne ''
+. (join-path $PSScriptRoot '../common/codedx.ps1')
 
 function Write-Choices($decisionList) {
     Write-Host "`n---"
@@ -266,8 +278,9 @@ $choices = @(
 
     @{id="R1"; name='Replace Code Dx Pod'; 
         action={ 
-            kubectl -n $codedxNamespace scale --replicas=0 "deployment/$codedxReleaseName-codedx"
-            kubectl -n $codedxNamespace scale --replicas=1 "deployment/$codedxReleaseName-codedx"
+            $deploymentName = Get-CodeDxChartFullName $codedxReleaseName
+            kubectl -n $codedxNamespace scale --replicas=0 "deployment/$deploymentName"
+            kubectl -n $codedxNamespace scale --replicas=1 "deployment/$deploymentName"
         };
         valid = {$codedxNamespace -ne ''} 
     }    
@@ -275,8 +288,10 @@ $choices = @(
     @{id="R2"; name='Replace Tool Orchestration Pod(s)'; 
         action={ 
             $podNames = kubectl -n $toolOrchestrationNamespace get pod -l component=service -o name
-            kubectl -n $toolOrchestrationNamespace scale --replicas=0 "deployment/$toolOrchestrationReleaseName-codedx-tool-orchestration"
-            kubectl -n $toolOrchestrationNamespace scale --replicas=$($podNames.count) "deployment/$toolOrchestrationReleaseName-codedx-tool-orchestration"
+
+            $deploymentName = Get-CodeDxToolOrchestrationChartFullName $toolOrchestrationReleaseName
+            kubectl -n $toolOrchestrationNamespace scale --replicas=0 "deployment/$deploymentName"
+            kubectl -n $toolOrchestrationNamespace scale --replicas=$($podNames.count) "deployment/$deploymentName"
         };
         valid = {$toolOrchestrationNamespace -ne '' -and $toolOrchestrationReleaseName -ne ''} 
     }

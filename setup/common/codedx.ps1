@@ -1,3 +1,14 @@
+<#PSScriptInfo
+.VERSION 1.0.0
+.GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
+.AUTHOR Code Dx
+#>
+
+<# 
+.DESCRIPTION 
+This script includes functions for the deployment of Code Dx and Code Dx Orchestration.
+#>
+
 
 function New-CodeDxDeployment([string] $codeDxDnsName,
     [string]   $workDir, 

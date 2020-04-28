@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Version: 1.0.0
+
 # This script is based on the guide provided by Microsoft at:
 #    https://docs.microsoft.com/en-us/azure/aks/use-network-policies
 #

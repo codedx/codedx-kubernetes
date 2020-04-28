@@ -1,3 +1,13 @@
+<#PSScriptInfo
+.VERSION 1.0.0
+.GUID de5f4f4f-d4c0-414a-aa19-9dc45c153302
+.AUTHOR Code Dx
+#>
+
+<# 
+.DESCRIPTION 
+This script includes functions for AWS EKS network-related tasks.
+#>
 
 $amazonVpcCniCalicoYaml = 'https://raw.githubusercontent.com/aws/amazon-vpc-cni-k8s/master/config/v1.6/calico.yaml'
 

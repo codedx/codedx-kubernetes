@@ -1,3 +1,14 @@
+<#PSScriptInfo
+.VERSION 1.0.0
+.GUID 031ba6fc-042c-4c0d-853c-52afb79ce7ea
+.AUTHOR Code Dx
+#>
+
+<# 
+.DESCRIPTION 
+This script includes functions for Helm-related tasks.
+#>
+
 . (join-path $PSScriptRoot 'k8s.ps1')
 
 function Add-HelmRepo([string] $name, [string] $url) {

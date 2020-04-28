@@ -1,3 +1,15 @@
+<#PSScriptInfo
+.VERSION 1.0.0
+.GUID 64e7ba9e-d080-4e38-be2e-8c04eed6f183
+.AUTHOR Code Dx
+#>
+
+<# 
+.DESCRIPTION 
+This script includes helper functions used by other scripts.
+#>
+
+
 function Convert-Base64([string] $file) {
 
 	$path = join-path (get-location) $file

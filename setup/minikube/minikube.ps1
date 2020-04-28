@@ -1,3 +1,14 @@
+<#PSScriptInfo
+.VERSION 1.0.0
+.GUID 2882534f-153b-4da8-894e-cde773080139
+.AUTHOR Code Dx
+#>
+
+<# 
+.DESCRIPTION 
+This script includes functions for minikube-related tasks.
+#>
+
 . (join-path $PSScriptRoot ../common/k8s.ps1)
 
 function Test-MinikubeProfile([string] $profileName, [string] $vmDriver, [string] $k8sVersion) {

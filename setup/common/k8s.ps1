@@ -1,3 +1,14 @@
+<#PSScriptInfo
+.VERSION 1.0.0
+.GUID 5614d5a5-d33b-4a86-a7bb-ccc91c3f9bb3
+.AUTHOR Code Dx
+#>
+
+<# 
+.DESCRIPTION 
+This script includes functions for Kubernetes-related tasks.
+#>
+
 . (join-path $PSScriptRoot 'utils.ps1')
 
 function New-Namespace([string] $namespace) {

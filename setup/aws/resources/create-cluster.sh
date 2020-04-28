@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Version: 1.0.0
+
 PUBLIC_KEY_PATH=$1
 CLUSTER_NAME=$2
 

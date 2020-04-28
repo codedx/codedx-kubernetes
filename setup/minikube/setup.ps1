@@ -1,16 +1,25 @@
-# This script uses Helm to install and configure Code Dx and Tool Orchestration on a minikube cluster.
-#
-# The following tools must be installed and included in your PATH prior to running this script:
-#
-# 1 minikube
-# 2 helm tool (v3)
-# 3 kubectl
-# 4 openssl
-# 5 git
-# 6 keytool
-#
-# 7 socat (when using $vmDriver 'none')
-#
+<#PSScriptInfo
+.VERSION 1.0.0
+.GUID 170f536d-9be8-42fc-8bec-67e8c22e2fb2
+.AUTHOR Code Dx
+#>
+
+<# 
+.DESCRIPTION 
+This script uses Helm to install and configure Code Dx and Tool Orchestration on a minikube cluster.
+
+The following tools must be installed and included in your PATH prior to running this script:
+
+1 minikube
+2 helm tool (v3)
+3 kubectl
+4 openssl
+5 git
+6 keytool
+
+7 socat (when using $vmDriver 'none')
+#>
+
 param (
 	[string]   $clusterCertificateAuthorityCertPath="$HOME/.minikube/ca.crt",
 	[string]   $codeDxDnsName = (hostname),

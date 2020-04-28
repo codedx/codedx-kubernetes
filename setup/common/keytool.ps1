@@ -1,3 +1,14 @@
+<#PSScriptInfo
+.VERSION 1.0.0
+.GUID a0b1e49c-0f56-43fa-bd1d-ae211ac63c2a
+.AUTHOR Code Dx
+#>
+
+<# 
+.DESCRIPTION 
+This script includes functions for keytool-related tasks.
+#>
+
 
 function Test-KeystorePassword([string] $keystorePath, [string] $keystorePwd) {
 

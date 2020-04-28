@@ -37,14 +37,14 @@ This section describes the setup.ps1 script parameters.
 | minioCPUReservation | minioCPUReservation specifies the CPU resource request and limit for MinIO | |
 | workflowCPUReservation | workflowCPUReservation specifies the CPU resource request and limit for the workflow controller | |
 | nginxCPUReservation | nginxCPUReservation specifies the CPU resource request and limit for nginx | |
-| imageCodeDxTomcat | imageCodeDxTomcat specifies the name of the Code Dx Docker image | codedxregistry.azurecr.io/codedx/codedx-tomcat:latest |
-| imageCodeDxTools | imageCodeDxTools specifies the name of the Code Dx Tools Docker image | codedxregistry.azurecr.io/codedx/codedx-tools:latest | |
-| imageCodeDxToolsMono | imageCodeDxToolsMono specifies the name of the Code Dx Tools Mono Docker image | codedxregistry.azurecr.io/codedx/codedx-toolsmono:latest | |
-| imageNewAnalysis | imageNewAnalysis specifies the name of the Code Dx New Analysis Docker image | codedxregistry.azurecr.io/codedx/codedx-newanalysis:latest | |
-| imageSendResults | imageSendResults specifies the name of the Code Dx Send Results Docker image | codedxregistry.azurecr.io/codedx/codedx-results:latest | |
-| imageSendErrorResults | imageSendErrorResults specifies the name of the Code Dx Send Result Errors Docker image | codedxregistry.azurecr.io/codedx/codedx-error-results:latest | |
-| imageToolService | imageToolService specifies the name of the Code Dx Tool Service Docker image | codedxregistry.azurecr.io/codedx/codedx-tool-service:latest | |
-| imagePreDelete | imagePreDelete specifies the name of the Code Dx Tool Service pre-delete Docker image | codedxregistry.azurecr.io/codedx/codedx-cleanup:latest | |
+| imageCodeDxTomcat | imageCodeDxTomcat specifies the name of the Code Dx Docker image | codedx/codedx-tomcat:version |
+| imageCodeDxTools | imageCodeDxTools specifies the name of the Code Dx Tools Docker image | codedx/codedx-tools:version | |
+| imageCodeDxToolsMono | imageCodeDxToolsMono specifies the name of the Code Dx Tools Mono Docker image | codedx/codedx-toolsmono:version | |
+| imageNewAnalysis | imageNewAnalysis specifies the name of the Code Dx New Analysis Docker image | codedx/codedx-newanalysis:version | |
+| imageSendResults | imageSendResults specifies the name of the Code Dx Send Results Docker image | codedx/codedx-results:version | |
+| imageSendErrorResults | imageSendErrorResults specifies the name of the Code Dx Send Result Errors Docker image | codedx/codedx-error-results:version | |
+| imageToolService | imageToolService specifies the name of the Code Dx Tool Service Docker image | codedx/codedx-tool-service:version | |
+| imagePreDelete | imagePreDelete specifies the name of the Code Dx Tool Service pre-delete Docker image | codedx/codedx-cleanup:version | |
 | toolServiceReplicas | toolServiceReplicas specifies the number of tool service copies to run concurrently | 3 | |
 | useTLS | useTLS specifies whether Code Dx endpoints use TLS | $true | |
 | usePSPs | usePSPs specifies whether to create Code Dx pod security policies | $true | |

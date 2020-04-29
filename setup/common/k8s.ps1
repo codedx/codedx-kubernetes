@@ -399,20 +399,26 @@ function New-PriorityClass([string] $name, [int] $value) {
 	}
 }
 
-function Format-ResourceLimitRequest([string] $requestMemory, [string] $requestCpu, [string] $limitMemory, [string] $limitCpu, [int] $indent) {
+function Format-ResourceLimitRequest([string] $requestMemory, [string] $requestCpu, [string] $requestEphemeralStorage,
+	[string] $limitMemory, [string] $limitCpu, [string] $limitEphemeralStorage,
+	[int] $indent) {
 
 	$resources = @'
 resources:
   requests:
     memory: {0}
     cpu: {1}
+    ephemeral-storage: {4}
   limits:
     memory: {2}
     cpu: {3}
-'@ -f $requestMemory.trim(),$requestCpu.trim(),$limitMemory.trim(),$limitCpu.trim()
+    ephemeral-storage: {5}
+'@ -f $requestMemory.trim(),$requestCpu.trim(),
+	$limitMemory.trim(),$limitCpu.trim(),
+	$requestEphemeralStorage.trim(),$limitEphemeralStorage.trim()
 
 	$resourcesLines = $resources.split("`n") | Where-Object { 
-		$_ -notmatch 'memory:\s$' -and $_ -notmatch 'cpu:\s$' 
+		$_ -notmatch 'memory:\s$' -and $_ -notmatch 'cpu:\s$' -and $_ -notmatch 'ephemeral\-storage:\s$' 
 	} | ForEach-Object { 
 		"{0}{1}" -f ([string]::new(' ', $indent)),$_ 
 	}

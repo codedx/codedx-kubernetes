@@ -44,6 +44,14 @@ param (
 	[string]   $workflowCPUReservation = '',
 	[string]   $nginxCPUReservation = '',
 
+	[string]   $codeDxEphemeralStorageReservation = '',
+	[string]   $dbMasterEphemeralStorageReservation = '',
+	[string]   $dbSlaveEphemeralStorageReservation = '',
+	[string]   $toolServiceEphemeralStorageReservation = '',
+	[string]   $minioEphemeralStorageReservation = '',
+	[string]   $workflowEphemeralStorageReservation = '',
+	[string]   $nginxEphemeralStorageReservation = '',
+
 	[string]   $imageCodeDxTomcat = 'codedx/codedx-tomcat:v5.0.2',
 	[string]   $imageCodeDxTools = 'codedx/codedx-tools:v1.0.0',
 	[string]   $imageCodeDxToolsMono = 'codedx/codedx-toolsmono:v1.0.0',
@@ -207,9 +215,9 @@ if ($configureIngress) {
 	$priorityValuesFile = 'nginx-ingress-priority.yaml'
 	if ($provisionIngress -eq $null) {
 		if ($ingressLoadBalancerIP -ne '') {
-			Add-NginxIngressLoadBalancerIP $ingressLoadBalancerIP $namespaceIngressController $waitTimeSeconds 'nginx-ingress.yaml' $priorityValuesFile $releaseNameCodeDx $nginxCPUReservation $nginxMemoryReservation
+			Add-NginxIngressLoadBalancerIP $ingressLoadBalancerIP $namespaceIngressController $waitTimeSeconds 'nginx-ingress.yaml' $priorityValuesFile $releaseNameCodeDx $nginxCPUReservation $nginxMemoryReservation $nginxEphemeralStorageReservation
 		} else {
-			Add-NginxIngress $namespaceIngressController $waitTimeSeconds '' $priorityValuesFile $releaseNameCodeDx $nginxCPUReservation $nginxMemoryReservation
+			Add-NginxIngress $namespaceIngressController $waitTimeSeconds '' $priorityValuesFile $releaseNameCodeDx $nginxCPUReservation $nginxMemoryReservation $nginxEphemeralStorageReservation
 		}
 	} else {
 		& $provisionIngress
@@ -243,6 +251,7 @@ New-CodeDxDeployment $codeDxDnsName $workDir $waitTimeSeconds `
 	$storageClassName `
 	$codeDxMemoryReservation $dbMasterMemoryReservation $dbSlaveMemoryReservation `
 	$codeDxCPUReservation $dbMasterCPUReservation $dbSlaveCPUReservation `
+	$codeDxEphemeralStorageReservation $dbMasterEphemeralStorageReservation $dbSlaveEphemeralStorageReservation `
 	$extraCodeDxValuesPaths `
 	$namespaceIngressController `
 	$ingressClusterIssuer `
@@ -279,6 +288,7 @@ if (-not $skipToolOrchestration) {
 		$minioVolumeSizeGiB $storageClassName `
 		$toolServiceMemoryReservation $minioMemoryReservation $workflowMemoryReservation `
 		$toolServiceCPUReservation $minioCPUReservation $workflowCPUReservation `
+		$toolServiceEphemeralStorageReservation $minioEphemeralStorageReservation $workflowEphemeralStorageReservation `
 		$kubeApiTargetPort `
 		$extraToolOrchestrationValuesPath `
 		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS

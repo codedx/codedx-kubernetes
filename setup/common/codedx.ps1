@@ -35,6 +35,9 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[string]   $codeDxCPULimit,
 	[string]   $dbMasterCPULimit,
 	[string]   $dbSlaveCPULimit,
+	[string]   $codeDxEphemeralStorageLimit,
+	[string]   $dbMasterEphemeralStorageLimit,
+	[string]   $dbSlaveEphemeralStorageLimit,
 	[string[]] $extraValuesPaths,
 	[string]   $ingressControllerNamespace,
 	[string]   $ingressClusterIssuer,
@@ -161,11 +164,11 @@ $tlsEnabled, $tlsSecretName, $tlsCertFile, $tlsKeyFile, `
 $mariadbRootPwd, $mariadbReplicatorPwd, `
 $dbVolumeSizeGiB, $codeDxVolumeSizeGiB, $codeDxDnsName, $ingress, `
 $dbSlaveVolumeSizeGiB, $dbSlaveReplicaCount, $ingressNamespaceSelector, $storageClassName, `
-(Format-ResourceLimitRequest -limitMemory $codeDxMemoryLimit -limitCPU $codeDxCPULimit), `
-(Format-ResourceLimitRequest -limitMemory $dbMasterMemoryLimit -limitCPU $dbMasterCPULimit -indent 4), `
+(Format-ResourceLimitRequest -limitMemory $codeDxMemoryLimit -limitCPU $codeDxCPULimit -limitEphemeralStorage $codeDxEphemeralStorageLimit), `
+(Format-ResourceLimitRequest -limitMemory $dbMasterMemoryLimit -limitCPU $dbMasterCPULimit -limitEphemeralStorage $dbMasterEphemeralStorageLimit -indent 4), `
 $ingressClusterIssuer, `
 $defaultKeyStorePwd, `
-(Format-ResourceLimitRequest -limitMemory $dbSlaveMemoryLimit -limitCPU $dbSlaveCPULimit -indent 4)
+(Format-ResourceLimitRequest -limitMemory $dbSlaveMemoryLimit -limitCPU $dbSlaveCPULimit -limitEphemeralStorage $dbSlaveEphemeralStorageLimit -indent 4)
 
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
@@ -204,6 +207,9 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 	[string]   $toolServiceCPULimit,
 	[string]   $minioCPULimit,
 	[string]   $workflowCPULimit,	
+	[string]   $toolServiceEphemeralStorageLimit,
+	[string]   $minioEphemeralStorageLimit,
+	[string]   $workflowEphemeralStorageLimit,	
 	[int]      $kubeApiTargetPort,
 	[string[]] $extraValuesPaths,
 	[switch]   $enablePSPs,
@@ -348,9 +354,9 @@ $imagePullSecretName,$toolsImage,$toolsMonoImage,$newAnalysisImage,$sendResultsI
 $tlsConfig,$tlsMinioCertSecret,$tlsToolServiceCertSecret,
 $psp,$networkPolicy,$codedxBaseUrl,`
 $tlsConfig,$codedxCaConfigMap,$minioVolumeSizeGiB,$imagePullSecretYaml,$preDeleteImageName,$storageClassName, $kubeApiTargetPort, `
-(Format-ResourceLimitRequest -limitMemory $toolServiceMemoryLimit -limitCPU $toolServiceCPULimit), `
-(Format-ResourceLimitRequest -limitMemory $workflowMemoryLimit -limitCPU $workflowCPULimit -indent 4), `
-(Format-ResourceLimitRequest -limitMemory $minioMemoryLimit -limitCPU $minioCPULimit -indent 2), `
+(Format-ResourceLimitRequest -limitMemory $toolServiceMemoryLimit -limitCPU $toolServiceCPULimit -limitEphemeralStorage $toolServiceEphemeralStorageLimit), `
+(Format-ResourceLimitRequest -limitMemory $workflowMemoryLimit -limitCPU $workflowCPULimit -limitEphemeralStorage $workflowEphemeralStorageLimit -indent 4), `
+(Format-ResourceLimitRequest -limitMemory $minioMemoryLimit -limitCPU $minioCPULimit -limitEphemeralStorage $minioEphemeralStorageLimit -indent 2), `
 $minioCertConfigMap
 
 	$valuesFile = 'toolsvc-values.yaml'
@@ -606,7 +612,8 @@ function Add-NginxIngressLoadBalancerIP([string] $loadBalancerIP,
 	[string] $priorityValuesFile,
 	[string] $releaseName,
 	[string] $cpuLimit,
-	[string] $memoryLimit) {
+	[string] $memoryLimit,
+	[string] $ephemeralStorageLimit) {
 	
 	@'
 controller:
@@ -614,7 +621,7 @@ controller:
     loadBalancerIP: {0}
 '@ -f $loadBalancerIP | out-file $nginxFile -Encoding ascii -Force
 
-	Add-NginxIngress $namespace $waitSeconds $nginxFile $priorityValuesFile $releaseName $cpuLimit $memoryLimit
+	Add-NginxIngress $namespace $waitSeconds $nginxFile $priorityValuesFile $releaseName $cpuLimit $memoryLimit $ephemeralStorageLimit
 }
 
 function Add-NginxIngress([string] [string] $namespace,
@@ -623,7 +630,8 @@ function Add-NginxIngress([string] [string] $namespace,
 	[string] $priorityValuesFile,
 	[string] $releaseName,
 	[string] $cpuLimit,
-	[string] $memoryLimit) {
+	[string] $memoryLimit,
+	[string] $ephemeralStorageLimit) {
 
 	if (-not (Test-Namespace $namespace)) {
 		New-Namespace  $namespace
@@ -644,7 +652,7 @@ controller:
       priorityClassName: {0}
 defaultBackend:
   priorityClassName: {0}
-'@ -f $priorityClassName,(Format-ResourceLimitRequest -limitMemory $memoryLimit -limitCPU $cpuLimit -indent 2) | out-file $priorityValuesFile -Encoding ascii -Force
+'@ -f $priorityClassName,(Format-ResourceLimitRequest -limitMemory $memoryLimit -limitCPU $cpuLimit -limitEphemeralStorage $ephemeralStorageLimit -indent 2) | out-file $priorityValuesFile -Encoding ascii -Force
 	
 	Add-HelmRepo 'stable' 'https://kubernetes-charts.storage.googleapis.com'
 	Invoke-HelmSingleDeployment 'nginx-ingress' $waitTimeSeconds $namespace 'nginx' 'stable/nginx-ingress' $valuesFile 'nginx-nginx-ingress-controller' 1 $priorityValuesFile

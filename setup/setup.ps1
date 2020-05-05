@@ -75,16 +75,18 @@ param (
 	[bool]     $letsEncryptCertManagerInstall = $true,
 	[string]   $letsEncryptCertManagerRegistrationEmailAddress = '',
 	[string]   $letsEncryptCertManagerClusterIssuer = 'letsencrypt-staging',
+	[string]   $letsEncryptCertManagerNamespace = 'cert-manager',
 
 	[string]   $serviceTypeCodeDx = '',
 	[string[]] $serviceAnnotationsCodeDx = @(),
 
+	[bool]     $ingressEnabled = $true,
+	[bool]     $ingressAssumesNginx = $true,
 	[string[]] $ingressAnnotationsCodeDx = @(),
 
 	[string]   $namespaceToolOrchestration = 'cdx-svc',
 	[string]   $namespaceCodeDx = 'cdx-app',
 	[string]   $namespaceIngressController = 'nginx',
-	[string]   $namespaceCertManager = 'cert-manager',
 	[string]   $releaseNameCodeDx = 'codedx',
 	[string]   $releaseNameToolOrchestration = 'codedx-tool-orchestration',
 
@@ -220,7 +222,7 @@ if ($useNetworkPolicies -and $provisionNetworkPolicy -ne $null) {
 }
 
 Write-Verbose 'Waiting for running pods...'
-$namespaceCodeDx,$namespaceIngressController,$namespaceCertManager | ForEach-Object {
+$namespaceCodeDx,$namespaceIngressController,$letsEncryptCertManagerNamespace | ForEach-Object {
 	if (Test-Namespace $_) {
 		Wait-AllRunningPods "Cluster Ready (namespace $_)" $waitTimeSeconds $_	
 	}
@@ -262,7 +264,7 @@ if ($nginxIngressControllerInstall) {
 if ($letsEncryptCertManagerInstall) {
 
 	Write-Verbose 'Adding Let''s Encrypt Cert Manager...'
-	Add-LetsEncryptCertManager $namespaceCertManager $namespaceCodeDx `
+	Add-LetsEncryptCertManager $letsEncryptCertManagerNamespace $namespaceCodeDx `
 		$letsEncryptCertManagerRegistrationEmailAddress 'staging-cluster-issuer.yaml' 'production-cluster-issuer.yaml' `
 		'cert-manager-role.yaml' 'cert-manager-role-binding.yaml' 'cert-manager-http-solver-role-binding.yaml' `
 		$waitTimeSeconds
@@ -277,6 +279,10 @@ Invoke-GitClone $codedxGitRepo $codedxGitRepoBranch
 
 if ($extraCodeDxChartFilesPaths.Count -gt 0) {
 	Copy-Item $extraCodeDxChartFilesPaths .\codedx-kubernetes\codedx
+}
+
+if (-not $nginxIngressControllerInstall -and $null -eq $provisionIngressController) {
+	$namespaceIngressController = ''
 }
 
 Write-Verbose 'Deploying Code Dx with Tool Orchestration disabled...'
@@ -295,8 +301,9 @@ New-CodeDxDeployment $codeDxDnsName $codeDxServicePortNumber $codeDxTlsServicePo
 	$codeDxEphemeralStorageReservation $dbMasterEphemeralStorageReservation $dbSlaveEphemeralStorageReservation `
 	$extraCodeDxValuesPaths `
 	$serviceTypeCodeDx $serviceAnnotationsCodeDx `
-	$ingressAnnotationsCodeDx `
 	$namespaceIngressController `
+	$ingressAnnotationsCodeDx `
+	-ingressEnabled:$ingressEnabled -ingressAssumesNginx:$ingressAssumesNginx `
 	-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -skipDatabase:$skipDatabase
 
 $caCertPaths = $extraCodeDxTrustedCaCertPaths

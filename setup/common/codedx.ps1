@@ -44,8 +44,10 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[string[]] $extraValuesPaths,
 	[string]   $serviceTypeCodeDx,
 	[string[]] $serviceAnnotationsCodeDx,
-	[string[]] $ingressAnnotations,
 	[string]   $ingressControllerNamespace,
+	[string[]] $ingressAnnotations,
+	[switch]   $ingressEnabled,
+	[switch]   $ingressAssumesNginx,
 	[switch]   $enablePSPs,
 	[switch]   $enableNetworkPolicies,
 	[switch]   $configureTls,
@@ -93,10 +95,18 @@ codedxTomcatImagePullSecrets:
 		New-CertificateSecret $namespace $tlsSecretName $tlsCertFile $tlsKeyFile
 	}
 
-	$ingressNamespaceSelector = ''
 	$ingress = 'false'
-	if ('' -ne $ingressControllerNamespace) {
+	if ($ingressEnabled) {
 		$ingress = 'true'
+	}
+
+	$ingressNginxAssumption = 'false'
+	if ($ingressAssumesNginx) {
+		$ingressNginxAssumption = 'true'
+	}
+
+	$ingressNamespaceSelector = ''
+	if ('' -ne $ingressControllerNamespace) {
 		$ingressNamespaceSelector = @'
     ingressSelectors:
     - namespaceSelector:
@@ -125,6 +135,7 @@ service:
 ingress:
   enabled: {14}
   annotations: {21}
+  assumeNginxIngressController: {29}
   hosts:
   - name: {13}
     tls: true
@@ -182,7 +193,7 @@ $defaultKeyStorePwd, `
 (Format-ResourceLimitRequest -limitMemory $dbSlaveMemoryLimit -limitCPU $dbSlaveCPULimit -limitEphemeralStorage $dbSlaveEphemeralStorageLimit -indent 4), `
 $codeDxTomcatPortNumber, $codeDxTlsTomcatPortNumber, `
 $serviceTypeCodeDx, (ConvertTo-YamlMap $serviceAnnotationsCodeDx), `
-$enableDb
+$enableDb, $ingressNginxAssumption
 
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force

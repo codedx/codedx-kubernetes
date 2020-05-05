@@ -243,7 +243,7 @@ if ($usePSPs -and $addDefaultPodSecurityPolicyForAuthenticatedUsers) {
 }
 
 if ($null -ne $provisionIngressController) {
-	& $provisionIngress
+	& $provisionIngressController
 }
 
 if ($nginxIngressControllerInstall) {

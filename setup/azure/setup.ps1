@@ -20,7 +20,7 @@ The following tools must be installed and included in your PATH
 
 param (
   [string] $storageClassName = 'managed-premium',
-  [string] $ingressLoadBalancerIP
+  [string] $nginxIngressControllerLoadBalancerIP
 )
 $ErrorActionPreference = 'Stop'
 $VerbosePreference = 'Continue'
@@ -28,13 +28,13 @@ $VerbosePreference = 'Continue'
 Set-PSDebug -Strict
 
 # Note: Avoid '[Parameter(Mandatory=$true)]' due to @args affect
-if ($ingressLoadBalancerIP -eq '') {
-  $ingressLoadBalancerIP = read-host -prompt 'Enter ingress load balancer IP:'
+if ($nginxIngressControllerLoadBalancerIP -eq '') {
+  $nginxIngressControllerLoadBalancerIP = read-host -prompt 'Enter ingress load balancer IP:'
 }
 
 & (join-path $PSScriptRoot '../setup.ps1') `
   -storageClassName $storageClassName `
-  -nginxIngressControllerLoadBalancerIP $ingressLoadBalancerIP `
+  -nginxIngressControllerLoadBalancerIP $nginxIngressControllerLoadBalancerIP `
   @args
 
 Write-Verbose 'Deployment complete!'

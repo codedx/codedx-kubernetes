@@ -136,6 +136,7 @@ echo "Time now is $(date)"
 # helm install grafana stable/grafana \
 #     --namespace cdx-app \
 #     --set persistence.storageClassName="gp2" \
+#     --set persistence.enabled=true \
 #     --set adminPassword='m8F2^eJ*#0c' \
 #     --set datasources."datasources\.yaml".apiVersion=1 \
 #     --set datasources."datasources\.yaml".datasources[0].name=Prometheus \

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.0
+.VERSION 1.0.1
 .GUID 5614d5a5-d33b-4a86-a7bb-ccc91c3f9bb3
 .AUTHOR Code Dx
 #>
@@ -21,6 +21,10 @@ function New-Namespace([string] $namespace) {
 
 function Test-Namespace([string] $namespace) {
 
+	if ('' -eq $namespace) {
+		return $false
+	}
+	
 	kubectl get namespace $namespace | out-null
 	0 -eq $LASTEXITCODE
 }
@@ -51,9 +55,9 @@ function Test-ClusterInfo([string] $profileName) {
 function New-Certificate([string] $caCertPath, [string] $resourceName, [string] $dnsName, [string] $certPublicKeyFile, [string] $certPrivateKeyFile, [string] $namespace, [string[]] $alternativeNames){
 
 	$altNames = @()
-	$altNames = $altNames + $dnsName + "$dnsName.$namespace" + $alternativeNames
+	$altNames = $altNames + "$dnsName.$namespace" + "$dnsName.$namespace.svc.cluster.local" + $alternativeNames
 
-	New-Csr "$dnsName.$namespace.svc.cluster.local" `
+	New-Csr $dnsName `
 		$altNames `
 		"$dnsName.conf" `
 		"$dnsName.csr" `
@@ -95,6 +99,7 @@ $subjectAlternativeNames | ForEach-Object {
 
 	$request | out-file $requestFile -Encoding ascii -Force
 
+	# Note: When using EKS, this requires k8s v1.16 or newer. Older EKS releases do not support subect alternative names.
 	openssl req -new -config $requestFile -out $csrFile -keyout $keyFile
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create CSR, openssl exited with code $LASTEXITCODE."

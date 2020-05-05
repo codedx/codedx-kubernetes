@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.0
+.VERSION 1.0.1
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -10,7 +10,10 @@ This script includes functions for the deployment of Code Dx and Code Dx Orchest
 #>
 
 
+
 function New-CodeDxDeployment([string] $codeDxDnsName,
+	[int]      $codeDxTomcatPortNumber,
+	[int]      $codeDxTlsTomcatPortNumber,
     [string]   $workDir, 
 	[int]      $waitSeconds,
 	[string]   $caCertPathCodeDx,
@@ -39,12 +42,14 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[string]   $dbMasterEphemeralStorageLimit,
 	[string]   $dbSlaveEphemeralStorageLimit,
 	[string[]] $extraValuesPaths,
+	[string]   $serviceTypeCodeDx,
+	[string[]] $serviceAnnotationsCodeDx,
+	[string[]] $ingressAnnotations,
 	[string]   $ingressControllerNamespace,
-	[string]   $ingressClusterIssuer,
 	[switch]   $enablePSPs,
 	[switch]   $enableNetworkPolicies,
 	[switch]   $configureTls,
-	[switch]   $configureIngress) {
+	[switch]   $skipDatabase) {
  
 	if (-not (Test-Namespace $namespace)) {
 		New-Namespace  $namespace
@@ -70,6 +75,10 @@ codedxTomcatImagePullSecrets:
 	if ($enableNetworkPolicies) {
 		$networkPolicy = 'true'
 	}
+	$enableDb = 'true' 
+	if ($skipDatabase) {
+		$enableDb = 'false'
+	}
 
 	$codeDxFullName = Get-CodeDxChartFullName $releaseName
 
@@ -86,7 +95,7 @@ codedxTomcatImagePullSecrets:
 
 	$ingressNamespaceSelector = ''
 	$ingress = 'false'
-	if ($configureIngress) {
+	if ('' -ne $ingressControllerNamespace) {
 		$ingress = 'true'
 		$ingressNamespaceSelector = @'
     ingressSelectors:
@@ -100,6 +109,8 @@ codedxTomcatImagePullSecrets:
 
 	$values = @'
 codedxAdminPassword: '{0}'
+codedxTomcatPort: {24}
+codedxTlsTomcatPort: {25}
 persistence:
   size: {12}Gi
   storageClass: {18}
@@ -108,13 +119,12 @@ codedxTls:
   secret: {6}
   certFile: {7}
   keyFile: {8}
+service:
+  type: {26}
+  annotations: {27}
 ingress:
   enabled: {14}
-  annotations:
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-body-size: "0"
-    kubernetes.io/tls-acme: "true"
-    cert-manager.io/cluster-issuer: "{21}"
+  annotations: {21}
   hosts:
   - name: {13}
     tls: true
@@ -141,6 +151,7 @@ codedxTomcatImage: {1}
 {2}
 {19}
 mariadb:
+  enabled: {28}
   rootUser:
     password: '{9}'
   replication:
@@ -166,9 +177,12 @@ $dbVolumeSizeGiB, $codeDxVolumeSizeGiB, $codeDxDnsName, $ingress, `
 $dbSlaveVolumeSizeGiB, $dbSlaveReplicaCount, $ingressNamespaceSelector, $storageClassName, `
 (Format-ResourceLimitRequest -limitMemory $codeDxMemoryLimit -limitCPU $codeDxCPULimit -limitEphemeralStorage $codeDxEphemeralStorageLimit), `
 (Format-ResourceLimitRequest -limitMemory $dbMasterMemoryLimit -limitCPU $dbMasterCPULimit -limitEphemeralStorage $dbMasterEphemeralStorageLimit -indent 4), `
-$ingressClusterIssuer, `
+(ConvertTo-YamlMap $ingressAnnotations), `
 $defaultKeyStorePwd, `
-(Format-ResourceLimitRequest -limitMemory $dbSlaveMemoryLimit -limitCPU $dbSlaveCPULimit -limitEphemeralStorage $dbSlaveEphemeralStorageLimit -indent 4)
+(Format-ResourceLimitRequest -limitMemory $dbSlaveMemoryLimit -limitCPU $dbSlaveCPULimit -limitEphemeralStorage $dbSlaveEphemeralStorageLimit -indent 4), `
+$codeDxTomcatPortNumber, $codeDxTlsTomcatPortNumber, `
+$serviceTypeCodeDx, (ConvertTo-YamlMap $serviceAnnotationsCodeDx), `
+$enableDb
 
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
@@ -184,6 +198,8 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 	[string]   $codedxNamespace,
 	[string]   $toolServiceReleaseName,
 	[string]   $codedxReleaseName,
+	[int]      $codeDxTomcatPortNumber,
+	[int]      $codeDxTlsTomcatPortNumber,
 	[int]      $numReplicas,
 	[string]   $minioUsername,
 	[string]   $minioPwd,
@@ -222,7 +238,7 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 	Set-NamespaceLabel $namespace 'name' $namespace
 
 	$protocol = 'http'
-	$codedxPort = '9090'
+	$codedxPort = $codeDxTomcatPortNumber
 	$tlsConfig = 'false'
 	$tlsMinioCertSecret = ''
 	$tlsToolServiceCertSecret = ''
@@ -232,7 +248,7 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 
 	if ($configureTls) {
 		$protocol = 'https'
-		$codedxPort = '9443'
+		$codedxPort = $codeDxTlsTomcatPortNumber
 		$tlsConfig = 'true'
 
 		$tlsMinioCertSecret = '{0}-minio-tls' -f $toolOrchestrationFullName
@@ -380,6 +396,7 @@ function Set-TrustedCerts([string] $workDir,
 	[string]   $waitSeconds,
 	[string]   $codedxNamespace,
 	[string]   $codedxReleaseName,
+	[string[]] $extraValuesPaths,
 	[string]   $caCertsFilePwd,
 	[string]   $caCertsFileNewPwd,
 	[string[]] $trustedCertPaths) {
@@ -426,13 +443,12 @@ cacertsFilePwd: {0}
 	$valuesFile = 'codedx-cacert-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
 
-	helm -n $codedxNamespace upgrade --values $valuesFile --reuse-values $codedxReleaseName $chartFolder
+	$deploymentName = Get-CodeDxChartFullName $codedxReleaseName
+
+	Invoke-HelmSingleDeployment 'Code Dx (Configure Certs)' $waitSeconds $codedxNamespace $codedxReleaseName $chartFolder $valuesFile $deploymentName 1 $extraValuesPaths
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to upgrade Code Dx for trusted certs, helm exited with code $LASTEXITCODE."
 	}
-
-	$deploymentName = Get-CodeDxChartFullName $codedxReleaseName
-	Wait-Deployment 'Helm Upgrade' $waitSeconds $codedxNamespace $deploymentName 1	
 }
 
 function Set-UseToolOrchestration([string] $workDir, 
@@ -443,8 +459,8 @@ function Set-UseToolOrchestration([string] $workDir,
 	[string] $codedxReleaseName,
 	[string] $caCertsFilePwd,
 	[string] $caCertsFileNewPwd,
+	[string[]] $extraValuesPaths,
 	[switch] $enableNetworkPolicies) {
-
 
 	$networkPolicy = 'false'
 	if ($enableNetworkPolicies) {
@@ -480,16 +496,15 @@ networkPolicy:
 	$values | out-file $valuesFile -Encoding ascii -Force
 
 	$chartFolder = (join-path $workDir codedx-kubernetes/codedx)
-	helm -n $codedxNamespace upgrade --values $valuesFile --reuse-values $codedxReleaseName $chartFolder
+	$deploymentName = Get-CodeDxChartFullName $codedxReleaseName
+
+	Invoke-HelmSingleDeployment 'Code Dx (Configure Tool Orchestration)' $waitSeconds $codedxNamespace $codedxReleaseName $chartFolder $valuesFile $deploymentName 1 $extraValuesPaths
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to upgrade Code Dx release for tool orchestration, helm exited with code $LASTEXITCODE."
 	}
-
-	$deploymentName = Get-CodeDxChartFullName $codedxReleaseName
-	Wait-Deployment 'Helm Upgrade' $waitSeconds $codedxNamespace $deploymentName 1
 }
 
-function Add-CertManager([string] $namespace, [string] $codeDxNamespace,
+function Add-LetsEncryptCertManager([string] $namespace, [string] $codeDxNamespace,
 	[string] $registrationEmailAddress, [string] $stagingIssuerFile, [string] $productionIssuerFile,
 	[string] $certManagerRoleFile, [string] $certManagerRoleBindingFile, [string] $httpSolverRoleBindingFile,
 	[string] $waitSeconds) {

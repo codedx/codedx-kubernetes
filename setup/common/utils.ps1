@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.0
+.VERSION 1.0.1
 .GUID 64e7ba9e-d080-4e38-be2e-8c04eed6f183
 .AUTHOR Code Dx
 #>
@@ -107,4 +107,13 @@ function Get-IPv4AddressList([string] $hostname) {
 	$entry = [net.dns]::gethostentry($hostname)
 	$list = $entry.AddressList | Where-Object { -not $_.IsIPv6LinkLocal } | ForEach-Object { $_.IPAddressToString }
 	[string]::Join(',', $list)
+}
+
+function ConvertTo-YamlMap([string[]] $mapItems) {
+
+	if ($mapItems.Count -eq 0) {
+		return '{}'
+	}
+	
+	'{' + '{0}' -f ([string]::Join(',', $mapItems)) + '}'
 }

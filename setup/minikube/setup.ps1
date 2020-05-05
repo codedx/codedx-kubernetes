@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.0
+.VERSION 1.0.1
 .GUID 170f536d-9be8-42fc-8bec-67e8c22e2fb2
 .AUTHOR Code Dx
 #>
@@ -23,7 +23,6 @@ The following tools must be installed and included in your PATH prior to running
 param (
 	[string]   $clusterCertificateAuthorityCertPath="$HOME/.minikube/ca.crt",
 	[string]   $codeDxDnsName = (hostname),
-	[int]      $codeDxPortNumber = 8443,
 	[int]      $waitTimeSeconds = 600,
 
 	[int]      $dbVolumeSizeGiB = 32,
@@ -90,6 +89,7 @@ if ($null -eq (Get-AppCommandPath 'minikube')) {
 
 $workDir = "$HOME/.codedx-$minikubeProfile"
 $varsPath = Join-Path $workDir 'vars.csv'
+$codeDxPortNumber = 8443
 
 $createCluster = -not (Test-MinikubeProfile $minikubeProfile $vmDriver $k8sVersion)
 if ($createCluster) {
@@ -130,7 +130,7 @@ if ($createCluster) {
 	Write-Verbose 'Waiting for running pods...'
 	Wait-AllRunningPods 'Cluster Ready' $waitTimeSeconds
 
-	$provisionIngress = { Add-IngressAddon $minikubeProfile $waitTimeSeconds }
+	$provisionIngressController = { Add-IngressAddon $minikubeProfile $waitTimeSeconds }
 
 	& (join-path $PSScriptRoot '../setup.ps1') `
 		-workDir $workDir `
@@ -152,7 +152,7 @@ if ($createCluster) {
 		-releaseNameCodeDx $releaseNameCodeDx `
 		-releaseNameToolOrchestration $releaseNameToolOrchestration `
 		-kubeApiTargetPort $kubeApiTargetPort `
-		-provisionIngress $provisionIngress `
+		-provisionIngressController $provisionIngressController `
 		@args
 
 	Write-Verbose 'Shutting down cluster...'

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.0
+.VERSION 1.0.1
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -18,7 +18,8 @@ param (
 
 	[string]   $clusterCertificateAuthorityCertPath,
 	[string]   $codeDxDnsName,
-	[int]      $codeDxPortNumber = 8443,
+	[int]      $codeDxServicePortNumber = 9090,
+	[int]      $codeDxTlsServicePortNumber = 9443,
 	[int]      $waitTimeSeconds = 900,
 
 	[int]      $dbVolumeSizeGiB = 32,
@@ -68,9 +69,17 @@ param (
 
 	[bool]     $skipNetworkPolicies = $false,
 
-	[string]   $ingressRegistrationEmailAddress = '',
-	[string]   $ingressLoadBalancerIP = '',
-	[string]   $ingressClusterIssuer = 'letsencrypt-staging',
+	[bool]     $nginxIngressControllerInstall = $true,
+	[string]   $nginxIngressControllerLoadBalancerIP = '',
+
+	[bool]     $letsEncryptCertManagerInstall = $true,
+	[string]   $letsEncryptCertManagerRegistrationEmailAddress = '',
+	[string]   $letsEncryptCertManagerClusterIssuer = 'letsencrypt-staging',
+
+	[string]   $serviceTypeCodeDx = '',
+	[string[]] $serviceAnnotationsCodeDx = @(),
+
+	[string[]] $ingressAnnotationsCodeDx = @(),
 
 	[string]   $namespaceToolOrchestration = 'cdx-svc',
 	[string]   $namespaceCodeDx = 'cdx-app',
@@ -107,12 +116,13 @@ param (
 
 	[string[]] $extraCodeDxValuesPaths = @(),
 	[string[]] $extraToolOrchestrationValuesPath = @(),
-
+	
+	[switch]   $skipDatabase,
 	[switch]   $skipToolOrchestration,
 	[switch]   $addDefaultPodSecurityPolicyForAuthenticatedUsers,
 
 	[management.automation.scriptBlock] $provisionNetworkPolicy,
-	[management.automation.scriptBlock] $provisionIngress
+	[management.automation.scriptBlock] $provisionIngressController
 )
 
 $ErrorActionPreference = 'Stop'
@@ -123,6 +133,10 @@ Set-PSDebug -Strict
 . (join-path $PSScriptRoot './common/helm.ps1')
 . (join-path $PSScriptRoot './common/codedx.ps1')
 . (join-path $PSScriptRoot './common/keytool.ps1')
+
+function Write-ImportantNote([string] $message) {
+	Write-Host ('NOTE: {0}' -f $message) -ForegroundColor Red -BackgroundColor Black
+}
 
 if (-not (Test-IsCore)) {
 	write-error 'Unable to continue because you must run this script with PowerShell Core (pwsh)'
@@ -148,13 +162,27 @@ if ($codeDxDnsName -eq '') { $codeDxDnsName = Read-Host -Prompt 'Enter Code Dx d
 if ($clusterCertificateAuthorityCertPath -eq '') { $clusterCertificateAuthorityCertPath = Read-Host -Prompt 'Enter path to cluster CA certificate' }
 if ((-not $skipToolOrchestration) -and $minioAdminUsername -eq '') { $minioAdminUsername = Read-HostSecureText 'Enter a username for the MinIO admin account' 5 }
 if ((-not $skipToolOrchestration) -and $minioAdminPwd -eq '') { $minioAdminPwd = Read-HostSecureText 'Enter a password for the MinIO admin account' 8 }
-if ($mariadbRootPwd -eq '') { $mariadbRootPwd = Read-HostSecureText 'Enter a password for the MariaDB root user' 0 }
-if ($mariadbReplicatorPwd -eq '') { $mariadbReplicatorPwd = Read-HostSecureText 'Enter a password for the MariaDB replicator user' 0 }
 if ($codedxAdminPwd -eq '') { $codedxAdminPwd = Read-HostSecureText 'Enter a password for the Code Dx admin account' 6 }
 if ((-not $skipToolOrchestration) -and $toolServiceApiKey -eq '') { $toolServiceApiKey = Read-HostSecureText 'Enter an API key for the Code Dx Tool Orchestration service' 8 }
 if ($caCertsFileNewPwd -ne '' -and $caCertsFileNewPwd.length -lt 6) { $caCertsFileNewPwd = Read-HostSecureText 'Enter a password to protect the cacerts file' 6 }
-if ($releaseNameCodeDx.Length -gt 25) {	$releaseNameCodeDx = Read-HostText 'Enter a name for the Code Dx Helm release' -max 25 }
-if ($releaseNameToolOrchestration.Length -gt 25 -or (Test-IsBlacklisted $releaseNameToolOrchestration 'minio')) { $releaseNameToolOrchestration = Read-HostText 'Enter a name for the Code Dx Tool Orchestration Helm release' -max 25 -blacklist 'minio' }
+
+if ($skipDatabase) {
+	Write-ImportantNote 'Since you''re skipping the database installation, you must specify codedxProps.dbconnection.externalDbUrl in an extra values.yaml file.'
+}
+else {
+	if ($mariadbRootPwd -eq '') { $mariadbRootPwd = Read-HostSecureText 'Enter a password for the MariaDB root user' 0 }
+	if ($mariadbReplicatorPwd -eq '') { $mariadbReplicatorPwd = Read-HostSecureText 'Enter a password for the MariaDB replicator user' 0 }
+}
+
+if ($letsEncryptCertManagerInstall){
+
+	if ($letsEncryptCertManagerRegistrationEmailAddress -eq '') { 
+		$letsEncryptCertManagerRegistrationEmailAddress = Read-HostText 'Enter an email address for the Let''s Encrypt registration' 
+	}
+	if ($letsEncryptCertManagerClusterIssuer -eq '') { 
+		$letsEncryptCertManagerClusterIssuer = Read-HostText 'Enter a cluster issuer name for Let''s Encrypt' 
+	}
+}
 
 if ($dockerImagePullSecretName -ne '') {
 	
@@ -174,7 +202,7 @@ if (-not (test-path $clusterCertificateAuthorityCertPath -PathType Leaf)) {
 }
 
 if ($dbSlaveReplicaCount -eq 0) {
-	Write-Host "WARNING: You should schedule database backups when not installing MariaDB slave instance(s)."
+	Write-ImportantNote 'You should schedule database backups when not installing MariaDB slave instance(s).'
 }
 
 $workDir = join-path $workDir "$releaseNameCodeDx-$releaseNameToolOrchestration"
@@ -193,11 +221,15 @@ if ($useNetworkPolicies -and $provisionNetworkPolicy -ne $null) {
 
 Write-Verbose 'Waiting for running pods...'
 $namespaceCodeDx,$namespaceIngressController,$namespaceCertManager | ForEach-Object {
-	Wait-AllRunningPods "Cluster Ready (namespace $_)" $waitTimeSeconds $_	
+	if (Test-Namespace $_) {
+		Wait-AllRunningPods "Cluster Ready (namespace $_)" $waitTimeSeconds $_	
+	}
 }
 
 if (-not $skipToolOrchestration) {
-	Wait-AllRunningPods "Cluster Ready (namespace $namespaceToolOrchestration)" $waitTimeSeconds $namespaceToolOrchestration
+	if (Test-Namespace $namespaceToolOrchestration) {
+		Wait-AllRunningPods "Cluster Ready (namespace $namespaceToolOrchestration)" $waitTimeSeconds $namespaceToolOrchestration
+	}
 }
 
 Write-Verbose 'Adding Helm repository...'
@@ -208,26 +240,35 @@ if ($usePSPs -and $addDefaultPodSecurityPolicyForAuthenticatedUsers) {
 	Add-DefaultPodSecurityPolicy 'psp.yaml' 'psp-role.yaml' 'psp-role-binding.yaml'
 }
 
-$configureIngress = $ingressRegistrationEmailAddress -ne ''
-if ($configureIngress) {
+if ($null -ne $provisionIngressController) {
+	& $provisionIngress
+}
+
+if ($nginxIngressControllerInstall) {
 
 	Write-Verbose 'Adding nginx Ingress...'
 	$priorityValuesFile = 'nginx-ingress-priority.yaml'
-	if ($provisionIngress -eq $null) {
-		if ($ingressLoadBalancerIP -ne '') {
-			Add-NginxIngressLoadBalancerIP $ingressLoadBalancerIP $namespaceIngressController $waitTimeSeconds 'nginx-ingress.yaml' $priorityValuesFile $releaseNameCodeDx $nginxCPUReservation $nginxMemoryReservation $nginxEphemeralStorageReservation
-		} else {
-			Add-NginxIngress $namespaceIngressController $waitTimeSeconds '' $priorityValuesFile $releaseNameCodeDx $nginxCPUReservation $nginxMemoryReservation $nginxEphemeralStorageReservation
-		}
+
+	if ($nginxIngressControllerLoadBalancerIP -ne '') {
+		Add-NginxIngressLoadBalancerIP $nginxIngressControllerLoadBalancerIP $namespaceIngressController $waitTimeSeconds 'nginx-ingress.yaml' $priorityValuesFile $releaseNameCodeDx $nginxCPUReservation $nginxMemoryReservation $nginxEphemeralStorageReservation
 	} else {
-		& $provisionIngress
+		Add-NginxIngress $namespaceIngressController $waitTimeSeconds '' $priorityValuesFile $releaseNameCodeDx $nginxCPUReservation $nginxMemoryReservation $nginxEphemeralStorageReservation
 	}
 
-	Write-Verbose 'Adding Cert Manager...'
-	Add-CertManager $namespaceCertManager $namespaceCodeDx `
-		$ingressRegistrationEmailAddress 'staging-cluster-issuer.yaml' 'production-cluster-issuer.yaml' `
+	$ingressAnnotationsCodeDx += "nginx.ingress.kubernetes.io/proxy-read-timeout: '3600'"
+	$ingressAnnotationsCodeDx += "nginx.ingress.kubernetes.io/proxy-body-size: '0'"
+}
+
+if ($letsEncryptCertManagerInstall) {
+
+	Write-Verbose 'Adding Let''s Encrypt Cert Manager...'
+	Add-LetsEncryptCertManager $namespaceCertManager $namespaceCodeDx `
+		$letsEncryptCertManagerRegistrationEmailAddress 'staging-cluster-issuer.yaml' 'production-cluster-issuer.yaml' `
 		'cert-manager-role.yaml' 'cert-manager-role-binding.yaml' 'cert-manager-http-solver-role-binding.yaml' `
 		$waitTimeSeconds
+
+	$ingressAnnotationsCodeDx += "kubernetes.io/tls-acme: 'true'"
+	$ingressAnnotationsCodeDx += "cert-manager.io/cluster-issuer: '$letsEncryptCertManagerClusterIssuer'"
 }
 
 Write-Verbose 'Fetching Code Dx Helm charts...'
@@ -239,7 +280,7 @@ if ($extraCodeDxChartFilesPaths.Count -gt 0) {
 }
 
 Write-Verbose 'Deploying Code Dx with Tool Orchestration disabled...'
-New-CodeDxDeployment $codeDxDnsName $workDir $waitTimeSeconds `
+New-CodeDxDeployment $codeDxDnsName $codeDxServicePortNumber $codeDxTlsServicePortNumber $workDir $waitTimeSeconds `
 	$clusterCertificateAuthorityCertPath `
 	$namespaceCodeDx $releaseNameCodeDx $codedxAdminPwd $imageCodeDxTomcat `
 	$dockerImagePullSecretName `
@@ -253,9 +294,10 @@ New-CodeDxDeployment $codeDxDnsName $workDir $waitTimeSeconds `
 	$codeDxCPUReservation $dbMasterCPUReservation $dbSlaveCPUReservation `
 	$codeDxEphemeralStorageReservation $dbMasterEphemeralStorageReservation $dbSlaveEphemeralStorageReservation `
 	$extraCodeDxValuesPaths `
+	$serviceTypeCodeDx $serviceAnnotationsCodeDx `
+	$ingressAnnotationsCodeDx `
 	$namespaceIngressController `
-	$ingressClusterIssuer `
-	-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -configureIngress:$configureIngress
+	-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -skipDatabase:$skipDatabase
 
 $caCertPaths = $extraCodeDxTrustedCaCertPaths
 if ($useTLS -and -not $skipToolOrchestration) {
@@ -267,6 +309,7 @@ if ($caCertPaths.count -gt 0) {
 		$waitTimeSeconds `
 		$namespaceCodeDx `
 		$releaseNameCodeDx `
+		$extraCodeDxValuesPaths `
 		$caCertsFilePwd `
 		$caCertsFileNewPwd `
 		$caCertPaths
@@ -279,6 +322,7 @@ if (-not $skipToolOrchestration) {
 		$clusterCertificateAuthorityCertPath `
 		$namespaceToolOrchestration $namespaceCodeDx `
 		$releaseNameToolOrchestration $releaseNameCodeDx `
+		$codeDxServicePortNumber $codeDxTlsServicePortNumber `
 		$toolServiceReplicas `
 		$minioAdminUsername $minioAdminPwd $toolServiceApiKey `
 		$imageCodeDxTools $imageCodeDxToolsMono `
@@ -307,6 +351,7 @@ if (-not $skipToolOrchestration) {
 		"$protocol`://$toolOrchestrationFullName.$namespaceToolOrchestration.svc.cluster.local:3333" $toolServiceApiKey `
 		$releaseNameCodeDx `
 		$caCertsFilePwd $caCertsFileNewPwd `
+		$extraCodeDxValuesPaths `
 		-enableNetworkPolicies:$useNetworkPolicies
 }
 

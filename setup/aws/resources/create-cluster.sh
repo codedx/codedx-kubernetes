@@ -1,9 +1,12 @@
 #!/bin/bash
 
-# Version: 1.0.0
+# Version: 1.0.1
 
 PUBLIC_KEY_PATH=$1
 CLUSTER_NAME=$2
+
+K8S_VERSION=1.16 # https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
+AUTO_SCALER_VERSION=v1.16.5 # https://github.com/kubernetes/autoscaler/releases
 
 LOCATION='us-east-2'
 
@@ -47,7 +50,7 @@ check_param "$CLUSTER_NAME" 'CLUSTER_NAME'
 echo "Time now is $(date)"
 eksctl create cluster \
 	--name $CLUSTER_NAME \
-	--version 1.14 \
+	--version $K8S_VERSION \
 	--region $LOCATION \
 	--without-nodegroup
 check_exit $? 'cluster' 2
@@ -65,7 +68,7 @@ eksctl create nodegroup \
 	--ssh-access \
 	--ssh-public-key $PUBLIC_KEY_PATH \
 	--node-labels 'codedx=workflow' \
-	--node-volume-size $CODEDX_NODEDISKSIZE \
+	--node-volume-size $WORKFLOW_NODEDISKSIZE \
 	--asg-access \
 	--managed
 check_exit $? 'cluster-nodes-workflow' 2
@@ -87,10 +90,14 @@ eksctl create nodegroup \
 	--ssh-access \
 	--ssh-public-key $PUBLIC_KEY_PATH \
 	--node-labels 'codedx=app-db' \
-	--node-volume-size $WORKFLOW_NODEDISKSIZE \
+	--node-volume-size $CODEDX_NODEDISKSIZE \
 	--asg-access \
 	--managed
 check_exit $? 'cluster-nodes-codedx' 2
+
+ID=$(aws eks describe-nodegroup --cluster-name $CLUSTER_NAME --nodegroup-name $CODEDX_NODEGROUPNAME | grep nodegroupArn | grep -Po 'arn\:[^"]+')
+aws eks tag-resource --resource-arn $ID --tags "k8s.io/cluster-autoscaler/enabled=true,k8s.io/cluster-autoscaler/$CLUSTER_NAME=owned"
+check_exit $? 'cluster-nodes-workflow-config' 2
 
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/master/cluster-autoscaler/cloudprovider/aws/examples/cluster-autoscaler-autodiscover.yaml
 check_exit $? 'autoscaler' 3
@@ -105,7 +112,7 @@ read -p "Press Enter to continue..."
 kubectl -n kube-system edit deployment.apps/cluster-autoscaler
 check_exit $? 'autoscaler' 5
 
-kubectl -n kube-system set image deployment.apps/cluster-autoscaler cluster-autoscaler=k8s.gcr.io/cluster-autoscaler:v1.14.7
+kubectl -n kube-system set image deployment.apps/cluster-autoscaler cluster-autoscaler=us.gcr.io/k8s-artifacts-prod/autoscaling/cluster-autoscaler:$AUTO_SCALER_VERSION
 check_exit $? 'autoscaler' 6
 
 kubectl -n kube-system patch deployment cluster-autoscaler -p '{"spec":{"template":{"spec":{"priorityClassName":"system-cluster-critical"}}}}'

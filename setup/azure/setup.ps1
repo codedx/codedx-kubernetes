@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.0
+.VERSION 1.0.1
 .GUID 01d0c54b-ce7a-4462-b4cd-fb27a4f847bc
 .AUTHOR Code Dx
 #>
@@ -34,7 +34,7 @@ if ($ingressLoadBalancerIP -eq '') {
 
 & (join-path $PSScriptRoot '../setup.ps1') `
   -storageClassName $storageClassName `
-  -ingressLoadBalancerIP $ingressLoadBalancerIP `
+  -nginxIngressControllerLoadBalancerIP $ingressLoadBalancerIP `
   @args
 
 Write-Verbose 'Deployment complete!'

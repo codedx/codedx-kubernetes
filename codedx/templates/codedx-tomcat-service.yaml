@@ -4,18 +4,21 @@ metadata:
   name: {{ include "codedx.fullname" . | quote }}
   labels:
     {{- include "codedx.commonLabels" . | nindent 4 }}
+  annotations:
+{{ toYaml $.Values.service.annotations | trim | indent 4 }}
 spec:
   type: {{ include "codedx.servicetype" . }}
   ports:
-  - name: http
-    port: {{ .Values.codedxTomcatPort }}
-    protocol: TCP
-    targetPort: 8080
   {{- if .Values.codedxTls.enabled }}
   - name: https
     port: {{ .Values.codedxTlsTomcatPort }}
     protocol: TCP
     targetPort: 8443
+  {{- else }}
+  - name: http
+    port: {{ .Values.codedxTomcatPort }}
+    protocol: TCP
+    targetPort: 8080
   {{- end }}  
   selector:
     app: {{ include "codedx.name" . | quote }}

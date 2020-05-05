@@ -66,8 +66,6 @@ spec:
 {{ toYaml .Values.networkPolicy.codedx.toolServiceSelectors | indent 4 -}}
     {{- end }}
   {{- end }}
-  {{- /* Only create ingress rules if there are explicitly selectors or if tool service is enabled */ -}}
-  {{- if or .Values.networkPolicy.codedx.ingressSelectors .Values.networkPolicy.codedx.toolService }}
   ingress:
   - ports:
     {{- if .Values.codedxTls.enabled }}
@@ -84,13 +82,4 @@ spec:
 {{ toYaml .Values.networkPolicy.codedx.toolServiceSelectors | indent 4 }}
     {{- end -}}
     {{- end -}}
-  {{- if .Values.codedxTls.enabled }}
-  - ports: 
-    - port: 8443
-    {{- if .Values.networkPolicy.codedx.toolServiceSelectors }}
-    from:
-{{ toYaml .Values.networkPolicy.codedx.toolServiceSelectors | indent 4 }}      
-    {{- end -}}
-  {{- end -}}
   {{ end -}}
-{{- end -}}

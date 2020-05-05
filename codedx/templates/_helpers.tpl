@@ -73,8 +73,8 @@ Determine the type of service when exposing Code Dx based on the user-specified 
 is enabled.
 */}}
 {{- define "codedx.servicetype" -}}
-{{- if .Values.serviceType -}}
-{{- .Values.serviceType -}}
+{{- if .Values.service.type -}}
+{{- .Values.service.type -}}
 {{- else }}
 {{- if .Values.ingress.enabled -}}
 {{- "ClusterIP" }}

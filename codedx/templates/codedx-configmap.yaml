@@ -13,7 +13,7 @@ data:
   {{- /* or change the `codedx.props` sample file, we use a simple text-replace for flexibility. */ -}}
   {{- $dbUrl := (printf "jdbc:mysql://%s-mariadb/codedx" .Release.Name) -}}
   {{- if not .Values.mariadb.enabled -}}
-  {{- $dbUrl = (required ".Values.codedxProps.externalDbUrl must be specified when using an external MariaDB instance" .Values.codedxProps.dbconnection.externalDbUrl) -}}
+  {{- $dbUrl = (required ".Values.codedxProps.dbconnection.externalDbUrl must be specified when using an external MariaDB instance" .Values.codedxProps.dbconnection.externalDbUrl) -}}
   {{- end -}}
   {{- $propsContents := (required "codedx.props cannot be an empty file!" (.Files.Get .Values.codedxProps.file)) -}}
 

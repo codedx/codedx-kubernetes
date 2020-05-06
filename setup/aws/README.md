@@ -47,7 +47,7 @@ From your running PowerShell Core shell, run the following command by replacing 
   -mariadbRootPwd '<mariadb-root-password>' `
   -mariadbReplicatorPwd '<mariadb-replication-password>' `
   -codedxAdminPwd '<codedx-admin-password>' `
-  -ingressRegistrationEmailAddress '<email-address>'
+  -letsEncryptCertManagerRegistrationEmailAddress '<email-address>'
 ```
 
 If you used create-cluster.sh to build your EKS cluster, use the following setup.ps1 command after specifying required parameters.
@@ -56,18 +56,20 @@ If you used create-cluster.sh to build your EKS cluster, use the following setup
 ./setup.ps1 `
   -toolServiceApiKey '<api-key>' `
   -codeDxDnsName '<dns-name>' `
-  -ingressRegistrationEmailAddress '<email-address>' `
+  -letsEncryptCertManagerRegistrationEmailAddress '<email-address>' `
   -minioAdminPwd '<minio-password>' `
   -mariadbRootPwd '<mariadb-root-password>' `
   -mariadbReplicatorPwd '<mariadb-replication-password>' `
   -codedxAdminPwd '<codedx-admin-password>' `
   -clusterCertificateAuthorityCertPath '<path-to-aws-eks.pem>' `
   -toolServiceReplicas 2 `
-  -dbSlaveReplicaCount 0 `
+  -dbSlaveReplicaCount 1 `
   -codeDxCPUReservation 3600m `
   -codeDxMemoryReservation 13Gi `
-  -dbCPUReservation 3600m `
-  -dbMemoryReservation 13Gi `
+  -dbMasterCPUReservation 3600m `
+  -dbMasterMemoryReservation 12Gi `
+  -dbSlaveCPUReservation 1000m `
+  -dbSlaveMemoryReservation 1Gi `
   -minioCPUReservation 1700m `
   -minioMemoryReservation 5Gi `
   -nginxMemoryReservation 500Mi `
@@ -83,7 +85,7 @@ To access Code Dx by the domain name you specified, create a new CNAME DNS recor
 kubectl -n <nginx-namespace> get svc nginx-nginx-ingress-controller
 ```
 
-The setup.ps1 script configures Code Dx for the Let's Encrypt staging environment. You can switch from the staging environment to the production environment by rerunning setup.ps1. Do not make the switch until you are certain that the Code Dx application runs correctly with the certificate issued by the staging environment. When you're ready, rerun setup.ps1 with the same parameter set and include a new parameter named ingressClusterIssuer with value letsencrypt-prod like in the following example.
+The setup.ps1 script configures Code Dx for the Let's Encrypt staging environment. You can switch from the staging environment to the production environment by rerunning setup.ps1. Do not make the switch until you are certain that the Code Dx application runs correctly with the certificate issued by the staging environment. When you're ready, rerun setup.ps1 with the same parameter set and include a new parameter named letsEncryptCertManagerClusterIssuer with value letsencrypt-prod like in the following example.
 
 ```
 ./setup.ps1 `
@@ -93,10 +95,11 @@ The setup.ps1 script configures Code Dx for the Let's Encrypt staging environmen
   -mariadbRootPwd '<mariadb-root-password>' `
   -mariadbReplicatorPwd '<mariadb-replication-password>' `
   -codedxAdminPwd '<codedx-admin-password>' `
-  -ingressRegistrationEmailAddress '<email-address>' `
-  -ingressClusterIssuer 'letsencrypt-prod'
+  -letsEncryptCertManagerRegistrationEmailAddress '<email-address>' `
+  -letsEncryptCertManagerClusterIssuer 'letsencrypt-prod'
 ```
->Note: Use the alternate setup.ps1 command line, adding the ingressClusterIssuer parameter and 'letsencrypt-prod' value, if you used the setup.ps1 create-cluster.sh version from above.
+
+>Note: Use the alternate setup.ps1 command line, adding the letsEncryptCertManagerClusterIssuer parameter and 'letsencrypt-prod' value, if you used the setup.ps1 create-cluster.sh version from above.
 
 ## Installing Updates
 

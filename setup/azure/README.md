@@ -60,13 +60,13 @@ From your running PowerShell Core shell, run the following command by replacing 
   -mariadbRootPwd '<mariadb-root-password>' `
   -mariadbReplicatorPwd '<mariadb-replication-password>' `
   -codedxAdminPwd '<codedx-admin-password>' `
-  -ingressRegistrationEmailAddress '<email-address>' `
-  -ingressLoadBalancerIP '<static-ip>'
+  -letsEncryptCertManagerRegistrationEmailAddress '<email-address>' `
+  -nginxIngressControllerLoadBalancerIP '<static-ip>'
 ```
 
 ## Post Setup Tasks
 
-The setup.ps1 script configures Code Dx for the Let's Encrypt staging environment. You can switch from the staging environment to the production environment by rerunning setup.ps1. Do not make the switch until you are certain that the Code Dx application runs correctly with the certificate issued by the staging environment. When you're ready, rerun setup.ps1 with the same parameter set and include a new parameter named ingressClusterIssuer with value letsencrypt-prod like in the following example.
+The setup.ps1 script configures Code Dx for the Let's Encrypt staging environment. You can switch from the staging environment to the production environment by rerunning setup.ps1. Do not make the switch until you are certain that the Code Dx application runs correctly with the certificate issued by the staging environment. When you're ready, rerun setup.ps1 with the same parameter set and include a new parameter named letsEncryptCertManagerClusterIssuer with value letsencrypt-prod like in the following example.
 
 ```
 ./setup.ps1 `
@@ -76,9 +76,9 @@ The setup.ps1 script configures Code Dx for the Let's Encrypt staging environmen
   -mariadbRootPwd '<mariadb-root-password>' `
   -mariadbReplicatorPwd '<mariadb-replication-password>' `
   -codedxAdminPwd '<codedx-admin-password>' `
-  -ingressRegistrationEmailAddress '<email-address>' `
-  -ingressLoadBalancerIP '<static-ip>' `
-  -ingressClusterIssuer 'letsencrypt-prod'
+  -letsEncryptCertManagerRegistrationEmailAddress '<email-address>' `
+  -nginxIngressControllerLoadBalancerIP '<static-ip>' `
+  -letsEncryptCertManagerClusterIssuer 'letsencrypt-prod'
 ```
 ## Installing Updates
 

@@ -9,76 +9,118 @@ This section describes the setup.ps1 script parameters.
 
 >Note: Refer to the README files under aws, azure, and minikube for instructions on how to configure Code Dx for those environments.
 
-| Parameter | Description | Default | Example |
-|---|---|---|---|
-| workDir | workDir specifies a directory to store script-generated files | $HOME/.k8s-codedx | |
-| kubeContextName | kubeContextName specifies the name of the kubeconfig context entry to select before starting the setup | |
-| clusterCertificateAuthorityCertPath | clusterCertificateAuthorityCertPath specifies a path to your cluster's CA certificate file | | ./aws-eks.pem |
-| codeDxDnsName | codeDxDnsName specifies the domain name for the Code Dx web application | | www.codedx.io |
-| codeDxPortNumber | codeDxPortNumber specifies the port number bound to the Code Dx web application | 8443 | |
-| waitTimeSeconds | waitTimeSeconds specifies the amount of time to wait for install commands to complete | 900 | |
-| dbVolumeSizeGiB | dbVolumeSizeGiB specifies the size of the volume for the MariaDB database | 32 | |
-| dbSlaveReplicaCount | dbSlaveReplicaCount specifies the number of MariaDB slave instances | 0 | |
-| dbSlaveVolumeSizeGiB | dbSlaveVolumeSizeGiB specifies the size of the volume for each MariaDB slave instance | 32 | |
-| minioVolumeSizeGiB | minioVolumeSizeGiB specifies the size of the volume for the MinIO storage application | 32 | |
-| codeDxVolumeSizeGiB | codeDxVolumeSizeGiB specifies the size of the volume for the Code Dx web application | 32 | |
-| storageClassName | storageClassName specifies the name of the storage class for persistance volumes | | |
-| codeDxMemoryReservation | codeDxMemoryReservation specifies the memory resource request and limit for Code Dx | |
-| dbMasterMemoryReservation | dbMasterMemoryReservation specifies the memory resource request and limit for the master MariaDB instance | |
-| dbSlaveMemoryReservation | dbSlaveMemoryReservation specifies the memory resource request and limit for slave MariaDB instances | |
-| toolServiceMemoryReservation | toolServiceMemoryReservation specifies the memory resource request and limit for the tool service  | |
-| minioMemoryReservation | minioMemoryReservation specifies the memory resource request and limit for MinIO | |
-| workflowMemoryReservation | workflowMemoryReservation specifies the memory resource request and limit for the workflow controller | |
-| nginxMemoryReservation | nginxMemoryReservation specifies the memory resource request and limit for nginx | |
-| codeDxCPUReservation | codeDxCPUReservation specifies the CPU resource request and limit for Code Dx | |
-| dbMasterCPUReservation | dbMasterCPUReservation specifies the CPU resource request and limit for the master MariaDB instance | |
-| dbSlaveCPUReservation | dbSlaveCPUReservation specifies the CPU resource request and limit for slave MariaDB instances | |
-| toolServiceCPUReservation | toolServiceCPUReservation specifies the CPU resource request and limit for the tool service  | |
-| minioCPUReservation | minioCPUReservation specifies the CPU resource request and limit for MinIO | |
-| workflowCPUReservation | workflowCPUReservation specifies the CPU resource request and limit for the workflow controller | |
-| nginxCPUReservation | nginxCPUReservation specifies the CPU resource request and limit for nginx | |
-| imageCodeDxTomcat | imageCodeDxTomcat specifies the name of the Code Dx Docker image | codedx/codedx-tomcat:version |
-| imageCodeDxTools | imageCodeDxTools specifies the name of the Code Dx Tools Docker image | codedx/codedx-tools:version | |
-| imageCodeDxToolsMono | imageCodeDxToolsMono specifies the name of the Code Dx Tools Mono Docker image | codedx/codedx-toolsmono:version | |
-| imageNewAnalysis | imageNewAnalysis specifies the name of the Code Dx New Analysis Docker image | codedx/codedx-newanalysis:version | |
-| imageSendResults | imageSendResults specifies the name of the Code Dx Send Results Docker image | codedx/codedx-results:version | |
-| imageSendErrorResults | imageSendErrorResults specifies the name of the Code Dx Send Result Errors Docker image | codedx/codedx-error-results:version | |
-| imageToolService | imageToolService specifies the name of the Code Dx Tool Service Docker image | codedx/codedx-tool-service:version | |
-| imagePreDelete | imagePreDelete specifies the name of the Code Dx Tool Service pre-delete Docker image | codedx/codedx-cleanup:version | |
-| toolServiceReplicas | toolServiceReplicas specifies the number of tool service copies to run concurrently | 3 | |
-| useTLS | useTLS specifies whether Code Dx endpoints use TLS | $true | |
-| usePSPs | usePSPs specifies whether to create Code Dx pod security policies | $true | |
-| skipNetworkPolicies | skipNetworkPolicies specifies whether to skip creating Code Dx network policies | $false | |
-| ingressRegistrationEmailAddress | ingressRegistrationEmailAddress specifies the email address for the Let's Encrypt configuration | | |
-| ingressLoadBalancerIP | ingressLoadBalancerIP specifies the static IP address for the nginx ingress service | | |
-| ingressClusterIssuer | ingressClusterIssuer specifies the name of the Cert Manager cluster issuer | letsencrypt-staging | letsencrypt-staging or letsencrypt-prod |
-| namespaceToolOrchestration | namespaceToolOrchestration specifies the namespace for the tool orchestration components | cdx-svc | |
-| namespaceCodeDx | namespaceCodeDx specifies the namespace for the Code Dx application | cdx-app | |
-| namespaceIngressController | namespaceIngressController specifies the namespace for the nginx Helm chart installation | nginx | |
-| namespaceCertManager | namespaceCertManager specifies the namespace for the cert manager Helm chart installation | cert-manager | |
-| releaseNameCodeDx | releaseNameCodeDx specifies the name for the Code Dx Helm release | codedx-app | |
-| releaseNameToolOrchestration | releaseNameToolOrchestration specifies the name for the Code Dx Tool Orchestration Helm release | toolsvc-codedx-tool-orchestration | |
-| toolServiceApiKey | toolServiceApiKey specifies the API key for the Code Dx Tool Orchestration service | [guid]::newguid() | |
-| codedxAdminPwd | codedxAdminPwd specifies the password for the Code Dx admin account | | |
-| minioAdminUsername | minioAdminUsername specifies the username for the MinIO admin account | admin | |
-| minioAdminPwd | minioAdminPwd specifies the password for the MinIO admin account | | |
-| mariadbRootPwd | mariadbRootPwd specifies the password for the MariaDB root account | | |
-| mariadbReplicatorPwd | mariadbReplicatorPwd specifies the password for the MariaDB replicator account | | |
-| caCertsFilePwd | caCertsFilePwd specifies the current password of the Code Dx cacerts file | changeit | |
-| caCertsFileNewPwd | caCertsFileNewPwd specifies the new password to protect the Code Dx cacerts file | | |
-| extraCodeDxChartFilesPaths | extraCodeDxChartFilesPaths specifies a list of files to copy into the Code Dx chart folder at chart install time | | |
-| extraCodeDxTrustedCaCertPaths | extraCodeDxTrustedCaCertPaths specifies a list of certificate files of trusted CAs to import into the Code Dx cacerts file | | |
-| dockerImagePullSecretName | dockerImagePullSecretName specifies the name of a Kubernetes image pull secret to create for a private Docker registry | | |
-| dockerRegistry | dockerRegistry specifies the server value of a private Docker registry | | required when specifying dockerImagePullSecretName |
-| dockerRegistryUsername | dockerRegistryUsername specifies a username for a private Docker registry | | required when specifying dockerImagePullSecretName |
-| dockerRegistryPwd | dockerRegistryPwd specifies the password for a private Docker registry username | | required when specifying dockerImagePullSecretName |
-| codedxHelmRepo | codedxHelmRepo specifies the URL of the Code Dx Helm repository | https://codedx.github.io/codedx-kubernetes | |
-| codedxGitRepo | codedxGitRepo specifies the URL of the Code Dx Kubernetes git repository | https://github.com/codedx/codedx-kubernetes.git | |
-| codedxGitRepoBranch | codedxGitRepoBranch specifies the branch to fetch from the Code Dx Kubernetes git repository | master | |
-| kubeApiTargetPort | kubeApiTargetPort specifies the port of the Kubernetes API | 443 | |
-| extraCodeDxValuesPaths | extraCodeDxValuesPaths specifies one or more extra values.yaml files for the Code Dx Helm chart | | |
-| extraToolOrchestrationValuesPaths | extraToolOrchestrationValuesPaths specifies one or more extra values.yaml files for the Code Dx Tool Orchestration Helm chart | | |
-| skipToolOrchestration | skipToolOrchestration specifies whether to skip installing the Tool Orchestration feature | $false | |
-| addDefaultPodSecurityPolicyForAuthenticatedUsers | addDefaultPodSecurityPolicyForAuthenticatedUsers specifies whether to install a default, privileged pod security policy | $false | required if your cluster does not include a default, privilged psp |
-| provisionNetworkPolicy | provisionNetworkPolicy specifies a script block to call for any required network policy provisioning | | |
-| provisionIngress | provisionIngress specifies a script block to call for any required ingress controller provisioning | | |
+| Parameter                                        | Description                                                    | Default                                         | Example          |
+|--------------------------------------------------|----------------------------------------------------------------|-------------------------------------------------|------------------|
+| workDir                                          | workDir specifies a directory to store script-generated files  | $HOME/.k8s-codedx                               |                  |
+| kubeContextName                                  | name of the kubeconfig context entry to select at start up     |                                                 | eks              |
+|                                                  |                                                                |                                                 |                  |
+| clusterCertificateAuthorityCertPath              | path to your cluster's CA certificate file                     |                                                 | ./aws-eks.pem    |
+| codeDxDnsName                                    | domain name for the Code Dx web application                    |                                                 | www.codedx.io    |
+| codeDxServicePortNumber                          | HTTP port number for Code Dx k8s service                       | 9090                                            |                  |
+| codeDxTlsServicePortNumber                       | HTTPS port number for Code Dx k8s service                      | 9443                                            | 443              |
+| waitTimeSeconds                                  | seconds to wait for install commands to complete               | 900                                             |                  |
+|                                                  |                                                                |                                                 |                  |
+| dbVolumeSizeGiB                                  | size of the volume for the MariaDB master database             | 32                                              |                  |
+| dbSlaveReplicaCount                              | number of MariaDB slave instances                              | 1                                               |                  |
+| dbSlaveVolumeSizeGiB                             | size of the volume for each MariaDB slave database             | 32                                              |                  |
+| minioVolumeSizeGiB                               | size of the volume for the MinIO storage application           | 32                                              |                  |
+| codeDxVolumeSizeGiB                              | size of the volume for the Code Dx web application             | 32                                              |                  |
+| storageClassName                                 | name of the storage class for persistance volumes              |                                                 |                  |
+|                                                  |                                                                |                                                 |                  |
+| codeDxMemoryReservation                          | memory resource request and limit for Code Dx                  |                                                 | 16Gi             |
+| dbMasterMemoryReservation                        | memory resource request and limit for the master database      |                                                 | 16Gi             |
+| dbSlaveMemoryReservation                         | memory resource request and limit for slave databases          |                                                 | 16Gi             |
+| toolServiceMemoryReservation                     | memory resource request and limit for the tool service         |                                                 | 16Gi             |
+| minioMemoryReservation                           | memory resource request and limit for MinIO                    |                                                 | 16Gi             |
+| workflowMemoryReservation                        | memory resource request and limit for the workflow controller  |                                                 | 16Gi             |
+| nginxMemoryReservation                           | memory resource request and limit for nginx                    |                                                 | 16Gi             |
+|                                                  |                                                                |                                                 |                  |
+| codeDxCPUReservation                             | CPU resource request and limit for Code Dx                     |                                                 | 2                |
+| dbMasterCPUReservation                           | CPU resource request and limit for the master database         |                                                 | 2                |
+| dbSlaveCPUReservation                            | CPU resource request and limit for slave MariaDB databases     |                                                 | 2                |
+| toolServiceCPUReservation                        | CPU resource request and limit for the tool service            |                                                 | 2                |
+| minioCPUReservation                              | CPU resource request and limit for MinIO                       |                                                 | 2                |
+| workflowCPUReservation                           | CPU resource request and limit for the workflow controller     |                                                 | 2                |
+| nginxCPUReservation                              | CPU resource request and limit for nginx                       |                                                 | 2                |
+|                                                  |                                                                |                                                 |                  |
+| codeDxEphemeralStorageReservation                | Ephemeral storage resource request for Code Dx                 | 2Gi                                             |                  |
+| dbMasterEphemeralStorageReservation              | Ephemeral storage resource request for the master database     |                                                 | 2Gi              |
+| dbSlaveEphemeralStorageReservation               | Ephemeral storage resource request for slave MariaDB databases |                                                 | 2Gi              |
+| toolServiceEphemeralStorageReservation           | Ephemeral storage resource request for the tool service        |                                                 | 2Gi              |
+| minioEphemeralStorageReservation                 | Ephemeral storage resource request for MinIO                   |                                                 | 2Gi              |
+| workflowEphemeralStorageReservation              | Ephemeral storage resource request for the workflow controller |                                                 | 2Gi              |
+| nginxEphemeralStorageReservation                 | Ephemeral storage resource request for nginx                   |                                                 | 2Gi              |
+|                                                  |                                                                |                                                 |                  |
+| imageCodeDxTomcat                                | name of the Code Dx Tomcat Docker image                        | latest version                                  |                  |
+| imageCodeDxTools                                 | name of the Code Dx Tools Docker image                         | latest version                                  |                  |
+| imageCodeDxToolsMono                             | name of the Code Dx Tools Mono Docker image                    | latest version                                  |                  |
+| imageNewAnalysis                                 | name of the Code Dx New Analysis Docker image                  | latest version                                  |                  |
+| imageSendResults                                 | name of the Code Dx Send Results Docker image                  | latest version                                  |                  |
+| imageSendErrorResults                            | name of the Code Dx Send Result Errors Docker image            | latest version                                  |                  |
+| imageToolService                                 | name of the Code Dx Tool Service Docker image                  | latest version                                  |                  |
+| imagePreDelete                                   | name of the Code Dx Tool Service pre-delete Docker image       | latest version                                  |                  |
+|                                                  |                                                                |                                                 |                  |
+| toolServiceReplicas                              | number of tool service copies to run concurrently              | 3                                               |                  |
+|                                                  |                                                                |                                                 |                  |
+| useTLS                                           | whether Code Dx endpoints use TLS                              | $true                                           |                  |
+| usePSPs                                          | whether to create pod security policies                        | $true                                           |                  |
+|                                                  |                                                                |                                                 |                  |
+| skipNetworkPolicies                              | whether to skip creating network policies                      | $false                                          |                  |
+|                                                  |                                                                |                                                 |                  |
+| nginxIngressControllerInstall                    | whether to install the NGINX ingress controller                | $true                                           |                  |
+| nginxIngressControllerLoadBalancerIP             | optional static IP address for the NGINX ingress service       |  					                              | 10.0.0.5         |
+|                                                  |                                                                |                                                 |                  |
+| letsEncryptCertManagerInstall                    | whether to install a Let's Encrypt Cert Manager                | $true                                           |                  |
+| letsEncryptCertManagerRegistrationEmailAddress   | email address for Let's Encrypt registration                   |                                                 | me@codedx.com    |
+| letsEncryptCertManagerClusterIssuer              | cluster issuer name (letsencrypt-staging or letsencrypt-prod)  | letsencrypt-staging                             |                  |
+| letsEncryptCertManagerNamespace                  | namespace for Cert Manager components                          | cert-manager                                    |                  |
+|                                                  |                                                                |                                                 |                  |
+| serviceTypeCodeDx                                | service type for the Code Dx service                           |                                                 | LoadBalancer     |
+| serviceAnnotationsCodeDx                         | annotations for the Code Dx service                            |                                                 | @('key: value')  |
+|                                                  |                                                                |                                                 |                  |
+| ingressEnabled                                   | whether to create the Code Dx ingress resource                 | $true                                           |                  |
+| ingressAssumesNginx                              | whether the Code Dx ingress resource adds an NGINX annotation  | $true                                           |                  |
+| ingressAnnotationsCodeDx                         | annotations for the Code Dx ingress                            |                                                 | @('key: value')  |
+|                                                  |                                                                |                                                 |                  |
+| namespaceToolOrchestration                       | namespace for Code Dx Tool Orchestration components            | cdx-svc                                         |                  |
+| namespaceCodeDx                                  | namespace for Code Dx application                              | cdx-app                                         |                  |
+| namespaceIngressController                       | namespace for the NGINX Helm chart installation                | nginx                                           |                  |
+|                                                  |                                                                |                                                 |                  |
+| releaseNameCodeDx                                | name for the Code Dx Helm release                              | codedx                                          |                  |
+| releaseNameToolOrchestration                     | name for the Code Dx Tool Orchestration Helm release           | codedx-tool-orchestration                       |                  |
+|                                                  |                                                                |                                                 |                  |
+| toolServiceApiKey                                | the API key for the Code Dx Tool Orchestration service         | [guid]::newguid()                               |                  |
+|                                                  |                                                                |                                                 |                  |
+| codedxAdminPwd                                   | password for the Code Dx admin account                         |                                                 | 2XHEPKmbRC4ANcd! |
+| minioAdminUsername                               | username for the MinIO admin account                           | admin                                           |                  |
+| minioAdminPwd                                    | password for the MinIO admin account                           |                                                 | 3FJGpS2t8UXj80o! |
+| mariadbRootPwd                                   | password for the MariaDB root account                          |                                                 | eKZjQLEg07BMNEf! |
+| mariadbReplicatorPwd                             | password for the MariaDB replicator account                    |                                                 | wn760nP8i6ZFzVS! |
+|                                                  |                                                                |                                                 |                  |
+| caCertsFilePwd                                   | current password for the Code Dx cacerts file                  | changeit                                        |                  |
+| caCertsFileNewPwd                                | new password to protect the Code Dx cacerts file               |                                                 | W6jcqBYa68G1usO! |
+|                                                  |                                                                |                                                 |                  |
+| extraCodeDxChartFilesPaths                       | files to copy into the Code Dx chart folder at install time    |                                                 | @('/cacerts')    |
+| extraCodeDxTrustedCaCertPaths                    | trusted certificate files to add to the Code Dx cacerts file   |                                                 | @('/cert.pem')   |
+|                                                  |                                                                |                                                 |                  |
+| dockerImagePullSecretName                        | k8s image pull secret name for a private Docker registry       |                                                 | my-registry      |
+| dockerRegistry                                   | server name of private Docker registry                         |                                                 | myregistry.io    |
+| dockerRegistryUser                               | username for private Docker registry                           |                                                 | myregistryuser   |
+| dockerRegistryPwd                                | password for private Docker registry username                  |                                                 | 8ER4dLYCfuda9ej! |
+|                                                  |                                                                |                                                 |                  |
+| codedxHelmRepo                                   | Code Dx Helm repository                                        | https://codedx.github.io/codedx-kubernetes      |                  |
+|                                                  |                                                                |                                                 |                  |
+| codedxGitRepo                                    | Code Dx Kubernetes git repository                              | https://github.com/codedx/codedx-kubernetes.git |                  |
+| codedxGitRepoBranch                              | Code Dx Kubernetes git repository branch                       | master                                          |                  |
+|                                                  |                                                                |                                                 |                  |
+| kubeApiTargetPort                                | port number of the Kubernetes API                              | 443                                             |                  |
+|                                                  |                                                                |                                                 |                  |
+| extraCodeDxValuesPaths                           | extra values.yaml file(s) for the Code Dx Helm chart           |                                                 | @('/file.yaml')  |
+| extraToolOrchestrationValuesPaths                | extra values.yaml file(s) for Tool Orchestration Helm chart    |                                                 | @('/file.yaml')  |
+|                                                  |                                                                |                                                 |                  |
+| skipDatabase                                     | whether to skip installing MariaDB (use external database)     | $false                                          |                  |
+| skipToolOrchestration                            | whether to skip installing the Tool Orchestration feature      | $false                                          |                  |
+| addDefaultPodSecurityPolicyForAuthenticatedUsers | whether to install a default, privileged pod security policy   | $false                                          |                  |
+|                                                  |                                                                |                                                 |                  |
+| provisionNetworkPolicy                           | script block for any required network policy provisioning      |                                                 |                  |
+| provisionIngressController                       | script block for any required ingress controller provisioning  |                                                 |                  |

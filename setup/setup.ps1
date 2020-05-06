@@ -45,7 +45,7 @@ param (
 	[string]   $workflowCPUReservation = '',
 	[string]   $nginxCPUReservation = '',
 
-	[string]   $codeDxEphemeralStorageReservation = '',
+	[string]   $codeDxEphemeralStorageReservation = '2Gi',
 	[string]   $dbMasterEphemeralStorageReservation = '',
 	[string]   $dbSlaveEphemeralStorageReservation = '',
 	[string]   $toolServiceEphemeralStorageReservation = '',

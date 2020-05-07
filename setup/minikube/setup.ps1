@@ -26,7 +26,7 @@ param (
 	[int]      $waitTimeSeconds = 600,
 
 	[int]      $dbVolumeSizeGiB = 32,
-	[int]      $dbSlaveReplicaCount = 0,
+	[int]      $dbSlaveReplicaCount = 1,
 	[int]      $dbSlaveVolumeSizeGiB = 32,
 	[int]      $minioVolumeSizeGiB = 32,
 	[int]      $codeDxVolumeSizeGiB = 32,

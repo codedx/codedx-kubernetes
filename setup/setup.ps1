@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.0
+.VERSION 1.0.1
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -165,9 +165,6 @@ if (-not (test-path $clusterCertificateAuthorityCertPath -PathType Leaf)) {
 	write-error "Unable to continue because path '$clusterCertificateAuthorityCertPath' cannot be found."
 }
 
-if ($dbSlaveReplicaCount -eq 0) {
-	Write-Host "WARNING: You should schedule database backups when not installing MariaDB slave instance(s)."
-}
 
 $workDir = join-path $workDir "$releaseNameCodeDx-$releaseNameToolOrchestration"
 Write-Verbose "Creating directory $workDir..."

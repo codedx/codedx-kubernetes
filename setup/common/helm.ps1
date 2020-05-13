@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.0
+.VERSION 1.0.1
 .GUID 031ba6fc-042c-4c0d-853c-52afb79ce7ea
 .AUTHOR Code Dx
 #>
@@ -22,6 +22,21 @@ function Add-HelmRepo([string] $name, [string] $url) {
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to run helm repo update, helm exited with code $LASTEXITCODE."
 	}
+}
+
+function Test-HelmRelease([string] $namespace, [string] $releaseName) {
+
+	helm -n $namespace status $releaseName | Out-Null
+	$LASTEXITCODE -eq 0
+}
+
+function Get-HelmValues([string] $namespace, [string] $releaseName) {
+
+	$values = helm -n $namespace get values $releaseName -o json
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to get release values, helm exited with code $LASTEXITCODE."
+	}
+	ConvertFrom-Json $values
 }
 
 function Invoke-HelmSingleDeployment([string] $message, [int] $waitSeconds, [string] $namespace, [string] $releaseName, [string] $chartReference, [string] $valuesFile, [string] $deploymentName, [int] $totalReplicas, [string[]] $extraValuesPaths) {

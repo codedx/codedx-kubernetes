@@ -202,6 +202,12 @@ function Set-NamespaceLabel([string] $namespace, [string] $labelName, [string] $
 	}
 }
 
+function Test-Service([string] $namespace, [string] $name) {
+
+	kubectl -n $namespace get svc $name | out-null
+	0 -eq $LASTEXITCODE
+}
+
 function Test-Secret([string] $namespace, [string] $name) {
 
 	kubectl -n $namespace get secret $name | out-null

@@ -53,7 +53,7 @@ param (
 	[string]   $workflowEphemeralStorageReservation = '',
 	[string]   $nginxEphemeralStorageReservation = '',
 
-	[string]   $imageCodeDxTomcat = 'codedx/codedx-tomcat:v5.0.2',
+	[string]   $imageCodeDxTomcat = 'codedx/codedx-tomcat:v5.0.3',
 	[string]   $imageCodeDxTools = 'codedx/codedx-tools:v1.0.0',
 	[string]   $imageCodeDxToolsMono = 'codedx/codedx-toolsmono:v1.0.0',
 	[string]   $imageNewAnalysis = 'codedx/codedx-newanalysis:v1.0.0',
@@ -203,9 +203,6 @@ if (-not (test-path $clusterCertificateAuthorityCertPath -PathType Leaf)) {
 	write-error "Unable to continue because path '$clusterCertificateAuthorityCertPath' cannot be found."
 }
 
-if ($dbSlaveReplicaCount -eq 0) {
-	Write-ImportantNote 'You should schedule database backups when not installing MariaDB slave instance(s).'
-}
 
 $workDir = join-path $workDir "$releaseNameCodeDx-$releaseNameToolOrchestration"
 Write-Verbose "Creating directory $workDir..."

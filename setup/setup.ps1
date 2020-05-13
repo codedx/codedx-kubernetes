@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.1
+.VERSION 1.0.2
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -203,6 +203,9 @@ if (-not (test-path $clusterCertificateAuthorityCertPath -PathType Leaf)) {
 	write-error "Unable to continue because path '$clusterCertificateAuthorityCertPath' cannot be found."
 }
 
+if ($dbSlaveReplicaCount -eq 0) {
+	Write-ImportantNote 'Skipping slave database instances and the database backup process they provide.'
+}
 
 $workDir = join-path $workDir "$releaseNameCodeDx-$releaseNameToolOrchestration"
 Write-Verbose "Creating directory $workDir..."

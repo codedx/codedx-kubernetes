@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.0
+.VERSION 1.0.1
 .GUID d7edc525-a26e-4f80-b65b-262a0e56422e
 .AUTHOR Code Dx
 #>
@@ -62,7 +62,7 @@ spec:
     spec:
       containers:
       - name: restoredb
-        image: codedx/codedx-dbrestore:v1.0.0
+        image: ssalas/codedx-dbrestore:v1.0.1
         imagePullPolicy: Always
         command: ["/bin/bash"]
         args: ["-c", "/home/sdb/restore"]

@@ -24,6 +24,8 @@ spec:
       labels:
         {{- include "codedx.commonLabels" . | nindent 8 }}
         component: frontend
+      annotations:
+        backup.velero.io/backup-volumes: codedx-app-appdata
     spec:
       {{- if .Values.codedxTomcatImagePullSecrets }}
       imagePullSecrets:

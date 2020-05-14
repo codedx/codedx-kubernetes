@@ -138,7 +138,6 @@ if ($createCluster) {
 		-workDir $workDir `
 		-clusterCertificateAuthorityCertPath $clusterCertificateAuthorityCertPath `
 		-codeDxDnsName $codeDxDnsName `
-		-codeDxPortNumber $codeDxPortNumber `
 		-waitTimeSeconds $waitTimeSeconds `
 		-dbVolumeSizeGiB $dbVolumeSizeGiB `
 		-dbSlaveReplicaCount $dbSlaveReplicaCount `

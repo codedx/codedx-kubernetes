@@ -25,7 +25,7 @@ spec:
         {{- include "codedx.commonLabels" . | nindent 8 }}
         component: frontend
       annotations:
-        backup.velero.io/backup-volumes: codedx-app-appdata
+        backup.velero.io/backup-volumes: 'codedx-appdata'
     spec:
       {{- if .Values.codedxTomcatImagePullSecrets }}
       imagePullSecrets:
@@ -93,7 +93,7 @@ spec:
         volumeMounts:
         # Code Dx appdata
         - mountPath: /opt/codedx
-          name: {{ include "volume.fullname" . | quote }}
+          name: 'codedx-appdata'
         # MariaDB props
         - mountPath: {{ include "codedx.mariadb.props.path" . | quote }}
           name: codedx-mariadb-props
@@ -168,7 +168,7 @@ spec:
       priorityClassName: {{ include "codedx.priorityClassName" . | quote }}
       restartPolicy: Always
       volumes:
-      - name: {{ include "volume.fullname" . | quote }}
+      - name: 'codedx-appdata'
         persistentVolumeClaim:
           claimName: {{ include "volume.fullname" . | quote }}
       - name: codedx-props

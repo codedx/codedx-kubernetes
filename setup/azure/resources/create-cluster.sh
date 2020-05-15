@@ -14,6 +14,8 @@
 # CONFIG
 #
 
+K8S_VERSION=1.16.7
+
 # Resource group to store the cluster resource in. Note that
 # VMs, disks, networks, and other resources for the cluster
 # will be created in a *new* resource group - not the one
@@ -121,7 +123,7 @@ az aks create \
     --client-secret $SP_PASSWORD \
     --network-policy azure \
     --load-balancer-sku standard \
-    --kubernetes-version 1.14.7 \
+    --kubernetes-version $K8S_VERSION \
     --node-vm-size $NODE_SIZE
 check_exit $? 'aks create' 7
 

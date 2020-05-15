@@ -121,7 +121,6 @@ param (
 	
 	[switch]   $skipDatabase,
 	[switch]   $skipToolOrchestration,
-	[switch]   $addDefaultPodSecurityPolicyForAuthenticatedUsers,
 
 	[management.automation.scriptBlock] $provisionNetworkPolicy,
 	[management.automation.scriptBlock] $provisionIngressController
@@ -237,10 +236,6 @@ if (-not $skipToolOrchestration) {
 Write-Verbose 'Adding Helm repository...'
 Add-HelmRepo 'codedx' $codedxHelmRepo
 
-if ($usePSPs -and $addDefaultPodSecurityPolicyForAuthenticatedUsers) {
-	Write-Verbose 'Adding default PSP...'
-	Add-DefaultPodSecurityPolicy 'psp.yaml' 'psp-role.yaml' 'psp-role-binding.yaml'
-}
 
 if ($null -ne $provisionIngressController) {
 	& $provisionIngressController
@@ -252,7 +247,7 @@ if ($nginxIngressControllerInstall) {
 	$priorityValuesFile = 'nginx-ingress-priority.yaml'
 
 	if ($nginxIngressControllerLoadBalancerIP -ne '') {
-		Add-NginxIngressLoadBalancerIP $nginxIngressControllerLoadBalancerIP $namespaceIngressController $waitTimeSeconds 'nginx-ingress.yaml' $priorityValuesFile $releaseNameCodeDx $nginxCPUReservation $nginxMemoryReservation $nginxEphemeralStorageReservation
+		Add-NginxIngressLoadBalancerIP $nginxIngressControllerLoadBalancerIP $namespaceIngressController $waitTimeSeconds 'nginx-ingress.yaml' $priorityValuesFile $releaseNameCodeDx $nginxCPUReservation $nginxMemoryReservation $nginxEphemeralStorageReservation -enablePSPs:$usePSPs
 	} else {
 		Add-NginxIngress $namespaceIngressController $waitTimeSeconds '' $priorityValuesFile $releaseNameCodeDx $nginxCPUReservation $nginxMemoryReservation $nginxEphemeralStorageReservation
 	}
@@ -267,7 +262,7 @@ if ($letsEncryptCertManagerInstall) {
 	Add-LetsEncryptCertManager $letsEncryptCertManagerNamespace $namespaceCodeDx `
 		$letsEncryptCertManagerRegistrationEmailAddress 'staging-cluster-issuer.yaml' 'production-cluster-issuer.yaml' `
 		'cert-manager-role.yaml' 'cert-manager-role-binding.yaml' 'cert-manager-http-solver-role-binding.yaml' `
-		$waitTimeSeconds
+		$waitTimeSecond -enablePSPs:$usePSPss
 
 	$ingressAnnotationsCodeDx += "kubernetes.io/tls-acme: 'true'"
 	$ingressAnnotationsCodeDx += "cert-manager.io/cluster-issuer: '$letsEncryptCertManagerClusterIssuer'"

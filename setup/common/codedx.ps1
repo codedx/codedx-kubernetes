@@ -518,7 +518,8 @@ networkPolicy:
 function Add-LetsEncryptCertManager([string] $namespace, [string] $codeDxNamespace,
 	[string] $registrationEmailAddress, [string] $stagingIssuerFile, [string] $productionIssuerFile,
 	[string] $certManagerRoleFile, [string] $certManagerRoleBindingFile, [string] $httpSolverRoleBindingFile,
-	[string] $waitSeconds) {
+	[string] $waitSeconds,
+	[switch] $enablePSPs) {
 
 	kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/v0.13.0/deploy/manifests/00-crds.yaml
 	if ($LASTEXITCODE -ne 0) {
@@ -535,7 +536,12 @@ function Add-LetsEncryptCertManager([string] $namespace, [string] $codeDxNamespa
 
 	Add-HelmRepo jetstack https://charts.jetstack.io
 
-	helm upgrade --namespace $namespace --install --reuse-values cert-manager jetstack/cert-manager --version v0.13.0
+	$usePSP = 'false'
+	if ($enablePSPs) {
+		$usePSP = 'true'
+	}
+
+	helm upgrade --namespace $namespace --install --reuse-values cert-manager jetstack/cert-manager --version v0.13.0 --set global.podSecurityPolicy.enabled=$usePSP
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to upgrade/install cert-manager, helm exited with code $LASTEXITCODE."
 	}
@@ -639,15 +645,16 @@ function Add-NginxIngressLoadBalancerIP([string] $loadBalancerIP,
 	[string] $releaseName,
 	[string] $cpuLimit,
 	[string] $memoryLimit,
-	[string] $ephemeralStorageLimit) {
-	
+	[string] $ephemeralStorageLimit,
+	[switch] $enablePSPs) {
+
 	@'
 controller:
   service:
     loadBalancerIP: {0}
 '@ -f $loadBalancerIP | out-file $nginxFile -Encoding ascii -Force
 
-	Add-NginxIngress $namespace $waitSeconds $nginxFile $priorityValuesFile $releaseName $cpuLimit $memoryLimit $ephemeralStorageLimit
+	Add-NginxIngress $namespace $waitSeconds $nginxFile $priorityValuesFile $releaseName $cpuLimit $memoryLimit $ephemeralStorageLimit -enablePSPs:$enablePSPs
 }
 
 function Add-NginxIngress([string] [string] $namespace,
@@ -657,7 +664,8 @@ function Add-NginxIngress([string] [string] $namespace,
 	[string] $releaseName,
 	[string] $cpuLimit,
 	[string] $memoryLimit,
-	[string] $ephemeralStorageLimit) {
+	[string] $ephemeralStorageLimit,
+	[switch] $enablePSPs) {
 
 	if (-not (Test-Namespace $namespace)) {
 		New-Namespace  $namespace
@@ -669,6 +677,11 @@ function Add-NginxIngress([string] [string] $namespace,
 		New-PriorityClass $priorityClassName 20000
 	}
 	
+	$usePSP = 'false'
+	if ($enablePSPs) {
+		$usePSP = 'true'
+	}
+
 	@'
 controller:
   priorityClassName: {0}
@@ -678,89 +691,12 @@ controller:
       priorityClassName: {0}
 defaultBackend:
   priorityClassName: {0}
-'@ -f $priorityClassName,(Format-ResourceLimitRequest -limitMemory $memoryLimit -limitCPU $cpuLimit -limitEphemeralStorage $ephemeralStorageLimit -indent 2) | out-file $priorityValuesFile -Encoding ascii -Force
+podSecurityPolicy:
+  enabled: {2}
+'@ -f $priorityClassName,(Format-ResourceLimitRequest -limitMemory $memoryLimit -limitCPU $cpuLimit -limitEphemeralStorage $ephemeralStorageLimit -indent 2),$usePSP | out-file $priorityValuesFile -Encoding ascii -Force
 	
 	Add-HelmRepo 'stable' 'https://kubernetes-charts.storage.googleapis.com'
 	Invoke-HelmSingleDeployment 'nginx-ingress' $waitTimeSeconds $namespace 'nginx' 'stable/nginx-ingress' $valuesFile 'nginx-nginx-ingress-controller' 1 $priorityValuesFile
-}
-
-function Add-DefaultPodSecurityPolicy([string] $pspFile, [string] $roleFile, [string] $roleBindingFile) {
-
-	$psp = @'
-apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  name: privileged
-  annotations:
-    seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
-spec:
-  privileged: true
-  allowPrivilegeEscalation: true
-  allowedCapabilities:
-  - '*'
-  volumes:
-  - '*'
-  hostNetwork: true
-  hostPorts:
-  - min: 0
-    max: 65535
-  hostIPC: true
-  hostPID: true
-  runAsUser:
-    rule: 'RunAsAny'
-  seLinux:
-    rule: 'RunAsAny'
-  supplementalGroups:
-    rule: 'RunAsAny'
-  fsGroup:
-    rule: 'RunAsAny'
-'@
-
-	$psp | out-file $pspFile -Encoding ascii -Force
-	kubectl apply -f $pspFile
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to apply PodSecurityPolicy. kubectl exited with code $LASTEXITCODE."
-	}
-
-	$role = @'
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: psp:privileged
-rules:
-- apiGroups: ['policy']
-  resources: ['podsecuritypolicies']
-  verbs:     ['use']
-  resourceNames:
-  - privileged
-'@
-
-	$role | out-file $roleFile -Encoding ascii -Force
-	kubectl apply -f $roleFile
-    	if ($LASTEXITCODE -ne 0) {
-    		throw "Unable to apply PodSecurityPolicy ClusterRole. kubectl exited with code $LASTEXITCODE."
-    	}
-
-	$roleBinding = @'
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: psp:privileged:authenticated
-roleRef:
-  kind: ClusterRole
-  name: psp:privileged
-  apiGroup: rbac.authorization.k8s.io
-subjects:
-- kind: Group
-  apiGroup: rbac.authorization.k8s.io
-  name: system:authenticated
-'@
-
-	$roleBinding | out-file $roleBindingFile -Encoding ascii -Force
-	kubectl apply -f $roleBindingFile
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to apply default PodSecurityPolicy RoleBinding. kubectl exited with code $LASTEXITCODE."
-	}
 }
 
 function Get-CodeDxChartFullName([string] $releaseName) {

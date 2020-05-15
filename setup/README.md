@@ -120,7 +120,6 @@ This section describes the setup.ps1 script parameters.
 |                                                    |                                                            |                                                   |
 | `skipDatabase`                                     | whether to skip installing MariaDB (use external database) | `$false`                                          |
 | `skipToolOrchestration`                            | whether to skip installing the Tool Orchestration feature  | `$false`                                          |
-| `addDefaultPodSecurityPolicyForAuthenticatedUsers` | whether to install default, privileged pod security policy | `$false`                                          |
 |                                                    |                                                            |                                                   |
 | `provisionNetworkPolicy`                           | script block for optional network policy provisioning      |                                                   |
 | `provisionIngressController`                       | script block for optional ingress controller provisioning  |                                                   |

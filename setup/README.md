@@ -79,6 +79,5 @@ This section describes the setup.ps1 script parameters.
 | extraCodeDxValuesPaths | extraCodeDxValuesPaths specifies one or more extra values.yaml files for the Code Dx Helm chart | | |
 | extraToolOrchestrationValuesPaths | extraToolOrchestrationValuesPaths specifies one or more extra values.yaml files for the Code Dx Tool Orchestration Helm chart | | |
 | skipToolOrchestration | skipToolOrchestration specifies whether to skip installing the Tool Orchestration feature | $false | |
-| addDefaultPodSecurityPolicyForAuthenticatedUsers | addDefaultPodSecurityPolicyForAuthenticatedUsers specifies whether to install a default, privileged pod security policy | $false | required if your cluster does not include a default, privilged psp |
 | provisionNetworkPolicy | provisionNetworkPolicy specifies a script block to call for any required network policy provisioning | | |
 | provisionIngress | provisionIngress specifies a script block to call for any required ingress controller provisioning | | |

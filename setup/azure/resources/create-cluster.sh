@@ -126,4 +126,4 @@ az aks create \
 check_exit $? 'aks create' 7
 
 echo 'Done'
-echo "Recommendation: Enable the Pod Security Policy feature preview and enable it on your cluster (see https://docs.microsoft.com/en-us/azure/aks/use-pod-security-policies). Use the -addDefaultPodSecurityPolicyForAuthenticatedUsers setup.ps1 parameter if your cluster's Pod Security Policy configuration will prevent pods without a policy from running."
+echo "Recommendation: Enable the Pod Security Policy feature preview and enable it on your cluster (see https://docs.microsoft.com/en-us/azure/aks/use-pod-security-policies)."

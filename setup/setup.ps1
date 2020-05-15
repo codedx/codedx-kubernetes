@@ -101,7 +101,6 @@ param (
 	[string[]] $extraToolOrchestrationValuesPath = @(),
 
 	[switch]   $skipToolOrchestration,
-	[switch]   $addDefaultPodSecurityPolicyForAuthenticatedUsers,
 
 	[management.automation.scriptBlock] $provisionNetworkPolicy,
 	[management.automation.scriptBlock] $provisionIngress
@@ -192,11 +191,6 @@ if (-not $skipToolOrchestration) {
 Write-Verbose 'Adding Helm repository...'
 Add-HelmRepo 'codedx' $codedxHelmRepo
 
-if ($usePSPs -and $addDefaultPodSecurityPolicyForAuthenticatedUsers) {
-	Write-Verbose 'Adding default PSP...'
-	Add-DefaultPodSecurityPolicy 'psp.yaml' 'psp-role.yaml' 'psp-role-binding.yaml'
-}
-
 $configureIngress = $ingressRegistrationEmailAddress -ne ''
 if ($configureIngress) {
 
@@ -204,9 +198,9 @@ if ($configureIngress) {
 	$priorityValuesFile = 'nginx-ingress-priority.yaml'
 	if ($provisionIngress -eq $null) {
 		if ($ingressLoadBalancerIP -ne '') {
-			Add-NginxIngressLoadBalancerIP $ingressLoadBalancerIP $namespaceIngressController $waitTimeSeconds 'nginx-ingress.yaml' $priorityValuesFile $releaseNameCodeDx $nginxCPUReservation $nginxMemoryReservation
+			Add-NginxIngressLoadBalancerIP $ingressLoadBalancerIP $namespaceIngressController $waitTimeSeconds 'nginx-ingress.yaml' $priorityValuesFile $releaseNameCodeDx $nginxCPUReservation $nginxMemoryReservation -enablePSPs:$usePSPs
 		} else {
-			Add-NginxIngress $namespaceIngressController $waitTimeSeconds '' $priorityValuesFile $releaseNameCodeDx $nginxCPUReservation $nginxMemoryReservation
+			Add-NginxIngress $namespaceIngressController $waitTimeSeconds '' $priorityValuesFile $releaseNameCodeDx $nginxCPUReservation $nginxMemoryReservation -enablePSPs:$usePSPs
 		}
 	} else {
 		& $provisionIngress
@@ -216,7 +210,7 @@ if ($configureIngress) {
 	Add-CertManager $namespaceCertManager $namespaceCodeDx `
 		$ingressRegistrationEmailAddress 'staging-cluster-issuer.yaml' 'production-cluster-issuer.yaml' `
 		'cert-manager-role.yaml' 'cert-manager-role-binding.yaml' 'cert-manager-http-solver-role-binding.yaml' `
-		$waitTimeSeconds
+		$waitTimeSeconds -enablePSPs:$usePSPs
 }
 
 Write-Verbose 'Fetching Code Dx Helm charts...'

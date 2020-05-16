@@ -262,7 +262,7 @@ if ($letsEncryptCertManagerInstall) {
 	Add-LetsEncryptCertManager $letsEncryptCertManagerNamespace $namespaceCodeDx `
 		$letsEncryptCertManagerRegistrationEmailAddress 'staging-cluster-issuer.yaml' 'production-cluster-issuer.yaml' `
 		'cert-manager-role.yaml' 'cert-manager-role-binding.yaml' 'cert-manager-http-solver-role-binding.yaml' `
-		$waitTimeSecond -enablePSPs:$usePSPss
+		$waitTimeSeconds -enablePSPs:$usePSPs
 
 	$ingressAnnotationsCodeDx += "kubernetes.io/tls-acme: 'true'"
 	$ingressAnnotationsCodeDx += "cert-manager.io/cluster-issuer: '$letsEncryptCertManagerClusterIssuer'"

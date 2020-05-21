@@ -488,3 +488,46 @@ function Remove-KubernetesJob([string] $namespace,
 		throw "Unable to delete job, kubectl exited with code $LASTEXITCODE."
 	}
 }
+
+
+function Edit-ResourceJsonPath([string] $namespace, [string] $resourceKind, [string] $resourceName, [string] $jsonPatch) {
+
+	kubectl -n $namespace patch $resourceKind $resourceName --type=json -p $jsonPatch
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to edit resource with json patch, kubectl exited with code $LASTEXITCODE."
+	}
+}
+
+function Edit-ResourceStrategicPatch([string] $namespace, [string] $resourceKind, [string] $resourceName, [string] $patch) {
+
+	kubectl -n $namespace patch $resourceKind $resourceName -p $patch
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to edit resource with strategic patch, kubectl exited with code $LASTEXITCODE."
+	}
+}
+
+function Add-ResourceLabel([string] $namespace, [string] $resourceKindAndName, [string] $labelKey, [string] $labelValue) {
+
+	if ($namespace -eq '') {
+		kubectl label $resourceKindAndName "$labelKey=$labelValue" --overwrite
+	} else {
+		kubectl -n $namespace label $resourceKindAndName "$labelKey=$labelValue" --overwrite
+	}
+	
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to add label to resource, kubectl exited with code $LASTEXITCODE."
+	}
+}
+
+function Remove-ResourceLabel([string] $namespace, [string] $resourceKindAndName, [string] $labelKey) {
+
+	if ($namespace -eq '') {
+		kubectl label $resourceKindAndName "$labelKey-"
+	} else {
+		kubectl -n $namespace label $resourceKindAndName "$labelKey-"
+	}
+	
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to remove label from resource, kubectl exited with code $LASTEXITCODE."
+	}
+}

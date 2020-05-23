@@ -598,6 +598,8 @@ mariadb:
       # Use default storage class for master/slave PVCs
       storageClass: 
       size: 32Gi
+      backup:
+        size: 32Gi
     priorityClassValue: 10200
     config: |-
       [mysqld]

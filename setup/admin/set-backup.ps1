@@ -16,8 +16,8 @@ param (
 	[string] $namespaceCodeDxToolOrchestration = 'cdx-svc',
 	[string] $releaseNameCodeDxToolOrchestration = 'codedx-tool-orchestration',
 	[switch] $useVeleroResticIntegration,
-	[switch] $applyBackupConfiguration,
-	[switch] $skipToolOrchestration
+	[switch] $skipToolOrchestration,
+	[switch] $delete
 )
 
 $ErrorActionPreference = 'Stop'
@@ -46,6 +46,15 @@ $deploymentMinio = "$releaseNameCodeDxToolOrchestration-minio"
 
 if (-not (Test-Deployment $namespaceCodeDx $deploymentCodeDx)) {
 	Write-Error "Unable to find Deployment named $deploymentCodeDx in namespace $namespaceCodeDx."
+}
+
+$applyBackupConfiguration = -not $delete
+
+if ($applyBackupConfiguration) {
+	$statefulSetMariaDBSlaveCount = (Get-HelmValues $namespaceCodeDx $releaseNameCodeDx).mariadb.slave.replicas
+	if ($statefulSetMariaDBSlaveCount -eq 0) {
+		Write-Error "Unable to apply backup configuration because database backups require at least one MariaDB slave replica."
+	}
 }
 
 if (-not (Test-StatefulSet $namespaceCodeDx $statefulSetMariaDBSlave)) {
@@ -145,3 +154,5 @@ if ($useVeleroResticIntegration) {
 		}
 	}
 }
+
+Write-Host 'Done'

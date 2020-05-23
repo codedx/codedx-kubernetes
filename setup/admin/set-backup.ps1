@@ -13,10 +13,21 @@ This script automates the process of applying Velero configuration to Code Dx.
 param (
 	[string] $namespaceCodeDx = 'cdx-app',
 	[string] $releaseNameCodeDx = 'codedx',
+
 	[string] $namespaceCodeDxToolOrchestration = 'cdx-svc',
 	[string] $releaseNameCodeDxToolOrchestration = 'codedx-tool-orchestration',
+
+	[string] $scheduleCronExpression = '* 3 * * *',
+	[string] $databaseBackupTimeout = '30m',
+	[string] $databaseBackupTimeToLive = '720h0m0s',
+
 	[switch] $useVeleroResticIntegration,
+
 	[switch] $skipToolOrchestration,
+
+	[string] $workDirectory = '~',
+	[string] $namespaceVelero = 'velero',
+
 	[switch] $delete
 )
 
@@ -28,6 +39,12 @@ Set-PSDebug -Strict
 . (join-path $PSScriptRoot '../common/k8s.ps1')
 . (join-path $PSScriptRoot '../common/helm.ps1')
 . (join-path $PSScriptRoot '../common/codedx.ps1')
+. (join-path $PSScriptRoot '../common/velero.ps1')
+
+Write-Verbose "Testing for work directory '$workDirectory'"
+if (-not (Test-Path $workDirectory -PathType Container)) {
+	Write-Error "Unable to find specified directory ($workDirectory). Does it exist?"
+}
 
 if (-not (Test-HelmRelease $namespaceCodeDx $releaseNameCodeDx)) {
 	Write-Error "Unable to find Helm release named $releaseNameCodeDx in namespace $namespaceCodeDx."
@@ -153,6 +170,29 @@ if ($useVeleroResticIntegration) {
 			Remove-ResourceLabel '' $_ $exclusionLabelKey
 		}
 	}
+}
+
+$scheduleName = "$releaseNameCodeDx-schedule"
+
+if ($delete) {
+
+	Write-Verbose "Deleting Velero Schedule resource $scheduleName..."
+	if (Test-VeleroBackupSchedule $namespaceVelero $scheduleName) {
+		Remove-VeleroBackupSchedule $namespaceVelero $scheduleName
+	}
+
+} else {
+
+	Write-Verbose "Creating Velero Schedule resource $scheduleName..."
+	New-VeleroBackupSchedule $workDirectory $scheduleName `
+		'schedule.yaml' `
+		$releaseNameCodeDx `
+		$namespaceVelero `
+		$scheduleCronExpression `
+		$namespaceCodeDx `
+		$namespaceCodeDxToolOrchestration `
+		$databaseBackupTimeout `
+		$databaseBackupTimeToLive
 }
 
 Write-Host 'Done'

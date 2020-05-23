@@ -177,6 +177,8 @@ mariadb:
     persistence:
       storageClass: {18}
       size: {15}Gi
+      backup:
+        size: {15}Gi
 {23}
 cacertsFile: ''
 cacertsFilePwd: '{22}'

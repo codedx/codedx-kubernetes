@@ -47,7 +47,7 @@ metadata:
   name: {8}
   namespace: {1}
 spec:
-  schedule: {2}
+  schedule: '{2}'
   template:
     includedNamespaces: ['{3}','{4}']
     storageLocation: default

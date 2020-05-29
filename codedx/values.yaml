@@ -37,11 +37,10 @@ codedxAdminPassword: ""
 
 # cacertsFile can be used to provide a set of custom Java certificates for Code Dx to use. This is
 # necessary for LDAPS and integration with some external tools. This value is the path to a local
-# file that will be mounted in the Code Dx container at `/etc/ssl/certs/java/cacerts`. If undefined
-# (or empty), the default `cacerts` file will be used.
+# file that will be mounted in the Code Dx container at `/usr/local/openjdk-8/jre/lib/security/cacerts`. 
+# If undefined (or empty), the default `cacerts` file will be used.
 #
-# _Note: This is a Local File Value and will only work if installing this chart from source._
-# ref: https://codedx.com/Documentation/InstallGuide.html#TrustingSelfSignedCertificates
+# _Note: This is a Local File Value and will only work if installing this chart from source.
 #
 cacertsFile: ""
 

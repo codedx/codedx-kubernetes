@@ -121,7 +121,7 @@ spec:
           subPath: license.lic
         {{- end }}
         {{ if .Values.cacertsFile -}}
-        - mountPath: /etc/ssl/certs/java/cacerts
+        - mountPath: /usr/local/openjdk-8/jre/lib/security/cacerts
           name: codedx-cacerts
           subPath: cacerts
         {{- end }}

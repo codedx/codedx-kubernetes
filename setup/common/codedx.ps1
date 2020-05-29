@@ -428,7 +428,7 @@ function Set-TrustedCerts([string] $workDir,
 		copy-item $chartFolderCaCertsFilePath $caCertsFilePath
 	} else {
 		$podName = Get-RunningCodeDxPodName $codedxNamespace
-		$podFile = "$podName`:/etc/ssl/certs/java/cacerts"
+		$podFile = "$podName`:/usr/local/openjdk-8/jre/lib/security/cacerts"
 
 		kubectl -n $codedxNamespace cp $podFile $caCertsFilePath
 		if ($LASTEXITCODE -ne 0) {

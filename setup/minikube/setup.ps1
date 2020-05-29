@@ -51,7 +51,9 @@ param (
 	[string]   $minikubeProfile = 'minikube-1-14-6',
 	[int]      $nodeCPUs = 4,
 	[string]   $nodeMemory = '16g',
-	[string]   $vmDriver = 'virtualbox'
+	[string]   $vmDriver = 'virtualbox',
+
+	[switch]   $skipToolOrchestration
 )
 
 $ErrorActionPreference = 'Stop'
@@ -156,6 +158,7 @@ if ($createCluster) {
 		-nginxIngressControllerInstall $false `
 		-letsEncryptCertManagerInstall $letsEncryptCertManagerInstall `
 		-provisionIngressController $provisionIngressController `
+		-skipToolOrchestration:$skipToolOrchestration `
 		@args
 
 	Write-Verbose 'Shutting down cluster...'
@@ -218,8 +221,10 @@ if (-not (Test-ClusterInfo)) {
 Write-Verbose 'Waiting to check deployment status...'
 Start-Sleep -Seconds 60
 
-Write-Verbose 'Waiting for Tool Orchestration deployment...'
-Wait-Deployment 'Tool Orchestration Deployment' $vars.waitTimeSeconds $vars.namespaceToolOrchestration $vars.releaseNameToolOrchestration $vars.toolServiceReplicas
+if (-not $skipToolOrchestration) {
+	Write-Verbose 'Waiting for Tool Orchestration deployment...'
+	Wait-Deployment 'Tool Orchestration Deployment' $vars.waitTimeSeconds $vars.namespaceToolOrchestration $vars.releaseNameToolOrchestration $vars.toolServiceReplicas
+}
 
 Write-Verbose 'Waiting for Code Dx...'
 Wait-Deployment 'Code Dx Deployment' $vars.waitTimeSeconds $vars.namespaceCodeDx "$($vars.releaseNameCodeDx)-codedx" 1

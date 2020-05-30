@@ -17,7 +17,7 @@ param (
 	[string] $namespaceCodeDxToolOrchestration = 'cdx-svc',
 	[string] $releaseNameCodeDxToolOrchestration = 'codedx-tool-orchestration',
 
-	[string] $scheduleCronExpression = '* 3 * * *',
+	[string] $scheduleCronExpression = '0 3 * * *',
 	[string] $databaseBackupTimeout = '30m',
 	[string] $databaseBackupTimeToLive = '720h0m0s',
 

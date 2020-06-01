@@ -14,7 +14,7 @@ This section describes the setup.ps1 script parameters.
 | `workDir`                                          | directory to store script-generated files                  | `$HOME/.k8s-codedx`                               |
 | `kubeContextName`                                  | kubeconfig context entry to select at start up             | `eks` (example)                                   |
 |                                                    |                                                            |                                                   |
-| `clusterCertificateAuthorityCertPath`              | path to your cluster's CA certificate file                 | `./aws-eks.pem` (example)                         |
+| `clusterCertificateAuthorityCertPath`              | cert path for CA issuing certs via certificates.k8s.io API | `./aws-eks.pem` (example)                         |
 | `codeDxDnsName`                                    | domain name for the Code Dx web application                | `www.codedx.io` (example)                         |
 | `codeDxServicePortNumber`                          | HTTP port number for Code Dx k8s service                   | `9090`                                            |
 | `codeDxTlsServicePortNumber`                       | HTTPS port number for Code Dx k8s service                  | `9443`                                            |

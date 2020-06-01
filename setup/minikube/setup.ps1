@@ -172,6 +172,7 @@ if ($createCluster) {
 		'namespaceToolOrchestration' = $namespaceToolOrchestration;
 		'releaseNameCodeDx' = $releaseNameCodeDx;
 		'releaseNameToolOrchestration' = $releaseNameToolOrchestration;
+		'skipToolOrchestration' = $skipToolOrchestration;
 		'toolServiceReplicas' = $toolServiceReplicas;
 		'useNetworkPolicies' = $useNetworkPolicies;
 		'usePSPs' = $usePSPs;
@@ -193,6 +194,7 @@ $vars = Import-Csv -LiteralPath $varsPath
 $vars.useNetworkPolicies = [convert]::ToBoolean($vars.useNetworkPolicies)
 $vars.usePSPs = [convert]::ToBoolean($vars.usePSPs)
 $vars.useTLS = [convert]::ToBoolean($vars.useTLS)
+$vars.skipToolOrchestration = [convert]::ToBoolean($vars.skipToolOrchestration)
 
 $extraConfig = @()
 if ($vars.vmDriver -eq 'none') {
@@ -221,7 +223,7 @@ if (-not (Test-ClusterInfo)) {
 Write-Verbose 'Waiting to check deployment status...'
 Start-Sleep -Seconds 60
 
-if (-not $skipToolOrchestration) {
+if (-not $vars.skipToolOrchestration) {
 	Write-Verbose 'Waiting for Tool Orchestration deployment...'
 	Wait-Deployment 'Tool Orchestration Deployment' $vars.waitTimeSeconds $vars.namespaceToolOrchestration $vars.releaseNameToolOrchestration $vars.toolServiceReplicas
 }

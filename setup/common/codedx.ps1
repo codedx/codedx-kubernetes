@@ -184,7 +184,7 @@ cacertsFile: ''
 cacertsFilePwd: '{22}'
 '@ -f $adminPwd, $tomcatImage, $imagePullSecretYaml, `
 $psp, $networkPolicy, `
-$tlsEnabled, $tlsSecretName, $tlsCertFile, $tlsKeyFile, `
+$tlsEnabled, $tlsSecretName, 'tls.crt', 'tls.key', `
 $mariadbRootPwd, $mariadbReplicatorPwd, `
 $dbVolumeSizeGiB, $codeDxVolumeSizeGiB, $codeDxDnsName, $ingress, `
 $dbSlaveVolumeSizeGiB, $dbSlaveReplicaCount, $ingressNamespaceSelector, $storageClassName, `
@@ -321,8 +321,8 @@ minio:
   tls:
     enabled: {13}
     certSecret: {14}
-    publicCrt: 'minio.pem'
-    privateKey: 'minio.key'
+    publicCrt: 'tls.crt'
+    privateKey: 'tls.key'
   persistence:
     storageClass: {24}
     size: {21}Gi
@@ -363,8 +363,8 @@ codedxTls:
 toolServiceApiKey: '{4}'
 toolServiceTls:
   secret: {15}
-  certFile: 'toolsvc.pem'
-  keyFile: 'toolsvc.key'
+  certFile: 'tls.crt'
+  keyFile: 'tls.key'
   
 imagePullSecretKey: '{5}'
 imageNameCodeDxTools: '{6}'

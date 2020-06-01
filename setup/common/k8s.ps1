@@ -222,13 +222,30 @@ function Remove-Secret([string] $namespace, [string] $name) {
 	}
 }
 
+function New-GenericSecret([string] $namespace, [string] $name, [collections.hashtable] $keyValues) {
+	
+	if (Test-Secret $namespace $name) {
+		Remove-Secret $namespace $name
+	}
+
+	$pairs = @()
+	$keyValues.Keys | ForEach-Object {
+		$pairs += "--from-literal=$_=$($keyValues[$_])"
+	}
+
+	kubectl -n $namespace create secret generic $name $pairs
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to create secret named $name, kubectl exited with code $LASTEXITCODE."
+	}
+}
+
 function New-CertificateSecret([string] $namespace, [string] $name, [string] $certFile, [string] $keyFile) {
 
 	if (Test-Secret $namespace $name) {
 		Remove-Secret $namespace $name
 	}
 
-	kubectl -n $namespace create secret generic $name --from-file`=$certFile --from-file`=$keyFile
+	kubectl -n $namespace create secret tls $name --cert`=$certFile --key`=$keyFile
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create secret named $name, kubectl exited with code $LASTEXITCODE."
 	}

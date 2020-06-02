@@ -149,9 +149,14 @@ if (-not (Test-IsCore)) {
 	}
 }
 
-$helmVersionMatch = helm version | select-string 'Version:"v3'
-if ($null -eq $helmVersionMatch) {
-	write-error 'Unable to continue because helm (v3) was not found. Is it in your PATH?'
+$helmVersion = Get-HelmVersionMajorMinor
+if ($null -eq $helmVersion) {
+	write-error 'Unable to continue because helm version was not detected.'
+}
+
+$minimumHelmVersion = 3.1 # required for helm lookup function
+if ($helmVersion -lt $minimumHelmVersion) {
+	write-error "Unable to continue with helm version $helmVersion, version $minimumHelmVersion or later is required"
 }
 
 if ($kubeContextName -ne '') {

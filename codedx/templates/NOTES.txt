@@ -55,14 +55,14 @@ To minimize errors, existing Code Dx pods should stopped completely first. The d
 {{- end }}
 
 {{ if .Values.mariadb.enabled }}
-{{- if eq .Values.mariadb.rootUser.password $defaultRootPassword }}
+{{- if eq (include "codedx.mariadb.root.pwd" .) $defaultRootPassword }}
 
   WARNING: The default MariaDB root password is being used - be sure to change this after installation!
     helm upgrade --set mariadb.rootUser.password=X {{ .Release.Name }} stable/codedx <other-config-options>
 
 {{- end }}
 
-{{- if eq .Values.mariadb.replication.password $defaultReplicationPassword }}
+{{- if eq (include "codedx.mariadb.replication.pwd" .) $defaultReplicationPassword }}
 
   WARNING: The default MariaDB replication password is being used - be sure to change this after installation!
     helm upgrade --set mariadb.replication.password=X {{ .Release.Name }} stable/codedx <other-config-options>

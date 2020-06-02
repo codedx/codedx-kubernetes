@@ -455,7 +455,7 @@ resources:
 
 	if ($resourceSpec -match '\s+requests:\n\s+limits:') { $resourceSpec = $resourceSpec -replace '\s+requests:','' }
 	if ($resourceSpec -notmatch '\s+limits:\n') { $resourceSpec = $resourceSpec -replace '\s+limits:$','' }
-	if ($resourceSpec -match '\s*resources:$') { $resourceSpec = '' }
+	if ($resourceSpec -match '\s*resources:$') { $resourceSpec += ' {}' }
 
 	$resourceSpec
 }

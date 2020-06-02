@@ -98,6 +98,24 @@ If release name contains chart name it will be used as a full name.
 {{- include "sanitize" (printf "%s-svc-pc" (include "codedx-tool-orchestration.fullname" .)) -}}
 {{- end -}}
 
+{{- define "codedx.minio.accessKey" -}}
+{{- $existingSecret := .Values.minio.global.minio.existingSecret }}
+{{- if $existingSecret -}}
+{{- index (lookup "v1" "Secret" .Release.Namespace $existingSecret).data "access-key" | b64dec -}}
+{{- else -}}
+{{- required "existing secret not found, so expected to find value for minio.global.minio.accessKeyGlobal" .Values.minio.global.minio.accessKeyGlobal -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "codedx.minio.secretKey" -}}
+{{- $existingSecret := .Values.minio.global.minio.existingSecret }}
+{{- if $existingSecret -}}
+{{- index (lookup "v1" "Secret" .Release.Namespace $existingSecret).data "secret-key" | b64dec -}}
+{{- else -}}
+{{- required "existing secret not found, so expected to find value for minio.global.minio.secretKeyGlobal" .Values.minio.global.minio.secretKeyGlobal -}}
+{{- end -}}
+{{- end -}}
+
 {{/*
 Duplicates of a Minio template helper so we can reference Minio's service name
 */}}

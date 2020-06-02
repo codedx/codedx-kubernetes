@@ -196,8 +196,11 @@ minio:
     tag: 2020.3.25-debian-10-r11
   global:
     minio:
-      accessKeyGlobal: "231a5aab-7ffc-49ff-a954-83f97ee416a4"
-      secretKeyGlobal: "89968457-bf3a-4716-9863-b99e04b0e4ee"
+      # use existing secret, with fields access-key and secret-key, as an alternative 
+      # to global.minio.accessKeyGlobal and global.minio.secretKeyGlobal
+      existingSecret:
+      accessKeyGlobal:
+      secretKeyGlobal:
     tls:
       # Enables or disables MinIO TLS configuration.
       enabled: false

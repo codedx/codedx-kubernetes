@@ -269,6 +269,24 @@ Determine the name to use to create and/or bind MariaDB's PodSecurityPolicy.
 {{- include "sanitize" $fullName -}}
 {{- end -}}
 
+{{- define "codedx.mariadb.root.pwd" -}}
+{{- $existingSecret := .Values.mariadb.existingSecret }}
+{{- if $existingSecret -}}
+{{- index (lookup "v1" "Secret" .Release.Namespace $existingSecret).data "mariadb-root-password" | b64dec -}}
+{{- else -}}
+{{- required "existing secret not found, so expected to find value for mariadb.rootUser.password" .Values.mariadb.rootUser.password -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "codedx.mariadb.replication.pwd" -}}
+{{- $existingSecret := .Values.mariadb.existingSecret }}
+{{- if $existingSecret -}}
+{{- index (lookup "v1" "Secret" .Release.Namespace $existingSecret).data "mariadb-replication-password" | b64dec -}}
+{{- else -}}
+{{- required "existing secret not found, so expected to find value for mariadb.replication.password" .Values.mariadb.replication.password -}}
+{{- end -}}
+{{- end -}}
+
 {{/*
 Duplicates of MariaDB template helpers so we can reference service/serviceAccount names
 */}}

@@ -11,6 +11,15 @@ This script includes functions for Helm-related tasks.
 
 . (join-path $PSScriptRoot 'k8s.ps1')
 
+function Get-HelmVersionMajorMinor() {
+
+	$versionMatch = helm version | select-string 'Version:"v(?<version>\d+\.\d+)'
+	if ($null -eq $versionMatch -or -not $versionMatch.Matches.Success) {
+		return $null
+	}
+	[double]$versionMatch.Matches.Groups[1].Value
+}
+
 function Add-HelmRepo([string] $name, [string] $url) {
 
 	helm repo add $name $url

@@ -58,6 +58,10 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	}
 	Set-NamespaceLabel $namespace 'name' $namespace
 
+	# excluding "mariadb-password" from MariaDb credential secret because db.user is unspecfied
+	$mariadbCredentialSecret = "$releaseName-mariadb-cred"
+	New-GenericSecret $namespace $mariadbCredentialSecret @{"mariadb-root-password"=$mariadbRootPwd;"mariadb-replication-password"=$mariadbReplicatorPwd}
+
 	$imagePullSecretYaml = 'codedxTomcatImagePullSecrets: []'
 	if (-not ([string]::IsNullOrWhiteSpace($tomcatImagePullSecretName))) {
 
@@ -119,25 +123,25 @@ codedxTomcatImagePullSecrets:
 
 	$values = @'
 codedxAdminPassword: '{0}'
-codedxTomcatPort: {24}
-codedxTlsTomcatPort: {25}
+codedxTomcatPort: {23}
+codedxTlsTomcatPort: {24}
 persistence:
-  size: {12}Gi
-  storageClass: {18}
+  size: {11}Gi
+  storageClass: {17}
 codedxTls:
   enabled: {5}
   secret: {6}
   certFile: {7}
   keyFile: {8}
 service:
-  type: {26}
-  annotations: {27}
+  type: {25}
+  annotations: {26}
 ingress:
-  enabled: {14}
-  annotations: {21}
-  assumeNginxIngressController: {29}
+  enabled: {13}
+  annotations: {20}
+  assumeNginxIngressController: {28}
   hosts:
-  - name: {13}
+  - name: {12}
     tls: true
     tlsSecret: ingress-tls-secret
 podSecurityPolicy:
@@ -152,7 +156,7 @@ networkPolicy:
     ldaps: {4}
     http: {4}
     https: {4}
-{17}
+{16}
   mariadb:
     master:
       create: {4}
@@ -160,32 +164,31 @@ networkPolicy:
       create: {4}
 codedxTomcatImage: {1}
 {2}
-{19}
+{18}
 mariadb:
-  enabled: {28}
-  rootUser:
-    password: '{9}'
-  replication:
-    password: '{10}'
+  enabled: {27}
+  existingSecret: '{9}'
+  db:
+    user: ''
   master:
     persistence:
-      storageClass: {18}
-      size: {11}Gi
-{20}
+      storageClass: {17}
+      size: {10}Gi
+{19}
   slave:
-    replicas: {16}
+    replicas: {15}
     persistence:
-      storageClass: {18}
-      size: {15}Gi
+      storageClass: {17}
+      size: {14}Gi
       backup:
-        size: {15}Gi
-{23}
+        size: {14}Gi
+{22}
 cacertsFile: ''
-cacertsFilePwd: '{22}'
+cacertsFilePwd: '{21}'
 '@ -f $adminPwd, $tomcatImage, $imagePullSecretYaml, `
 $psp, $networkPolicy, `
 $tlsEnabled, $tlsSecretName, 'tls.crt', 'tls.key', `
-$mariadbRootPwd, $mariadbReplicatorPwd, `
+$mariadbCredentialSecret, `
 $dbVolumeSizeGiB, $codeDxVolumeSizeGiB, $codeDxDnsName, $ingress, `
 $dbSlaveVolumeSizeGiB, $dbSlaveReplicaCount, $ingressNamespaceSelector, $storageClassName, `
 (Format-ResourceLimitRequest -limitMemory $codeDxMemoryLimit -limitCPU $codeDxCPULimit -limitEphemeralStorage $codeDxEphemeralStorageLimit), `
@@ -250,6 +253,9 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 	}
 	Set-NamespaceLabel $namespace 'name' $namespace
 
+	$minioCredentialSecret = "$toolServiceReleaseName-minio-cred"
+	New-GenericSecret $namespace $minioCredentialSecret @{"access-key"=$minioUsername;"secret-key"=$minioPwd}
+
 	$protocol = 'http'
 	$codedxPort = $codeDxTomcatPortNumber
 	$tlsConfig = 'false'
@@ -311,74 +317,73 @@ toolServiceImagePullSecrets:
 argo:
   installCRD: false
   controller:
-{27}
+{26}
 
 minio:
   global:
     minio:
-      accessKeyGlobal: '{0}'
-      secretKeyGlobal: '{1}'
+      existingSecret: '{0}'
   tls:
-    enabled: {13}
-    certSecret: {14}
+    enabled: {12}
+    certSecret: {13}
     publicCrt: 'tls.crt'
     privateKey: 'tls.key'
   persistence:
-    storageClass: {24}
-    size: {21}Gi
-{28}
+    storageClass: {23}
+    size: {20}Gi
+{27}
 
 minioTlsTrust:
-  configMapName: {29}
+  configMapName: {28}
   configMapPublicCertKeyName: 'minio.pem'
 
 podSecurityPolicy:
   tws:
-    create: {16}
+    create: {15}
   twsWorkflows:	
-    create: {16}
+    create: {15}
   argo:
-    create: {16}
+    create: {15}
   minio:
-    create: {16}
+    create: {15}
 
-numReplicas: {12}
+numReplicas: {11}
 
 networkPolicy:
-  toolServiceEnabled: {17}
-  twsWorkflowsEnabled: {17}
-  argoEnabled: {17}
-  minioEnabled: {17}      
-  kubeApiTargetPort: {25}
+  toolServiceEnabled: {16}
+  twsWorkflowsEnabled: {16}
+  argoEnabled: {16}
+  minioEnabled: {16}      
+  kubeApiTargetPort: {24}
   codedxSelectors:
   - namespaceSelector:
       matchLabels:
-        name: '{2}'
+        name: '{1}'
   
-codedxBaseUrl: '{18}'
+codedxBaseUrl: '{17}'
 codedxTls:
-  enabled: {19}
-  caConfigMap: {20}
+  enabled: {18}
+  caConfigMap: {19}
   
-toolServiceApiKey: '{4}'
+toolServiceApiKey: '{3}'
 toolServiceTls:
-  secret: {15}
+  secret: {14}
   certFile: 'tls.crt'
   keyFile: 'tls.key'
   
-imagePullSecretKey: '{5}'
-imageNameCodeDxTools: '{6}'
-imageNameCodeDxToolsMono: '{7}' 
-imageNameNewAnalysis: '{8}' 
-imageNameSendResults: '{9}' 
-imageNameSendErrorResults: '{10}' 
-toolServiceImageName: '{11}' 
-imageNameHelmPreDelete: '{23}' 
-{22}
+imagePullSecretKey: '{4}'
+imageNameCodeDxTools: '{5}'
+imageNameCodeDxToolsMono: '{6}' 
+imageNameNewAnalysis: '{7}' 
+imageNameSendResults: '{8}' 
+imageNameSendErrorResults: '{9}' 
+toolServiceImageName: '{10}' 
+imageNameHelmPreDelete: '{22}' 
+{21}
 
-{26}
-'@ -f $minioUsername,`
-$minioPwd,$codedxNamespace,$codedxReleaseName,$apiKey,`
+{25}
+'@ -f $minioCredentialSecret,`
+$codedxNamespace,$codedxReleaseName,$apiKey,`
 $imagePullSecretName,$toolsImage,$toolsMonoImage,$newAnalysisImage,$sendResultsImage,$sendErrorResultsImage,$toolServiceImage,$numReplicas,
 $tlsConfig,$tlsMinioCertSecret,$tlsToolServiceCertSecret,
 $psp,$networkPolicy,$codedxBaseUrl,`

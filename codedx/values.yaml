@@ -549,10 +549,15 @@ mariadb:
   db:
     # Name of the database for MariaDB to create automatically
     name: codedx
+  
+  # use existing secret, with fields mariadb-root-password and mariadb-replication-password, as 
+  # an alternative to rootUser.password and replication.password
+  existingSecret:
   rootUser:
     password: 5jqJL2b8hqn3
   replication:
     password: 11uAQKLgv4JM
+  
   serviceAccount:
     # Enable the creation of a MariaDB ServiceAccount for use in PodSecurityPolicies. Note that this version
     # of the MariaDB chart doesn't create its own ServiceAccount, so the Code Dx chart creates it instead.

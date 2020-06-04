@@ -232,7 +232,7 @@ Write-Verbose 'Waiting for Code Dx...'
 Wait-Deployment 'Code Dx Deployment' $vars.waitTimeSeconds $vars.namespaceCodeDx "$($vars.releaseNameCodeDx)-codedx" 1
 
 if ($createCluster) {
-	Write-Host "Done.`n`n***Note: '$($vars.workDir)' contains values.yaml data that should be kept private.`n`n"
+	Write-Host "Done.`n`n***Note: '$($vars.workDir)' contains data that should be kept private.`n`n"
 }
 
 $portNum = 8080

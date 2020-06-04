@@ -53,7 +53,7 @@ param (
 	[string]   $workflowEphemeralStorageReservation = '',
 	[string]   $nginxEphemeralStorageReservation = '',
 
-	[string]   $imageCodeDxTomcat = 'codedx/codedx-tomcat:v5.0.3',
+	[string]   $imageCodeDxTomcat = 'codedx/codedx-tomcat:v5.0.4',
 	[string]   $imageCodeDxTools = 'codedx/codedx-tools:v1.0.0',
 	[string]   $imageCodeDxToolsMono = 'codedx/codedx-toolsmono:v1.0.0',
 	[string]   $imageNewAnalysis = 'codedx/codedx-newanalysis:v1.0.0',
@@ -312,6 +312,8 @@ if ($useTLS -and -not $skipToolOrchestration) {
 	$caCertPaths += $clusterCertificateAuthorityCertPath
 }
 
+$installToolOrchestration = -not $skipToolOrchestration
+
 Set-TrustedCerts $workDir `
 	$waitTimeSeconds `
 	$namespaceCodeDx `
@@ -320,9 +322,10 @@ Set-TrustedCerts $workDir `
 	$codedxAdminPwd `
 	$caCertsFilePwd `
 	$caCertsFileNewPwd `
-	$caCertPaths
+	$caCertPaths `
+	-offlineMode:$installToolOrchestration
 
-if (-not $skipToolOrchestration) {
+if ($installToolOrchestration) {
 
 	Write-Verbose 'Deploying Tool Orchestration...'
 	New-ToolOrchestrationDeployment $workDir $waitTimeSeconds `
@@ -363,3 +366,4 @@ if (-not $skipToolOrchestration) {
 }
 
 Write-Verbose 'Done'
+Write-ImportantNote "The '$workDir' directory may contain .key files and other configuration data that should be kept private."

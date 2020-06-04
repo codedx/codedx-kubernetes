@@ -82,41 +82,23 @@ codedxTomcatImagePullSecrets:
 		New-ImagePullSecret $namespace $tomcatImagePullSecretName $dockerRegistry $dockerRegistryUser $dockerRegistryPwd
 	}
 
-	$psp = 'false'
-	if ($enablePSPs) {
-		$psp = 'true'
-	}
-	$networkPolicy = 'false'
-	if ($enableNetworkPolicies) {
-		$networkPolicy = 'true'
-	}
-	$enableDb = 'true' 
-	if ($skipDatabase) {
-		$enableDb = 'false'
-	}
+	$psp = $enablePSPs.ToString().ToLower()
+	$networkPolicy = $enableNetworkPolicies.ToString().ToLower()
+	$enableDb = (-not $skipDatabase).ToString().ToLower()
 
 	$codeDxFullName = Get-CodeDxChartFullName $releaseName
 
-	$tlsEnabled = 'false'
+	$tlsEnabled = $configureTls.ToString().ToLower()
 	$tlsSecretName = "$codeDxFullName-tls"
 	$tlsCertFile = "$codeDxFullName.pem"
 	$tlsKeyFile = "$codeDxFullName.key"
 	if ($configureTls) {
-		$tlsEnabled = 'true'
-
 		New-Certificate $caCertPathCodeDx $codeDxFullName $codeDxFullName $tlsCertFile $tlsKeyFile $namespace @()
 		New-CertificateSecret $namespace $tlsSecretName $tlsCertFile $tlsKeyFile
 	}
 
-	$ingress = 'false'
-	if ($ingressEnabled) {
-		$ingress = 'true'
-	}
-
-	$ingressNginxAssumption = 'false'
-	if ($ingressAssumesNginx) {
-		$ingressNginxAssumption = 'true'
-	}
+	$ingress = $ingressEnabled.ToString().ToLower()
+	$ingressNginxAssumption = $ingressAssumesNginx.ToString().ToLower()
 
 	$ingressNamespaceSelector = ''
 	if ('' -ne $ingressControllerNamespace) {
@@ -194,6 +176,12 @@ mariadb:
 {22}
 cacertsFile: ''
 cacertsFilePwd: '{21}'
+codedxProps:
+  internalExtra:
+  - type: values
+    key: codedx-offline-props
+    values:
+    - "codedx.offline-mode = true"
 '@ -f (Get-CodeDxPdSecretName $releaseName), $tomcatImage, $imagePullSecretYaml, `
 $psp, $networkPolicy, `
 $tlsEnabled, $tlsSecretName, 'tls.crt', 'tls.key', `
@@ -270,7 +258,7 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 
 	$protocol = 'http'
 	$codedxPort = $codeDxTomcatPortNumber
-	$tlsConfig = 'false'
+	$tlsConfig = $configureTls.ToString().ToLower()
 	$tlsMinioCertSecret = ''
 	$tlsToolServiceCertSecret = ''
 	$codedxCaConfigMap = ''
@@ -280,7 +268,6 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 	if ($configureTls) {
 		$protocol = 'https'
 		$codedxPort = $codeDxTlsTomcatPortNumber
-		$tlsConfig = 'true'
 
 		$tlsMinioCertSecret = '{0}-minio-tls' -f $toolOrchestrationFullName
 		$tlsToolServiceCertSecret = '{0}-tls' -f $toolOrchestrationFullName
@@ -316,14 +303,8 @@ toolServiceImagePullSecrets:
 		New-ImagePullSecret $namespace $imagePullSecretName $dockerRegistry $dockerRegistryUser $dockerRegistryPwd
 	}
 
-	$psp = 'false'
-	if ($enablePSPs) {
-		$psp = 'true'
-	}
-	$networkPolicy = 'false'
-	if ($enableNetworkPolicies) {
-		$networkPolicy = 'true'
-	}
+	$psp = $enablePSPs.ToString().ToLower()
+	$networkPolicy = $enableNetworkPolicies.ToString().ToLower()
 
 	$values = @'
 argo:
@@ -430,7 +411,8 @@ function Set-TrustedCerts([string] $workDir,
 	[string]   $adminPwd,
 	[string]   $caCertsFilePwd,
 	[string]   $caCertsFileNewPwd,
-	[string[]] $trustedCertPaths) {
+	[string[]] $trustedCertPaths,
+	[switch]   $offlineMode) {
 
 	$caCertsFilePath = './cacerts'
 	if (test-path $caCertsFilePath) {
@@ -469,7 +451,13 @@ function Set-TrustedCerts([string] $workDir,
 
 	$values = @'
 cacertsFile: cacerts
-'@ -f $keystorePwd
+codedxProps:
+  internalExtra:
+  - type: values
+    key: codedx-offline-props
+    values:
+    - "codedx.offline-mode = {0}"
+'@ -f $offlineMode.ToString().ToLower()
 
 	$valuesFile = 'codedx-cacert-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
@@ -493,19 +481,18 @@ function Set-UseToolOrchestration([string] $workDir,
 	[string[]] $extraValuesPaths,
 	[switch] $enableNetworkPolicies) {
 
-	$networkPolicy = 'false'
-	if ($enableNetworkPolicies) {
-		$networkPolicy = 'true'
-	}
+	$networkPolicy = $enableNetworkPolicies.ToString().ToLower()
 
-	$codedxOrchestrationPropsKey = 'codedx-orchestration-props-key'
-	"tws.api-key = $toolServiceApiKey" | Out-File $codedxOrchestrationPropsKey -Encoding ascii -Force
-
-	New-FileSecret $codedxNamespace $codedxOrchestrationPropsKey $codedxOrchestrationPropsKey
-
+	$codedxOrchestrationPropsKey = 'codedx-orchestration-key-props'
+	New-GenericSecret $codedxNamespace $codedxOrchestrationPropsKey @{$codedxOrchestrationPropsKey = "tws.api-key = ""$toolServiceApiKey"""}
+	
 	$values = @'
 codedxProps:
   internalExtra:
+  - type: values
+    key: codedx-offline-props
+    values:
+    - "codedx.offline-mode = false"
   - type: secret
     name: {3}
     key: {3}
@@ -556,10 +543,7 @@ function Add-LetsEncryptCertManager([string] $namespace, [string] $codeDxNamespa
 
 	Add-HelmRepo jetstack https://charts.jetstack.io
 
-	$usePSP = 'false'
-	if ($enablePSPs) {
-		$usePSP = 'true'
-	}
+	$usePSP = $enablePSPs.ToString().ToLower()
 
 	helm upgrade --namespace $namespace --install --reuse-values cert-manager jetstack/cert-manager --version v0.13.0 --set global.podSecurityPolicy.enabled=$usePSP
 	if ($LASTEXITCODE -ne 0) {
@@ -697,10 +681,7 @@ function Add-NginxIngress([string] [string] $namespace,
 		New-PriorityClass $priorityClassName 20000
 	}
 	
-	$usePSP = 'false'
-	if ($enablePSPs) {
-		$usePSP = 'true'
-	}
+	$usePSP = $enablePSPs.ToString().ToLower()
 
 	@'
 controller:

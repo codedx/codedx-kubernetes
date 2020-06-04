@@ -303,6 +303,7 @@ New-CodeDxDeployment $codeDxDnsName $codeDxServicePortNumber $codeDxTlsServicePo
 	$serviceTypeCodeDx $serviceAnnotationsCodeDx `
 	$namespaceIngressController `
 	$ingressAnnotationsCodeDx `
+	$caCertsFilePwd `
 	-ingressEnabled:$ingressEnabled -ingressAssumesNginx:$ingressAssumesNginx `
 	-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -skipDatabase:$skipDatabase
 
@@ -311,16 +312,15 @@ if ($useTLS -and -not $skipToolOrchestration) {
 	$caCertPaths += $clusterCertificateAuthorityCertPath
 }
 
-if ($caCertPaths.count -gt 0) {
-	Set-TrustedCerts $workDir `
-		$waitTimeSeconds `
-		$namespaceCodeDx `
-		$releaseNameCodeDx `
-		$extraCodeDxValuesPaths `
-		$caCertsFilePwd `
-		$caCertsFileNewPwd `
-		$caCertPaths
-}
+Set-TrustedCerts $workDir `
+	$waitTimeSeconds `
+	$namespaceCodeDx `
+	$releaseNameCodeDx `
+	$extraCodeDxValuesPaths `
+	$codedxAdminPwd `
+	$caCertsFilePwd `
+	$caCertsFileNewPwd `
+	$caCertPaths
 
 if (-not $skipToolOrchestration) {
 
@@ -362,4 +362,4 @@ if (-not $skipToolOrchestration) {
 		-enableNetworkPolicies:$useNetworkPolicies
 }
 
-
+Write-Verbose 'Done'

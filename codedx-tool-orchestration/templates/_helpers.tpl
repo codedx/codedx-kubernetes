@@ -98,6 +98,15 @@ If release name contains chart name it will be used as a full name.
 {{- include "sanitize" (printf "%s-svc-pc" (include "codedx-tool-orchestration.fullname" .)) -}}
 {{- end -}}
 
+{{- define "codedx.toolsvc.apiKey" -}}
+{{- $existingSecret := .Values.existingSecret }}
+{{- if $existingSecret -}}
+{{- index (lookup "v1" "Secret" .Release.Namespace $existingSecret).data "api-key" | b64dec -}}
+{{- else -}}
+{{- required "existing secret not found, so expected to find value for .Values.toolServiceApiKey" .Values.toolServiceApiKey -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "codedx.minio.accessKey" -}}
 {{- $existingSecret := .Values.minio.global.minio.existingSecret }}
 {{- if $existingSecret -}}

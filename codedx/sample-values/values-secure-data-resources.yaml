@@ -8,12 +8,17 @@ metadata:
   namespace: default
 type: Opaque
 data:
+  admin-password: "Replace this with the base64-encoded password to use when Code Dx auto-creates its 'admin' account."
+  cacerts-password: "Replace this with the base64-encoded password to use for your cacerts file."
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: codedx-license-secret
+  namespace: default
+type: Opaque
+data:
   license.lic: "Replace this with your base64-encoded Code Dx license."
-  password: "Replace this with the base64-encoded password to use when Code Dx auto-creates its 'admin' account."
-  codedx.mariadb.props: |-
-    # Replace the password below, then replace this value with its base64-encoded version.
-    swa.db.user = root
-    swa.db.password = <Replace this with a new MariaDB root password.>
 ---
 apiVersion: v1
 kind: Secret

@@ -16,7 +16,12 @@ imagePullSecretKey: ""
 toolServiceImageName: codedx/codedx-tool-service:v1.0.1
 toolServiceImagePullSecrets: []
 toolServicePort: 3333
-toolServiceApiKey: cc224a8f-a307-416e-a6dd-769600ac8e2c
+
+# existingSecret lets you use an existing secret with field api-key as an 
+# alternative to toolServiceApiKey
+#
+existingSecret:
+toolServiceApiKey: ""
 
 toolServiceTls:
   secret:

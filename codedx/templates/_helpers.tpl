@@ -166,7 +166,7 @@ Determine the name of the secret to create and/or use for storing the `props` fi
 credentials, which will be mounted for Code Dx.
 */}}
 {{- define "codedx.mariadb.secretName" -}}
-{{- $fullName := default (printf "%s-%s" .Release.Name "mariadb-secret") .Values.codedxProps.dbconnection.secretName -}}
+{{- $fullName := printf "%s-%s" .Release.Name "mariadb-secret" -}}
 {{- include "sanitize" $fullName -}}
 {{- end -}}
 
@@ -250,13 +250,21 @@ Determine the name to use to create and/or bind MariaDB's PodSecurityPolicy.
 {{- end -}}
 
 {{- define "codedx.cacerts.pwd.secretName" -}}
+{{- if .Values.existingSecret -}}
+{{- .Values.existingSecret -}}
+{{- else -}}
 {{- $fullName := printf "%s-cacerts-pwd-secret" (include "codedx.fullname" .) -}}
 {{- include "sanitize" $fullName -}}
 {{- end -}}
+{{- end -}}
 
 {{- define "codedx.adminSecretName" -}}
+{{- if .Values.existingSecret -}}
+{{- .Values.existingSecret -}}
+{{- else -}}
 {{- $fullName := printf "%s-admin-secret" (include "codedx.fullname" .) -}}
 {{- include "sanitize" $fullName -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "codedx.serverXmlName" -}}
@@ -301,6 +309,14 @@ Duplicates of MariaDB template helpers so we can reference service/serviceAccoun
 {{- else -}}
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "mariadb.ref.secretName" -}}
+{{- if .Values.mariadb.existingSecret -}}
+{{ .Values.mariadb.existingSecret }}
+{{- else -}}
+{{ template "mariadb.ref.fullname" . -}}
 {{- end -}}
 {{- end -}}
 

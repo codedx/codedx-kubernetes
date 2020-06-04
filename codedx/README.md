@@ -22,25 +22,25 @@ The Code Dx Helm chart creates Kubernetes resources for a secure, production-rea
 
 ## TL;DR
 
-Run the following commands after replacing `<root-password>` and `<replication-password>` with your MariaDB root and replication passwords.
+Run the following commands after replacing `<admin-password>`, `<root-password>`, and `<replication-password>` with your Code Dx admin, MariaDB root, and MariaDB replication passwords.
 
 ```
 $ helm repo add codedx https://codedx.github.io/codedx-kubernetes
-$ helm install codedx codedx/codedx --set mariadb.rootUser.password=<root-password> --set mariadb.replication.password=<replication-password>
+$ helm install codedx codedx/codedx --set codedxAdminPassword=<admin-password> --set mariadb.rootUser.password=<root-password> --set mariadb.replication.password=<replication-password>
 
 OR
 
 $ git clone https://github.com/codedx/codedx-kubernetes.git
 $ cd codedx-kubernetes/codedx
 $ helm dependency update
-$ helm install codedx . --set mariadb.rootUser.password=<root-password> --set mariadb.replication.password=<replication-password>
+$ helm install codedx . --set codedxAdminPassword=<admin-password> --set mariadb.rootUser.password=<root-password> --set mariadb.replication.password=<replication-password>
 ```
 
 We recommend keeping any extra installation options in your own `values.yaml` file and using `helm install/upgrade ... -f my-values.yaml`, to prevent accidental changes to the installation when a configuration property is forgotten or missed. Check out the [example YAML files](sample-values) for common use-cases.
 
 ## Prerequisite Details
 
-- Kubernetes 1.8+
+- Kubernetes 1.14+
 - Code Dx license ([purchase](https://codedx.com/purchase-application/) or [request a free trial](https://codedx.com/free-trial/))
 
 ## Chart Details
@@ -59,14 +59,14 @@ This chart will:
 
 Using this chart requires [Helm v3](https://docs.helm.sh/), a Kubernetes package manager. You can find instructions for installing Helm [here](https://helm.sh/docs/intro/install/).
 
-This chart contains a reference to stable/mariadb chart version 5.5.0, and deploys MariaDB 10.3.22. (Note that "chart version" does not correspond to "app version".)
+This chart contains a reference to a forked version of the stable/mariadb chart, and deploys MariaDB 10.3.22.
 
 You can use this chart by either registering the Code Dx Helm Repository with `helm repo add` (described above) or by cloning the repository locally.
 
 - Installation using the helm repository helps keep you up to date and doesn't require manually maintaining a copy of the chart
 - Installation from a cloned copy of the chart can be helpful with troubleshooting and allows you to directly use files during configuration, instead of needing to store additional files beforehand (eg cacerts, license, etc.)
 
-After installation, you'll be given commands to retrieve the Code Dx admin credentials that were generated. Use `kubectl get pods --watch` to check the status of the Code Dx installation. **Change the Code Dx admin password once installation is complete.** The secret used to get the admin credentials are only used for the first installation of Code Dx, and can change automatically when using `helm upgrade`. After installation and changing the admin password, the secret can be ignored entirely.
+After installation, you'll be given commands to retrieve the Code Dx admin credentials. Use `kubectl get pods --watch` to check the status of the Code Dx installation. After installation and changing the admin password, the secret can be ignored entirely.
 
 A complete installation guide can be found [here.](docs/installation-walkthrough.md)
 
@@ -90,7 +90,7 @@ $ helm install codedx codedx/codedx --set mariadb.rootUser.password=X --set mari
 It's recommended to leave PodSecurityPolicies and NetworkPolicies enabled for security. Note that controllers need to be available on the cluster to enforce these policies.
 
 #### Volume Sizes
-The default volume sizes for Code Dx and MariaDB are `32Gi` - `96Gi` total for the chart, by default. (One volume for Code Dx, one for MariaDB Master, and one for MariaDB Slave.) `32Gi` is not the minimum disk size - the chart can run with a `100Mi` volume for Code Dx and `1Gi` volumes for MariaDB. However, this will quickly fill up and can cause maintenance headaches. Keep in mind that source code, binaries, and scan results will be uploaded to and stored by Code Dx. The size of these files, frequency of scanning, and number of projects should be considered when determining an initial volume size. Expect MariaDB disk usage to be approximately equivalent to Code Dx.
+The default volume sizes for Code Dx and MariaDB are `128Gi` total for the chart, by default. (Four 32Gi volumes with one for Code Dx, one for MariaDB Master, and two for MariaDB Slave.) `32Gi` is not the minimum disk size - the chart can run with a `100Mi` volume for Code Dx and `1Gi` volumes for MariaDB. However, this will quickly fill up and can cause maintenance headaches. Keep in mind that source code, binaries, and scan results will be uploaded to and stored by Code Dx. The size of these files, frequency of scanning, and number of projects should be considered when determining an initial volume size. Expect MariaDB disk usage to be approximately equivalent to Code Dx.
 
 **Depending on the projects being scanned, the default size may not be sufficient. Be sure to specify an appropriate claim size when installing Code Dx.**
 
@@ -136,7 +136,9 @@ Any values that require locally cloning the chart will be labeled with _"LFV"_ (
 | `codedxTlsTomcatPort`                   | Port for Code Dx Tomcat service when HTTPS/TLS is enabled                                                                                                                                          | `9090`                               |
 | `codedxJavaOpts`                        | Extra options passed to Tomcat JVM                                                                                                                                                                 | `""`                                 |
 | `codedxAdminPassword`                   | Password for Code Dx 'admin' account created at installation (random if empty)                                                                                                                     | `""`                                 |
+| `existingSecret`                        | Existing secret, with an admin-password field and a cacerts-password field, as an alternative to using codedxAdminPassword and cacertsFilePwd                                                      |                                      |
 | `cacertsFile`                           | _(LFV)_ Path to a custom _cacerts_ file for Code Dx                                                                                                                                                | `""`                                 |
+| `cacertsFilePwd`                        | Password for the Java cacerts file                                                                                                                                                                 | `""`                                 |
 | `serviceAccount.create`                 | Whether to create a ServiceAccount for Code Dx                                                                                                                                                     | `true`                               |
 | `serviceAccount.name`                   | Name of the ServiceAccount for Code Dx                                                                                                                                                             |                                      |
 | `podSecurityPolicy.codedx.create`       | Whether to create a PodSecurityPolicy for Code Dx pods                                                                                                                                             | `true`                               |
@@ -178,9 +180,7 @@ Any values that require locally cloning the chart will be labeled with _"LFV"_ (
 | `codedxProps.file`                      | _(LFV)_ Location of a Code Dx `props` file for configuration                                                                                                                                       | `codedx.props`                       |
 | `codedxProps.configMap`                 | Name of the ConfigMap that will store the Code Dx `props` file                                                                                                                                     |                                      |
 | `codedxProps.annotations`               | Extra annotations attached to a generated codedx `props` ConfigMap                                                                                                                                 | `{}`                                 |
-| `codedxProps.dbconnection.createSecret` | Whether to create a secret containing MariaDB creds                                                                                                                                                | `true`                               |
-| `codedxProps.dbconnection.secretName`   | Name of the secret containing MariaDB creds                                                                                                                                                        |                                      |
-| `codedxProps.dbconnection.annotations`  | Extra annotations attached to a generated MariaDB secret                                                                                                                                           | `{}`                                 |
+
 | `codedxProps.extra`                     | List of extra secrets containing Code Dx props to be loaded                                                                                                                                        | `[]`                                 |
 | `codedxProps.extra[i].secretName`       | Name of the secret to be loaded and mounted                                                                                                                                                        |                                      |
 | `codedxProps.extra[i].key`              | Name of the key within the secret that contains Code Dx props text                                                                                                                                 |                                      |

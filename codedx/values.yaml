@@ -29,9 +29,13 @@ codedxTlsTomcatPort: 9443
 #
 codedxJavaOpts: "-XX:MaxRAMPercentage=90.0"
 
-# codedxAdminPassword is used when creating the Code Dx "admin" account during the
-# installation process. After installation, you can sign in with "admin" and the
-# value assigned here.
+# existingSecret lets you use an existing secret, with fields admin-password and cacerts-password, as an 
+# alternative to codedxAdminPassword and cacertsFilePwd
+#
+existingSecret:
+
+# codedxAdminPassword is used when when existingSecret is not set. After installation, you can sign in 
+# with "admin" and the value assigned here.
 #
 codedxAdminPassword: ""
 
@@ -353,20 +357,6 @@ codedxProps:
   # (Note that the URL for the MariaDB instance is assigned via the `codedxProps` configmap, not this secret.)
   #
   dbconnection:
-
-    # The flag codedxProps.dbconnection.createSecret determines whether or not a new secret will be generated. This
-    # value is ignored when .Values.mariadb.enabled is false.
-    #
-    createSecret: true
-
-    # Use codedxProps.dbconnection.secretName to specify the name of an existing secret to use (if createSecret
-    # is "false") or the name of the secret to be created (if createSecret is "true").
-    #
-    secretName:
-
-    # Use codedxProps.dbconnection.annotations to attach extra annotations to a generated secret.
-    #
-    annotations: {}
 
     # Use externalDbUrl to specify the database URL of an external MariaDB instance. This value is ignored
     # when .Values.mariadb.enabled is true.

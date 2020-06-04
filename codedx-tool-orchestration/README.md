@@ -7,7 +7,7 @@ The Code Dx Tool Orchestration Helm chart installs the Code Dx components that c
 
 ## Prerequisite Details
 
-- Kubernetes v1.14 (v1.16 unsupported)
+- Kubernetes v1.14
 - Helm v3
 - Code Dx license with Orchestration feature ([purchase](https://codedx.com/purchase-application/) or [request a free trial](https://codedx.com/free-trial/))
 
@@ -118,6 +118,8 @@ minio:
     publicCrt: 'toolsvc-minio.pem'
     privateKey: 'toolsvc-minio.key'
 ```
+
+> Note: Alternatively, rather than using accessKeyGlobal and secretKeyGlobal, you can set minio.global.minio.existingSecret to the name of an existing secret with fields access-key and secret-key.
 
 Store the MinIO certificate data in a k8s ConfigMap by running the following command.
 
@@ -231,6 +233,8 @@ codedxBaseUrl: 'https://codedx-app-codedx.cdx-app.svc.cluster.local:9090/codedx'
 toolServiceApiKey: '5eb6fbe3-8126-452c-95e9-83faa87453d4'
 ```
 
+> Note: Alternatively, rather than using toolServiceApiKey, you can set existingSecret to the name of an existing secret with field api-key.
+
 ### Tool Service TLS
 
 Create a Kubernetes secret to store the certificate and key file for your Tool Orchestration service. This section assumes that you completed the TLS Configuration section, and that you have a toolsvc-tool-orchestration.pem file and toolsvc-tool-orchestration.key file.
@@ -274,7 +278,7 @@ toolServiceTls:
 
 ### Grant Access to a Private Docker Registry
 
-The Tool Orchestration service may require access to a private Docker registry, something that's necessary when using the Burp Suite automation as an example. 
+The Tool Orchestration service may require access to a private Docker registry, something that's necessary when using the Burp Suite automation as an example.
 You can create a Kubernetes secret with your Docker registry credential from the command line by running the following command, replacing #server#, #username#, and #password# with your own values:
 
 ```

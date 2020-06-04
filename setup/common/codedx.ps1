@@ -9,7 +9,13 @@
 This script includes functions for the deployment of Code Dx and Code Dx Orchestration.
 #>
 
+function Get-CodeDxPdSecretName([string] $releaseName) {
+	"$releaseName-codedx-pd"
+}
 
+function New-CodeDxPdSecret([string] $namespace, [string] $releaseName, [string] $adminPwd, [string] $caCertsFilePwd) {
+	New-GenericSecret $namespace (Get-CodeDxPdSecretName $releaseName) @{"admin-password"=$adminPwd;"cacerts-password"=$caCertsFilePwd}
+}
 
 function New-CodeDxDeployment([string] $codeDxDnsName,
 	[int]      $codeDxTomcatPortNumber,
@@ -46,6 +52,7 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[string[]] $serviceAnnotationsCodeDx,
 	[string]   $ingressControllerNamespace,
 	[string[]] $ingressAnnotations,
+	[string]   $caCertsFilePwd,
 	[switch]   $ingressEnabled,
 	[switch]   $ingressAssumesNginx,
 	[switch]   $enablePSPs,
@@ -58,8 +65,10 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	}
 	Set-NamespaceLabel $namespace 'name' $namespace
 
+	New-CodeDxPdSecret $namespace $releaseName $adminPwd $caCertsFilePwd
+
 	# excluding "mariadb-password" from MariaDb credential secret because db.user is unspecfied
-	$mariadbCredentialSecret = "$releaseName-mariadb-cred"
+	$mariadbCredentialSecret = "$releaseName-mariadb-pd"
 	New-GenericSecret $namespace $mariadbCredentialSecret @{"mariadb-root-password"=$mariadbRootPwd;"mariadb-replication-password"=$mariadbReplicatorPwd}
 
 	$imagePullSecretYaml = 'codedxTomcatImagePullSecrets: []'
@@ -122,7 +131,7 @@ codedxTomcatImagePullSecrets:
 	$defaultKeyStorePwd = 'changeit'
 
 	$values = @'
-codedxAdminPassword: '{0}'
+existingSecret: '{0}'
 codedxTomcatPort: {23}
 codedxTlsTomcatPort: {24}
 persistence:
@@ -185,7 +194,7 @@ mariadb:
 {22}
 cacertsFile: ''
 cacertsFilePwd: '{21}'
-'@ -f $adminPwd, $tomcatImage, $imagePullSecretYaml, `
+'@ -f (Get-CodeDxPdSecretName $releaseName), $tomcatImage, $imagePullSecretYaml, `
 $psp, $networkPolicy, `
 $tlsEnabled, $tlsSecretName, 'tls.crt', 'tls.key', `
 $mariadbCredentialSecret, `
@@ -253,7 +262,10 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 	}
 	Set-NamespaceLabel $namespace 'name' $namespace
 
-	$minioCredentialSecret = "$toolServiceReleaseName-minio-cred"
+	$toolServiceCredentialSecret = "$toolServiceReleaseName-tool-service-pd"
+	New-GenericSecret $namespace $toolServiceCredentialSecret @{"api-key"=$apiKey}
+
+	$minioCredentialSecret = "$toolServiceReleaseName-minio-pd"
 	New-GenericSecret $namespace $minioCredentialSecret @{"access-key"=$minioUsername;"secret-key"=$minioPwd}
 
 	$protocol = 'http'
@@ -365,7 +377,7 @@ codedxTls:
   enabled: {18}
   caConfigMap: {19}
   
-toolServiceApiKey: '{3}'
+existingSecret: '{3}'
 toolServiceTls:
   secret: {14}
   certFile: 'tls.crt'
@@ -383,7 +395,7 @@ imageNameHelmPreDelete: '{22}'
 
 {25}
 '@ -f $minioCredentialSecret,`
-$codedxNamespace,$codedxReleaseName,$apiKey,`
+$codedxNamespace,$codedxReleaseName,$toolServiceCredentialSecret,`
 $imagePullSecretName,$toolsImage,$toolsMonoImage,$newAnalysisImage,$sendResultsImage,$sendErrorResultsImage,$toolServiceImage,$numReplicas,
 $tlsConfig,$tlsMinioCertSecret,$tlsToolServiceCertSecret,
 $psp,$networkPolicy,$codedxBaseUrl,`
@@ -415,6 +427,7 @@ function Set-TrustedCerts([string] $workDir,
 	[string]   $codedxNamespace,
 	[string]   $codedxReleaseName,
 	[string[]] $extraValuesPaths,
+	[string]   $adminPwd,
 	[string]   $caCertsFilePwd,
 	[string]   $caCertsFileNewPwd,
 	[string[]] $trustedCertPaths) {
@@ -447,6 +460,7 @@ function Set-TrustedCerts([string] $workDir,
 		$keystorePwd = $caCertsFileNewPwd
 	}
 	Set-KeystorePassword $caCertsFilePath $caCertsFilePwd $keystorePwd 
+	New-CodeDxPdSecret $codedxNamespace $codedxReleaseName $adminPwd $keystorePwd
 
 	Import-TrustedCaCerts $caCertsFilePath $keystorePwd $trustedCertPaths
 
@@ -455,7 +469,6 @@ function Set-TrustedCerts([string] $workDir,
 
 	$values = @'
 cacertsFile: cacerts
-cacertsFilePwd: {0}
 '@ -f $keystorePwd
 
 	$valuesFile = 'codedx-cacert-values.yaml'

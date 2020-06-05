@@ -54,12 +54,12 @@ param (
 	[string]   $nginxEphemeralStorageReservation = '',
 
 	[string]   $imageCodeDxTomcat = 'codedx/codedx-tomcat:v5.0.4',
-	[string]   $imageCodeDxTools = 'codedx/codedx-tools:v1.0.0',
-	[string]   $imageCodeDxToolsMono = 'codedx/codedx-toolsmono:v1.0.0',
+	[string]   $imageCodeDxTools = 'codedx/codedx-tools:v1.0.1',
+	[string]   $imageCodeDxToolsMono = 'codedx/codedx-toolsmono:v1.0.1',
 	[string]   $imageNewAnalysis = 'codedx/codedx-newanalysis:v1.0.0',
 	[string]   $imageSendResults = 'codedx/codedx-results:v1.0.0',
 	[string]   $imageSendErrorResults = 'codedx/codedx-error-results:v1.0.0',
-	[string]   $imageToolService = 'codedx/codedx-tool-service:v1.0.1',
+	[string]   $imageToolService = 'codedx/codedx-tool-service:v1.0.2',
 	[string]   $imagePreDelete = 'codedx/codedx-cleanup:v1.0.0',
 
 	[int]      $toolServiceReplicas = 3,

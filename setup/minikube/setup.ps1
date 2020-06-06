@@ -43,8 +43,6 @@ param (
 	[string]   $releaseNameCodeDx = 'codedx-app',
 	[string]   $releaseNameToolOrchestration = 'codedx-tool-orchestration',
 
-	[bool]     $letsEncryptCertManagerInstall = $false,
-
 	[int]      $kubeApiTargetPort = 8443,
 
 	[string]   $k8sVersion = 'v1.14.6',
@@ -53,6 +51,7 @@ param (
 	[string]   $nodeMemory = '16g',
 	[string]   $vmDriver = 'virtualbox',
 
+	[switch]   $letsEncryptCertManagerInstall,
 	[switch]   $skipToolOrchestration
 )
 

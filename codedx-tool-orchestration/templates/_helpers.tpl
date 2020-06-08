@@ -101,6 +101,7 @@ If release name contains chart name it will be used as a full name.
 {{- define "codedx.toolsvc.apiKey" -}}
 {{- $existingSecret := .Values.existingSecret }}
 {{- if $existingSecret -}}
+{{- /* Note: lookup function does not support --dry-run */ -}}
 {{- index (lookup "v1" "Secret" .Release.Namespace $existingSecret).data "api-key" | b64dec -}}
 {{- else -}}
 {{- required "existing secret not found, so expected to find value for .Values.toolServiceApiKey" .Values.toolServiceApiKey -}}
@@ -110,6 +111,7 @@ If release name contains chart name it will be used as a full name.
 {{- define "codedx.minio.accessKey" -}}
 {{- $existingSecret := .Values.minio.global.minio.existingSecret }}
 {{- if $existingSecret -}}
+{{- /* Note: lookup function does not support --dry-run */ -}}
 {{- index (lookup "v1" "Secret" .Release.Namespace $existingSecret).data "access-key" | b64dec -}}
 {{- else -}}
 {{- required "existing secret not found, so expected to find value for minio.global.minio.accessKeyGlobal" .Values.minio.global.minio.accessKeyGlobal -}}
@@ -119,6 +121,7 @@ If release name contains chart name it will be used as a full name.
 {{- define "codedx.minio.secretKey" -}}
 {{- $existingSecret := .Values.minio.global.minio.existingSecret }}
 {{- if $existingSecret -}}
+{{- /* Note: lookup function does not support --dry-run */ -}}
 {{- index (lookup "v1" "Secret" .Release.Namespace $existingSecret).data "secret-key" | b64dec -}}
 {{- else -}}
 {{- required "existing secret not found, so expected to find value for minio.global.minio.secretKeyGlobal" .Values.minio.global.minio.secretKeyGlobal -}}

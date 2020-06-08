@@ -277,9 +277,34 @@ Determine the name to use to create and/or bind MariaDB's PodSecurityPolicy.
 {{- include "sanitize" $fullName -}}
 {{- end -}}
 
+{{- define "codedx.mariadb.user" -}}
+    {{- $existingSecret := .Values.existingSecret }}
+    {{- if $existingSecret -}}
+        {{- /* Note: lookup function does not support --dry-run */ -}}
+        {{- $data := (lookup "v1" "Secret" .Release.Namespace $existingSecret).data -}}
+        {{- $val := index $data "mariadb-codedx-username" -}}
+        {{- if $val -}}
+            {{- $val | b64dec -}}
+        {{- end -}}
+    {{- end -}}
+{{- end -}}
+
+{{- define "codedx.mariadb.pwd" -}}
+    {{- $existingSecret := .Values.existingSecret }}
+    {{- if $existingSecret -}}
+        {{- /* Note: lookup function does not support --dry-run */ -}}
+        {{- $data := (lookup "v1" "Secret" .Release.Namespace $existingSecret).data -}}
+        {{- $val := index $data "mariadb-codedx-password" -}}
+        {{- if $val -}}
+            {{- $val | b64dec -}}
+        {{- end -}}
+    {{- end -}}
+{{- end -}}
+
 {{- define "codedx.mariadb.root.pwd" -}}
 {{- $existingSecret := .Values.mariadb.existingSecret }}
 {{- if $existingSecret -}}
+{{- /* Note: lookup function does not support --dry-run */ -}}
 {{- index (lookup "v1" "Secret" .Release.Namespace $existingSecret).data "mariadb-root-password" | b64dec -}}
 {{- else -}}
 {{- required "existing secret not found, so expected to find value for mariadb.rootUser.password" .Values.mariadb.rootUser.password -}}
@@ -289,6 +314,7 @@ Determine the name to use to create and/or bind MariaDB's PodSecurityPolicy.
 {{- define "codedx.mariadb.replication.pwd" -}}
 {{- $existingSecret := .Values.mariadb.existingSecret }}
 {{- if $existingSecret -}}
+{{- /* Note: lookup function does not support --dry-run */ -}}
 {{- index (lookup "v1" "Secret" .Release.Namespace $existingSecret).data "mariadb-replication-password" | b64dec -}}
 {{- else -}}
 {{- required "existing secret not found, so expected to find value for mariadb.replication.password" .Values.mariadb.replication.password -}}

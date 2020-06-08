@@ -26,20 +26,9 @@
 #    [mysqld]
 #    optimizer_search_depth=0
 #
-# 6) Create a Kubernetes Secret to store the credentials of the Code Dx database user. Use the sample 
-#    file named values-external-db-resources.yaml and fill in values for the following fields.
-#
-#    namespace:
-#    swa.db.user:
-#    swa.db.password:
-#
-#    Set the namespace to the Kubernetes namespace where you will install the Code Dx Helm 
-#    chart (e.g., cdx-app), creating the namespace, if necessary. Create the resource with the following
-#    command.
-#
-#    kubectl create -f <path-to>/values-external-db-resources.yaml
-#
-#    Note: The name of the Kubernetes Secret must match the secretName value shown in the YAML below.
+# 6) When you install Code Dx, specify existingSecret (values.yaml) with fields
+#    codedx-mariadb-username and codedx.mariadb.password for the username and 
+#    password that Code Dx will use to access the Code Dx database.
 #
 # 7) Edit the externalDbUrl connection string by replacing host.docker.internal with your database
 #    hostname and codedxdb with the name of the Code Dx database you created.

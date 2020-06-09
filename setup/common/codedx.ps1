@@ -13,8 +13,20 @@ function Get-CodeDxPdSecretName([string] $releaseName) {
 	"$releaseName-codedx-pd"
 }
 
-function New-CodeDxPdSecret([string] $namespace, [string] $releaseName, [string] $adminPwd, [string] $caCertsFilePwd) {
-	New-GenericSecret $namespace (Get-CodeDxPdSecretName $releaseName) @{"admin-password"=$adminPwd;"cacerts-password"=$caCertsFilePwd}
+function New-CodeDxPdSecret([string] $namespace, [string] $releaseName, 
+	[string] $adminPwd, [string] $caCertsFilePwd,
+	[string] $externalDbUser, [string] $externalDbPwd) {
+
+	$data = @{"admin-password"=$adminPwd;"cacerts-password"=$caCertsFilePwd}
+	
+	if ('' -ne $externalDbUser) {
+		$data['mariadb-codedx-username'] = $externalDbUser
+	}
+	if ('' -ne $externalDbPwd) {
+		$data['mariadb-codedx-password'] = $externalDbPwd
+	}
+
+	New-GenericSecret $namespace (Get-CodeDxPdSecretName $releaseName) $data
 }
 
 function New-CodeDxDeployment([string] $codeDxDnsName,
@@ -53,6 +65,9 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[string]   $ingressControllerNamespace,
 	[string[]] $ingressAnnotations,
 	[string]   $caCertsFilePwd,
+	[string]   $externalDbUrl,
+	[string]   $externalDbUser,
+	[string]   $externalDbPwd,
 	[switch]   $ingressEnabled,
 	[switch]   $ingressAssumesNginx,
 	[switch]   $enablePSPs,
@@ -65,7 +80,7 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	}
 	Set-NamespaceLabel $namespace 'name' $namespace
 
-	New-CodeDxPdSecret $namespace $releaseName $adminPwd $caCertsFilePwd
+	New-CodeDxPdSecret $namespace $releaseName $adminPwd $caCertsFilePwd $externalDbUser $externalDbPwd
 
 	# excluding "mariadb-password" from MariaDb credential secret because db.user is unspecfied
 	$mariadbCredentialSecret = "$releaseName-mariadb-pd"
@@ -108,6 +123,14 @@ codedxTomcatImagePullSecrets:
         matchLabels:
           name: {0}
 '@ -f $ingressControllerNamespace
+	}
+
+	$externalDb = ''
+	if ('' -ne $externalDbUrl) {
+		$externalDb = @'
+  dbconnection:
+    externalDbUrl: '{0}'
+'@ -f $externalDbUrl
 	}
 
 	$defaultKeyStorePwd = 'changeit'
@@ -182,6 +205,7 @@ codedxProps:
     key: codedx-offline-props
     values:
     - "codedx.offline-mode = true"
+{29}
 '@ -f (Get-CodeDxPdSecretName $releaseName), $tomcatImage, $imagePullSecretYaml, `
 $psp, $networkPolicy, `
 $tlsEnabled, $tlsSecretName, 'tls.crt', 'tls.key', `
@@ -195,7 +219,8 @@ $defaultKeyStorePwd, `
 (Format-ResourceLimitRequest -limitMemory $dbSlaveMemoryLimit -limitCPU $dbSlaveCPULimit -limitEphemeralStorage $dbSlaveEphemeralStorageLimit -indent 4), `
 $codeDxTomcatPortNumber, $codeDxTlsTomcatPortNumber, `
 $serviceTypeCodeDx, (ConvertTo-YamlMap $serviceAnnotationsCodeDx), `
-$enableDb, $ingressNginxAssumption
+$enableDb, $ingressNginxAssumption, `
+$externalDb
 
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
@@ -411,6 +436,8 @@ function Set-TrustedCerts([string] $workDir,
 	[string]   $adminPwd,
 	[string]   $caCertsFilePwd,
 	[string]   $caCertsFileNewPwd,
+	[string]   $externalDbUser,
+	[string]   $externalDbPwd,
 	[string[]] $trustedCertPaths,
 	[switch]   $offlineMode) {
 
@@ -442,7 +469,7 @@ function Set-TrustedCerts([string] $workDir,
 		$keystorePwd = $caCertsFileNewPwd
 	}
 	Set-KeystorePassword $caCertsFilePath $caCertsFilePwd $keystorePwd 
-	New-CodeDxPdSecret $codedxNamespace $codedxReleaseName $adminPwd $keystorePwd
+	New-CodeDxPdSecret $codedxNamespace $codedxReleaseName $adminPwd $keystorePwd $externalDbUser $externalDbPwd
 
 	Import-TrustedCaCerts $caCertsFilePath $keystorePwd $trustedCertPaths
 

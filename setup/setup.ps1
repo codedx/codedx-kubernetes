@@ -118,6 +118,10 @@ param (
 
 	[string[]] $extraCodeDxValuesPaths = @(),
 	[string[]] $extraToolOrchestrationValuesPath = @(),
+
+	[string]   $externalDatabaseUrl = '',
+	[string]   $externalDatabaseUser = '',
+	[string]   $externalDatabasePwd = '',
 	
 	[switch]   $skipDatabase,
 	[switch]   $skipToolOrchestration,
@@ -173,7 +177,9 @@ if ((-not $skipToolOrchestration) -and $toolServiceApiKey -eq '') { $toolService
 if ($caCertsFileNewPwd -ne '' -and $caCertsFileNewPwd.length -lt 6) { $caCertsFileNewPwd = Read-HostSecureText 'Enter a password to protect the cacerts file' 6 }
 
 if ($skipDatabase) {
-	Write-ImportantNote 'Since you''re skipping the database installation, you must specify codedxProps.dbconnection.externalDbUrl in an extra values.yaml file.'
+	if ($externalDatabaseUrl -eq '') { $externalDatabaseUrl = Read-HostText 'Enter a database connection string for your external Code Dx database' }
+	if ($externalDatabaseUser -eq '') { $externalDatabaseUser = Read-HostText 'Enter a username for your external Code Dx external database' }
+	if ($externalDatabasePwd -eq '') { $externalDatabasePwd = Read-HostSecureText 'Enter a password for your external Code Dx external database' 0 }
 }
 else {
 	if ($mariadbRootPwd -eq '') { $mariadbRootPwd = Read-HostSecureText 'Enter a password for the MariaDB root user' 0 }
@@ -304,6 +310,7 @@ New-CodeDxDeployment $codeDxDnsName $codeDxServicePortNumber $codeDxTlsServicePo
 	$namespaceIngressController `
 	$ingressAnnotationsCodeDx `
 	$caCertsFilePwd `
+	$externalDatabaseUrl $externalDatabaseUser $externalDatabasePwd `
 	-ingressEnabled:$ingressEnabled -ingressAssumesNginx:$ingressAssumesNginx `
 	-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -skipDatabase:$skipDatabase
 
@@ -322,6 +329,7 @@ Set-TrustedCerts $workDir `
 	$codedxAdminPwd `
 	$caCertsFilePwd `
 	$caCertsFileNewPwd `
+	$externalDatabaseUser $externalDatabasePwd `
 	$caCertPaths `
 	-offlineMode:$installToolOrchestration
 

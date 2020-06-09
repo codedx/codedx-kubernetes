@@ -321,6 +321,24 @@ Determine the name to use to create and/or bind MariaDB's PodSecurityPolicy.
 {{- end -}}
 {{- end -}}
 
+{{- define "codedx.mariadb.propsTemplate" -}}
+# MariaDB creds stored in a secret
+swa.db.user = 
+{{- $user := include "codedx.mariadb.user" . -}}
+{{- if $user -}}
+{{- $user | quote -}}
+{{- else -}}
+{{- "root" | quote -}}
+{{- end }}
+swa.db.password =
+{{- $pwd := include "codedx.mariadb.pwd" . -}}
+{{- if $pwd -}}
+{{- $pwd | quote -}}
+{{- else -}}
+{{- include "codedx.mariadb.root.pwd" . | quote -}}
+{{- end }}
+{{- end -}}
+
 {{/*
 Duplicates of MariaDB template helpers so we can reference service/serviceAccount names
 */}}

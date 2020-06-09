@@ -118,6 +118,10 @@ This section describes the setup.ps1 script parameters.
 | `extraCodeDxValuesPaths`                           | extra values.yaml file(s) for the Code Dx Helm chart       | `@('/file.yaml')` (example)                       |
 | `extraToolOrchestrationValuesPaths`                | extra values.yaml file(s) for Tool Orchestration chart     | `@('/file.yaml')` (example)                       |
 |                                                    |                                                            |                                                   |
+| `externalDatabaseUrl`                              | connection string for an external database                 | `jdbc:mysql://mariadb/codedx` (example)           |
+| `externalDatabaseUser`                             | existing username of external database user                | `codedx` (example)                                |
+| `externalDatabasePwd`                              | password for external database user                        | `5Ed3&#Rutcdw` (example)                          |
+|                                                    |                                                            |                                                   |
 | `skipDatabase`                                     | whether to skip installing MariaDB (use external database) | `$false`                                          |
 | `skipToolOrchestration`                            | whether to skip installing the Tool Orchestration feature  | `$false`                                          |
 |                                                    |                                                            |                                                   |

@@ -53,9 +53,9 @@ param (
 	[string]   $workflowEphemeralStorageReservation = '',
 	[string]   $nginxEphemeralStorageReservation = '',
 
-	[string]   $imageCodeDxTomcat = 'codedx/codedx-tomcat:v5.0.4',
-	[string]   $imageCodeDxTools = 'codedx/codedx-tools:v1.0.1',
-	[string]   $imageCodeDxToolsMono = 'codedx/codedx-toolsmono:v1.0.1',
+	[string]   $imageCodeDxTomcat = 'codedx/codedx-tomcat:v5.0.5',
+	[string]   $imageCodeDxTools = 'codedx/codedx-tools:v1.0.2',
+	[string]   $imageCodeDxToolsMono = 'codedx/codedx-toolsmono:v1.0.2',
 	[string]   $imageNewAnalysis = 'codedx/codedx-newanalysis:v1.0.0',
 	[string]   $imageSendResults = 'codedx/codedx-results:v1.0.0',
 	[string]   $imageSendErrorResults = 'codedx/codedx-error-results:v1.0.0',
@@ -168,7 +168,9 @@ if ($kubeContextName -ne '') {
 	Write-Verbose "Using kubeconfig context entry named $(Get-KubectlContext)"
 }
 
-if ($codeDxDnsName -eq '') { $codeDxDnsName = Read-Host -Prompt 'Enter Code Dx domain name (e.g., www.codedx.io)' }
+$dns1123SubdomainExpr = '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
+
+if (-not (Test-IsValidParameterValue $codeDxDnsName $dns1123SubdomainExpr)) { $codeDxDnsName = Read-HostText 'Enter Code Dx domain name (e.g., www.codedx.io)' -validationExpr $dns1123SubdomainExpr }
 if ($clusterCertificateAuthorityCertPath -eq '') { $clusterCertificateAuthorityCertPath = Read-Host -Prompt 'Enter path to cluster CA certificate' }
 if ((-not $skipToolOrchestration) -and $minioAdminUsername -eq '') { $minioAdminUsername = Read-HostSecureText 'Enter a username for the MinIO admin account' 5 }
 if ((-not $skipToolOrchestration) -and $minioAdminPwd -eq '') { $minioAdminPwd = Read-HostSecureText 'Enter a password for the MinIO admin account' 8 }

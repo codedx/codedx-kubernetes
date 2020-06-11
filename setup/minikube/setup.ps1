@@ -22,7 +22,7 @@ The following tools must be installed and included in your PATH prior to running
 
 param (
 	[string]   $clusterCertificateAuthorityCertPath="$HOME/.minikube/ca.crt",
-	[string]   $codeDxDnsName = (hostname),
+	[string]   $codeDxDnsName = (hostname).tolower(),
 	[int]      $waitTimeSeconds = 600,
 
 	[int]      $dbVolumeSizeGiB = 32,

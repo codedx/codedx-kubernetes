@@ -34,7 +34,14 @@ function Test-IsBlacklisted([string] $text, [string[]] $blacklist) {
 	})
 }
 
-function Read-HostText([string] $prompt, [int] $minimumLength, [int] $maximumLength, [string[]] $blacklist, [bool] $isSecure) {
+function Test-IsValidParameterValue([string] $text, [string] $validationExpr, [switch] $permitEmpty) {
+	if ($text -eq '' -and $permitEmpty) {
+		return $text
+	}
+	$text -cmatch $validationExpr
+}
+
+function Read-HostText([string] $prompt, [int] $minimumLength, [int] $maximumLength, [string[]] $blacklist, [bool] $isSecure, [string] $validationExpr) {
 
 	if ($prompt -eq '') {
 		$prompt = ' '
@@ -72,6 +79,12 @@ function Read-HostText([string] $prompt, [int] $minimumLength, [int] $maximumLen
 				Write-Host "The value cannot contain the following values; please try again.`n$blacklist"
 				continue
 			}
+
+			if (-not (Test-IsValidParameterValue $text $validationExpr)) {
+				Write-Host "The value you specified is invalid (regex: $validationExpr); please try again."
+				continue
+			}
+
 			return $text
 		}
 	}

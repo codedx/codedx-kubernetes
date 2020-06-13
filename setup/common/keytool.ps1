@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.0
+.VERSION 1.0.1
 .GUID a0b1e49c-0f56-43fa-bd1d-ae211ac63c2a
 .AUTHOR Code Dx
 #>
@@ -75,6 +75,6 @@ function Import-TrustedCaCerts([string] $keystorePath, [string] $keystorePwd, [s
 	}
 
 	$certFiles | ForEach-Object {
-		Import-TrustedCaCert $caCertsFilePath $keystorePwd $_
+		Import-TrustedCaCert $keystorePath $keystorePwd $_
 	}
 }

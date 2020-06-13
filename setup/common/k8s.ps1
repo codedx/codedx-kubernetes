@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.1
+.VERSION 1.0.2
 .GUID 5614d5a5-d33b-4a86-a7bb-ccc91c3f9bb3
 .AUTHOR Code Dx
 #>
@@ -376,7 +376,8 @@ function Wait-ReplicasReady([string] $message, [int] $waitSeconds, [string] $nam
 	}
 
 	$sleepSeconds = [math]::min(60, ($waitSeconds * .05))
-	$timeoutTime = [datetime]::Now.AddSeconds($waitSeconds)
+	$startTime = [datetime]::Now
+	$timeoutTime = $startTime.AddSeconds($waitSeconds)
 	while ($true) {
 
 		$resourceExists = ($resourceType -eq 'deployment' -and (Test-Deployment $namespace $resourceName)) -or 
@@ -408,7 +409,14 @@ function Wait-ReplicasReady([string] $message, [int] $waitSeconds, [string] $nam
 			throw "Unable to continue because the $resourceType $resourceName is not ready ($message)"
 		}
 
-		Write-Verbose "Current replica count does not yet match desired count. Another check will occur in $sleepSeconds seconds ($message)."
+		kubectl -n $namespace get pod
+		
+		$now = [datetime]::Now
+		Write-Verbose $message
+		Write-Verbose "  Current replica count does not yet match desired count."
+		Write-Verbose "    Elapsed time is $($now.Subtract($startTime).TotalSeconds) seconds."
+		Write-Verbose "    Wait will timeout in $($timeoutTime.Subtract($now).TotalSeconds) seconds."
+		Write-Verbose "    Another replica count check will occur in $sleepSeconds seconds."
 		start-sleep -seconds $sleepSeconds
 	}
 }

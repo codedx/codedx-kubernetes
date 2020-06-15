@@ -4,8 +4,8 @@
 .AUTHOR Code Dx
 #>
 
-<# 
-.DESCRIPTION 
+<#
+.DESCRIPTION
 This script uses Helm to install and configure Code Dx and Tool Orchestration on a minikube cluster.
 
 The following tools must be installed and included in your PATH prior to running this script:
@@ -30,14 +30,14 @@ param (
 	[int]      $dbSlaveVolumeSizeGiB = 32,
 	[int]      $minioVolumeSizeGiB = 32,
 	[int]      $codeDxVolumeSizeGiB = 32,
-	
+
 	[int]      $toolServiceReplicas = 3,
 
 	[bool]     $useTLS  = $true,
 	[bool]     $usePSPs = $true,
 
 	[bool]     $skipNetworkPolicies = $true,
-	
+
 	[string]   $namespaceToolOrchestration = 'cdx-svc',
 	[string]   $namespaceCodeDx = 'cdx-app',
 	[string]   $releaseNameCodeDx = 'codedx-app',
@@ -60,9 +60,13 @@ $VerbosePreference = 'Continue'
 
 Set-PSDebug -Strict
 
-. (join-path $PSScriptRoot '../common/helm.ps1')
-. (join-path $PSScriptRoot '../common/codedx.ps1')
-. (join-path $PSScriptRoot 'minikube.ps1')
+'../core/common/helm.ps1','../core/common/codedx.ps1','../core/common/minikube.ps1' | ForEach-Object {
+	$path = join-path $PSScriptRoot $_
+	if (-not (Test-Path $path)) {
+		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
+	}
+	. $path
+}
 
 if (-not (Test-IsCore)) {
 	write-error 'Unable to continue because you must run this script with PowerShell Core (pwsh)'
@@ -250,4 +254,3 @@ Write-Host ('pwsh -c "kubectl -n {3} port-forward --address {0},127.0.0.1 (kubec
 if ($vars.useTls) {
 	Write-Host "Note that you may need to trust the root certificate located at $(join-path $HOME '.minikube/ca.crt')"
 }
-

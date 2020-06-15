@@ -75,6 +75,6 @@ function Import-TrustedCaCerts([string] $keystorePath, [string] $keystorePwd, [s
 	}
 
 	$certFiles | ForEach-Object {
-		Import-TrustedCaCert $caCertsFilePath $keystorePwd $_
+		Import-TrustedCaCert $keystorePath $keystorePwd $_
 	}
 }

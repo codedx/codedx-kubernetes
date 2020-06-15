@@ -1,0 +1,233 @@
+# Default values for codedx-tool-orchestration.
+
+codedxBaseUrl: http://host.docker.internal:8080
+codedxTls:
+    enabled: false
+    caConfigMap: 
+
+imageNameCodeDxTools: "codedx/codedx-tools:v1.0.2"
+imageNameCodeDxToolsMono: "codedx/codedx-toolsmono:v1.0.2"
+imageNameNewAnalysis: "codedx/codedx-newanalysis:v1.0.0"
+imageNameSendResults: "codedx/codedx-results:v1.0.0"
+imageNameSendErrorResults: "codedx/codedx-error-results:v1.0.0"
+imageNameHelmPreDelete: "codedx/codedx-cleanup:v1.0.0"
+imagePullSecretKey: ""
+
+toolServiceImageName: codedx/codedx-tool-service:v1.0.2
+toolServiceImagePullSecrets: []
+toolServicePort: 3333
+
+# existingSecret lets you use an existing secret with field api-key as an 
+# alternative to toolServiceApiKey
+#
+existingSecret:
+toolServiceApiKey: ""
+
+toolServiceTls:
+  secret:
+  certFile: "tool-service.pem"
+  keyFile: "tool-service.key"
+
+requests:
+  tool:
+    cpu: '500m'
+    memory: '500Mi'
+
+limits:
+  tool:
+    cpu: '2'
+    memory: '2G'
+
+# Use nodeSelectors to influence the scheduling of tool service pods.
+#
+# For example, run this command to tag a node with codedx-tool-service-node:
+# kubectl label nodes cluster-node tag=codedx-tool-service-node 
+#
+# Then use this configuration to create a node selector for tool service instances:
+#
+# nodeSelectors:
+#   tag: codedx-tool-service-node
+#
+nodeSelectors: {}
+
+# Use tolerations to influence the scheduling of tool service pods
+#
+# For example, run these commands to add codedx-tool-service-node taints to a node:
+#
+# kubectl taint nodes cluster-node dedicated=codedx-tool-service-node:NoSchedule
+# kubectl taint nodes cluster-node dedicated=codedx-tool-service-node:NoExecute
+#
+# Then use this configuration to create a toleration for codedx-tool-service-node:
+#
+# tolerations:
+# - key: 'dedicated'
+#   operator: 'Equal'
+#   value: 'codedx-tool-service-node'
+#   effect: 'NoSchedule'
+# - key: 'dedicated'
+#   operator: 'Equal'
+#   value: 'codedx-tool-service-node'
+#   effect: 'NoExecute'
+#
+tolerations: {}    
+
+logs:
+  # Maximum size in MB for each log file
+  maxSizeMB: 10
+  # Number of old logs to retain
+  maxBackups: 20
+
+# Number of replicas for the tool orchestration sevice.
+#
+numReplicas: 3
+
+deploymentStrategy:
+  type: RollingUpdate
+
+service:
+  type: ClusterIP
+  annotations: {}
+
+# Network policy options for the tool service and its dependencies
+#
+networkPolicy:
+
+  # Enables a network policy for the tool service:
+  # egress:  - DNS port (53)
+  #          - kube API target/pod port (see kubeApiTargetPort), optionally restricted by API server selectors
+  #          - Code Dx target/pod port (8080/8443), restricted by Code Dx server selectors (see codedxSelectors)
+  #          - MinIO port (9000) of MinIO instance
+  # ingress: - Service port (3333), restricted by Code Dx server selectors (see codedxSelectors)
+  toolServiceEnabled: true
+
+  # Selectors for identifying the Code Dx pod referenced by network policies. If unspecified, network policies
+  # for the tool service and MinIO will be relaxed by not restricting source and destination for ingress and egress.
+  codedxSelectors: []
+
+  # Enables a network policy for tool workflow steps:
+  # egress:  - allow all
+  # ingress: - allow all
+  twsWorkflowsEnabled: true
+
+  # Enables a network policy for Argo workflow controller:
+  # egress:  - kube API target/pod port (see kubeApiTargetPort), optionally restricted by API server selectors
+  # ingress: - deny all
+  argoEnabled: true
+
+  # Enables a network policy for MinIO:
+  # egress:  - deny all
+  # ingress: - MinIO port (9000) of tool service instances
+  #          - MinIO port (9000) of tool workflow steps
+  minioEnabled: true
+
+  # Selectors for identifying the k8s api server referenced by network policies. The tool service append
+  # Argo workflow controller access the api server by IP on the port specified by kubeApiTargetPort
+  # (see below). If unspecified, the network policies for the Argo workflow controller and the tool service
+  # will be relaxed by not restricting source and destination for ingress and egress on the kubeApiTargetPort.
+  apiServerSelectors: []
+
+  # Target/pod port for the k8s API server (usually 443, 8443, or 6443). This is targetPort of the kubernetes k8s
+  # service. This is not necessarily the port associated with the URL applications use to access the API. For example,
+  # an application accessing the API with a kubernetes service URL of https://10.96.0.1:443 may connect to the
+  # k8s API server pod on port 8443.
+  kubeApiTargetPort: 443
+
+# Options for the service account used for the tool service.
+#
+serviceAccount:
+  create: true
+  # (optional)
+  name:
+
+podSecurityPolicy:
+  tws:
+    create: true
+    # (optional)
+    name:
+    bind: true
+    annotations: {}
+
+  # PSP applied to all workflow pods
+  twsWorkflows:
+    create: true
+    # (optional)
+    name:
+    bind: true
+    annotations: {}
+
+  argo:
+    create: true
+    # (optional)
+    name:
+    bind: true
+    annotations: {}
+
+  minio:
+    create: true
+    # (optional)
+    name:
+    bind: true
+    annotations: {}
+
+# Specify CPU/memory resource requests/limits for the Tool Orchestration service.
+# ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
+#
+resources: {}
+
+priorityClass:
+  workflowValue: 10000
+  serviceValue: 10100
+
+# NOTE: These are setting attributes for the `argo` dependency
+argo:
+  installCRD: false
+  images:
+    namespace: codedx
+    executor: codedx-argoexec
+    controller: codedx-workflow-controller
+    tag: v2.4.2
+  controller:
+    priorityClassValue: 10100
+  ui:
+    enabled: false
+  minio:
+    install: false
+
+# NOTE: These are setting attributes for the `minio` dependency
+minio:
+  image:
+    # https://github.com/minio/minio/releases
+    # https://github.com/bitnami/bitnami-docker-minio/releases
+    tag: 2020.3.25-debian-10-r11
+  global:
+    minio:
+      # use existing secret, with fields access-key and secret-key, as an alternative 
+      # to global.minio.accessKeyGlobal and global.minio.secretKeyGlobal
+      existingSecret:
+      accessKeyGlobal:
+      secretKeyGlobal:
+    tls:
+      # Enables or disables MinIO TLS configuration.
+      enabled: false
+      # Specifies the name of a k8s secret containing the certificate info used to configure
+      # MinIO TLS. Create the secret using the following command:
+      # kubectl create secret generic cdx-minio-tls --from-file=path/to/minio.pem --from-file=path/to/minio.key
+      certSecret: "cdx-minio-tls"
+      # The name of the MinIO public certificate in certSecret
+      publicCrt: "minio.pem"
+      # The name of the MinIO private key in certSecret
+      privateKey: "minio.key"
+  persistence:
+    size: 50Gi
+    storageClass: 
+  priorityClassValue: 10100
+
+# Options for configuring clients to explicitly trust certificate data for the MinIO TLS configuration. This section
+# does not apply when minio.tls.enabled=false.
+minioTlsTrust:
+  # Specifies a ConfigMap name that contains certificate data that should be explicitly trusted when connecting to
+  # the MinIO server. When using MinIO TLS (minio.tls.enabled=true), use configMapName when the MinIO server's
+  # certificate was not issued by a well known CA.
+  configMapName: ""
+  # Specifies the key name in the configMapName ConfigMap containing the MinIO certificate data.
+  configMapPublicCertKeyName: ""

@@ -1,0 +1,24 @@
+apiVersion: v2
+name: codedx-tool-orchestration
+version: 1.0.4
+appVersion: "1.0.2"
+description: A Helm chart for Code Dx Tool Orchestration
+icon: https://codedx.com/wp-content/uploads/2017/03/CodeDx-logo.png
+home: https://github.com/codedx/codedx-kubernetes
+keywords:
+- codedx
+- tool
+- orchestration
+sources:
+dependencies:
+- name: argo
+  version: 0.6.9
+  repository: https://codedx.github.io/codedx-kubernetes
+- name: minio
+  version: 3.1.5
+  repository: https://codedx.github.io/codedx-kubernetes
+maintainers:
+- name: tylercamp
+  email: support@codedx.com
+- name: ssalas
+  email: support@codedx.com

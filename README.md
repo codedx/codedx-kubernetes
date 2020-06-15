@@ -7,7 +7,9 @@ The guided setup script requires PowerShell Core 7 that you can install by follo
 
 To run the script, download general-setup.ps1 from this folder and run the following command:
 
+```
 pwsh ./guided-setup.ps1
+```
 
 The script checks to see whether your system meets specific prerequisites before prompting for details necessary to deploy Code Dx in your k8s environment.
 

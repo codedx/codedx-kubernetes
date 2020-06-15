@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.0
+.VERSION 1.0.1
 .GUID 7686d012-1a04-43f0-a56c-8710ab6e11ff
 .AUTHOR Code Dx
 #>
@@ -36,10 +36,13 @@ $VerbosePreference = 'Continue'
 
 Set-PSDebug -Strict
 
-. (join-path $PSScriptRoot '../common/k8s.ps1')
-. (join-path $PSScriptRoot '../common/helm.ps1')
-. (join-path $PSScriptRoot '../common/codedx.ps1')
-. (join-path $PSScriptRoot '../common/velero.ps1')
+'../setup/core/common/k8s.ps1','../setup/core/common/helm.ps1','../setup/core/common/codedx.ps1','../setup/core/common/velero.ps1' | ForEach-Object {
+	$path = join-path $PSScriptRoot $_
+	if (-not (Test-Path $path)) {
+		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
+	}
+	. $path
+}
 
 Write-Verbose "Testing for work directory '$workDirectory'"
 if (-not (Test-Path $workDirectory -PathType Container)) {

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.1
+.VERSION 1.0.2
 .GUID 89d3b6a9-4f1b-4df9-8706-b6dbb7ec27b2
 .AUTHOR Code Dx
 #>
@@ -25,10 +25,13 @@ $VerbosePreference = 'Continue'
 
 Set-PSDebug -Strict
 
-. (join-path $PSScriptRoot '../common/mariadb.ps1')
-. (join-path $PSScriptRoot '../common/k8s.ps1')
-. (join-path $PSScriptRoot '../common/helm.ps1')
-. (join-path $PSScriptRoot '../common/codedx.ps1')
+'../setup/core/common/mariadb.ps1','../setup/core/common/k8s.ps1','../setup/core/common/helm.ps1','../setup/core/common/codedx.ps1' | ForEach-Object {
+	$path = join-path $PSScriptRoot $_
+	if (-not (Test-Path $path)) {
+		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
+	}
+	. $path
+}
 
 if (-not (Test-HelmRelease $namespaceCodeDx $releaseNameCodeDx)) {
 	Write-Error "Unable to find Helm release named $releaseNameCodeDx in namespace $namespaceCodeDx."

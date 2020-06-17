@@ -118,9 +118,13 @@ This section describes the setup.ps1 script parameters.
 | `extraCodeDxValuesPaths`                           | extra values.yaml file(s) for the Code Dx Helm chart       | `@('/file.yaml')` (example)                       |
 | `extraToolOrchestrationValuesPaths`                | extra values.yaml file(s) for Tool Orchestration chart     | `@('/file.yaml')` (example)                       |
 |                                                    |                                                            |                                                   |
-| `externalDatabaseUrl`                              | connection string for an external database                 | `jdbc:mysql://mariadb/codedx` (example)           |
-| `externalDatabaseUser`                             | existing username of external database user                | `codedx` (example)                                |
+| `externalDatabaseHost`                             | host name of external database                             | `mariadb.codedx.com` (example)                    |
+| `externalDatabasePort`                             | port number for external database                          | 3306                                              |
+| `externalDatabaseName`                             | existing database name in external database                | `codedx` (example)                                |
+| `externalDatabaseUser`                             | existing username of external database user                | `codedx-user` (example)                           |
 | `externalDatabasePwd`                              | password for external database user                        | `5Ed3&#Rutcdw` (example)                          |
+| `externalDatabaseServerCert`                       | file path to CA issuing cert for external database         | `/tmp/cacert.pem` (example)                       |
+| `externalDatabaseSkipTls`                          | whether to skip configuring one-way client auth            | `$false`                                          |
 |                                                    |                                                            |                                                   |
 | `skipDatabase`                                     | whether to skip installing MariaDB (use external database) | `$false`                                          |
 | `skipToolOrchestration`                            | whether to skip installing the Tool Orchestration feature  | `$false`                                          |

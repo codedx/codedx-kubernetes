@@ -7,8 +7,9 @@ Before using your new database, you must make it compatible with Code Dx by adju
 - optimizer_search_depth=0
 - character_set_server=utf8mb4
 - collation_server=utf8mb4_general_ci
+- double check that the sql_mode parameter includes neither ONLY_FULL_GROUP_BY nor PAD_CHAR_TO_FULL_LENGTH.
 
-Double check that the sql_mode parameter includes neither ONLY_FULL_GROUP_BY nor PAD_CHAR_TO_FULL_LENGTH.
+>Note: When editing a parameter value, the column to the right of the edit box shows the allowable values (not the current values).
 
 Assign the codedx-recommendations DB Parameter Group to your MariaDB database instance by following the [Modifying an Amazon RDS DB Instance instructions](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.DBInstance.Modifying.html), and then [stop](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_StopInstance.html) and [start](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_StartInstance.html) your database instance to apply the changes.
 

@@ -140,10 +140,13 @@ $VerbosePreference = 'Continue'
 
 Set-PSDebug -Strict
 
-. (join-path $PSScriptRoot './common/helm.ps1')
-. (join-path $PSScriptRoot './common/codedx.ps1')
-. (join-path $PSScriptRoot './common/mariadb.ps1')
-. (join-path $PSScriptRoot './common/keytool.ps1')
+'./common/helm.ps1','./common/codedx.ps1','./common/mariadb.ps1','./common/keytool.ps1' | ForEach-Object {
+	$path = join-path $PSScriptRoot $_
+	if (-not (Test-Path $path)) {
+		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
+	}
+	. $path
+}
 
 function Write-ImportantNote([string] $message) {
 	Write-Host ('NOTE: {0}' -f $message) -ForegroundColor Black -BackgroundColor White

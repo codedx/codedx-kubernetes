@@ -9,7 +9,13 @@
 This script includes functions for Helm-related tasks.
 #>
 
-. (join-path $PSScriptRoot 'k8s.ps1')
+'k8s.ps1' | ForEach-Object {
+	$path = join-path $PSScriptRoot $_
+	if (-not (Test-Path $path)) {
+		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
+	}
+	. $path
+}
 
 function Get-HelmVersionMajorMinor() {
 

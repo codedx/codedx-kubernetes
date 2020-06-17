@@ -26,13 +26,19 @@ $VerbosePreference = 'Continue'
 
 Set-PSDebug -Strict
 
-. (join-path $PSScriptRoot 'network.ps1')
+'../core/common/network.ps1' | ForEach-Object {
+	$path = join-path $PSScriptRoot $_
+	if (-not (Test-Path $path)) {
+		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
+	}
+	. $path
+}
 
 $provisionNetworkPolicy = {
 	Write-Verbose 'Adding AWS Calico Network Policy Provider...'
 	Add-AwsCalicoNetworkPolicyProvider @args
 }
 
-& (join-path $PSScriptRoot '../setup.ps1') `
+& (join-path $PSScriptRoot '../core/setup.ps1') `
   -storageClassName $storageClassName `
   -provisionNetworkPolicy $provisionNetworkPolicy @args

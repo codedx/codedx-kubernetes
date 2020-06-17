@@ -6,7 +6,7 @@
 
 <# 
 .DESCRIPTION 
-This script includes functions for AWS EKS network-related tasks.
+This script includes functions for network-related tasks.
 #>
 
 $amazonVpcCniCalicoYaml = 'https://raw.githubusercontent.com/aws/amazon-vpc-cni-k8s/master/config/v1.6/calico.yaml'

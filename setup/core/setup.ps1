@@ -156,6 +156,10 @@ if (-not (Test-IsCore)) {
 	write-error 'Unable to continue because you must run this script with PowerShell Core (pwsh)'
 }
 
+if (-not (Test-MinPsMajorVersion 7)) {
+	write-error 'Unable to continue because you must run this script with PowerShell Core 7 or later'
+}
+
 'helm','kubectl','openssl','git','keytool' | foreach-object {
 	if ($null -eq (Get-AppCommandPath $_)) {
 		write-error "Unable to continue because $_ cannot be found. Is $_ installed and included in your PATH?"

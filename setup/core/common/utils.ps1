@@ -106,6 +106,10 @@ function Test-IsCore {
 	$PSVersionTable.PSEdition -eq 'Core'
 }
 
+function Test-MinPsMajorVersion([int] $majorVersion) {
+	$PSVersionTable.PSVersion.Major -ge $majorVersion
+}
+
 function Test-IsElevated {
 
 	if ($IsWindows) {

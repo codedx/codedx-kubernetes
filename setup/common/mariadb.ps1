@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.1
+.VERSION 1.0.2
 .GUID d7edc525-a26e-4f80-b65b-262a0e56422e
 .AUTHOR Code Dx
 #>
@@ -136,4 +136,26 @@ function Start-SlaveDB([string] $namespace,
 	if (0 -ne $LASTEXITCODE) {
 		Write-Error "Unable to start DB slave, kubectl exited with exit code $LASTEXITCODE."
 	}
+}
+
+function Get-DatabaseUrl([string] $databaseHost, [int] $databasePort,
+	[string] $databaseName,
+	[string] $databaseCertPath,
+	[switch] $databaseSkipTls) {
+
+	$url = "jdbc:mysql://$databaseHost"
+	if ($databasePort -ne 3306) {
+		$url = "$url`:$databasePort"
+	}
+
+	$url = "$url/$databaseName"
+
+	if (-not $databaseSkipTls) {
+
+		if ($databaseCertPath -eq '' -or -not (Test-Path $databaseCertPath -PathType Leaf)) {
+			throw "Using a One-Way SSL/TLS configuration requires a server certificate"
+		}
+		$url = "$url`?useSSL=true&requireSSL=true"
+	}
+	$url
 }

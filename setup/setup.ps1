@@ -98,6 +98,7 @@ param (
 	[string]   $mariadbRootPwd,
 	[string]   $mariadbReplicatorPwd,
 
+	[string]   $caCertsFilePath,
 	[string]   $caCertsFilePwd = 'changeit',
 	[string]   $caCertsFileNewPwd = '',
 	
@@ -119,11 +120,15 @@ param (
 	[string[]] $extraCodeDxValuesPaths = @(),
 	[string[]] $extraToolOrchestrationValuesPath = @(),
 
-	[string]   $externalDatabaseUrl = '',
-	[string]   $externalDatabaseUser = '',
-	[string]   $externalDatabasePwd = '',
-	
 	[switch]   $skipDatabase,
+	[string]   $externalDatabaseHost,
+	[int]      $externalDatabasePort = 3306,
+	[string]   $externalDatabaseName,
+	[string]   $externalDatabaseUser,
+	[string]   $externalDatabasePwd,
+	[string]   $externalDatabaseServerCert,
+	[switch]   $externalDatabaseSkipTls,
+
 	[switch]   $skipToolOrchestration,
 
 	[management.automation.scriptBlock] $provisionNetworkPolicy,
@@ -137,10 +142,11 @@ Set-PSDebug -Strict
 
 . (join-path $PSScriptRoot './common/helm.ps1')
 . (join-path $PSScriptRoot './common/codedx.ps1')
+. (join-path $PSScriptRoot './common/mariadb.ps1')
 . (join-path $PSScriptRoot './common/keytool.ps1')
 
 function Write-ImportantNote([string] $message) {
-	Write-Host ('NOTE: {0}' -f $message) -ForegroundColor Red -BackgroundColor Black
+	Write-Host ('NOTE: {0}' -f $message) -ForegroundColor Black -BackgroundColor White
 }
 
 if (-not (Test-IsCore)) {
@@ -178,10 +184,23 @@ if ($codedxAdminPwd -eq '') { $codedxAdminPwd = Read-HostSecureText 'Enter a pas
 if ((-not $skipToolOrchestration) -and $toolServiceApiKey -eq '') { $toolServiceApiKey = Read-HostSecureText 'Enter an API key for the Code Dx Tool Orchestration service' 8 }
 if ($caCertsFileNewPwd -ne '' -and $caCertsFileNewPwd.length -lt 6) { $caCertsFileNewPwd = Read-HostSecureText 'Enter a password to protect the cacerts file' 6 }
 
+$externalDatabaseUrl = ''
 if ($skipDatabase) {
-	if ($externalDatabaseUrl -eq '') { $externalDatabaseUrl = Read-HostText 'Enter a database connection string for your external Code Dx database' }
-	if ($externalDatabaseUser -eq '') { $externalDatabaseUser = Read-HostText 'Enter a username for your external Code Dx external database' }
-	if ($externalDatabasePwd -eq '') { $externalDatabasePwd = Read-HostSecureText 'Enter a password for your external Code Dx external database' 0 }
+	if ($externalDatabaseHost -eq '') { $externalDatabaseHost = Read-HostText 'Enter your external database host name' }
+	if ($externalDatabaseName -eq '') { $externalDatabaseName = Read-HostText 'Enter your external, preexisting Code Dx database name' }
+	if ($externalDatabaseUser -eq '') { $externalDatabaseUser = Read-HostText 'Enter a username for your external Code Dx database' }
+	if ($externalDatabasePwd -eq '')  { $externalDatabasePwd  = Read-HostSecureText 'Enter a password for your external Code Dx database' 0 }
+
+	if (-not $externalDatabaseSkipTls) {
+		if ($externalDatabaseServerCert -eq '') { $externalDatabaseServerCert = Read-HostText 'Enter your external database host cert file path' }
+		
+		$extraCodeDxTrustedCaCertPaths += $externalDatabaseServerCert
+
+		if ($caCertsFilePath -eq '') { 
+			$caCertsFilePath = Read-HostText 'Enter a path to a cacerts file where your external database host cert will be stored'
+		}
+	}
+	$externalDatabaseUrl = Get-DatabaseUrl $externalDatabaseHost $externalDatabasePort $externalDatabaseName $externalDatabaseServerCert -databaseSkipTls:$externalDatabaseSkipTls
 }
 else {
 	if ($mariadbRootPwd -eq '') { $mariadbRootPwd = Read-HostSecureText 'Enter a password for the MariaDB root user' 0 }
@@ -215,7 +234,7 @@ if (-not (test-path $clusterCertificateAuthorityCertPath -PathType Leaf)) {
 	write-error "Unable to continue because path '$clusterCertificateAuthorityCertPath' cannot be found."
 }
 
-if ($dbSlaveReplicaCount -eq 0) {
+if (-not $skipDatabase -and $dbSlaveReplicaCount -eq 0) {
 	Write-ImportantNote 'Skipping slave database instances and the database backup process they provide.'
 }
 
@@ -293,6 +312,23 @@ if (-not $nginxIngressControllerInstall -and $null -eq $provisionIngressControll
 	$namespaceIngressController = ''
 }
 
+$caCertPaths = $extraCodeDxTrustedCaCertPaths
+if ($useTLS -and -not $skipToolOrchestration) {
+	$caCertPaths += $clusterCertificateAuthorityCertPath
+}
+
+$caCertsFilename = ''
+if ($caCertsFilePath -ne '') {
+	Write-Verbose 'Configuring cacerts file...'
+	New-TrustedCaCertsFile $caCertsFilePath $caCertsFilePwd $caCertsFileNewPwd $caCertPaths (join-path $workDir codedx-kubernetes/codedx)
+
+	$caCertsFilename = 'cacerts'
+	$caCertPaths = @() # no more certificate work to do
+}
+
+$certificateWorkRemains = $caCertPaths.count -ne 0
+$installToolOrchestration = -not $skipToolOrchestration
+
 Write-Verbose 'Deploying Code Dx with Tool Orchestration disabled...'
 New-CodeDxDeployment $codeDxDnsName $codeDxServicePortNumber $codeDxTlsServicePortNumber $workDir $waitTimeSeconds `
 	$clusterCertificateAuthorityCertPath `
@@ -311,29 +347,32 @@ New-CodeDxDeployment $codeDxDnsName $codeDxServicePortNumber $codeDxTlsServicePo
 	$serviceTypeCodeDx $serviceAnnotationsCodeDx `
 	$namespaceIngressController `
 	$ingressAnnotationsCodeDx `
-	$caCertsFilePwd `
+	$caCertsFilename (Get-TrustedCaCertsFilePwd $caCertsFilePwd $caCertsFileNewPwd) `
 	$externalDatabaseUrl $externalDatabaseUser $externalDatabasePwd `
 	-ingressEnabled:$ingressEnabled -ingressAssumesNginx:$ingressAssumesNginx `
-	-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -skipDatabase:$skipDatabase
+	-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -skipDatabase:$skipDatabase `
+	-offlineMode:($certificateWorkRemains -or $installToolOrchestration)
 
-$caCertPaths = $extraCodeDxTrustedCaCertPaths
-if ($useTLS -and -not $skipToolOrchestration) {
-	$caCertPaths += $clusterCertificateAuthorityCertPath
+if ($caCertsFilePath -eq '') {
+	$caCertsFilePath = './cacerts.pod'
+	Get-RunningCodeDxKeystore $namespaceCodeDx $caCertsFilePath
 }
 
-$installToolOrchestration = -not $skipToolOrchestration
+if ($certificateWorkRemains) {
 
-Set-TrustedCerts $workDir `
-	$waitTimeSeconds `
-	$namespaceCodeDx `
-	$releaseNameCodeDx `
-	$extraCodeDxValuesPaths `
-	$codedxAdminPwd `
-	$caCertsFilePwd `
-	$caCertsFileNewPwd `
-	$externalDatabaseUser $externalDatabasePwd `
-	$caCertPaths `
-	-offlineMode:$installToolOrchestration
+	Write-Verbose 'Configuring cacerts file...'
+	New-TrustedCaCertsFile $caCertsFilePath $caCertsFilePwd $caCertsFileNewPwd $caCertPaths (join-path $workDir codedx-kubernetes/codedx)
+
+	Set-TrustedCerts $workDir `
+		$waitTimeSeconds `
+		$namespaceCodeDx `
+		$releaseNameCodeDx `
+		$extraCodeDxValuesPaths `
+		$codedxAdminPwd `
+		(Get-TrustedCaCertsFilePwd $caCertsFilePwd $caCertsFileNewPwd) `
+		$externalDatabaseUser $externalDatabasePwd `
+		-offlineMode:$installToolOrchestration
+}
 
 if ($installToolOrchestration) {
 

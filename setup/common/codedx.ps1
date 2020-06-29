@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.2
+.VERSION 1.0.3
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -64,6 +64,7 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[string[]] $serviceAnnotationsCodeDx,
 	[string]   $ingressControllerNamespace,
 	[string[]] $ingressAnnotations,
+	[string]   $caCertsFilename,
 	[string]   $caCertsFilePwd,
 	[string]   $externalDbUrl,
 	[string]   $externalDbUser,
@@ -73,7 +74,8 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[switch]   $enablePSPs,
 	[switch]   $enableNetworkPolicies,
 	[switch]   $configureTls,
-	[switch]   $skipDatabase) {
+	[switch]   $skipDatabase,
+	[switch]   $offlineMode) {
  
 	if (-not (Test-Namespace $namespace)) {
 		New-Namespace  $namespace
@@ -197,14 +199,14 @@ mariadb:
       backup:
         size: {14}Gi
 {22}
-cacertsFile: ''
+cacertsFile: '{30}'
 cacertsFilePwd: '{21}'
 codedxProps:
   internalExtra:
   - type: values
     key: codedx-offline-props
     values:
-    - "codedx.offline-mode = true"
+    - "codedx.offline-mode = {31}"
 {29}
 '@ -f (Get-CodeDxPdSecretName $releaseName), $tomcatImage, $imagePullSecretYaml, `
 $psp, $networkPolicy, `
@@ -220,7 +222,7 @@ $defaultKeyStorePwd, `
 $codeDxTomcatPortNumber, $codeDxTlsTomcatPortNumber, `
 $serviceTypeCodeDx, (ConvertTo-YamlMap $serviceAnnotationsCodeDx), `
 $enableDb, $ingressNginxAssumption, `
-$externalDb
+$externalDb, $caCertsFilename, $offlineMode.ToString().ToLower()
 
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
@@ -428,54 +430,32 @@ function Get-RunningCodeDxPodName([string] $codedxNamespace) {
 	$name
 }
 
-function Set-TrustedCerts([string] $workDir, 
+function Get-RunningCodeDxKeystore([string] $codedxNamespace, [string] $outPath) {
+
+	$podName = Get-RunningCodeDxPodName $codedxNamespace
+	$podFile = "$podName`:/usr/local/openjdk-8/jre/lib/security/cacerts"
+
+	kubectl -n $codedxNamespace cp $podFile $outPath
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to copy out cacerts file from '$podFile', kubectl exited with code $LASTEXITCODE."
+	}
+}
+
+function Set-TrustedCerts([string] $workDir,
 	[string]   $waitSeconds,
 	[string]   $codedxNamespace,
 	[string]   $codedxReleaseName,
 	[string[]] $extraValuesPaths,
 	[string]   $adminPwd,
-	[string]   $caCertsFilePwd,
-	[string]   $caCertsFileNewPwd,
+	[string]   $keystorePwd,
 	[string]   $externalDbUser,
 	[string]   $externalDbPwd,
-	[string[]] $trustedCertPaths,
 	[switch]   $offlineMode) {
 
-	$caCertsFilePath = './cacerts'
-	if (test-path $caCertsFilePath) {
-		remove-item $caCertsFilePath -force
-	}
-
-	$chartFolder = (join-path $workDir codedx-kubernetes/codedx)
-	$chartFolderCaCertsFilePath = join-path $chartFolder $caCertsFilePath
-
-	# if cacerts already exists in the chart folder via -extraCodeDxChartFilesPaths, use 
-	# that copy; otherwise, pull a copy from the running Code Dx pod
-	if (test-path $chartFolderCaCertsFilePath) {
-		copy-item $chartFolderCaCertsFilePath $caCertsFilePath
-	} else {
-		$podName = Get-RunningCodeDxPodName $codedxNamespace
-		$podFile = "$podName`:/usr/local/openjdk-8/jre/lib/security/cacerts"
-
-		kubectl -n $codedxNamespace cp $podFile $caCertsFilePath
-		if ($LASTEXITCODE -ne 0) {
-			throw "Unable to copy out cacerts file, kubectl exited with code $LASTEXITCODE."
-		}
-	}
-
-	# set cacerts password
-	$keystorePwd = $caCertsFilePwd
-	if ('' -ne $caCertsFileNewPwd -and $caCertsFilePwd -ne $caCertsFileNewPwd) {
-		$keystorePwd = $caCertsFileNewPwd
-	}
-	Set-KeystorePassword $caCertsFilePath $caCertsFilePwd $keystorePwd 
 	New-CodeDxPdSecret $codedxNamespace $codedxReleaseName $adminPwd $keystorePwd $externalDbUser $externalDbPwd
-
-	Import-TrustedCaCerts $caCertsFilePath $keystorePwd $trustedCertPaths
-
-	# move edited cacerts file to chart directory where it can be found during chart install
-	copy-item $caCertsFilePath $chartFolder -Force
-
+	
+	$chartFolder = (join-path $workDir codedx-kubernetes/codedx)
+	
 	$values = @'
 cacertsFile: cacerts
 codedxProps:
@@ -751,4 +731,31 @@ function Get-CommonName([string] $name) {
 		$name = $name.Substring(0, 63)
 	}
 	$name.TrimEnd('-')
+}
+
+function Get-TrustedCaCertsFilePwd([string] $currentPwd, [string] $newPwd) {
+
+	$pwd = $currentPwd
+	if ('' -ne $newPwd -and $pwd -ne $newPwd) {
+		$pwd = $newPwd
+	}
+	$pwd
+}
+
+function New-TrustedCaCertsFile([string] $basePath,
+	[string]   $currentPwd, [string] $newPwd,
+	[string[]] $certPathsToImport,
+	[string]   $destinationDirectory) {
+
+	$filePath = "./cacerts"
+	if (Test-Path $filePath) {
+		Remove-Item $filePath -force
+	}
+	Copy-Item $basePath $filePath
+
+	$pwd = (Get-TrustedCaCertsFilePwd $currentPwd $newPwd)
+	Set-KeystorePassword $filePath $currentPwd $pwd
+
+	Import-TrustedCaCerts $filePath $pwd $certPathsToImport
+	Copy-Item $filePath $destinationDirectory -Force
 }

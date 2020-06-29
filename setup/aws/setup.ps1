@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.0
+.VERSION 1.0.1
 .GUID 7324446b-ac6b-4870-846d-bef7547de642
 .AUTHOR Code Dx
 #>
@@ -36,5 +36,3 @@ $provisionNetworkPolicy = {
 & (join-path $PSScriptRoot '../setup.ps1') `
   -storageClassName $storageClassName `
   -provisionNetworkPolicy $provisionNetworkPolicy @args
-
-Write-Verbose 'Deployment complete!'

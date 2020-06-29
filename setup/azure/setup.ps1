@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.1
+.VERSION 1.0.2
 .GUID 01d0c54b-ce7a-4462-b4cd-fb27a4f847bc
 .AUTHOR Code Dx
 #>
@@ -36,5 +36,3 @@ if ($nginxIngressControllerLoadBalancerIP -eq '') {
   -storageClassName $storageClassName `
   -nginxIngressControllerLoadBalancerIP $nginxIngressControllerLoadBalancerIP `
   @args
-
-Write-Verbose 'Deployment complete!'

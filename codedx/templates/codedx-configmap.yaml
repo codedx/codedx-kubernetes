@@ -57,4 +57,7 @@ data:
     auth.saml2.identityProviderMetadataPath = /opt/codedx/saml-idp.xml
   {{- end -}}
 
+  codedx-ml.props: |-
+    codedx.external-url = {{ include "codedx.serviceurl" . | quote -}}
+
 {{- end -}}

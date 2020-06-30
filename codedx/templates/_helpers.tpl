@@ -69,6 +69,13 @@ Determine the name of the initContainer for Code Dx, which checks for MariaDB co
 {{- end -}}
 
 {{/*
+Determine the name of the Code Dx service.
+*/}}
+{{- define "codedx.servicename" -}}
+{{ include "codedx.fullname" . }}
+{{- end -}}
+
+{{/*
 Determine the type of service when exposing Code Dx based on the user-specified type and whether Ingress
 is enabled.
 */}}
@@ -82,6 +89,19 @@ is enabled.
 {{- "LoadBalancer" -}}
 {{- end -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Determine the URL of the Code Dx service.
+*/}}
+{{- define "codedx.serviceurl" -}}
+{{- $protocol := "http" }}
+{{- $port := .Values.codedxTomcatPort -}}
+{{- if .Values.codedxTls.enabled -}}
+{{- $protocol = "https" -}}
+{{- $port = .Values.codedxTlsTomcatPort -}}
+{{- end -}}
+{{- $protocol -}}://{{- include "codedx.servicename" . -}}:{{- $port -}}/codedx
 {{- end -}}
 
 {{/*

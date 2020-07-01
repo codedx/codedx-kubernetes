@@ -574,7 +574,7 @@ mariadb:
       pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
       log-error=/opt/bitnami/mariadb/logs/mysqld.log
       character-set-server=utf8mb4
-      collation-server=utf8_general_ci
+      collation-server=utf8mb4_general_ci
       optimizer_search_depth=0
       innodb_flush_log_at_trx_commit=0
 
@@ -608,7 +608,7 @@ mariadb:
       pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
       log-error=/opt/bitnami/mariadb/logs/mysqld.log
       character-set-server=utf8mb4
-      collation-server=utf8_general_ci
+      collation-server=utf8mb4_general_ci
       optimizer_search_depth=0
       innodb_flush_log_at_trx_commit=0
 

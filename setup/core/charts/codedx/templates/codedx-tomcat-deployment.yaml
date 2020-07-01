@@ -138,6 +138,9 @@ spec:
           name: codedx-saml-props
           subPath: codedx-saml.props
         {{- end }}
+        - mountPath: /opt/codedx/codedx-ml.props
+          name: codedx-ml-props
+          subPath: codedx-ml.props
         {{ if .Values.extraMounts -}}
         {{ range .Values.extraMounts -}}
         - name: {{ .name }}
@@ -257,6 +260,12 @@ spec:
           - key: codedx-saml.props
             path: codedx-saml.props
       {{- end }}
+      - name: codedx-ml-props
+        configMap:
+          name: {{ include "codedx.props.configMapName" . | quote }}
+          items:
+          - key: codedx-ml.props
+            path: codedx-ml.props      
       {{ if .Values.extraMounts -}}
       {{- range .Values.extraMounts -}}
       - name: {{ .name }}

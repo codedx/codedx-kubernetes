@@ -26,6 +26,9 @@ data:
     CATALINA_OPTS="$CATALINA_OPTS {{ default "" .Values.codedxJavaOpts }}"
     CATALINA_OPTS="$CATALINA_OPTS -Djavax.net.ssl.keystorepassword=$KEYSTORE_KEY"
 
+  codedx-ml.props: |-
+    codedx.external-url = {{ include "codedx.serviceurl" . | quote }}
+
   {{ if .Values.loggingConfigFile -}}
   logback.xml: |-
     {{- .Files.Get .Values.loggingConfigFile | nindent 4 -}}
@@ -56,5 +59,4 @@ data:
   codedx-saml.props: |-
     auth.saml2.identityProviderMetadataPath = /opt/codedx/saml-idp.xml
   {{- end -}}
-
 {{- end -}}

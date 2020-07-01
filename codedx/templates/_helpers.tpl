@@ -190,6 +190,10 @@ credentials, which will be mounted for Code Dx.
 {{- include "sanitize" $fullName -}}
 {{- end -}}
 
+{{- define "codedx.props.ml.params" -}}
+{{- printf " -Dcodedx.additional-props-ml=/opt/codedx/codedx-ml.props" -}}
+{{- end -}}
+
 {{- define "codedx.props.saml.params" -}}
 {{- if .Values.samlIdpXmlFile -}}
 {{- printf " -Dcodedx.additional-props-saml=\"/opt/codedx/codedx-saml.props\"" -}}
@@ -209,6 +213,7 @@ be passed to the Code Dx installer and webapp. The parameters tell Code Dx to lo
 {{- range .Values.codedxProps.internalExtra -}}
 {{- printf " -Dcodedx.additional-props-%s=\"/opt/codedx/%s\"" .key .key -}}
 {{- end -}}
+{{- include "codedx.props.ml.params" . -}}
 {{- include "codedx.props.saml.params" . -}}
 {{- end -}}
 
@@ -224,6 +229,7 @@ Create a separated YAML list of all parameters to pass to Code Dx for loading ad
 */}}
 {{- define "codedx.props.params.separated" -}}
 - "-Dcodedx.additional-props-mariadb={{ include "codedx.mariadb.props.path" . }}"
+-{{ include "codedx.props.ml.params" . }}
 {{- range .Values.codedxProps.extra }}
 - "-Dcodedx.additional-props-{{ .key }}=/opt/codedx/{{ .key }}"
 {{- end -}}

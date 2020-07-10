@@ -64,15 +64,15 @@ param (
 
 	[int]      $toolServiceReplicas = 3,
 
-	[bool]     $useTLS  = $true,
-	[bool]     $usePSPs = $true,
+	[switch]   $skipTLS,
+	[switch]   $skipPSPs,
+	[switch]   $skipNetworkPolicies,
 
-	[bool]     $skipNetworkPolicies = $false,
-
-	[bool]     $nginxIngressControllerInstall = $true,
+	[switch]   $skipNginxIngressControllerInstall,
 	[string]   $nginxIngressControllerLoadBalancerIP = '',
+	[string]   $nginxIngressControllerNamespace = 'nginx',
 
-	[bool]     $letsEncryptCertManagerInstall = $true,
+	[switch]   $skipLetsEncryptCertManagerInstall,
 	[string]   $letsEncryptCertManagerRegistrationEmailAddress = '',
 	[string]   $letsEncryptCertManagerClusterIssuer = 'letsencrypt-staging',
 	[string]   $letsEncryptCertManagerNamespace = 'cert-manager',
@@ -80,13 +80,12 @@ param (
 	[string]   $serviceTypeCodeDx = '',
 	[string[]] $serviceAnnotationsCodeDx = @(),
 
-	[bool]     $ingressEnabled = $true,
-	[bool]     $ingressAssumesNginx = $true,
+	[switch]   $skipIngressEnabled,
+	[switch]   $skipIngressAssumesNginx,
 	[string[]] $ingressAnnotationsCodeDx = @(),
 
 	[string]   $namespaceToolOrchestration = 'cdx-svc',
 	[string]   $namespaceCodeDx = 'cdx-app',
-	[string]   $namespaceIngressController = 'nginx',
 	[string]   $releaseNameCodeDx = 'codedx',
 	[string]   $releaseNameToolOrchestration = 'codedx-tool-orchestration',
 
@@ -152,28 +151,9 @@ function Write-ImportantNote([string] $message) {
 	Write-Host ('NOTE: {0}' -f $message) -ForegroundColor Black -BackgroundColor White
 }
 
-if (-not (Test-IsCore)) {
-	write-error 'Unable to continue because you must run this script with PowerShell Core (pwsh)'
-}
-
-if (-not (Test-MinPsMajorVersion 7)) {
-	write-error 'Unable to continue because you must run this script with PowerShell Core 7 or later'
-}
-
-'helm','kubectl','openssl','git','keytool' | foreach-object {
-	if ($null -eq (Get-AppCommandPath $_)) {
-		write-error "Unable to continue because $_ cannot be found. Is $_ installed and included in your PATH?"
-	}
-}
-
-$helmVersion = Get-HelmVersionMajorMinor
-if ($null -eq $helmVersion) {
-	write-error 'Unable to continue because helm version was not detected.'
-}
-
-$minimumHelmVersion = 3.1 # required for helm lookup function
-if ($helmVersion -lt $minimumHelmVersion) {
-	write-error "Unable to continue with helm version $helmVersion, version $minimumHelmVersion or later is required"
+$prereqMessages = @()
+if (-not (Test-SetupPreqs ([ref]$prereqMessages))) {
+	write-error ([string]::join("`n", $prereqMessages))
 }
 
 if ($kubeContextName -ne '') {
@@ -183,12 +163,12 @@ if ($kubeContextName -ne '') {
 
 $dns1123SubdomainExpr = '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
 
-if (-not (Test-IsValidParameterValue $codeDxDnsName $dns1123SubdomainExpr)) { $codeDxDnsName = Read-HostText 'Enter Code Dx domain name (e.g., www.codedx.io)' -validationExpr $dns1123SubdomainExpr }
-if ($clusterCertificateAuthorityCertPath -eq '') { $clusterCertificateAuthorityCertPath = Read-Host -Prompt 'Enter path to cluster CA certificate' }
-if ((-not $skipToolOrchestration) -and $minioAdminUsername -eq '') { $minioAdminUsername = Read-HostSecureText 'Enter a username for the MinIO admin account' 5 }
-if ((-not $skipToolOrchestration) -and $minioAdminPwd -eq '') { $minioAdminPwd = Read-HostSecureText 'Enter a password for the MinIO admin account' 8 }
+if (-not $skipIngressEnabled -and -not (Test-IsValidParameterValue $codeDxDnsName $dns1123SubdomainExpr)) { $codeDxDnsName = Read-HostText 'Enter Code Dx domain name (e.g., www.codedx.io)' -validationExpr $dns1123SubdomainExpr }
+if (-not $skipTLS -and $clusterCertificateAuthorityCertPath -eq '') { $clusterCertificateAuthorityCertPath = Read-Host -Prompt 'Enter path to cluster CA certificate' }
+if (-not $skipToolOrchestration -and $minioAdminUsername -eq '') { $minioAdminUsername = Read-HostSecureText 'Enter a username for the MinIO admin account' 5 }
+if (-not $skipToolOrchestration -and $minioAdminPwd -eq '') { $minioAdminPwd = Read-HostSecureText 'Enter a password for the MinIO admin account' 8 }
 if ($codedxAdminPwd -eq '') { $codedxAdminPwd = Read-HostSecureText 'Enter a password for the Code Dx admin account' 6 }
-if ((-not $skipToolOrchestration) -and $toolServiceApiKey -eq '') { $toolServiceApiKey = Read-HostSecureText 'Enter an API key for the Code Dx Tool Orchestration service' 8 }
+if (-not $skipToolOrchestration -and $toolServiceApiKey -eq '') { $toolServiceApiKey = Read-HostSecureText 'Enter an API key for the Code Dx Tool Orchestration service' 8 }
 if ($caCertsFileNewPwd -ne '' -and $caCertsFileNewPwd.length -lt 6) { $caCertsFileNewPwd = Read-HostSecureText 'Enter a password to protect the cacerts file' 6 }
 
 $externalDatabaseUrl = ''
@@ -196,7 +176,7 @@ if ($skipDatabase) {
 	if ($externalDatabaseHost -eq '') { $externalDatabaseHost = Read-HostText 'Enter your external database host name' }
 	if ($externalDatabaseName -eq '') { $externalDatabaseName = Read-HostText 'Enter your external, preexisting Code Dx database name' }
 	if ($externalDatabaseUser -eq '') { $externalDatabaseUser = Read-HostText 'Enter a username for your external Code Dx database' }
-	if ($externalDatabasePwd -eq '')  { $externalDatabasePwd  = Read-HostSecureText 'Enter a password for your external Code Dx database' 0 }
+	if ($externalDatabasePwd -eq '')  { $externalDatabasePwd  = Read-HostSecureText 'Enter a password for your external Code Dx database' }
 
 	if (-not $externalDatabaseSkipTls) {
 		if ($externalDatabaseServerCert -eq '') { $externalDatabaseServerCert = Read-HostText 'Enter your external database host cert file path' }
@@ -210,11 +190,11 @@ if ($skipDatabase) {
 	$externalDatabaseUrl = Get-DatabaseUrl $externalDatabaseHost $externalDatabasePort $externalDatabaseName $externalDatabaseServerCert -databaseSkipTls:$externalDatabaseSkipTls
 }
 else {
-	if ($mariadbRootPwd -eq '') { $mariadbRootPwd = Read-HostSecureText 'Enter a password for the MariaDB root user' 0 }
-	if ($mariadbReplicatorPwd -eq '') { $mariadbReplicatorPwd = Read-HostSecureText 'Enter a password for the MariaDB replicator user' 0 }
+	if ($mariadbRootPwd -eq '') { $mariadbRootPwd = Read-HostSecureText 'Enter a password for the MariaDB root user' }
+	if ($mariadbReplicatorPwd -eq '') { $mariadbReplicatorPwd = Read-HostSecureText 'Enter a password for the MariaDB replicator user' }
 }
 
-if ($letsEncryptCertManagerInstall){
+if (-not $skipLetsEncryptCertManagerInstall){
 
 	if ($letsEncryptCertManagerRegistrationEmailAddress -eq '') { 
 		$letsEncryptCertManagerRegistrationEmailAddress = Read-HostText 'Enter an email address for the Let''s Encrypt registration' 
@@ -227,13 +207,13 @@ if ($letsEncryptCertManagerInstall){
 if ($dockerImagePullSecretName -ne '') {
 	
 	if ($dockerRegistry -eq '') {
-		$dockerRegistry = Read-HostText 'Enter private Docker registry' 1
+		$dockerRegistry = Read-HostText 'Enter private Docker registry'
 	}
 	if ($dockerRegistryUser -eq '') {
-		$dockerRegistryUser = Read-HostText "Enter a docker username for $dockerRegistry" 1
+		$dockerRegistryUser = Read-HostText "Enter a docker username for $dockerRegistry"
 	}
 	if ($dockerRegistryPwd -eq '') {
-		$dockerRegistryPwd = Read-HostSecureText "Enter a docker password for $dockerRegistry" 1
+		$dockerRegistryPwd = Read-HostSecureText "Enter a docker password for $dockerRegistry"
 	}
 }
 
@@ -260,7 +240,7 @@ if ($useNetworkPolicies -and $provisionNetworkPolicy -ne $null) {
 }
 
 Write-Verbose 'Waiting for running pods...'
-$namespaceCodeDx,$namespaceIngressController,$letsEncryptCertManagerNamespace | ForEach-Object {
+$namespaceCodeDx,$nginxIngressControllerNamespace,$letsEncryptCertManagerNamespace | ForEach-Object {
 	if (Test-Namespace $_) {
 		Wait-AllRunningPods "Cluster Ready (namespace $_)" $waitTimeSeconds $_	
 	}
@@ -280,28 +260,28 @@ if ($null -ne $provisionIngressController) {
 	& $provisionIngressController
 }
 
-if ($nginxIngressControllerInstall) {
+if (-not $skipNginxIngressControllerInstall) {
 
 	Write-Verbose 'Adding nginx Ingress...'
 	$priorityValuesFile = 'nginx-ingress-priority.yaml'
 
 	if ($nginxIngressControllerLoadBalancerIP -ne '') {
-		Add-NginxIngressLoadBalancerIP $nginxIngressControllerLoadBalancerIP $namespaceIngressController $waitTimeSeconds 'nginx-ingress.yaml' $priorityValuesFile $releaseNameCodeDx $nginxCPUReservation $nginxMemoryReservation $nginxEphemeralStorageReservation -enablePSPs:$usePSPs
+		Add-NginxIngressLoadBalancerIP $nginxIngressControllerLoadBalancerIP $nginxIngressControllerNamespace $waitTimeSeconds 'nginx-ingress.yaml' $priorityValuesFile $releaseNameCodeDx $nginxCPUReservation $nginxMemoryReservation $nginxEphemeralStorageReservation -enablePSPs:(-not $skipPSPs)
 	} else {
-		Add-NginxIngress $namespaceIngressController $waitTimeSeconds '' $priorityValuesFile $releaseNameCodeDx $nginxCPUReservation $nginxMemoryReservation $nginxEphemeralStorageReservation
+		Add-NginxIngress $nginxIngressControllerNamespace $waitTimeSeconds '' $priorityValuesFile $releaseNameCodeDx $nginxCPUReservation $nginxMemoryReservation $nginxEphemeralStorageReservation
 	}
 
 	$ingressAnnotationsCodeDx += "nginx.ingress.kubernetes.io/proxy-read-timeout: '3600'"
 	$ingressAnnotationsCodeDx += "nginx.ingress.kubernetes.io/proxy-body-size: '0'"
 }
 
-if ($letsEncryptCertManagerInstall) {
+if (-not $skipLetsEncryptCertManagerInstall) {
 
 	Write-Verbose 'Adding Let''s Encrypt Cert Manager...'
 	Add-LetsEncryptCertManager $letsEncryptCertManagerNamespace $namespaceCodeDx `
 		$letsEncryptCertManagerRegistrationEmailAddress 'staging-cluster-issuer.yaml' 'production-cluster-issuer.yaml' `
 		'cert-manager-role.yaml' 'cert-manager-role-binding.yaml' 'cert-manager-http-solver-role-binding.yaml' `
-		$waitTimeSeconds -enablePSPs:$usePSPs
+		$waitTimeSeconds -enablePSPs:(-not $skipPSPs)
 
 	$ingressAnnotationsCodeDx += "kubernetes.io/tls-acme: 'true'"
 	$ingressAnnotationsCodeDx += "cert-manager.io/cluster-issuer: '$letsEncryptCertManagerClusterIssuer'"
@@ -315,12 +295,12 @@ if ($extraCodeDxChartFilesPaths.Count -gt 0) {
 	Copy-Item $extraCodeDxChartFilesPaths .\codedx-kubernetes\codedx
 }
 
-if (-not $nginxIngressControllerInstall -and $null -eq $provisionIngressController) {
-	$namespaceIngressController = ''
+if ($skipNginxIngressControllerInstall -and $null -eq $provisionIngressController) {
+	$nginxIngressControllerNamespace = ''
 }
 
 $caCertPaths = $extraCodeDxTrustedCaCertPaths
-if ($useTLS -and -not $skipToolOrchestration) {
+if ((-not $skipTLS) -and -not $skipToolOrchestration) {
 	$caCertPaths += $clusterCertificateAuthorityCertPath
 }
 
@@ -352,12 +332,12 @@ New-CodeDxDeployment $codeDxDnsName $codeDxServicePortNumber $codeDxTlsServicePo
 	$codeDxEphemeralStorageReservation $dbMasterEphemeralStorageReservation $dbSlaveEphemeralStorageReservation `
 	$extraCodeDxValuesPaths `
 	$serviceTypeCodeDx $serviceAnnotationsCodeDx `
-	$namespaceIngressController `
+	$nginxIngressControllerNamespace `
 	$ingressAnnotationsCodeDx `
 	$caCertsFilename (Get-TrustedCaCertsFilePwd $caCertsFilePwd $caCertsFileNewPwd) `
 	$externalDatabaseUrl $externalDatabaseUser $externalDatabasePwd `
-	-ingressEnabled:$ingressEnabled -ingressAssumesNginx:$ingressAssumesNginx `
-	-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -skipDatabase:$skipDatabase `
+	-ingressEnabled:(-not $skipIngressEnabled) -ingressAssumesNginx:(-not $skipIngressAssumesNginx) `
+	-enablePSPs:(-not $skipPSPs) -enableNetworkPolicies:$useNetworkPolicies -configureTls:(-not $skipTLS) -skipDatabase:$skipDatabase `
 	-offlineMode:($certificateWorkRemains -or $installToolOrchestration)
 
 if ($caCertsFilePath -eq '') {
@@ -401,11 +381,11 @@ if ($installToolOrchestration) {
 		$toolServiceEphemeralStorageReservation $minioEphemeralStorageReservation $workflowEphemeralStorageReservation `
 		$kubeApiTargetPort `
 		$extraToolOrchestrationValuesPath `
-		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS
+		-enablePSPs:(-not $skipPSPs) -enableNetworkPolicies:$useNetworkPolicies -configureTls:(-not $skipTLS)
 
 	Write-Verbose 'Updating Code Dx deployment by enabling Tool Orchestration...'
 	$protocol = 'http'
-	if ($useTLS) {
+	if (-not $skipTLS) {
 		$protocol = 'https'
 	}
 

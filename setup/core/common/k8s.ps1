@@ -44,6 +44,34 @@ function Get-KubectlContext() {
 	$contextName
 }
 
+function Get-KubectlContexts([switch] $nameOnly) {
+
+	$output = @()
+	if ($nameOnly) {
+		$output = '-o','name'
+	}
+	$contexts = kubectl config get-contexts @($output)
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to get kubectl contexts, kubectl exited with code $LASTEXITCODE."
+	}
+	$contexts
+}
+
+function Get-KubernetesPort() {
+
+	$info = kubectl cluster-info
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to get kubectl context, kubectl exited with code $LASTEXITCODE."
+	}
+
+	$urlMatch = $info[0] | select-string '(?<url>http[A-Z0-9a-z:/\.\-]+)'
+	if (-not $urlMatch.Matches.Success) {
+		throw "Expected to find URL on line 1: $($info[0])."
+	}
+	$url = $urlMatch.Matches.Groups[1].Value
+	([Uri]$url).Port
+}
+
 function Set-KubectlContext([string] $contextName) {
 
 	kubectl config use-context $contextName

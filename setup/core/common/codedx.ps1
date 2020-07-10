@@ -9,6 +9,16 @@
 This script includes functions for the deployment of Code Dx and Code Dx Orchestration.
 #>
 
+'utils.ps1',
+'k8s.ps1',
+'helm.ps1' | ForEach-Object {
+	$path = join-path $PSScriptRoot $_
+	if (-not (Test-Path $path)) {
+		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
+	}
+	. $path
+}
+
 function Get-CodeDxPdSecretName([string] $releaseName) {
 	"$releaseName-codedx-pd"
 }
@@ -758,4 +768,36 @@ function New-TrustedCaCertsFile([string] $basePath,
 
 	Import-TrustedCaCerts $filePath $pwd $certPathsToImport
 	Copy-Item $filePath $destinationDirectory -Force
+}
+
+function Test-SetupPreqs([ref] $messages) {
+
+	$messages.Value = @()
+	$isCore = Test-IsCore
+	if (-not $isCore) {
+		$messages.Value += 'Unable to continue because you must run this script with PowerShell Core (pwsh)'
+	}
+	
+	if ($isCore -and -not (Test-MinPsMajorVersion 7)) {
+		$messages.Value += 'Unable to continue because you must run this script with PowerShell Core 7 or later'
+	}
+	
+	'helm','kubectl','openssl','git','keytool' | foreach-object {
+		$found = $null -ne (Get-AppCommandPath $_)
+		if (-not $found) {
+			$messages.Value += "Unable to continue because $_ cannot be found. Is $_ installed and included in your PATH?"
+		}
+		if ($found -and $_ -eq 'helm') {
+			$helmVersion = Get-HelmVersionMajorMinor
+			if ($null -eq $helmVersion) {
+				$messages.Value += 'Unable to continue because helm version was not detected.'
+			}
+			
+			$minimumHelmVersion = 3.1 # required for helm lookup function
+			if ($helmVersion -lt $minimumHelmVersion) {
+				$messages.Value += "Unable to continue with helm version $helmVersion, version $minimumHelmVersion or later is required"
+			}
+		}
+	}
+	$messages.Value.count -eq 0
 }

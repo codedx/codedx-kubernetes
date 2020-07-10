@@ -84,7 +84,7 @@ This section describes the setup.ps1 script parameters.
 |                                                    |                                                            |                                                   |
 | `namespaceToolOrchestration`                       | namespace for Code Dx Tool Orchestration components        | `cdx-svc`                                         |
 | `namespaceCodeDx`                                  | namespace for Code Dx application                          | `cdx-app`                                         |
-| `namespaceIngressController`                       | namespace for the NGINX Helm chart installation            | `nginx`                                           |
+| `nginxIngressControllerNamespace`               | namespace for the NGINX Helm chart installation            | `nginx`                                           |
 |                                                    |                                                            |                                                   |
 | `releaseNameCodeDx`                                | name for the Code Dx Helm release                          | `codedx`                                          |
 | `releaseNameToolOrchestration`                     | name for the Code Dx Tool Orchestration Helm release       | `codedx-tool-orchestration`                       |

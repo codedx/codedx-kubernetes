@@ -78,3 +78,9 @@ function Import-TrustedCaCerts([string] $keystorePath, [string] $keystorePwd, [s
 		Import-TrustedCaCert $keystorePath $keystorePwd $_
 	}
 }
+
+function Test-Certificate([string] $path) {
+
+	keytool -printcert -file $path | out-null
+	$LASTEXITCODE -eq 0
+}

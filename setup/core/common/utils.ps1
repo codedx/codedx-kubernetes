@@ -41,7 +41,12 @@ function Test-IsValidParameterValue([string] $text, [string] $validationExpr, [s
 	$text -cmatch $validationExpr
 }
 
-function Read-HostText([string] $prompt, [int] $minimumLength, [int] $maximumLength, [string[]] $blacklist, [bool] $isSecure, [string] $validationExpr) {
+function Read-HostText([string] $prompt, `
+	[int] $minimumLength, [int] $maximumLength, `
+	[string[]] $blacklist, `
+	[bool] $isSecure, `
+	[string] $validationExpr, [string] $validationHelp, `
+	[switch] $allowBlankEntry) {
 
 	if ($prompt -eq '') {
 		$prompt = ' '
@@ -73,6 +78,11 @@ function Read-HostText([string] $prompt, [int] $minimumLength, [int] $maximumLen
 			$bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($text)
 			$text = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($BSTR)
 		}
+
+		if ($text -eq '' -and $allowBlankEntry) {
+			return $text
+		}
+
 		if (($text -ne '') -and ($text.Length -ge $minimumLength) -and ($text.Length -le $maximumLength)) {
 			
 			if (Test-IsBlacklisted $text $blacklist) {
@@ -81,7 +91,11 @@ function Read-HostText([string] $prompt, [int] $minimumLength, [int] $maximumLen
 			}
 
 			if (-not (Test-IsValidParameterValue $text $validationExpr)) {
-				Write-Host "The value you specified is invalid (regex: $validationExpr); please try again."
+				if ('' -ne $validationHelp) {
+					Write-Host $validationHelp
+				} else {
+					Write-Host "The value you specified is invalid (regex: $validationExpr); please try again."
+				}
 				continue
 			}
 
@@ -90,8 +104,8 @@ function Read-HostText([string] $prompt, [int] $minimumLength, [int] $maximumLen
 	}
 }
 
-function Read-HostSecureText([string] $prompt, [int] $minimumLength, [int] $maximumLength, [string[]] $blacklist) {
-	Read-HostText $prompt $minimumLength $maximumLength $blacklist $true
+function Read-HostSecureText([string] $prompt, [int] $minimumLength, [int] $maximumLength, [string[]] $blacklist, [switch] $allowBlankEntry) {
+	Read-HostText $prompt $minimumLength $maximumLength $blacklist $true -allowBlankEntry:$allowBlankEntry
 }
 
 function Invoke-GitClone([string] $url, [string] $branch) {
@@ -133,4 +147,13 @@ function ConvertTo-YamlMap([string[]] $mapItems) {
 	}
 	
 	'{' + '{0}' -f ([string]::Join(',', $mapItems)) + '}'
+}
+
+function Test-EmailAddress([string] $emailAddress) {
+	try {
+		new-object net.mail.mailaddress($emailAddress, 'display name') | out-null
+		$true
+	} catch {
+		$false
+	}
 }

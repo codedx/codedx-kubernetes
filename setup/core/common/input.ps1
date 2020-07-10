@@ -9,27 +9,57 @@
 This script includes functions for gathering input.
 #>
 
-function Read-HostYesNo([string] $title, [string] $message, [string] $yesHelp, [string] $noHelp) {
-
-	if ($yesHelp -eq '') { $yesHelp = 'Yes'	}
-	if ($noHelp -eq '') { $noHelp = 'No'	}
-
-	Read-HostChoice $title $message @(
-		[tuple]::Create('&Yes', $yesHelp),
-		[tuple]::Create('&No',  $noHelp)
-	) -1
+'./utils.ps1' | ForEach-Object {
+	Write-Debug "'$PSCommandPath' is including file '$_'"
+	$path = join-path $PSScriptRoot $_
+	if (-not (Test-Path $path)) {
+		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
+	}
+	. $path
 }
 
-function Read-HostChoice([string] $title, [string] $message, [tuple`2[string,string][]] $options, [int] $defaultOption) {
+function Read-HostEnter([string] $prompt='Press Enter to continue...') {
+	Read-Host $prompt
+}
+
+function Write-HostSection([string] $title, [string] $message) {
+
+	Write-Host $title -ForegroundColor White
+	Write-Host 
+	Write-Host $message
+	Write-Host
+}
+
+function Read-HostChoice([string] $question, [tuple`2[string,string][]] $options, [int] $defaultOption) {
 
 	if ($options.count -lt 2) {
 		throw "Expected the options list for '$prompt' to contain at least two items."
 	}
 
 	$choices = @()
+	$mnemonics = New-Object Collections.Generic.HashSet[string]
 	$options | ForEach-Object {
-		$choices += New-Object Management.Automation.Host.ChoiceDescription($_.Item1, $_.Item2)
+		
+		$choiceKey = $_.Item1
+		$choiceMnemonic = $choiceKey.ToLower() | select-string -pattern '^[^&]*&(?<mnemonic>.)'
+		if ($choiceMnemonic.Matches.Success) {
+			# use provided mnemonic, even if it conflicts with another provided one
+			$mnemonics.Add($choiceMnemonic.Matches.Groups[1].value) | out-null
+		} else {
+			# select an available mnemonic when one wasn't provided
+			$chars = $choiceKey.ToLower().ToCharArray()
+			for ($i = 0; $i -lt $chars.Length; $i++) {
+				$char = $chars[$i]
+				if ($char -notmatch '\W' -and -not $mnemonics.Contains($char)) {
+					$mnemonics.Add($char) | out-null
+					$choiceKey = '{0}&{1}' -f $choiceKey.Substring(0, $i),$choiceKey.Substring($i)
+					break
+				}
+			}
+		}
+		$choices += New-Object Management.Automation.Host.ChoiceDescription($choiceKey, $_.Item2)
 	}
 	
-	(Get-Host).UI.PromptForChoice($title, $message, $choices, $defaultOption)
+	Write-Host "$question`n"
+	(Get-Host).UI.PromptForChoice('', '', $choices, $defaultOption)
 }

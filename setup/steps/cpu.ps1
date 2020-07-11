@@ -67,7 +67,7 @@ will cause Code Dx pods to get stuck in a Pending state.
 
 	[string]GetMessage() {
 
-		$message = [DefaultCPU]::description + [DefaultCPU]::notes
+		$message = [DefaultCPU]::description + "`n`n" + [DefaultCPU]::notes
 		$message += "`n`nHere are the recommended values (1000m = 1 vCPU):`n`n"
 		$this.GetSteps() | ForEach-Object {
 			$default = $_.GetDefault()

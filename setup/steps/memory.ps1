@@ -10,36 +10,42 @@
 class DefaultMemory : Step {
 
 	static [string] hidden $description = @'
-Specify whether you want to use the recommended memory reservations displayed 
-below. A reservation will ensure your Code Dx workloads are placed on a 
-node with sufficient memory resources. You can specify each memory reservation 
-individually by responding with the No option. If you want to skip making 
-reservations, select No and press Enter to accept the default value for 
-each memory question.
+Specify whether you want to make memory reservations. A reservation will 
+ensure your Code Dx workloads are placed on a node with sufficient resources. 
+The recommended values are displayed below. Alternatively, you can skip making 
+reservations or you can specify each reservation individually.
+'@
+
+	static [string] hidden $notes = @'
+Note: You must make sure that your cluster has adequate memory resources to 
+accommodate the resource requirements you specify. Failure to do so 
+will cause Code Dx pods to get stuck in a Pending state.
 '@
 
 	DefaultMemory([ConfigInput] $config) : base(
 		[DefaultMemory].Name, 
 		$config,
 		'Memory Reservations',
-		[DefaultMemory]::description,
-		'Use default memory reservations?') { }
+		'',
+		'Make memory reservations?') { }
 
 	[IQuestion] MakeQuestion([string] $prompt) {
-		return new-object YesNoQuestion($prompt, 
-			'Yes, do not specify a memory reservation for each component', 
-			'No, specify a memory reservation for each component', 0)
+		return new-object MultipleChoiceQuestion($prompt, @(
+			[tuple]::create('&Use Recommended', 'Use recommended reservations'),
+			[tuple]::create('&Skip Reservations', 'Do not make reservations'),
+			[tuple]::create('&Custom', 'Make reservations on a per-component basis')), 0)
 	}
 
 	[void]HandleResponse([IQuestion] $question) {
 
-		$applyDefaults = $question.choice -eq 0
+		$mq = [MultipleChoiceQuestion]$question
+		$applyDefaults = $mq.choice -eq 0
 		if ($applyDefaults) {
 			$this.GetSteps() | ForEach-Object {
 				$_.ApplyDefault()
 			}
 		}
-		$this.config.useMemoryDefaults = $applyDefaults
+		$this.config.useMemoryDefaults = $applyDefaults -or $mq.choice -eq 1
 	}
 
 	[void]Reset(){
@@ -60,8 +66,8 @@ each memory question.
 
 	[string]GetMessage() {
 
-		$message = "You can use default Memory reservations for Code Dx components.`n`nNote: You must make sure that your cluster has adequate resources to accommodate default resource requirements"
-		$message += "`n`nHere are the defaults:`n`n"
+		$message = [DefaultMemory]::description + "`n`n" + [DefaultMemory]::notes
+		$message += "`n`nHere are the defaults (1024Mi =  1 Gibibyte):`n`n"
 		$this.GetSteps() | ForEach-Object {
 			$default = $_.GetDefault()
 			if ('' -ne $default) {

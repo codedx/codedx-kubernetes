@@ -10,36 +10,42 @@
 class DefaultEphemeralStorage : Step {
 
 	static [string] hidden $description = @'
-Specify whether you want to use the recommended ephemeral storage reservations 
-displayed below. A reservation will ensure your Code Dx workloads are placed 
-on a node with sufficient storage resources. You can specify each ephemeral 
-storage reservation individually by responding with the No option. If you want 
-to skip making reservations, select No and press Enter to accept the default 
-value for each ephemeral storage question.
+Specify whether you want to make ephemeral storage reservations. A reservation 
+will ensure your Code Dx workloads are placed on a node with sufficient 
+resources. The recommended values are displayed below. Alternatively, you can 
+skip making reservations or you can specify each reservation individually.
+'@
+
+	static [string] hidden $notes = @'
+Note: You must make sure that your cluster has adequate storage resources to 
+accommodate the resource requirements you specify. Failure to do so 
+will cause Code Dx pods to get stuck in a Pending state.
 '@
 
 	DefaultEphemeralStorage([ConfigInput] $config) : base(
 		[DefaultEphemeralStorage].Name, 
 		$config,
 		'Ephemeral Storage Reservations',
-		[DefaultEphemeralStorage]::description,
+		'',
 		'Use default ephemeral storage reservations?') { }
 
 	[IQuestion] MakeQuestion([string] $prompt) {
-		return new-object YesNoQuestion($prompt, 
-			'Yes, do not specify sizes for ephemeral storage', 
-			'No, specify ephemeral storage sizes', 0)
+		return new-object MultipleChoiceQuestion($prompt, @(
+			[tuple]::create('&Use Recommended', 'Use recommended reservations'),
+			[tuple]::create('&Skip Reservations', 'Do not make reservations'),
+			[tuple]::create('&Custom', 'Make reservations on a per-component basis')), 0)
 	}
 
 	[void]HandleResponse([IQuestion] $question) {
 
-		$applyDefaults = ([YesNoQuestion]$question).choice -eq 0
+		$mq = [MultipleChoiceQuestion]$question
+		$applyDefaults = $mq.choice -eq 0
 		if ($applyDefaults) {
 			$this.GetSteps() | ForEach-Object {
 				$_.ApplyDefault()
 			}
 		}
-		$this.config.useEphemeralStorageDefaults = $applyDefaults
+		$this.config.useEphemeralStorageDefaults = $applyDefaults -or $mq.choice -eq 1
 	}
 
 	[void]Reset(){
@@ -60,8 +66,8 @@ value for each ephemeral storage question.
 
 	[string]GetMessage() {
 
-		$message = "You can use default ephemeral storage reservations for Code Dx components.`n`nNote: You must make sure that your cluster has adequate resources to accommodate default resource requirements"
-		$message += "`n`nHere are the defaults:`n`n"
+		$message = [DefaultEphemeralStorage]::description + "`n`n" + [DefaultEphemeralStorage]::notes
+		$message += "`n`nHere are the defaults (1024Mi =  1 Gibibyte):`n`n"
 		$this.GetSteps() | ForEach-Object {
 			$default = $_.GetDefault()
 			if ('' -ne $default) {

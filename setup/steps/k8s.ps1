@@ -228,7 +228,7 @@ echo 'encoded-cert-data' | base64 -d > aws-eks.pem
 
 	static [string] hidden $minikubeDescription = @'
 For Minikube clusters, you can find the CA file in the .minikube directory 
-under your profile. On Linux, this file will reside at ~/.minikube/ca.crt.
+under your home profile folder 
 '@
 
 	CertsCAPath([ConfigInput] $config) : base(
@@ -249,7 +249,7 @@ under your profile. On Linux, this file will reside at ~/.minikube/ca.crt.
 	[string]GetMessage() {
 		$message = [CertsCAPath]::description + "`n`n"
 		switch ([int]$this.config.k8sProvider) {
-			0 { $message += [CertsCAPath]::minikubeDescription }
+			0 { $message += [CertsCAPath]::minikubeDescription + "($($env:HOME)/.minikube/ca.crt)." }
 			1 { $message += [CertsCAPath]::aksDescription }
 			2 { $message += [CertsCAPath]::eksDescription }
 		}

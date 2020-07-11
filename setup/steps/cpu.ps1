@@ -11,36 +11,42 @@
 class DefaultCPU : Step {
 
 	static [string] hidden $description = @'
-Specify whether you want to use the recommended CPU reservations displayed 
-below. A reservation will ensure your Code Dx workloads are placed on a node 
-with sufficient CPU resources. You can specify each CPU reservation 
-individually by responding with the No option. If you want to skip making 
-reservations, select No and press Enter to accept the default value for each 
-CPU question.
+Specify whether you want to make CPU reservations. A reservation will ensure 
+your Code Dx workloads are placed on a node with sufficient resources. The 
+recommended values are displayed below. Alternatively, you can skip making 
+reservations or you can specify each reservation individually.
+'@
+
+	static [string] hidden $notes = @'
+Note: You must make sure that your cluster has adequate CPU resources to 
+accommodate the resource requirements you specify. Failure to do so 
+will cause Code Dx pods to get stuck in a Pending state.
 '@
 
 	DefaultCPU([ConfigInput] $config) : base(
 		[DefaultCPU].Name, 
 		$config,
 		'CPU Reservations',
-		[DefaultCPU]::description,
-		'Use default CPU reservations?') { }
+		'',
+		'Make CPU reservations?') { }
 
 	[IQuestion] MakeQuestion([string] $prompt) {
-		return new-object YesNoQuestion($prompt, 
-			'Yes, do not specify a CPU reservation for each component', 
-			'No, specify a CPU reservation for each component', 0)
+		return new-object MultipleChoiceQuestion($prompt, @(
+			[tuple]::create('&Use Recommended', 'Use recommended reservations'),
+			[tuple]::create('&Skip Reservations', 'Do not make reservations'),
+			[tuple]::create('&Custom', 'Make reservations on a per-component basis')), 0)
 	}
 
 	[void]HandleResponse([IQuestion] $question) {
 
-		$applyDefaults = ([YesNoQuestion]$question).choice -eq 0
+		$mq = [MultipleChoiceQuestion]$question
+		$applyDefaults = $mq.choice -eq 0
 		if ($applyDefaults) {
 			$this.GetSteps() | ForEach-Object {
 				$_.ApplyDefault()
 			}
 		}
-		$this.config.useCPUDefaults = $applyDefaults
+		$this.config.useCPUDefaults = $applyDefaults -or $mq.choice -eq 1
 	}
 
 	[void]Reset(){
@@ -61,8 +67,8 @@ CPU question.
 
 	[string]GetMessage() {
 
-		$message = "You can use default CPU reservations for Code Dx components.`n`nNote: You must make sure that your cluster has adequate resources to accommodate default resource requirements"
-		$message += "`n`nHere are the defaults:`n`n"
+		$message = [DefaultCPU]::description + [DefaultCPU]::notes
+		$message += "`n`nHere are the recommended values (1000m = 1 vCPU):`n`n"
 		$this.GetSteps() | ForEach-Object {
 			$default = $_.GetDefault()
 			if ('' -ne $default) {

@@ -11,14 +11,27 @@
 class UseDefaultDockerImages : Step {
 
 	static [string] hidden $description = @'
-Specify whether you want to use the default versions of Code Dx Docker images.
+Specify whether you want to use the default versions of Code Dx Docker images. 
+'@
+
+	static [string] hidden $descriptionPrivateAllowed = @'
+Note: You specified configuration for a private Docker registry, so if you do 
+not want to use the default Docker image versions, you can specify Docker 
+images that reside in either a public registry or your private one.
+'@
+
+	static [string] hidden $descriptionPrivateNotAllowed = @'
+Note: Since you did not specify configuration for a private Docker registry, 
+if you do not want to use the default Docker image versions, you must 
+specify Docker images stored in a registry that does not require a credential 
+for pull access.
 '@
 
 	UseDefaultDockerImages([ConfigInput] $config) : base(
 		[UseDefaultDockerImages].Name, 
 		$config,
 		'Code Dx Docker Images',
-		[UseDefaultDockerImages]::description,
+		'',
 		'Do you want to use the default Docker images?') {}
 
 	[IQuestion]MakeQuestion([string] $prompt) {
@@ -32,11 +45,11 @@ Specify whether you want to use the default versions of Code Dx Docker images.
 	}
 
 	[string]GetMessage() {
-		$message = [UseDefaultDockerImages]::description + [UseDefaultDockerImages]::descriptionPrivateAllowed
+		$note = [UseDefaultDockerImages]::descriptionPrivateAllowed
 		if ($this.config.skipPrivateDockerRegistry) {
-			$message = [UseDefaultDockerImages]::description + [UseDefaultDockerImages]::descriptionPrivateNotAllowed
+			$note = [UseDefaultDockerImages]::descriptionPrivateNotAllowed
 		}
-		return $message
+		return [UseDefaultDockerImages]::description + "`n`n" + $note
 	}
 
 	[void]Reset(){
@@ -47,21 +60,18 @@ Specify whether you want to use the default versions of Code Dx Docker images.
 class DockerImageNameStep : Step {
 
 	static [string] hidden $description = @'
-You can use the latest versions of Code Dx Docker images or you can specify 
-specific versions.
-
+You can use the default Docker image version by pressing Enter and accepting 
+the default value, or you can specify a specific Docker image version.
 '@
 
 	static [string] hidden $descriptionPrivateAllowed = @'
-
-You entered configuration for a private Docker registry, so you can specify 
-private Docker images names here.
+Note: Since you specified configuration for a private Docker registry, you can 
+specify a private Docker image that resides in your private registry.
 '@
 
 	static [string] hidden $descriptionPrivateNotAllowed = @'
-
-Since you did not enter configuration for a private Docker registry, you 
-cannot specify private Docker images names here.
+Note: Since you did not specify configuration for a private Docker registry, 
+you cannot specify a private Docker image here.
 '@
 
 	[string] $titleDetails
@@ -81,11 +91,11 @@ cannot specify private Docker images names here.
 
 	[string]GetMessage() {
 
-		$message = [UseDefaultDockerImages]::description + $this.titleDetails + [UseDefaultDockerImages]::descriptionPrivateAllowed
+		$note = [DockerImageNameStep]::descriptionPrivateAllowed
 		if ($this.config.skipPrivateDockerRegistry) {
-			$message = [UseDefaultDockerImages]::description + $this.titleDetails + [UseDefaultDockerImages]::descriptionPrivateNotAllowed
+			$note = [DockerImageNameStep]::descriptionPrivateNotAllowed
 		}
-		return $message
+		return [DockerImageNameStep]::description + "`n`n" + $this.titleDetails + "`n`n" + $note
 	}
 }
 

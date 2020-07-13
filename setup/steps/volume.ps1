@@ -15,6 +15,13 @@ below. You can specify each volume size individually by responding with
 the No option.
 '@
 
+	static [string] hidden $subordinateDatabaseDescription = @'
+Note: Subordinate database containers use two volumes, the main database 
+volume and a volume to store backup files. The default volume size for the 
+subordinate database specified here applies to *each* volume. For example, 
+specifying 64 means creating two 64 GiB volumes.
+'@
+
 	DefaultVolumeSize([ConfigInput] $config) : base(
 		[DefaultVolumeSize].Name, 
 		$config,
@@ -57,14 +64,21 @@ the No option.
 
 	[string]GetMessage() {
 
-		$message = "You can use default sizes for Code Dx disk volumes.`n`nNote: You must make sure that your cluster has adequate resources to accommodate default resource requirements"
+		$message = [DefaultVolumeSize]::description
 		$message += "`n`nHere are the defaults:`n`n"
-		$this.GetSteps() | ForEach-Object {
+		$steps = $this.GetSteps()
+		$steps | ForEach-Object {
 			$default = $_.GetDefault()
 			if ('' -ne $default) {
 				$message += "    {0}: {1}`n" -f (([VolumeSizeStep]$_).title,$default)
 			}
 		}
+
+		if (($steps | ForEach-Object { $_.Name }) -contains [SubordinateDatabaseVolumeSize].Name) {
+			$message += "`n`n"
+			$message += [DefaultVolumeSize]::subordinateDatabaseDescription
+		}
+
 		return $message
 	}
 }
@@ -148,7 +162,13 @@ class MasterDatabaseVolumeSize : VolumeSizeStep {
 
 class SubordinateDatabaseVolumeSize : VolumeSizeStep {
 
-	SubordinateDatabaseVolumeSize([ConfigInput] $config) : base([SubordinateDatabaseVolumeSize].Name, 'Subordinate Database Volume Size Reservation', $config) {}
+	static [string] hidden $description = @'
+Subordinate database containers use two volumes, the main database volume 
+and a volume to store backup files. The volume size specified here applies to 
+*each* volume. For example, specifying 64 means creating two 64 GiB volumes.
+'@
+
+	SubordinateDatabaseVolumeSize([ConfigInput] $config) : base([SubordinateDatabaseVolumeSize].Name, 'Subordinate Database Volume Size', $config) {}
 
 	[void]HandleSizeResponse([int] $size) {
 		$this.config.dbSlaveVolumeSizeGiB = $size
@@ -169,11 +189,19 @@ class SubordinateDatabaseVolumeSize : VolumeSizeStep {
 	[string]GetDefault() {
 		return '64'
 	}
+
+	[string]GetMessage() {
+
+		$message = [VolumeSizeStep]::description
+		$message += "`n`n"
+		$message += [SubordinateDatabaseVolumeSize]::description
+		return $message
+	}
 }
 
 class MinIOVolumeSize : VolumeSizeStep {
 
-	MinIOVolumeSize([ConfigInput] $config) : base([MinIOVolumeSize].Name, 'MinIO CPU Reservation', $config) {}
+	MinIOVolumeSize([ConfigInput] $config) : base([MinIOVolumeSize].Name, 'MinIO Volume Size', $config) {}
 
 	[void]HandleSizeResponse([int] $size) {
 		$this.config.minioVolumeSizeGiB = $size

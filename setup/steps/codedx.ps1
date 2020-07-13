@@ -161,19 +161,21 @@ For example, to install components in a namespace named 'cdx-app', enter
 that name here. The namespace will be created if it does not already exist.
 '@
 
+	static [string] hidden $default = 'cdx-app'
+
 	CodeDxNamespace([ConfigInput] $config) : base(
 		[CodeDxNamespace].Name, 
 		$config,
 		'Code Dx Namespace',
 		[CodeDxNamespace]::description,
-		'Enter Code Dx namespace name') {}
+		"Enter Code Dx namespace name (e.g., $([CodeDxNamespace]::default))") {}
 
 	[void]HandleResponse([IQuestion] $question) {
 		$this.config.namespaceCodeDx = ([Question]$question).response
 	}
 
 	[void]Reset(){
-		$this.config.namespaceCodeDx = 'cdx-app'
+		$this.config.namespaceCodeDx = [CodeDxNamespace]::default
 	}
 }
 
@@ -184,19 +186,21 @@ Specify the Helm release name for the Code Dx deployment. The name should not
 conflict with another Helm release in the Kubernetes namespace you chose.
 '@
 
+	static [string] hidden $default = 'codedx'
+
 	CodeDxReleaseName([ConfigInput] $config) : base(
 		[CodeDxReleaseName].Name, 
 		$config,
 		'Code Dx Helm Release Name',
 		[CodeDxReleaseName]::description,
-		'Enter Code Dx Helm release name') {}
+		"Enter Code Dx Helm release name (e.g., $([CodeDxReleaseName]::default))") {}
 
 	[void]HandleResponse([IQuestion] $question) {
 		$this.config.releaseNameCodeDx = ([Question]$question).response
 	}
 
 	[void]Reset(){
-		$this.config.releaseNameCodeDx = 'codedx'
+		$this.config.releaseNameCodeDx = [CodeDxReleaseName]::default
 	}
 }
 
@@ -206,7 +210,7 @@ class CodeDxPassword : Step {
 Specify the password you want to use for the Code Dx admin account. The 
 password must be at least eight characters long.
 '@
-
+	
 	CodeDxPassword([ConfigInput] $config) : base(
 		[CodeDxPassword].Name, 
 		$config,

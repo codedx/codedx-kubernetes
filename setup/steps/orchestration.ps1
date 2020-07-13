@@ -52,19 +52,21 @@ will be installed. For example, to install components in a namespace named
 not already exist.
 '@
 
+	static [string] hidden $default = 'cdx-svc'
+
 	ToolOrchestrationNamespace([ConfigInput] $config) : base(
 		[ToolOrchestrationNamespace].Name, 
 		$config,
 		'Code Dx Tool Orchestration Namespace',
 		[ToolOrchestrationNamespace]::description,
-		'Enter Code Dx Tool Orchestration namespace name') {}
+		"Enter Code Dx Tool Orchestration namespace name (e.g., $([ToolOrchestrationNamespace]::default))") {}
 
 	[void]HandleResponse([IQuestion] $question) {
 		$this.config.namespaceToolOrchestration = ([Question]$question).response
 	}
 
 	[void]Reset(){
-		$this.config.namespaceToolOrchestration = 'cdx-svc'
+		$this.config.namespaceToolOrchestration = [ToolOrchestrationNamespace]::default
 	}
 
 	[bool]CanRun() {
@@ -80,19 +82,21 @@ The name should not conflict with another Helm release in the Kubernetes
 namespace you chose.
 '@
 
+	static [string] hidden $default = 'codedx-tool-orchestration'
+
 	ToolOrchestrationReleaseName([ConfigInput] $config) : base(
 		[ToolOrchestrationReleaseName].Name, 
 		$config,
 		'Code Dx Tool Orchestration Helm Release',
 		[ToolOrchestrationReleaseName]::description,
-		'Enter Code Dx Tool Orchestration Helm release name') {}
+		"Enter Tool Orchestration Helm release name (e.g., $([ToolOrchestrationReleaseName]::default))") {}
 
 	[void]HandleResponse([IQuestion] $question) {
 		$this.config.releaseNameToolOrchestration = ([Question]$question).response
 	}
 
 	[void]Reset(){
-		$this.config.releaseNameToolOrchestration = 'codedx-tool-orchestration'
+		$this.config.releaseNameToolOrchestration = [ToolOrchestrationReleaseName]::default
 	}
 
 	[bool]CanRun() {

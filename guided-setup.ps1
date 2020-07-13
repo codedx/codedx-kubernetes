@@ -11,6 +11,8 @@ $DebugPreference='SilentlyContinue'
 
 Set-PSDebug -Strict
 
+Write-Host 'Loading...' -NoNewline
+
 './setup/powershell-algorithms/data-structures.ps1',
 './setup/core/common/question.ps1',
 './setup/steps/step.ps1',
@@ -176,40 +178,49 @@ $Host.UI.RawUI.WindowTitle = 'Code Dx - Guided Setup'
 $v = $s[[Welcome]]
 $vStack = new-object collections.stack
 
-$edgeInfo = @()
-while ($v -ne $s[[Finish]] -and $v -ne $s[[Abort]]) {
-
-	if ($DebugPreference -ne 'Continue') {
-		Clear-Host
-		$Host.UI.RawUI.CursorPosition = New-Object System.Management.Automation.Host.Coordinates 0,5
-	}
-	
-	Write-Debug "`Previous Edges`: $edgeInfo; Running: $($v.Name)..."
+try {
 	$edgeInfo = @()
+	while ($v -ne $s[[Finish]] -and $v -ne $s[[Abort]]) {
 
-	if (-not $v.Run()) {
-		$v.Reset()
-		if ($vStack.Count -ne 0) {
-			$v = $vStack.Pop()	
+		if ($DebugPreference -ne 'Continue') {
+			Clear-Host
+			$Host.UI.RawUI.CursorPosition = New-Object System.Management.Automation.Host.Coordinates 0,5
 		}
-		continue
-	}
+		
+		Write-Debug "`Previous Edges`: $edgeInfo; Running: $($v.Name)..."
+		$edgeInfo = @()
 
-	$edges = $v.getEdges()
-	if ($null -eq $edges) {
-		throw "Unexpectedly found 0 edges associated with step $($v.Name)"
-	}
+		if (-not $v.Run()) {
+			$v.Reset()
+			if ($vStack.Count -ne 0) {
+				$v = $vStack.Pop()	
+			}
+			continue
+		}
 
-	$edges | ForEach-Object {
-		$edgeInfo += " $($_.endVertex) ($($_.endVertex.CanRun()))"
-	}
+		$edges = $v.getEdges()
+		if ($null -eq $edges) {
+			throw "Unexpectedly found 0 edges associated with step $($v.Name)"
+		}
 
-	$next = $edges | Where-Object { $_.endVertex.CanRun() } | Select-Object -First 1 -ExpandProperty 'endVertex'
-	if ($null -eq $next) {
-		Write-Error "Found 0 next steps from $v, options included $($v.getNeighbors())."
+		$edges | ForEach-Object {
+			$edgeInfo += " $($_.endVertex) ($($_.endVertex.CanRun()))"
+		}
+
+		$next = $edges | Where-Object { $_.endVertex.CanRun() } | Select-Object -First 1 -ExpandProperty 'endVertex'
+		if ($null -eq $next) {
+			Write-Error "Found 0 next steps from $v, options included $($v.getNeighbors())."
+		}
+
+		$vStack.Push($v)
+		$v = $next
 	}
+	$v.Run() | Out-Null
+} catch {
+	Write-Error "Unexpected error occurred: " $_
+} finally {
 
 	$vStack.Push($v)
-	$v = $next
+	Write-StepGraph (join-path $config.workDir 'graph.path') $s $vStack
 }
-$v.Run() | Out-Null
+

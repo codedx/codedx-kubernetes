@@ -216,3 +216,40 @@ class Step : GraphVertex {
 		return $this.name
 	}
 }
+
+function Write-StepGraph([string] $path, [collections.hashtable] $steps, [collections.stack] $stepsVisited) {
+
+	"# Enter graph at https://dreampuf.github.io/GraphvizOnline (select 'dot' Engine and use Format 'png-image-element')`ndigraph G {`n" | out-file $path -force
+
+	$linksVisited = New-Object Collections.Generic.HashSet[string]
+	
+	$previousStep = $null
+	while ($stepsVisited.count -gt 0) {
+
+		$step = $stepsVisited.pop()
+		"$step [color=blue];" | out-file $path -append
+
+		if ($null -eq $previousStep) {
+			$previousStep = $step
+			continue
+		}
+		
+		$link = "$step -> $previousStep"
+		"$link [color=blue];" | out-file $path -append
+
+		$linksVisited.add($link) | out-null
+		$previousStep = $step
+	}
+
+	$steps.keys | ForEach-Object {
+		$node = $steps[$_]
+		$node.getNeighbors() | ForEach-Object {
+			$link = "$node -> $_"
+			if (-not $linksVisited.Contains($link)) {
+				"$link;" | out-file $path -append
+			}
+		}
+	}
+
+	"}" | out-file $path -append
+}

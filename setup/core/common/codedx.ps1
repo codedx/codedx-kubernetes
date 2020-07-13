@@ -11,32 +11,13 @@ This script includes functions for the deployment of Code Dx and Code Dx Orchest
 
 'utils.ps1',
 'k8s.ps1',
-'helm.ps1' | ForEach-Object {
+'helm.ps1',
+'private.ps1' | ForEach-Object {
 	$path = join-path $PSScriptRoot $_
 	if (-not (Test-Path $path)) {
 		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
 	}
 	. $path
-}
-
-function Get-CodeDxPdSecretName([string] $releaseName) {
-	"$releaseName-codedx-pd"
-}
-
-function New-CodeDxPdSecret([string] $namespace, [string] $releaseName, 
-	[string] $adminPwd, [string] $caCertsFilePwd,
-	[string] $externalDbUser, [string] $externalDbPwd) {
-
-	$data = @{"admin-password"=$adminPwd;"cacerts-password"=$caCertsFilePwd}
-	
-	if ('' -ne $externalDbUser) {
-		$data['mariadb-codedx-username'] = $externalDbUser
-	}
-	if ('' -ne $externalDbPwd) {
-		$data['mariadb-codedx-password'] = $externalDbPwd
-	}
-
-	New-GenericSecret $namespace (Get-CodeDxPdSecretName $releaseName) $data
 }
 
 function New-CodeDxDeployment([string] $codeDxDnsName,
@@ -94,9 +75,8 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 
 	New-CodeDxPdSecret $namespace $releaseName $adminPwd $caCertsFilePwd $externalDbUser $externalDbPwd
 
-	# excluding "mariadb-password" from MariaDb credential secret because db.user is unspecfied
-	$mariadbCredentialSecret = "$releaseName-mariadb-pd"
-	New-GenericSecret $namespace $mariadbCredentialSecret @{"mariadb-root-password"=$mariadbRootPwd;"mariadb-replication-password"=$mariadbReplicatorPwd}
+	$mariadbCredentialSecret = Get-DatabasePdSecretName $releaseName
+	New-DatabasePdSecret $namespace $releaseName $mariadbRootPwd $mariadbReplicatorPwd
 
 	$imagePullSecretYaml = 'codedxTomcatImagePullSecrets: []'
 	if (-not ([string]::IsNullOrWhiteSpace($tomcatImagePullSecretName))) {
@@ -287,11 +267,11 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 	}
 	Set-NamespaceLabel $namespace 'name' $namespace
 
-	$toolServiceCredentialSecret = "$toolServiceReleaseName-tool-service-pd"
-	New-GenericSecret $namespace $toolServiceCredentialSecret @{"api-key"=$apiKey}
+	$toolServiceCredentialSecret =  Get-ToolServicePdSecretName $toolServiceReleaseName
+	New-ToolServicePdSecret $namespace $toolServiceReleaseName $apiKey
 
-	$minioCredentialSecret = "$toolServiceReleaseName-minio-pd"
-	New-GenericSecret $namespace $minioCredentialSecret @{"access-key"=$minioUsername;"secret-key"=$minioPwd}
+	$minioCredentialSecret = Get-MinioPdSecretName $toolServiceReleaseName
+	New-MinioPdSecret $namespace $toolServiceReleaseName $minioUsername $minioPwd
 
 	$protocol = 'http'
 	$codedxPort = $codeDxTomcatPortNumber

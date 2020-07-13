@@ -248,6 +248,18 @@ function Test-Secret([string] $namespace, [string] $name) {
 	0 -eq $LASTEXITCODE
 }
 
+function Get-SecretFieldValue([string] $namespace, [string] $name, [string] $field) {
+
+	if (-not (Test-Secret $namespace $name)) {
+		return $null
+	}
+	$val = kubectl -n $namespace get secret $name -o jsonpath="{.data.$field}"
+	if ($null -eq $val) {
+		return $null
+	}
+	[text.encoding]::ASCII.GetString([convert]::FromBase64String($val))
+}
+
 function Remove-Secret([string] $namespace, [string] $name) {
 
 	kubectl -n $namespace delete secret $name | out-null

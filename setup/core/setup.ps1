@@ -7,9 +7,8 @@
 <# 
 .DESCRIPTION 
 This script uses Helm to install and configure Code Dx and Tool Orchestration 
-on a Kubernetes cluster. The setup.ps1 script located here gets called indirectly 
-by the setup.ps1 scripts in the provider-specific folders. See the README files 
-under aws, azure, and minikube for more details
+on a Kubernetes cluster. Use the guided-setup.ps1 script to specify the 
+parameters for this script.
 #>
 
 param (

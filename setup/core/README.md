@@ -1,13 +1,11 @@
 
 # Setup Script
 
-The setup.ps1 PowerShell Core script uses Helm to install and configure Code Dx and Tool Orchestration on a Kubernetes cluster. The setup.ps1 script located here gets called indirectly by the setup.ps1 scripts in the provider-specific folders. See the README files under aws, azure, and minikube for more details.
+Run the guided-setup.ps1 PowerShell Core script (in the root directory of this repository) to determine the correct setup.ps1 parameters for your Kubernetes cluster. The setup.ps1 script uses Helm to install and configure Code Dx and Tool Orchestration on a Kubernetes cluster.
 
 ## Script Parameters
 
-This section describes the setup.ps1 script parameters.
-
->Note: Refer to the README files under aws, azure, and minikube for instructions on how to configure Code Dx for those environments.
+This section describes the setup.ps1 script parameters, which you can specify by using the guided-setup.ps1 script.
 
 | Parameter                                          | Description                                                | Default or (Example)                              |
 |----------------------------------------------------|------------------------------------------------------------|---------------------------------------------------|
@@ -62,15 +60,14 @@ This section describes the setup.ps1 script parameters.
 |                                                    |                                                            |                                                   |
 | `toolServiceReplicas`                              | number of tool service copies to run concurrently          | `3`                                               |
 |                                                    |                                                            |                                                   |
-| `useTLS`                                           | whether Code Dx endpoints use TLS                          | `$true`                                           |
-| `usePSPs`                                          | whether to create pod security policies                    | `$true`                                           |
-|                                                    |                                                            |                                                   |
+| `skipTLS`                                          | whether Code Dx endpoints use TLS                          | `$false`                                          |
+| `skipPSPs`                                         | whether to create pod security policies                    | `$false`                                          |
 | `skipNetworkPolicies`                              | whether to skip creating network policies                  | `$false`                                          |
 |                                                    |                                                            |                                                   |
-| `nginxIngressControllerInstall`                    | whether to install the NGINX ingress controller            | `$true`                                           |
+| `skipNginxIngressControllerInstall`                | whether to install the NGINX ingress controller            | `$false`                                          |
 | `nginxIngressControllerLoadBalancerIP`             | optional static IP for the NGINX ingress service           | `10.0.0.5` (example)                              |
 |                                                    |                                                            |                                                   |
-| `letsEncryptCertManagerInstall`                    | whether to install a Let's Encrypt Cert Manager            | `$true`                                           |
+| `skipLetsEncryptCertManagerInstall`                | whether to install a Let's Encrypt Cert Manager            | `$false`                                          |
 | `letsEncryptCertManagerRegistrationEmailAddress`   | email address for Let's Encrypt registration               | `me@codedx.com` (example)                         |
 | `letsEncryptCertManagerClusterIssuer`              | cluster issuer (letsencrypt-staging or letsencrypt-prod)   | `letsencrypt-staging`                             |
 | `letsEncryptCertManagerNamespace`                  | namespace for Cert Manager components                      | `cert-manager`                                    |
@@ -78,13 +75,13 @@ This section describes the setup.ps1 script parameters.
 | `serviceTypeCodeDx`                                | service type for the Code Dx service                       | `LoadBalancer`    (example)                       |
 | `serviceAnnotationsCodeDx`                         | annotations for the Code Dx service                        | `@('key: value')` (example)                       |
 |                                                    |                                                            |                                                   |
-| `ingressEnabled`                                   | whether to create the Code Dx ingress resource             | `$true`                                           |
-| `ingressAssumesNginx`                              | whether the Code Dx ingress has an NGINX annotation        | `$true`                                           |
+| `skipIngressEnabled`                               | whether to create the Code Dx ingress resource             | `$false`                                          |
+| `skipIngressAssumesNginx`                          | whether the Code Dx ingress has an NGINX annotation        | `$true`                                           |
 | `ingressAnnotationsCodeDx`                         | annotations for the Code Dx ingress                        | `@('key: value')` (example)                       |
 |                                                    |                                                            |                                                   |
 | `namespaceToolOrchestration`                       | namespace for Code Dx Tool Orchestration components        | `cdx-svc`                                         |
 | `namespaceCodeDx`                                  | namespace for Code Dx application                          | `cdx-app`                                         |
-| `nginxIngressControllerNamespace`               | namespace for the NGINX Helm chart installation            | `nginx`                                           |
+| `nginxIngressControllerNamespace`                  | namespace for the NGINX Helm chart installation            | `nginx`                                           |
 |                                                    |                                                            |                                                   |
 | `releaseNameCodeDx`                                | name for the Code Dx Helm release                          | `codedx`                                          |
 | `releaseNameToolOrchestration`                     | name for the Code Dx Tool Orchestration Helm release       | `codedx-tool-orchestration`                       |
@@ -118,6 +115,7 @@ This section describes the setup.ps1 script parameters.
 | `extraCodeDxValuesPaths`                           | extra values.yaml file(s) for the Code Dx Helm chart       | `@('/file.yaml')` (example)                       |
 | `extraToolOrchestrationValuesPaths`                | extra values.yaml file(s) for Tool Orchestration chart     | `@('/file.yaml')` (example)                       |
 |                                                    |                                                            |                                                   |
+| `skipDatabase`                                     | whether to skip installing MariaDB (use external database) | `$false`                                          |
 | `externalDatabaseHost`                             | host name of external database                             | `mariadb.codedx.com` (example)                    |
 | `externalDatabasePort`                             | port number for external database                          | 3306                                              |
 | `externalDatabaseName`                             | existing database name in external database                | `codedx` (example)                                |
@@ -126,7 +124,6 @@ This section describes the setup.ps1 script parameters.
 | `externalDatabaseServerCert`                       | file path to CA issuing cert for external database         | `/tmp/cacert.pem` (example)                       |
 | `externalDatabaseSkipTls`                          | whether to skip configuring one-way client auth            | `$false`                                          |
 |                                                    |                                                            |                                                   |
-| `skipDatabase`                                     | whether to skip installing MariaDB (use external database) | `$false`                                          |
 | `skipToolOrchestration`                            | whether to skip installing the Tool Orchestration feature  | `$false`                                          |
 |                                                    |                                                            |                                                   |
 | `provisionNetworkPolicy`                           | script block for optional network policy provisioning      |                                                   |

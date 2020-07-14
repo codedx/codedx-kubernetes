@@ -28,7 +28,7 @@ git clone https://github.com/codedx/codedx-kubernetes.git -b feature/guide
 
 ## Run Guided Setup
 
-To run the guided setup script after cloning the codedx-kubernetes repository, change directory to codedx-kubernetes, and use pwsh to run general-setup.ps1:
+To run the guided setup script after cloning the codedx-kubernetes repository, change directory to codedx-kubernetes, and use pwsh to run guided-setup.ps1:
 
 ```
 cd codedx-kubernetes

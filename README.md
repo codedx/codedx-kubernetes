@@ -25,4 +25,6 @@ cd codedx-kubernetes
 pwsh ./guided-setup.ps1
 ```
 
-The guided setup script checks to see whether your system meets the prerequisites before presenting a series of questions to help you specify the setup.ps1 parameters necessary to deploy Code Dx in your Kubernetes environment.
+The guided setup script checks to see whether your system meets the prerequisites before presenting questions with a series of steps (shown below) to help you specify the setup.ps1 parameters necessary to deploy Code Dx in your Kubernetes environment.
+
+![Guided Setup Flow](./images/guided-setup.svg)

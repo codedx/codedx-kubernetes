@@ -5,14 +5,14 @@ Running guided-setup.ps1 is the recommended way to deploy Code Dx on Kubernetes 
 
 ## Prerequisites
 
-You must run guided-setup.ps1 from a system with administrative access to your cluster. Here are the script prerequisites:
+You must run guided-setup.ps1 from a system with administrative access to your cluster. Copy the following prerequisite programs to directories that are included in your PATH environment variable:
 
 - [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 - [PowerShell Core 7](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-7)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 - [openssl](https://www.openssl.org/)
 - [keytool](https://adoptopenjdk.net/) - The keytool application is bundled with the Java JRE.
-- [helm v3.1+](https://github.com/helm/helm/releases/tag/v3.2.4) - Download the Helm release for your platform and extract helm (or helm.exe) to a directory in your PATH environment variable.
+- [helm v3.1+](https://github.com/helm/helm/releases/tag/v3.2.4) - Download the Helm release for your platform and extract helm (or helm.exe).
 
 Make sure that you can run PowerShell Core scripts by switching your [PowerShell Execution Policy](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies) to RemoteSigned (recommended) or Unsigned.
 

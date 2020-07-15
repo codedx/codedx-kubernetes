@@ -165,17 +165,44 @@ $dns1123SubdomainExpr = '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-
 if (-not $skipIngressEnabled -and -not (Test-IsValidParameterValue $codeDxDnsName $dns1123SubdomainExpr)) { $codeDxDnsName = Read-HostText 'Enter Code Dx domain name (e.g., www.codedx.io)' -validationExpr $dns1123SubdomainExpr }
 if (-not $skipTLS -and $clusterCertificateAuthorityCertPath -eq '') { $clusterCertificateAuthorityCertPath = Read-Host -Prompt 'Enter path to cluster CA certificate' }
 if (-not $skipToolOrchestration -and $minioAdminUsername -eq '') { $minioAdminUsername = Read-HostSecureText 'Enter a username for the MinIO admin account' 5 }
-if (-not $skipToolOrchestration -and $minioAdminPwd -eq '') { $minioAdminPwd = Read-HostSecureText 'Enter a password for the MinIO admin account' 8 }
-if ($codedxAdminPwd -eq '') { $codedxAdminPwd = Read-HostSecureText 'Enter a password for the Code Dx admin account' 6 }
-if (-not $skipToolOrchestration -and $toolServiceApiKey -eq '') { $toolServiceApiKey = Read-HostSecureText 'Enter an API key for the Code Dx Tool Orchestration service' 8 }
+if (-not $skipToolOrchestration -and $minioAdminPwd -eq '') { 
+	$minioAdminPwd = Get-MinioPasswordFromPd $namespaceToolOrchestration $releaseNameToolOrchestration
+	if ($null -eq $minioAdminPwd) {
+		$minioAdminPwd = Read-HostSecureText 'Enter a password for the MinIO admin account' 8 
+	}
+}
+if ($codedxAdminPwd -eq '') { 
+	$codeDxAdminPwd = Get-CodeDxAdminPwdFromPd $namespaceCodeDx $releaseNameCodeDx
+	if ($null -eq $codeDxAdminPwd) {
+		$codedxAdminPwd = Read-HostSecureText 'Enter a password for the Code Dx admin account' 8 
+	}
+}
+if (-not $skipToolOrchestration -and $toolServiceApiKey -eq '') { 
+	$toolServiceApiKey = Get-ToolServiceApiKeyFromPd $namespaceToolOrchestration $releaseNameToolOrchestration
+	if ($null -eq $toolServiceApiKey) {
+		$toolServiceApiKey = Read-HostSecureText 'Enter an API key for the Code Dx Tool Orchestration service' 8 
+	}
+}
 if ($caCertsFileNewPwd -ne '' -and $caCertsFileNewPwd.length -lt 6) { $caCertsFileNewPwd = Read-HostSecureText 'Enter a password to protect the cacerts file' 6 }
 
 $externalDatabaseUrl = ''
 if ($skipDatabase) {
 	if ($externalDatabaseHost -eq '') { $externalDatabaseHost = Read-HostText 'Enter your external database host name' }
 	if ($externalDatabaseName -eq '') { $externalDatabaseName = Read-HostText 'Enter your external, preexisting Code Dx database name' }
-	if ($externalDatabaseUser -eq '') { $externalDatabaseUser = Read-HostText 'Enter a username for your external Code Dx database' }
-	if ($externalDatabasePwd -eq '')  { $externalDatabasePwd  = Read-HostSecureText 'Enter a password for your external Code Dx database' }
+
+	if ($externalDatabaseUser -eq '') { 
+		$externalDatabaseUser = Get-ExternalDatabaseUserFromPd $namespaceCodeDx $releaseNameCodeDx
+		if ($null -eq $externalDatabaseUser) {
+			$externalDatabaseUser = Read-HostText 'Enter a username for your external Code Dx database' 
+		}
+	}
+
+	if ($externalDatabasePwd -eq '')  {
+		$externalDatabasePwd  = Get-ExternalDatabasePasswordFromPd $namespaceCodeDx $releaseNameCodeDx 
+		if ($null -eq $externalDatabasePwd) {
+			$externalDatabasePwd  = Read-HostSecureText 'Enter a password for your external Code Dx database' 
+		}
+	}
 
 	if (-not $externalDatabaseSkipTls) {
 		if ($externalDatabaseServerCert -eq '') { $externalDatabaseServerCert = Read-HostText 'Enter your external database host cert file path' }
@@ -189,8 +216,18 @@ if ($skipDatabase) {
 	$externalDatabaseUrl = Get-DatabaseUrl $externalDatabaseHost $externalDatabasePort $externalDatabaseName $externalDatabaseServerCert -databaseSkipTls:$externalDatabaseSkipTls
 }
 else {
-	if ($mariadbRootPwd -eq '') { $mariadbRootPwd = Read-HostSecureText 'Enter a password for the MariaDB root user' }
-	if ($mariadbReplicatorPwd -eq '') { $mariadbReplicatorPwd = Read-HostSecureText 'Enter a password for the MariaDB replicator user' }
+	if ($mariadbRootPwd -eq '') { 
+		$mariadbRootPwd = Get-DatabaseRootPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+		if ($null -eq $mariadbRootPwd) {
+			$mariadbRootPwd = Read-HostSecureText 'Enter a password for the MariaDB root user' 
+		}
+	}
+	if ($mariadbReplicatorPwd -eq '') { 
+		$mariadbReplicatorPwd = Get-DatabaseReplicationPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+		if ($null -eq $mariadbReplicatorPwd) {
+			$mariadbReplicatorPwd = Read-HostSecureText 'Enter a password for the MariaDB replicator user' 
+		}
+	}
 }
 
 if (-not $skipLetsEncryptCertManagerInstall){
@@ -212,7 +249,10 @@ if ($dockerImagePullSecretName -ne '') {
 		$dockerRegistryUser = Read-HostText "Enter a docker username for $dockerRegistry"
 	}
 	if ($dockerRegistryPwd -eq '') {
-		$dockerRegistryPwd = Read-HostSecureText "Enter a docker password for $dockerRegistry"
+		$dockerRegistryPwd = Get-DockerRegistryPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+		if ($null -eq $dockerRegistryPwd) {
+			$dockerRegistryPwd = Read-HostSecureText "Enter a docker password for $dockerRegistry"
+		}
 	}
 }
 

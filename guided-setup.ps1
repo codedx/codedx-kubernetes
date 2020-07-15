@@ -7,7 +7,7 @@
 $ErrorActionPreference = 'Stop'
 $VerbosePreference = 'Continue'
 
-$DebugPreference='SilentlyContinue'
+$DebugPreference='Continue'
 
 Set-PSDebug -Strict
 
@@ -58,6 +58,13 @@ function Add-StepTransitions([Graph] $graph, [Step] $from, [Step[]] $toSteps) {
 		$from = $i -eq 0 ? $from : $toSteps[$i-1]
 		$to = $toSteps[$i]
 		Add-StepTransition $graph $from $to
+	}
+}
+
+function Clear-HostStep() {
+	if ($DebugPreference -ne 'Continue') {
+		Clear-Host
+		$Host.UI.RawUI.CursorPosition = New-Object System.Management.Automation.Host.Coordinates 0,5
 	}
 }
 
@@ -182,11 +189,7 @@ try {
 	$edgeInfo = @()
 	while ($v -ne $s[[Finish]] -and $v -ne $s[[Abort]]) {
 
-		if ($DebugPreference -ne 'Continue') {
-			Clear-Host
-			$Host.UI.RawUI.CursorPosition = New-Object System.Management.Automation.Host.Coordinates 0,5
-		}
-		
+		Clear-HostStep
 		Write-Debug "`Previous Edges`: $edgeInfo; Running: $($v.Name)..."
 		$edgeInfo = @()
 
@@ -215,9 +218,9 @@ try {
 		$vStack.Push($v)
 		$v = $next
 	}
+
+	Clear-HostStep
 	$v.Run() | Out-Null
-} catch {
-	Write-Error "Unexpected error occurred: " $_
 } finally {
 
 	$vStack.Push($v)

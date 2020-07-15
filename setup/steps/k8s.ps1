@@ -384,13 +384,13 @@ class PrivateDockerRegistryPwd  : Step {
 		'Enter your private Docker registry password') {}
 
 	[IQuestion]MakeQuestion([string] $prompt) {
-		$question = new-object Question($prompt)
+		$question = new-object ConfirmationQuestion($prompt)
 		$question.isSecure = $true
 		return $question
 	}
 
 	[void]HandleResponse([IQuestion] $question) {
-		$this.config.dockerRegistryPwd = ([Question]$question).response
+		$this.config.dockerRegistryPwd = ([ConfirmationQuestion]$question).response
 	}
 
 	[string]GetMessage() {

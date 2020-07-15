@@ -120,14 +120,14 @@ characters long.
 		'Enter Code Dx Tool Service API key/password') {}
 
 	[IQuestion]MakeQuestion([string] $prompt) {
-		$question = new-object Question($prompt)
+		$question = new-object ConfirmationQuestion($prompt)
 		$question.isSecure = $true
 		$question.minimumLength = 8
 		return $question
 	}
 
 	[void]HandleResponse([IQuestion] $question) {
-		$this.config.toolServiceApiKey = ([Question]$question).response
+		$this.config.toolServiceApiKey = ([ConfirmationQuestion]$question).response
 	}
 
 	[void]Reset(){
@@ -154,14 +154,14 @@ password must be at least eight characters long.
 		'Enter a password for the MinIO admin account') {}
 
 	[IQuestion]MakeQuestion([string] $prompt) {
-		$question = new-object Question('Enter a password for the MinIO admin account')
+		$question = new-object ConfirmationQuestion('Enter a password for the MinIO admin account')
 		$question.isSecure = $true
 		$question.minimumLength = 8
 		return $question
 	}
 
 	[void]HandleResponse([IQuestion] $question) {
-		$this.config.minioAdminPwd = ([Question]$question).response
+		$this.config.minioAdminPwd = ([ConfirmationQuestion]$question).response
 	}
 
 	[void]Reset(){

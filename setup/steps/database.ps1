@@ -182,13 +182,13 @@ statement you ran during Step 1 of the Code Dx database setup instructions.
 		'Enter the Code Dx database password') {}
 
 	[IQuestion]MakeQuestion([string] $prompt) {
-		$question = new-object Question($prompt)
+		$question = new-object ConfirmationQuestion($prompt)
 		$question.isSecure = $true
 		return $question
 	}
 
 	[void]HandleResponse([IQuestion] $question) {
-		$this.config.externalDatabasePwd = ([Question]$question).response
+		$this.config.externalDatabasePwd = ([ConfirmationQuestion]$question).response
 	}
 
 	[void]Reset(){
@@ -288,13 +288,13 @@ will create when provisioning the MariaDB database.
 		'Enter a password for the MariaDB root user') {}
 
 	[IQuestion]MakeQuestion([string] $prompt) {
-		$question = new-object Question($prompt)
+		$question = new-object ConfirmationQuestion($prompt)
 		$question.isSecure = $true
 		return $question
 	}
 
 	[void]HandleResponse([IQuestion] $question) {
-		$this.config.mariadbRootPwd = ([Question]$question).response
+		$this.config.mariadbRootPwd = ([ConfirmationQuestion]$question).response
 	}
 
 	[void]Reset(){
@@ -317,13 +317,13 @@ will create when provisioning the MariaDB database.
 		'Enter a password for the MariaDB replicator user') {}
 
 	[IQuestion]MakeQuestion([string] $prompt) {
-		$question = new-object Question($prompt)
+		$question = new-object ConfirmationQuestion($prompt)
 		$question.isSecure = $true
 		return $question
 	}
 
 	[void]HandleResponse([IQuestion] $question) {
-		$this.config.mariadbReplicatorPwd = ([Question]$question).response
+		$this.config.mariadbReplicatorPwd = ([ConfirmationQuestion]$question).response
 	}
 
 	[void]Reset(){

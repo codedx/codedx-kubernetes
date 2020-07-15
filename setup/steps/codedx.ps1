@@ -219,14 +219,14 @@ password must be at least eight characters long.
 		'Enter a password for the Code Dx admin account') {}
 
 	[IQuestion] MakeQuestion([string] $prompt) {
-		$question = new-object Question('Enter a password for the Code Dx admin account')
+		$question = new-object ConfirmationQuestion('Enter a password for the Code Dx admin account')
 		$question.isSecure = $true
 		$question.minimumLength = 8
 		return $question
 	}
 	
 	[void]HandleResponse([IQuestion] $question) {
-		$this.config.codedxAdminPwd = ([Question]$question).response
+		$this.config.codedxAdminPwd = ([ConfirmationQuestion]$question).response
 	}
 
 	[void]Reset(){

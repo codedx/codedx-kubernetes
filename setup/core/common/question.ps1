@@ -74,6 +74,39 @@ class Question : IQuestion {
 	}
 }
 
+class ConfirmationQuestion : Question {
+
+	ConfirmationQuestion([string] $promptText) : base($promptText) {
+	}
+
+	[void]Prompt() {
+
+		$prompt = $this.promptText
+
+		while ($true) {
+		
+			([Question]$this).Prompt()
+			if (-not $this.hasResponse -or $this.isResponseEmpty) {
+				break
+			}
+			$response = $this.response
+			
+			$this.promptText = 'Confirm'
+			$this.response = ''
+
+			([Question]$this).Prompt()
+			if (-not $this.hasResponse -or $this.isResponseEmpty -or $response -eq $this.response) {
+				break
+			}
+			
+			Write-Host 'Responses do not match. Try again.'
+			$this.promptText = $prompt
+			$this.response = ''
+		}
+		$this.promptText = $prompt
+	}
+}
+
 class IntegerQuestion : Question {
 
 	[int] $minimum

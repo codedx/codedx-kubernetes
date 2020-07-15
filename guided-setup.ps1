@@ -7,7 +7,7 @@
 $ErrorActionPreference = 'Stop'
 $VerbosePreference = 'Continue'
 
-$DebugPreference='Continue'
+$DebugPreference='SilentlyContinue'
 
 Set-PSDebug -Strict
 
@@ -196,7 +196,8 @@ try {
 		if (-not $v.Run()) {
 			$v.Reset()
 			if ($vStack.Count -ne 0) {
-				$v = $vStack.Pop()	
+				$v = $vStack.Pop()
+				$v.Reset()
 			}
 			continue
 		}

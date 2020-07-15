@@ -35,7 +35,7 @@ resource types for them to be active in your Kubernetes environment.
 			[tuple]::create('&Other', 'Enable/disable each option individually')), -1)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 
 		$choice = ([MultipleChoiceQuestion]$question).choice
 
@@ -43,6 +43,7 @@ resource types for them to be active in your Kubernetes environment.
 		$this.config.skipPSPs = $choice -eq 2
 		$this.config.skipTLS  = $choice -eq 2
 		$this.config.skipNetworkPolicies = $choice -eq 1
+		return $true
 	}
 
 	[void]Reset() {
@@ -74,8 +75,9 @@ must support Pod Security Policies for the resources to apply.
 			'No, I don''t want to install Pod Security Policies', -1)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.skipPSPs = ([YesNoQuestion]$question).choice -eq 1
+		return $true
 	}
 
 	[void]Reset() {
@@ -108,8 +110,9 @@ must support Network Policies for the resources to apply.
 			'No, I don''t want to install Network Policies', -1)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.skipNetworkPolicies = ([YesNoQuestion]$question).choice -eq 1
+		return $true
 	}
 
 	[void]Reset(){
@@ -140,8 +143,9 @@ Specify whether you want to enable TLS between communications that support TLS.
 			'No, I don''t want to use TLS to secure component communications', -1)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.skipTls = ([YesNoQuestion]$question).choice -eq 1
+		return $true
 	}
 
 	[void]Reset(){
@@ -170,8 +174,9 @@ that name here. The namespace will be created if it does not already exist.
 		[CodeDxNamespace]::description,
 		"Enter Code Dx namespace name (e.g., $([CodeDxNamespace]::default))") {}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.namespaceCodeDx = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -195,8 +200,9 @@ conflict with another Helm release in the Kubernetes namespace you chose.
 		[CodeDxReleaseName]::description,
 		"Enter Code Dx Helm release name (e.g., $([CodeDxReleaseName]::default))") {}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.releaseNameCodeDx = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -225,8 +231,9 @@ password must be at least eight characters long.
 		return $question
 	}
 	
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.codedxAdminPwd = ([ConfirmationQuestion]$question).response
+		return $true
 	}
 
 	[void]Reset(){

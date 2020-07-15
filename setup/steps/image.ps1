@@ -40,8 +40,9 @@ for pull access.
 			'No, I want to specify versions of Code Dx Docker images', 0)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.useDefaultDockerImages = ([YesNoQuestion]$question).choice -eq 0
+		return $true
 	}
 
 	[string]GetMessage() {
@@ -108,8 +109,9 @@ class CodeDxTomcatDockerImage : DockerImageNameStep {
 		'The Code Dx Tomcat Docker image packages the main Code Dx web application.',
 		'Enter the Code Dx Tomcat Docker image name') {}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.imageCodeDxTomcat = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -130,8 +132,9 @@ class CodeDxToolsDockerImage : DockerImageNameStep {
 		'The Code Dx Tools Docker image packages most of the Code Dx bundled tools.',
 		'Enter the Code Dx Tools Docker image name') {}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.imageCodeDxTools = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -152,8 +155,9 @@ class CodeDxToolsMonoDockerImage : DockerImageNameStep {
 		'The Code Dx Tools Mono Docker image packages Code Dx bundled tools that depend on Mono.',
 		'Enter the Code Dx Tools Mono Docker image name') {}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.imageCodeDxToolsMono = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -174,8 +178,9 @@ class CodeDxToolServiceDockerImage : DockerImageNameStep {
 		'The Code Dx Tool Service Docker image packages the Code Dx Tool Service.',
 		'Enter the Code Dx Tool Service Docker image name') {}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.imageToolService = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -196,8 +201,9 @@ class CodeDxSendResultsDockerImage : DockerImageNameStep {
 		'The Code Dx Tool Send Results Docker image packages the workflow step that sends results to Code Dx.',
 		'Enter the Code Dx Send Results Docker image name') {}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.imageSendResults = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -218,8 +224,9 @@ class CodeDxSendErrorResultsDockerImage : DockerImageNameStep {
 		'The Code Dx Tool Send Error Results Docker image packages the workflow step that sends error results to Code Dx.',
 		'Enter the Code Dx Send Error Results Docker image name') {}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.imageSendErrorResults = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -240,8 +247,9 @@ class CodeDxNewAnalysisDockerImage : DockerImageNameStep {
 		'The Code Dx New Analysis Docker image packages the workflow step that starts a new analysis in Code Dx.',
 		'Enter the Code Dx New Analysis Docker image name') {}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.imageNewAnalysis = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -262,8 +270,9 @@ class CodeDxPreDeleteDockerImage : DockerImageNameStep {
 		'The Code Dx Cleanup Docker image removes Tool Orchestration resources during an uninstall.',
 		'Enter the Code Dx Cleanup Docker image name') {}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.imagePreDelete = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset(){

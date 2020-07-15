@@ -38,8 +38,9 @@ https://github.com/codedx/codedx-kubernetes/blob/feature/guide/setup/core/docs/d
 			'No, I want to use the database that Code Dx deploys on Kubernetes', 1)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.skipDatabase = ([YesNoQuestion]$question).choice -eq 0
+		return $true
 	}
 
 	[void]Reset(){
@@ -62,8 +63,9 @@ server.region.rds.amazonaws.com.
 		[ExternalDatabaseHost]::description,
 		'Enter the name of your external database host') {}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.externalDatabaseHost = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -96,8 +98,9 @@ changed MariaDB's configuration.
 		return new-object IntegerQuestion($prompt, 0, 65535, $false)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.externalDatabasePort = ([IntegerQuestion]$question).intResponse
+		return $true
 	}
 
 	[void]Reset(){
@@ -125,8 +128,9 @@ database setup instructions.
 		[ExternalDatabaseName]::description,
 		'Enter the name of your Code Dx database') {}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.externalDatabaseName = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -153,8 +157,9 @@ name during Step 1 of the Code Dx database setup instructions.
 		[ExternalDatabaseUser]::description,
 		'Enter the Code Dx database username') {}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.externalDatabaseUser = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -187,8 +192,9 @@ statement you ran during Step 1 of the Code Dx database setup instructions.
 		return $question
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.externalDatabasePwd = ([ConfirmationQuestion]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -226,8 +232,9 @@ https://s3.amazonaws.com/rds-downloads/rds-ca-2019-root.pem
 			'No, I do not want to configure TLS', -1)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.externalDatabaseSkipTls = ([YesNoQuestion]$question).choice -eq 1
+		return $true
 	}	
 
 	[void]Reset(){
@@ -260,8 +267,9 @@ https://s3.amazonaws.com/rds-downloads/rds-ca-2019-root.pem
 		return new-object CertificateFileQuestion($prompt, $false)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.externalDatabaseServerCert = ([CertificateFileQuestion]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -293,8 +301,9 @@ will create when provisioning the MariaDB database.
 		return $question
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.mariadbRootPwd = ([ConfirmationQuestion]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -322,8 +331,9 @@ will create when provisioning the MariaDB database.
 		return $question
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.mariadbReplicatorPwd = ([ConfirmationQuestion]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -353,8 +363,9 @@ time that's compatible with the Code Dx backup schedule.
 		return new-object IntegerQuestion($prompt, 0, 5, $false)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.dbSlaveReplicaCount = ([IntegerQuestion]$question).intResponse
+		return $true
 	}
 
 	[void]Reset(){

@@ -124,7 +124,7 @@ function New-GenericSecret([string] $namespace, [string] $name, [collections.has
 			[tuple]::create('Save command with &Kubernetes secret(s)', 'Save the setup script using k8s secret(s) for password/key script parameters')), -1)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 
 		$scriptPath = join-path $PSScriptRoot '../core/setup.ps1'
 		$sb = new-object text.stringbuilder($scriptPath)
@@ -239,6 +239,7 @@ function New-GenericSecret([string] $namespace, [string] $name, [collections.has
 		} else {
 			$this.SaveScripts($setupPdCmdLine, $setupCmdLine)
 		}
+		return $true
 	}
 
 	[void]RunNow([string] $setupPdCmdLine, [string] $setupCmdLine) {

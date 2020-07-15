@@ -35,7 +35,7 @@ specifying 64 means creating two 64 GiB volumes.
 			'No, specify a size for each volume', 0)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 
 		$applyDefaults = ([YesNoQuestion]$question).choice -eq 0
 		if ($applyDefaults) {
@@ -44,6 +44,7 @@ specifying 64 means creating two 64 GiB volumes.
 			}
 		}
 		$this.config.useVolumeSizeDefaults = $applyDefaults
+		return $true
 	}
 
 	[void]Reset() {
@@ -101,8 +102,9 @@ Specify the amount of volume storage in gibibytes.
 		return new-object IntegerQuestion($prompt, 1, [int]::MaxValue, $false)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.HandleSizeResponse(([IntegerQuestion]$question).intResponse)
+		return $true
 	}
 
 	[void]HandleSizeResponse([int] $size) {
@@ -247,8 +249,9 @@ is recommended.
 		return $question
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.storageClassName = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset() {

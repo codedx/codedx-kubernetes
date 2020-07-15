@@ -34,8 +34,9 @@ https://codedx.com/blog/code-dx-enterprises-new-orchestration/
 			'No, I don''t want to use Tool Orchestration at this time', -1)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.skipToolOrchestration = ([YesNoQuestion]$question).choice -eq 1
+		return $true
 	}
 
 	[void]Reset(){
@@ -61,8 +62,9 @@ not already exist.
 		[ToolOrchestrationNamespace]::description,
 		"Enter Code Dx Tool Orchestration namespace name (e.g., $([ToolOrchestrationNamespace]::default))") {}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.namespaceToolOrchestration = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -91,8 +93,9 @@ namespace you chose.
 		[ToolOrchestrationReleaseName]::description,
 		"Enter Tool Orchestration Helm release name (e.g., $([ToolOrchestrationReleaseName]::default))") {}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.releaseNameToolOrchestration = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -126,8 +129,9 @@ characters long.
 		return $question
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.toolServiceApiKey = ([ConfirmationQuestion]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -160,8 +164,9 @@ password must be at least eight characters long.
 		return $question
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.minioAdminPwd = ([ConfirmationQuestion]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -192,8 +197,9 @@ You must run at least one service instance.
 		return new-object IntegerQuestion($prompt, 1, ([int]::maxvalue), $false)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.toolServiceReplicas = ([IntegerQuestion]$question).intResponse
+		return $true
 	}
 
 	[void]Reset(){

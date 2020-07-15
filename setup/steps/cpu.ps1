@@ -37,7 +37,7 @@ will cause Code Dx pods to get stuck in a Pending state.
 			[tuple]::create('&Custom', 'Make reservations on a per-component basis')), 0)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 
 		$mq = [MultipleChoiceQuestion]$question
 		$applyDefaults = $mq.choice -eq 0
@@ -47,6 +47,7 @@ will cause Code Dx pods to get stuck in a Pending state.
 			}
 		}
 		$this.config.useCPUDefaults = $applyDefaults -or $mq.choice -eq 1
+		return $true
 	}
 
 	[void]Reset(){
@@ -113,16 +114,16 @@ Note: You can skip making a reservation by accepting the default value.
 		return $question
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 
 		if (-not $question.isResponseEmpty -and -not $question.response.endswith('m')) {
 			$question.response += 'm'
 		}
 
-		$this.HandleCpuResponse($question.response)
+		return $this.HandleCpuResponse($question.response)
 	}
 
-	[void]HandleCpuResponse([string] $cpu) {
+	[bool]HandleCpuResponse([string] $cpu) {
 		throw [NotImplementedException]
 	}
 
@@ -138,8 +139,9 @@ class NginxCPU : CPUStep {
 		'NGINX CPU Reservation', 
 		$config) {}
 
-	[void]HandleCpuResponse([string] $cpu) {
+	[bool]HandleCpuResponse([string] $cpu) {
 		$this.config.nginxCPUReservation = $cpu
+		return $true
 	}
 
 	[void]Reset(){
@@ -162,8 +164,9 @@ class CodeDxCPU : CPUStep {
 		'Code Dx CPU Reservation', 
 		$config) {}
 
-	[void]HandleCpuResponse([string] $cpu) {
+	[bool]HandleCpuResponse([string] $cpu) {
 		$this.config.codeDxCPUReservation = $cpu
+		return $true
 	}
 
 	[void]Reset(){
@@ -183,8 +186,9 @@ class MasterDatabaseCPU : CPUStep {
 
 	MasterDatabaseCPU([ConfigInput] $config) : base([MasterDatabaseCPU].Name, 'Master Database CPU Reservation', $config) {}
 
-	[void]HandleCpuResponse([string] $cpu) {
+	[bool]HandleCpuResponse([string] $cpu) {
 		$this.config.dbMasterCPUReservation = $cpu
+		return $true
 	}
 
 	[void]Reset(){
@@ -208,8 +212,9 @@ class SubordinateDatabaseCPU : CPUStep {
 
 	SubordinateDatabaseCPU([ConfigInput] $config) : base([SubordinateDatabaseCPU].Name, 'Subordinate Database CPU Reservation', $config) {}
 
-	[void]HandleCpuResponse([string] $cpu) {
+	[bool]HandleCpuResponse([string] $cpu) {
 		$this.config.dbSlaveCPUReservation = $cpu
+		return $true
 	}
 
 	[void]Reset(){
@@ -233,8 +238,9 @@ class ToolServiceCPU : CPUStep {
 
 	ToolServiceCPU([ConfigInput] $config) : base([ToolServiceCPU].Name, 'Tool Service CPU Reservation', $config) {}
 
-	[void]HandleCpuResponse([string] $cpu) {
+	[bool]HandleCpuResponse([string] $cpu) {
 		$this.config.toolServiceCPUReservation = $cpu
+		return $true
 	}
 
 	[void]Reset(){
@@ -254,8 +260,9 @@ class MinIOCPU : CPUStep {
 
 	MinIOCPU([ConfigInput] $config) : base([MinIOCPU].Name, 'MinIO CPU Reservation', $config) {}
 
-	[void]HandleCpuResponse([string] $cpu) {
+	[bool]HandleCpuResponse([string] $cpu) {
 		$this.config.minioCPUReservation = $cpu
+		return $true
 	}
 
 	[void]Reset(){
@@ -279,8 +286,9 @@ class WorkflowCPU : CPUStep {
 
 	WorkflowCPU([ConfigInput] $config) : base([WorkflowCPU].Name, 'Workflow Controller CPU Reservation', $config) {}
 
-	[void]HandleCpuResponse([string] $cpu) {
+	[bool]HandleCpuResponse([string] $cpu) {
 		$this.config.workflowCPUReservation = $cpu
+		return $true
 	}
 
 	[void]Reset(){

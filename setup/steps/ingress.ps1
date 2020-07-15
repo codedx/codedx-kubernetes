@@ -37,7 +37,7 @@ cluster.
 		return new-object MultipleChoiceQuestion($prompt, $choices, -1)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		switch (([MultipleChoiceQuestion]$question).choice) {
 			0 { $this.config.ingressType = [IngressType]::None }
 			1 { $this.config.ingressType = [IngressType]::NginxLetsEncrypt }
@@ -51,6 +51,7 @@ cluster.
 		$this.config.skipIngressAssumesNginx = $this.config.skipNginxIngressControllerInstall
 		$this.config.ingressAnnotationsCodeDx = @()
 		$this.config.serviceTypeCodeDx = ($this.config.ingressType -eq [IngressType]::ClassicElb -or $this.config.ingressType -eq [IngressType]::NetworkElb) ? 'LoadBalancer' : ''
+		return $true
 	}
 
 	[void]Reset(){
@@ -78,8 +79,9 @@ that name here. The namespace will be created if it does not already exist.
 		[NginxIngressNamespace]::description,
 		'Enter namespace') {}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.nginxIngressControllerNamespace = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -110,8 +112,9 @@ Specify an existing IP address to associate with the Code Dx ingress resource.
 		return $question
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.nginxIngressControllerLoadBalancerIP = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -139,8 +142,9 @@ already exist.
 		[LetsEncryptNamespace]::description,
 		'Enter the Let''s Encrypt k8s namespace') {}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.letsEncryptCertManagerNamespace = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -178,8 +182,9 @@ setup again replacing the letsencrypt-staging parameter with letsencrypt-prod.
 			'No, use the letsencrypt-prod issuer.', -1)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.letsEncryptCertManagerClusterIssuer = ([YesNoQuestion]$question).choice ? 'letsencrypt-staging' : 'letsencrypt-prod'
+		return $true
 	}
 
 	[void]Reset(){
@@ -208,8 +213,9 @@ Specify an email address to associate with the Let's Encrypt registration.
 		return new-object EmailAddressQuestion($prompt, $false)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.letsEncryptCertManagerRegistrationEmailAddress = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -236,7 +242,7 @@ AWS Certificates console.
 		[IngressCertificateArn]::description,
 		'Enter your certificate ARN') {}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		
 		$certArn = ([Question]$question).response
 
@@ -249,6 +255,7 @@ AWS Certificates console.
 		if ($this.config.ingressType -eq [IngressType]::NetworkElb) {
 			$this.config.serviceAnnotationsCodeDx += 'service.beta.kubernetes.io/aws-load-balancer-type: nlb'
 		}
+		return $true
 	}
 
 	[void]Reset(){
@@ -275,8 +282,9 @@ name of a host you will access over the network using a DNS registration.
 		[DnsName]::description,
 		'Enter DNS name') {}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.codeDxDnsName = ([Question]$question).response
+		return $true
 	}
 
 	[bool]CanRun() {

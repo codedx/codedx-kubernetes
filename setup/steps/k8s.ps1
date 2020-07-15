@@ -35,13 +35,14 @@ Note: Running Code Dx on AWS EKS requires a minimum Kubernetes version of 1.16.
 			[tuple]::create('&Other', 'Use a different Kubernetes provider')), -1)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		switch (([MultipleChoiceQuestion]$question).choice) {
 			0 { $this.config.k8sProvider = [ProviderType]::Minikube }
 			1 { $this.config.k8sProvider = [ProviderType]::Aks }
 			2 { $this.config.k8sProvider = [ProviderType]::Eks }
 			3 { $this.config.k8sProvider = [ProviderType]::Other }
 		}
+		return $true
 	}
 
 	[void]Reset(){
@@ -82,12 +83,13 @@ setup script can fetch configuration data.
 		return new-object MultipleChoiceQuestion($prompt, $contextTuples, -1)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 
 		$mcQuestion = [MultipleChoiceQuestion]$question
 		$contextName = $mcQuestion.options[$mcQuestion.choice].item1.replace('&','')
 		
 		$this.config.kubeContextName = $contextName -eq [ChooseContext]::noContext ? '' : $contextName
+		return $true
 	}
 
 	[void]Reset(){
@@ -242,8 +244,9 @@ under your home profile folder
 		return new-object CertificateFileQuestion($prompt, $false)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.clusterCertificateAuthorityCertPath = ([CertificateFileQuestion]$question).response
+		return $true
 	}
 
 	[string]GetMessage() {
@@ -285,8 +288,9 @@ Docker images from sources that do not support anonymous access.
 			'No - I will not be using private Docker images with Tool Orchestration', 1)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.skipPrivateDockerRegistry = ([YesNoQuestion]$question).choice -eq 1
+		return $true
 	}
 
 	[void]Reset(){
@@ -308,8 +312,9 @@ create to store your private Docker registry credential.
 		[DockerImagePullSecret]::description,
 		'Enter a name for your Docker Image Pull Secret') {}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.dockerImagePullSecretName = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -335,8 +340,9 @@ are using a private registry hosted on Docker Hub.
 		[PrivateDockerRegistryHost]::description,
 		'Enter your private Docker registry host (e.g., docker.io)') {}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.dockerRegistry = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -361,8 +367,9 @@ Specify the username of a user with pull access to your private registry.
 		[PrivateDockerRegistryUser]::description,
 		'Enter your private Docker registry username') {}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.dockerRegistryUser = ([Question]$question).response
+		return $true
 	}
 
 	[void]Reset(){
@@ -389,8 +396,9 @@ class PrivateDockerRegistryPwd  : Step {
 		return $question
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.dockerRegistryPwd = ([ConfirmationQuestion]$question).response
+		return $true
 	}
 
 	[string]GetMessage() {

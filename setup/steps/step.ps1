@@ -135,7 +135,7 @@ class ConfigInput {
 	[string]       $externalDatabasePwd
 	[bool]         $externalDatabaseSkipTls
 	[string]       $externalDatabaseServerCert
-
+	
 	[string]       $clusterCertificateAuthorityCertPath
 
 	[bool]HasContext() {
@@ -173,14 +173,18 @@ class Step : GraphVertex {
 
 		Write-HostSection $this.title ($this.GetMessage())
 
-		$question = $this.MakeQuestion($this.prompt)
-		$question.Prompt()
-		
-		if (-not $question.hasResponse) {
-			return $false
+		while ($true) {
+			$question = $this.MakeQuestion($this.prompt)
+			$question.Prompt()
+			
+			if (-not $question.hasResponse) {
+				return $false
+			}
+	
+			if ($this.HandleResponse($question)) {
+				break
+			}
 		}
-
-		$this.HandleResponse($question)
 		return $true
 	}
 
@@ -188,7 +192,7 @@ class Step : GraphVertex {
 		return new-object Question($prompt)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		throw [NotImplementedException]
 	}
 

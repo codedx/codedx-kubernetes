@@ -36,7 +36,7 @@ will cause Code Dx pods to get stuck in a Pending state.
 			[tuple]::create('&Custom', 'Make reservations on a per-component basis')), 0)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 
 		$mq = [MultipleChoiceQuestion]$question
 		$applyDefaults = $mq.choice -eq 0
@@ -46,6 +46,7 @@ will cause Code Dx pods to get stuck in a Pending state.
 			}
 		}
 		$this.config.useMemoryDefaults = $applyDefaults -or $mq.choice -eq 1
+		return $true
 	}
 
 	[void]Reset(){
@@ -110,16 +111,16 @@ Note: You can skip making a reservation by accepting the default value.
 		return $question
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 
 		if (-not $question.isResponseEmpty -and -not $question.response.endswith('Mi')) {
 			$question.response += 'Mi'
 		}
 
-		$this.HandleMemoryResponse($question.response)
+		return $this.HandleMemoryResponse($question.response)
 	}
 
-	[void]HandleMemoryResponse([string] $cpu) {
+	[bool]HandleMemoryResponse([string] $cpu) {
 		throw [NotImplementedException]
 	}
 
@@ -135,8 +136,9 @@ class NginxMemory : MemoryStep {
 		'NGINX Memory Reservation', 
 		$config) {}
 
-	[void]HandleMemoryResponse([string] $memory) {
+	[bool]HandleMemoryResponse([string] $memory) {
 		$this.config.nginxMemoryReservation = $memory
+		return $true
 	}
 
 	[void]Reset(){
@@ -163,8 +165,9 @@ class CodeDxMemory : MemoryStep {
 		'Code Dx Memory Reservation', 
 		$config) {}
 
-	[void]HandleMemoryResponse([string] $memory) {
+	[bool]HandleMemoryResponse([string] $memory) {
 		$this.config.codeDxMemoryReservation = $memory
+		return $true
 	}
 
 	[void]Reset(){
@@ -187,8 +190,9 @@ class MasterDatabaseMemory : MemoryStep {
 		'Master Database Memory Reservation', 
 		$config) {}
 
-	[void]HandleMemoryResponse([string] $memory) {
+	[bool]HandleMemoryResponse([string] $memory) {
 		$this.config.dbMasterMemoryReservation = $memory
+		return $true
 	}
 
 	[void]Reset(){
@@ -215,8 +219,9 @@ class SubordinateDatabaseMemory : MemoryStep {
 		'Subordinate Database Memory Reservation', 
 		$config) {}
 
-	[void]HandleMemoryResponse([string] $memory) {
+	[bool]HandleMemoryResponse([string] $memory) {
 		$this.config.dbSlaveMemoryReservation = $memory
+		return $true
 	}
 
 	[void]Reset(){
@@ -243,8 +248,9 @@ class ToolServiceMemory : MemoryStep {
 		'Tool Service Memory Reservation', 
 		$config) {}
 
-	[void]HandleMemoryResponse([string] $memory) {
+	[bool]HandleMemoryResponse([string] $memory) {
 		$this.config.toolServiceMemoryReservation = $memory
+		return $true
 	}
 
 	[void]Reset(){
@@ -271,8 +277,9 @@ class MinIOMemory : MemoryStep {
 		'MinIO Memory Reservation', 
 		$config) {}
 
-	[void]HandleMemoryResponse([string] $memory) {
+	[bool]HandleMemoryResponse([string] $memory) {
 		$this.config.minioMemoryReservation = $memory
+		return $true
 	}
 
 	[void]Reset(){
@@ -299,8 +306,9 @@ class WorkflowMemory : MemoryStep {
 		'Workflow Controller Memory Reservation', 
 		$config) {}
 
-	[void]HandleMemoryResponse([string] $memory) {
+	[bool]HandleMemoryResponse([string] $memory) {
 		$this.config.workflowMemoryReservation = $memory
+		return $true
 	}
 
 	[void]Reset(){

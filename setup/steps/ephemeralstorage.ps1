@@ -36,7 +36,7 @@ will cause Code Dx pods to get stuck in a Pending state.
 			[tuple]::create('&Custom', 'Make reservations on a per-component basis')), 0)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 
 		$mq = [MultipleChoiceQuestion]$question
 		$applyDefaults = $mq.choice -eq 0
@@ -46,6 +46,7 @@ will cause Code Dx pods to get stuck in a Pending state.
 			}
 		}
 		$this.config.useEphemeralStorageDefaults = $applyDefaults -or $mq.choice -eq 1
+		return $true
 	}
 
 	[void]Reset(){
@@ -118,16 +119,16 @@ Note: You can skip making a reservation by accepting the default value.
 		return $question
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 
 		if (-not $question.isResponseEmpty -and -not $question.response.endswith('Mi')) {
 			$question.response += 'Mi'
 		}
 
-		$this.HandleStorageResponse($question.response)
+		return $this.HandleStorageResponse($question.response)
 	}
 
-	[void]HandleStorageResponse([string] $storage) {
+	[bool]HandleStorageResponse([string] $storage) {
 		throw [NotImplementedException]
 	}
 
@@ -143,8 +144,9 @@ class NginxEphemeralStorage : EphemeralStorageStep {
 		'NGINX Ephemeral Storage Reservation', 
 		$config) {}
 
-	[void]HandleStorageResponse([string] $storage) {
+	[bool]HandleStorageResponse([string] $storage) {
 		$this.config.nginxEphemeralStorageReservation = $this.storage
+		return $true
 	}
 
 	[void]Reset(){
@@ -167,8 +169,9 @@ class CodeDxEphemeralStorage : EphemeralStorageStep {
 		'Code Dx Ephemeral Storage Reservation', 
 		$config) {}
 
-	[void]HandleStorageResponse([string] $storage) {
+	[bool]HandleStorageResponse([string] $storage) {
 		$this.config.codeDxEphemeralStorageReservation = $this.storage
+		return $true
 	}
 
 	[void]Reset(){
@@ -191,8 +194,9 @@ class MasterDatabaseEphemeralStorage : EphemeralStorageStep {
 		'Master Database Ephemeral Storage Reservation', 
 		$config) {}
 
-	[void]HandleStorageResponse([string] $storage) {
+	[bool]HandleStorageResponse([string] $storage) {
 		$this.config.dbMasterEphemeralStorageReservation = $this.storage
+		return $true
 	}
 
 	[void]Reset(){
@@ -215,8 +219,9 @@ class SubordinateDatabaseEphemeralStorage : EphemeralStorageStep {
 		'Subordinate Database Ephermal Storage Reservation', 
 		$config) {}
 
-	[void]HandleStorageResponse([string] $storage) {
+	[bool]HandleStorageResponse([string] $storage) {
 		$this.config.dbSlaveEphemeralStorageReservation = $this.storage
+		return $true
 	}
 
 	[void]Reset(){
@@ -239,8 +244,9 @@ class ToolServiceEphemeralStorage : EphemeralStorageStep {
 		'Tool Service Ephemeral Storage Reservation', 
 		$config) {}
 
-	[void]HandleStorageResponse([string] $storage) {
+	[bool]HandleStorageResponse([string] $storage) {
 		$this.config.toolServiceEphemeralStorageReservation = $this.storage
+		return $true
 	}
 
 	[void]Reset(){
@@ -263,8 +269,9 @@ class MinIOEphemeralStorage : EphemeralStorageStep {
 		'MinIO Ephemeral Storage Reservation', 
 		$config) {}
 
-	[void]HandleStorageResponse([string] $storage) {
+	[bool]HandleStorageResponse([string] $storage) {
 		$this.config.minioEphemeralStorageReservation = $this.storage
+		return $true
 	}
 
 	[void]Reset(){
@@ -287,8 +294,9 @@ class WorkflowEphemeralStorage : EphemeralStorageStep {
 		'Workflow Controller Ephemeral Storage Reservation', 
 		$config) {}
 
-	[void]HandleStorageResponse([string] $storage) {
+	[bool]HandleStorageResponse([string] $storage) {
 		$this.config.workflowEphemeralStorageReservation = $this.storage
+		return $true
 	}
 
 	[void]Reset(){

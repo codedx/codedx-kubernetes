@@ -141,8 +141,9 @@ in your work directory may contain data that should be kept private.
 		return new-object PathQuestion($prompt, [microsoft.powershell.commands.testpathtype]::Container, $true)
 	}
 
-	[void]HandleResponse([IQuestion] $question) {
+	[bool]HandleResponse([IQuestion] $question) {
 		$q = [PathQuestion]$question
 		$this.config.workDir = $q.isResponseEmpty ? "$($this.homeDirectory)/.k8s-codedx" : $q.response
+		return $true
 	}
 }

@@ -183,6 +183,12 @@ if (-not $skipToolOrchestration -and $toolServiceApiKey -eq '') {
 		$toolServiceApiKey = Read-HostSecureText 'Enter an API key for the Code Dx Tool Orchestration service' 8 
 	}
 }
+if ($caCertsFileNewPwd -eq '') {
+	$newPwd = Get-CacertsNewPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+	if ($null -ne $newPwd) {
+		$caCertsFileNewPwd = $newPwd
+	}
+}
 if ($caCertsFileNewPwd -ne '' -and $caCertsFileNewPwd.length -lt 6) { $caCertsFileNewPwd = Read-HostSecureText 'Enter a password to protect the cacerts file' 6 }
 
 $externalDatabaseUrl = ''

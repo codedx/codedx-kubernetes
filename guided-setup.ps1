@@ -7,8 +7,6 @@
 $ErrorActionPreference = 'Stop'
 $VerbosePreference = 'Continue'
 
-$DebugPreference='SilentlyContinue'
-
 Set-PSDebug -Strict
 
 Write-Host 'Loading...' -NoNewline
@@ -26,6 +24,7 @@ Write-Host 'Loading...' -NoNewline
 './setup/steps/volume.ps1',
 './setup/steps/ephemeralstorage.ps1',
 './setup/steps/codedx.ps1',
+'./setup/steps/cert.ps1',
 './setup/steps/database.ps1',
 './setup/steps/summary.ps1' | ForEach-Object {
 	Write-Debug "'$PSCommandPath' is including file '$_'"
@@ -92,6 +91,7 @@ $s = @{}
 [DefaultMemory],[NginxMemory],[CodeDxMemory],[MasterDatabaseMemory],[SubordinateDatabaseMemory],[ToolServiceMemory],[MinIOMemory],[WorkflowMemory],
 [DefaultEphemeralStorage],[NginxEphemeralStorage],[CodeDxEphemeralStorage],[MasterDatabaseEphemeralStorage],[SubordinateDatabaseEphemeralStorage],[ToolServiceEphemeralStorage],[MinIOEphemeralStorage],[WorkflowEphemeralStorage],
 [DefaultVolumeSize],[CodeDxVolumeSize],[MasterDatabaseVolumeSize],[SubordinateDatabaseVolumeSize],[MinIOVolumeSize],[StorageClassName],
+[UseDefaultCACerts],[CACertsFile],[CACertsFilePassword],[CACertsChangePassword],[CACertsFileNewPassword],[AddExtraCertificates],[ExtraCertificates],
 [Finish],[Abort]
 | ForEach-Object {
 	$s[$_] = new-object -type $_ -args $config
@@ -114,9 +114,19 @@ Add-StepTransitions $graph $s[[CodeDxNamespace]] $s[[CodeDxReleaseName]],$s[[Too
 Add-StepTransitions $graph $s[[CodeDxNamespace]] $s[[CodeDxReleaseName]],$s[[ExternalDatabaseHost]]
 Add-StepTransitions $graph $s[[CodeDxNamespace]] $s[[CodeDxReleaseName]],$s[[DatabaseRootPwd]]
 
-Add-StepTransitions $graph $s[[DatabaseRootPwd]] $s[[DatabaseReplicationPwd]],$s[[DatabaseReplicaCount]],$s[[CodeDxPassword]]
-Add-StepTransitions $graph $s[[ExternalDatabaseHost]] $s[[ExternalDatabasePort]],$s[[ExternalDatabaseName]],$s[[ExternalDatabaseUser]],$s[[ExternalDatabasePwd]],$s[[ExternalDatabaseOneWayAuth]],$s[[ExternalDatabaseCert]],$s[[CodeDxPassword]]
-Add-StepTransitions $graph $s[[ExternalDatabaseOneWayAuth]] $s[[CodeDxPassword]]
+Add-StepTransitions $graph $s[[DatabaseRootPwd]] $s[[DatabaseReplicationPwd]],$s[[DatabaseReplicaCount]],$s[[UseDefaultCACerts]]
+Add-StepTransitions $graph $s[[ExternalDatabaseHost]] $s[[ExternalDatabasePort]],$s[[ExternalDatabaseName]],$s[[ExternalDatabaseUser]],$s[[ExternalDatabasePwd]],$s[[ExternalDatabaseOneWayAuth]]
+
+Add-StepTransitions $graph $s[[ExternalDatabaseOneWayAuth]] $s[[CACertsFile]]
+Add-StepTransitions $graph $s[[ExternalDatabaseOneWayAuth]] $s[[UseDefaultCACerts]]
+
+Add-StepTransitions $graph $s[[UseDefaultCACerts]] $s[[CACertsFile]],$s[[CACertsFilePassword]],$s[[CACertsChangePassword]]
+Add-StepTransitions $graph $s[[CACertsChangePassword]] $s[[CACertsFileNewPassword]],$s[[AddExtraCertificates]]
+Add-StepTransitions $graph $s[[CACertsChangePassword]] $s[[AddExtraCertificates]]
+Add-StepTransitions $graph $s[[UseDefaultCACerts]] $s[[CodeDxPassword]]
+
+Add-StepTransitions $graph $s[[AddExtraCertificates]] $s[[ExtraCertificates]],$s[[CodeDxPassword]]
+Add-StepTransitions $graph $s[[AddExtraCertificates]] $s[[CodeDxPassword]]
 
 Add-StepTransitions $graph $s[[CodeDxPassword]] $s[[ToolServiceKey]],$s[[MinioAdminPassword]],$s[[ToolServiceReplicaCount]],$s[[UsePrivateDockerRegistry]]
 Add-StepTransitions $graph $s[[CodeDxPassword]] $s[[UsePrivateDockerRegistry]]

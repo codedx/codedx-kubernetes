@@ -26,7 +26,8 @@ function Get-CodeDxPdSecretName([string] $releaseName) {
 function New-CodeDxPdSecret([string] $namespace, [string] $releaseName, 
 	[string] $adminPwd, [string] $caCertsFilePwd,
 	[string] $externalDbUser, [string] $externalDbPwd,
-	[string] $dockerRegistryPwd) {
+	[string] $dockerRegistryPwd,
+	[string] $caCertsFileNewPwd) {
 
 	$data = @{"admin-password"=$adminPwd;"cacerts-password"=$caCertsFilePwd}
 	
@@ -39,6 +40,9 @@ function New-CodeDxPdSecret([string] $namespace, [string] $releaseName,
 	if ('' -ne $dockerRegistryPwd) {
 		$data['docker-registry-password'] = $dockerRegistryPwd
 	}
+	if ('' -ne $caCertsFileNewPwd) {
+		$data['cacerts-new-password'] = $caCertsFileNewPwd
+	}
 
 	New-GenericSecret $namespace (Get-CodeDxPdSecretName $releaseName) $data
 }
@@ -49,6 +53,10 @@ function Get-CodeDxAdminPwdFromPd([string] $namespace, [string] $releaseName) {
 
 function Get-CacertsPasswordFromPd([string] $namespace, [string] $releaseName) {
 	Get-SecretFieldValue $namespace (Get-CodeDxPdSecretName $releaseName) 'cacerts-password'
+}
+
+function Get-CacertsNewPasswordFromPd([string] $namespace, [string] $releaseName) {
+	Get-SecretFieldValue $namespace (Get-CodeDxPdSecretName $releaseName) 'cacerts-new-password'
 }
 
 function Get-ExternalDatabaseUserFromPd([string] $namespace, [string] $releaseName) {

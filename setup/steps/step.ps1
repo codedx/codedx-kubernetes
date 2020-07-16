@@ -135,7 +135,15 @@ class ConfigInput {
 	[string]       $externalDatabasePwd
 	[bool]         $externalDatabaseSkipTls
 	[string]       $externalDatabaseServerCert
-	
+
+	[bool]         $useDefaultCACerts
+	[string]       $caCertsFilePath
+	[string]       $caCertsFilePwd
+	[bool]         $useNewCACertsFilePwd
+	[string]       $caCertsFileNewPwd
+	[bool]         $addExtraCertificates
+	[string[]]     $extraCodeDxTrustedCaCertPaths
+
 	[string]       $clusterCertificateAuthorityCertPath
 
 	[bool]HasContext() {

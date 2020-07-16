@@ -23,13 +23,15 @@ class Question : IQuestion {
 	[string] $response
 
 	[bool]   $isSecure
-	[bool]   $allowEmptyResponse
 	[string] $validationExpr
 	[string] $validationHelp
 	[int]    $minimumLength
 	[int]    $maximumLength
 
-	static [string] hidden $acceptDefaultLabel = 'Accept Default'
+	[bool]   $allowEmptyResponse
+	[string] $emptyResponseLabel = 'Accept Default'
+	[string] $emptyResponseHelp = 'Use default value by providing no response'
+	
 	static [string] hidden $returnQuestionLabel = 'Return to Step'
 	static [string] hidden $previousStepLabel = 'Back to Previous Step'
 
@@ -49,7 +51,7 @@ class Question : IQuestion {
 
 			$options = @()
 			if ($this.allowEmptyResponse) {
-				$options += [tuple]::Create([question]::acceptDefaultLabel, 'Use default value by providing no response')
+				$options += [tuple]::Create($this.emptyResponseLabel, $this.emptyResponseHelp)
 			}
 			$options += @(
 				[tuple]::Create([question]::returnQuestionLabel, 'Provide a response to the question'),
@@ -57,7 +59,7 @@ class Question : IQuestion {
 			)
 			$choice = Read-HostChoice 'What do you want to do?' $options
 
-			if (($options[$choice]).item1 -eq [question]::acceptDefaultLabel) {
+			if (($options[$choice]).item1 -eq $this.emptyResponseLabel) {
 				$this.isResponseEmpty = $true
 				break
 			}

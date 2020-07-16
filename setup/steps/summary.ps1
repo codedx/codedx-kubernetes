@@ -138,7 +138,8 @@ function New-GenericSecret([string] $namespace, [string] $name, [collections.has
 		'imageCodeDxTomcat','imageCodeDxTools','imageCodeDxToolsMono','imageNewAnalysis','imageSendResults','imageSendErrorResults','imageToolService','imagePreDelete',
 		'dockerImagePullSecretName','dockerRegistry','dockerRegistryUser',
 		'storageClassName',
-		'serviceTypeCodeDx' | ForEach-Object {
+		'serviceTypeCodeDx',
+		'caCertsFilePath' | ForEach-Object {
 			$this.AddParameter($sb, $_)
 		}
 
@@ -146,7 +147,7 @@ function New-GenericSecret([string] $namespace, [string] $name, [collections.has
 		$usePd = ([MultipleChoiceQuestion]$question).choice -ne 1
 
 		if (-not $usePd) {
-			'dockerRegistryPwd','codedxAdminPwd' | ForEach-Object {
+			'dockerRegistryPwd','codedxAdminPwd','caCertsFilePwd','caCertsFileNewPwd' | ForEach-Object {
 				$this.AddParameter($sb, $_)
 			}
 		}
@@ -227,6 +228,7 @@ function New-GenericSecret([string] $namespace, [string] $name, [collections.has
 
 		$this.AddArrayParameter('ingressAnnotationsCodeDx', $sb, $this.config.ingressAnnotationsCodeDx)
 		$this.AddArrayParameter('serviceAnnotationsCodeDx', $sb, $this.config.serviceAnnotationsCodeDx)
+		$this.AddArrayParameter('extraCodeDxTrustedCaCertPaths', $sb, $this.config.extraCodeDxTrustedCaCertPaths)
 
 		$setupCmdLine = $sb.ToString()
 		$setupPdCmdLine = ''
@@ -285,6 +287,12 @@ function New-GenericSecret([string] $namespace, [string] $name, [collections.has
 		$pd = @{}
 
 		$pd['admin-password'] = $this.config.codedxAdminPwd
+		if ($this.config.caCertsFilePwd -ne '') {
+			$pd['cacerts-password'] = $this.config.caCertsFilePwd
+		}
+		if ($this.config.caCertsFileNewPwd -ne '') {
+			$pd['cacerts-new-password'] = $this.config.caCertsFileNewPwd
+		}
 		if (-not $this.config.skipPrivateDockerRegistry) {
 			$pd['docker-registry-password'] = $this.config.dockerRegistryPwd
 		}

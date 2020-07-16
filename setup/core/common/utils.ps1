@@ -64,6 +64,9 @@ function Read-HostText([string] $prompt, `
 			$instruction = "(maximum length: $maximumLength)"
 		}
 	}
+	if ($instruction.Length -ne 0) {
+		$instruction = " $instruction"
+	}
 
 	if ($minimumLength -eq 0) {
 		$minimumLength = [int]::MinValue

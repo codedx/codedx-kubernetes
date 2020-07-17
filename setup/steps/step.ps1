@@ -146,6 +146,24 @@ class ConfigInput {
 
 	[string]       $clusterCertificateAuthorityCertPath
 
+	[bool]                   $useNodeSelectors
+	[Tuple`2[string,string]] $codeDxNodeSelector
+	[Tuple`2[string,string]] $masterDatabaseNodeSelector
+	[Tuple`2[string,string]] $subordinateDatabaseNodeSelector
+	[Tuple`2[string,string]] $toolServiceNodeSelector
+	[Tuple`2[string,string]] $minioNodeSelector
+	[Tuple`2[string,string]] $workflowControllerNodeSelector
+
+	[bool]                   $useTolerations
+	[Tuple`2[string,string]] $codeDxNoScheduleExecuteToleration
+	[Tuple`2[string,string]] $masterDatabaseNoScheduleExecuteToleration
+	[Tuple`2[string,string]] $subordinateDatabaseNoScheduleExecuteToleration
+	[Tuple`2[string,string]] $toolServiceNoScheduleExecuteToleration
+	[Tuple`2[string,string]] $minioNoScheduleExecuteToleration
+	[Tuple`2[string,string]] $workflowControllerNoScheduleExecuteToleration
+
+	[collections.hashtable]  $notes = @{}
+
 	[bool]HasContext() {
 		return $this.kubeContextName -ne ''
 	}

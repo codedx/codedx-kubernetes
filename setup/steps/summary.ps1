@@ -236,12 +236,36 @@ function New-GenericSecret([string] $namespace, [string] $name, [collections.has
 			$setupPdCmdLine = $this.BuildPrereqScript()
 		}
 
+		$this.PrintNotes()
 		if ($runNow) {
 			$this.RunNow($setupPdCmdLine, $setupCmdLine)
 		} else {
 			$this.SaveScripts($setupPdCmdLine, $setupCmdLine)
 		}
 		return $true
+	}
+
+	[void]PrintNotes() {
+
+		if ($this.config.notes.count -eq 0) {
+			return
+		}
+
+		Write-Host "`n---`nInstallation Notes:`n"
+		$notesPrinted = New-Object Collections.Generic.HashSet[string]
+
+		$allNotes = @()
+		$this.config.notes.keys | ForEach-Object {
+			$note = $this.config.notes[$_]
+			if (-not $notesPrinted.Contains($note)) {
+				$notesPrinted.Add($note) | Out-Null
+				$allNotes += $note
+			}
+		}
+		$allNotes | sort | ForEach-Object {
+			Write-Host $_
+		}
+		Write-Host "---`n"
 	}
 
 	[void]RunNow([string] $setupPdCmdLine, [string] $setupCmdLine) {

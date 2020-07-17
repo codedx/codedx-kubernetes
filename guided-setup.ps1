@@ -25,6 +25,7 @@ Write-Host 'Loading...' -NoNewline
 './setup/steps/ephemeralstorage.ps1',
 './setup/steps/codedx.ps1',
 './setup/steps/cert.ps1',
+'./setup/steps/schedule.ps1',
 './setup/steps/database.ps1',
 './setup/steps/summary.ps1' | ForEach-Object {
 	Write-Debug "'$PSCommandPath' is including file '$_'"
@@ -92,6 +93,8 @@ $s = @{}
 [DefaultEphemeralStorage],[NginxEphemeralStorage],[CodeDxEphemeralStorage],[MasterDatabaseEphemeralStorage],[SubordinateDatabaseEphemeralStorage],[ToolServiceEphemeralStorage],[MinIOEphemeralStorage],[WorkflowEphemeralStorage],
 [DefaultVolumeSize],[CodeDxVolumeSize],[MasterDatabaseVolumeSize],[SubordinateDatabaseVolumeSize],[MinIOVolumeSize],[StorageClassName],
 [UseDefaultCACerts],[CACertsFile],[CACertsFilePassword],[CACertsChangePassword],[CACertsFileNewPassword],[AddExtraCertificates],[ExtraCertificates],
+[UseNodeSelectors],[CodeDxNodeSelector],[MasterDatabaseNodeSelector],[SubordinateDatabaseNodeSelector],[ToolServiceNodeSelector],[MinIONodeSelector],[WorkflowControllerNodeSelector],
+[UseTolerations],[CodeDxTolerations],[MasterDatabaseTolerations],[SubordinateDatabaseTolerations],[ToolServiceTolerations],[MinIOTolerations],[WorkflowControllerTolerations],
 [Finish],[Abort]
 | ForEach-Object {
 	$s[$_] = new-object -type $_ -args $config
@@ -181,7 +184,21 @@ Add-StepTransitions $graph $s[[SubordinateDatabaseVolumeSize]] $s[[StorageClassN
 Add-StepTransitions $graph $s[[CodeDxVolumeSize]] $s[[MinIOVolumeSize]],$s[[StorageClassName]]
 Add-StepTransitions $graph $s[[CodeDxVolumeSize]] $s[[StorageClassName]]
 
-Add-StepTransitions $graph $s[[StorageClassName]] $s[[Finish]]
+Add-StepTransitions $graph $s[[StorageClassName]] $s[[UseNodeSelectors]]
+
+Add-StepTransitions $graph $s[[UseNodeSelectors]] $s[[CodeDxNodeSelector]],$s[[MasterDatabaseNodeSelector]],$s[[SubordinateDatabaseNodeSelector]],$s[[ToolServiceNodeSelector]]
+Add-StepTransitions $graph $s[[UseNodeSelectors]] $s[[CodeDxNodeSelector]],$s[[ToolServiceNodeSelector]],$s[[MinIONodeSelector]],$s[[WorkflowControllerNodeSelector]],$s[[UseTolerations]]
+Add-StepTransitions $graph $s[[UseNodeSelectors]] $s[[CodeDxNodeSelector]],$s[[UseTolerations]]
+Add-StepTransitions $graph $s[[UseNodeSelectors]] $s[[UseTolerations]]
+Add-StepTransitions $graph $s[[MasterDatabaseNodeSelector]] $s[[ToolServiceNodeSelector]]
+Add-StepTransitions $graph $s[[MasterDatabaseNodeSelector]] $s[[UseTolerations]]
+
+Add-StepTransitions $graph $s[[UseTolerations]] $s[[CodeDxTolerations]],$s[[MasterDatabaseTolerations]],$s[[SubordinateDatabaseTolerations]],$s[[ToolServiceTolerations]]
+Add-StepTransitions $graph $s[[UseTolerations]] $s[[CodeDxTolerations]],$s[[ToolServiceTolerations]],$s[[MinIOTolerations]],$s[[WorkflowControllerTolerations]],$s[[Finish]]
+Add-StepTransitions $graph $s[[UseTolerations]] $s[[CodeDxTolerations]],$s[[Finish]]
+Add-StepTransitions $graph $s[[UseTolerations]] $s[[Finish]]
+Add-StepTransitions $graph $s[[MasterDatabaseTolerations]] $s[[ToolServiceTolerations]]
+Add-StepTransitions $graph $s[[MasterDatabaseTolerations]] $s[[Finish]]
 
 if ($DebugPreference -eq 'Continue') {
 	# Print graph at https://dreampuf.github.io/GraphvizOnline (select 'dot' Engine and use Format 'png-image-element')
@@ -235,6 +252,8 @@ try {
 } finally {
 
 	$vStack.Push($v)
-	Write-StepGraph (join-path $config.workDir 'graph.path') $s $vStack
+
+	$workDir = $config.workDir ?? './'
+	Write-StepGraph (join-path $workDir 'graph.path') $s $vStack
 }
 

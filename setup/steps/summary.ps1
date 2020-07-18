@@ -92,7 +92,7 @@ function Remove-Secret([string] $namespace, [string] $name) {
 	}
 }
 
-function New-GenericSecret([string] $namespace, [string] $name, [collections.hashtable] $keyValues) {
+function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $keyValues) {
 	
 	if (Test-Secret $namespace $name) {
 		Remove-Secret $namespace $name
@@ -157,11 +157,19 @@ function New-GenericSecret([string] $namespace, [string] $name, [collections.has
 		}
 
 		$this.AddIntParameter($sb, 'codeDxVolumeSizeGiB')
+		'codeDxNodeSelector','codeDxNoScheduleExecuteToleration' | ForEach-Object {
+			$this.AddKeyValueParameter($sb, $_)
+		}
 
 		if (-not $this.config.skipDatabase) {
 
 			'dbVolumeSizeGiB','dbSlaveVolumeSizeGiB','dbSlaveReplicaCount' | ForEach-Object {
 				$this.AddIntParameter($sb, $_)
+			}
+
+			'masterDatabaseNodeSelector','masterDatabaseNoScheduleExecuteToleration',
+			'subordinateDatabaseNodeSelector','subordinateDatabaseNoScheduleExecuteToleration' | ForEach-Object {
+				$this.AddKeyValueParameter($sb, $_)
 			}
 
 			if (-not $usePd) {
@@ -199,6 +207,12 @@ function New-GenericSecret([string] $namespace, [string] $name, [collections.has
 			'namespaceToolOrchestration','releaseNameToolOrchestration' | ForEach-Object {
 				$this.AddParameter($sb, $_)
 			}
+			'toolServiceNodeSelector','toolServiceNoScheduleExecuteToleration',
+			'minioNodeSelector','minioNoScheduleExecuteToleration',
+			'workflowControllerNodeSelector','workflowControllerNoScheduleExecuteToleration' | ForEach-Object {
+				$this.AddKeyValueParameter($sb, $_)
+			}
+
 			if (-not $usePd) {
 				'toolServiceApiKey','minioAdminPwd' | ForEach-Object {
 					$this.AddParameter($sb, $_)
@@ -226,9 +240,11 @@ function New-GenericSecret([string] $namespace, [string] $name, [collections.has
 			$this.AddSwitchParameter($sb, 'skipLetsEncryptCertManagerInstall')
 		}
 
-		$this.AddArrayParameter('ingressAnnotationsCodeDx', $sb, $this.config.ingressAnnotationsCodeDx)
-		$this.AddArrayParameter('serviceAnnotationsCodeDx', $sb, $this.config.serviceAnnotationsCodeDx)
-		$this.AddArrayParameter('extraCodeDxTrustedCaCertPaths', $sb, $this.config.extraCodeDxTrustedCaCertPaths)
+		$this.AddArrayParameter($sb, 'extraCodeDxTrustedCaCertPaths')
+
+		'ingressAnnotationsCodeDx','serviceAnnotationsCodeDx' | ForEach-Object {
+			$this.AddHashtableParameter($sb, $_)
+		}
 
 		$setupCmdLine = $sb.ToString()
 		$setupPdCmdLine = ''
@@ -306,7 +322,7 @@ function New-GenericSecret([string] $namespace, [string] $name, [collections.has
 		Write-Host "  Run: pwsh ""$setupScriptPath"""
 	}
 
-	[collections.hashtable] GetCodeDxPdTable() {
+	[hashtable] GetCodeDxPdTable() {
 
 		$pd = @{}
 
@@ -329,7 +345,7 @@ function New-GenericSecret([string] $namespace, [string] $name, [collections.has
 		return $pd
 	}
 
-	[collections.hashtable] GetDatabasePdTable() {
+	[hashtable] GetDatabasePdTable() {
 
 		$pd = @{}
 		if (-not $this.config.skipDatabase) {
@@ -339,7 +355,7 @@ function New-GenericSecret([string] $namespace, [string] $name, [collections.has
 		return $pd
 	}
 
-	[collections.hashtable] GetToolOrchestrationPdTable() {
+	[hashtable] GetToolOrchestrationPdTable() {
 
 		$pd = @{}
 		if (-not $this.config.skipToolOrchestration) {
@@ -348,7 +364,7 @@ function New-GenericSecret([string] $namespace, [string] $name, [collections.has
 		return $pd
 	}
 
-	[collections.hashtable] GetToolOrchestrationStoragePdTable() {
+	[hashtable] GetToolOrchestrationStoragePdTable() {
 
 		$pd = @{}
 		if (-not $this.config.skipToolOrchestration) {
@@ -369,21 +385,21 @@ function New-GenericSecret([string] $namespace, [string] $name, [collections.has
 		}
 
 		$template = "`nNew-GenericSecret '{0}' '{1}' {2}`n"
-		$pdSb.AppendFormat($template, $this.config.namespaceCodeDx, (Get-CodeDxPdSecretName $this.config.releaseNameCodeDx), ($this.ToPSON(($this.GetCodeDxPdTable()))))
+		$pdSb.AppendFormat($template, $this.config.namespaceCodeDx, (Get-CodeDxPdSecretName $this.config.releaseNameCodeDx), (ConvertTo-PsonMap $this.GetCodeDxPdTable()))
 
 		$pdDatabase = $this.GetDatabasePdTable()
 		if ($pdDatabase.Count -gt 0) {
-			$pdSb.AppendFormat($template, $this.config.namespaceCodeDx, (Get-DatabasePdSecretName $this.config.releaseNameCodeDx), ($this.ToPSON($pdDatabase)))
+			$pdSb.AppendFormat($template, $this.config.namespaceCodeDx, (Get-DatabasePdSecretName $this.config.releaseNameCodeDx), (ConvertTo-PsonMap $pdDatabase))
 		}
 
 		$pdToolOrchestration = $this.GetToolOrchestrationPdTable()
 		if ($pdToolOrchestration.Count -gt 0) {
-			$pdSb.AppendFormat($template, $this.config.namespaceToolOrchestration, (Get-ToolServicePdSecretName $this.config.releaseNameToolOrchestration), ($this.ToPSON($pdToolOrchestration)))
+			$pdSb.AppendFormat($template, $this.config.namespaceToolOrchestration, (Get-ToolServicePdSecretName $this.config.releaseNameToolOrchestration), (ConvertTo-PsonMap $pdToolOrchestration))
 		}
 
 		$pdToolOrchestrationStorage = $this.GetToolOrchestrationStoragePdTable()
 		if ($pdToolOrchestrationStorage.Count -gt 0) {
-			$pdSb.AppendFormat($template, $this.config.namespaceToolOrchestration, (Get-MinioPdSecretName $this.config.releaseNameToolOrchestration), ($this.ToPSON($pdToolOrchestrationStorage)))
+			$pdSb.AppendFormat($template, $this.config.namespaceToolOrchestration, (Get-MinioPdSecretName $this.config.releaseNameToolOrchestration), (ConvertTo-PsonMap $pdToolOrchestrationStorage))
 		}
 
 		return $pdSb.toString()
@@ -413,28 +429,29 @@ function New-GenericSecret([string] $namespace, [string] $name, [collections.has
 		}
 	}
 
-	[void]AddArrayParameter([string] $parameterName, [text.stringbuilder] $sb, [string[]] $parameterValue) {
+	[void]AddArrayParameter([text.stringbuilder] $sb, [string] $parameterName) {
 
-		if ($parameterValue.count -eq 0) {
-			return
+		$parameterValue = ($this.config | select-object -property $parameterName).$parameterName
+		if ($null -ne $parameterValue -and $parameterValue.count -gt 0) {
+			$sb.appendformat(" -{0} {1}", $parameterName, (ConvertTo-PsonStringArray $parameterValue))
 		}
-
-		$escapedParameterValues = @()
-		$escapedParameterValues += $parameterValue | ForEach-Object {
-			$_.Replace("'", "''")
-		}
-		$sb.AppendFormat(" -{0} @('{1}')", $parameterName, ([string]::join("','", $escapedParameterValues)))
 	}
 
-	[string]ToPson([collections.hashtable] $table) {
+	[void]AddHashtableParameter([text.stringbuilder] $sb, [string] $parameterName) {
 
-		$sb = new-object text.stringbuilder('@{')
-		$table.Keys | ForEach-Object {
-			$value = $table[$_].Replace("'", "''")
-			$sb.AppendFormat("'{0}'='{1}';", $_, $value) | out-null
+		$parameterValue = ($this.config | select-object -property $parameterName).$parameterName
+		if ($null -ne $parameterValue -and $parameterValue.count -gt 0) {
+			$sb.appendformat(" -{0} {1}", $parameterName, (ConvertTo-PsonMap $parameterValue))
 		}
-		$sb.Append('}') | out-null
-		return $sb.ToString()
+	}
+
+	[void]AddKeyValueParameter([text.stringbuilder] $sb, [string] $parameterName) {
+
+		$parameterValue = ($this.config | select-object -property $parameterName).$parameterName
+		if ($null -ne $parameterValue -and $null -ne $parameterValue) {
+			$kv = [Tuple`2[string,string]]$parameterValue
+			$sb.appendformat(" -{0} ([Tuple``2[string,string]]::new('{1}','{2}'))", $parameterName, $kv.item1.Replace("'","''"), $kv.item2.Replace("'","''"))
+		}
 	}
 }
 

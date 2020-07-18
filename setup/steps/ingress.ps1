@@ -49,7 +49,7 @@ cluster.
 		$this.config.skipLetsEncryptCertManagerInstall = $this.config.skipNginxIngressControllerInstall
 		$this.config.skipIngressEnabled = $this.config.skipNginxIngressControllerInstall
 		$this.config.skipIngressAssumesNginx = $this.config.skipNginxIngressControllerInstall
-		$this.config.ingressAnnotationsCodeDx = @()
+		$this.config.ingressAnnotationsCodeDx = @{}
 		$this.config.serviceTypeCodeDx = ($this.config.ingressType -eq [IngressType]::ClassicElb -or $this.config.ingressType -eq [IngressType]::NetworkElb) ? 'LoadBalancer' : ''
 		return $true
 	}
@@ -59,7 +59,7 @@ cluster.
 		$this.config.skipLetsEncryptCertManagerInstall = $false
 		$this.config.skipIngressEnabled = $false
 		$this.config.skipIngressAssumesNginx = $false
-		$this.config.ingressAnnotationsCodeDx = @()
+		$this.config.ingressAnnotationsCodeDx = @{}
 		$this.config.serviceTypeCodeDx = ''
 	}
 }
@@ -247,19 +247,19 @@ AWS Certificates console.
 		$certArn = ([Question]$question).response
 
 		$protocol = $this.config.skipTLS ? 'http' : 'https'
-		$this.config.serviceAnnotationsCodeDx = @(
-			"service.beta.kubernetes.io/aws-load-balancer-backend-protocol: '$protocol'",
-    		'service.beta.kubernetes.io/aws-load-balancer-ssl-ports: ''https''',
-    		"service.beta.kubernetes.io/aws-load-balancer-ssl-cert: '$certArn'"
-		)
+		$this.config.serviceAnnotationsCodeDx = @{
+			'service.beta.kubernetes.io/aws-load-balancer-backend-protocol' = $protocol
+    		'service.beta.kubernetes.io/aws-load-balancer-ssl-ports' = 'https'
+    		'service.beta.kubernetes.io/aws-load-balancer-ssl-cert' = $certArn
+		}
 		if ($this.config.ingressType -eq [IngressType]::NetworkElb) {
-			$this.config.serviceAnnotationsCodeDx += 'service.beta.kubernetes.io/aws-load-balancer-type: nlb'
+			$this.config.serviceAnnotationsCodeDx['service.beta.kubernetes.io/aws-load-balancer-type'] = 'nlb'
 		}
 		return $true
 	}
 
 	[void]Reset(){
-		$this.config.serviceAnnotationsCodeDx = @()
+		$this.config.serviceAnnotationsCodeDx = @{}
 	}
 
 	[bool]CanRun() {

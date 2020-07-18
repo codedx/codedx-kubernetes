@@ -95,7 +95,7 @@ class ConfigInput {
 	[bool]         $skipTLS
 
 	[string]       $serviceTypeCodeDx
-	[string[]]     $serviceAnnotationsCodeDx
+	[hashtable]    $serviceAnnotationsCodeDx
 
 	[IngressType]  $ingressType
 	[bool]         $skipNginxIngressControllerInstall
@@ -109,7 +109,7 @@ class ConfigInput {
 
 	[bool]         $skipIngressEnabled
 	[bool]         $skipIngressAssumesNginx
-	[string[]]     $ingressAnnotationsCodeDx
+	[hashtable]    $ingressAnnotationsCodeDx
 
 	[string]       $toolServiceApiKey
       
@@ -162,7 +162,7 @@ class ConfigInput {
 	[Tuple`2[string,string]] $minioNoScheduleExecuteToleration
 	[Tuple`2[string,string]] $workflowControllerNoScheduleExecuteToleration
 
-	[collections.hashtable]  $notes = @{}
+	[hashtable]  $notes = @{}
 
 	[bool]HasContext() {
 		return $this.kubeContextName -ne ''
@@ -247,7 +247,7 @@ class Step : GraphVertex {
 	}
 }
 
-function Write-StepGraph([string] $path, [collections.hashtable] $steps, [collections.stack] $stepsVisited) {
+function Write-StepGraph([string] $path, [hashtable] $steps, [collections.stack] $stepsVisited) {
 
 	"# Enter graph at https://dreampuf.github.io/GraphvizOnline (select 'dot' Engine and use Format 'png-image-element')`ndigraph G {`n" | out-file $path -force
 

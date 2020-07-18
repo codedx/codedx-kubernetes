@@ -160,3 +160,47 @@ function Test-EmailAddress([string] $emailAddress) {
 		$false
 	}
 }
+
+function ConvertTo-YamlMap([hashtable] $table) {
+	ConvertTo-Map $table '' ':' ','
+}
+
+function ConvertTo-PsonMap([hashtable] $table) {
+	ConvertTo-Map $table '@' '=' ';'
+}
+
+function ConvertTo-Map([hashtable] $table, [string] $prefix, [string] $assignment, [string] $separator) {
+	
+	$sb = new-object text.stringbuilder("$prefix{")
+	$initialLength = $sb.Length
+	$table.Keys | ForEach-Object {
+		if ($sb.Length -ne $initialLength) {
+			$sb.Append($separator) | out-null
+		}
+		$sb.Append((Format-KeyValueAssignment $_ $table[$_] $assignment)) | out-null
+	}
+	$sb.Append('}') | out-null
+	return $sb.ToString()
+}
+
+function ConvertTo-YamlStringArray([string[]] $items) {
+
+	if ($null -eq $items) {
+		return '[]'
+	}
+
+	'[' + '{0}' -f ([string]::Join(',', $items)) + ']'
+}
+
+function ConvertTo-PsonStringArray([string[]] $items) {
+	
+	if ($null -eq $items) {
+		return '@()'
+	}
+
+	'@(' + '{0}' -f ([string]::Join(',', $items)) + ')'
+}
+
+function Format-KeyValueAssignment([string] $key, [string] $value, [string] $assignment) {
+	"'{0}'{1}'{2}'" -f ($key.Replace("'", "''")),$assignment,($value.Replace("'", "''"))
+}

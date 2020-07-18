@@ -52,14 +52,20 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[string]   $dbSlaveEphemeralStorageLimit,
 	[string[]] $extraValuesPaths,
 	[string]   $serviceTypeCodeDx,
-	[string[]] $serviceAnnotationsCodeDx,
+	[hashtable]$serviceAnnotationsCodeDx,
 	[string]   $ingressControllerNamespace,
-	[string[]] $ingressAnnotations,
+	[hashtable]$ingressAnnotations,
 	[string]   $caCertsFilename,
 	[string]   $caCertsFilePwd,
 	[string]   $externalDbUrl,
 	[string]   $externalDbUser,
 	[string]   $externalDbPwd,
+	[Tuple`2[string,string]] $codeDxNodeSelector,
+	[Tuple`2[string,string]] $masterDatabaseNodeSelector,
+	[Tuple`2[string,string]] $subordinateDatabaseNodeSelector,
+	[Tuple`2[string,string]] $codeDxNoScheduleExecuteToleration,
+	[Tuple`2[string,string]] $masterDatabaseNoScheduleExecuteToleration,
+	[Tuple`2[string,string]] $subordinateDatabaseNoScheduleExecuteToleration,
 	[switch]   $ingressEnabled,
 	[switch]   $ingressAssumesNginx,
 	[switch]   $enablePSPs,
@@ -180,6 +186,8 @@ mariadb:
     persistence:
       storageClass: {17}
       size: {10}Gi
+    nodeSelector: {33}
+    tolerations: {36}
 {19}
   slave:
     replicas: {15}
@@ -188,6 +196,8 @@ mariadb:
       size: {14}Gi
       backup:
         size: {14}Gi
+    nodeSelector: {34}
+    tolerations: {37}
 {22}
 cacertsFile: '{30}'
 cacertsFilePwd: '{21}'
@@ -198,6 +208,8 @@ codedxProps:
     values:
     - "codedx.offline-mode = {31}"
 {29}
+nodeSelectors: {32}
+tolerations: {35}
 '@ -f (Get-CodeDxPdSecretName $releaseName), $tomcatImage, $imagePullSecretYaml, `
 $psp, $networkPolicy, `
 $tlsEnabled, $tlsSecretName, 'tls.crt', 'tls.key', `
@@ -212,7 +224,9 @@ $defaultKeyStorePwd, `
 $codeDxTomcatPortNumber, $codeDxTlsTomcatPortNumber, `
 $serviceTypeCodeDx, (ConvertTo-YamlMap $serviceAnnotationsCodeDx), `
 $enableDb, $ingressNginxAssumption, `
-$externalDb, $caCertsFilename, $offlineMode.ToString().ToLower()
+$externalDb, $caCertsFilename, $offlineMode.ToString().ToLower(), `
+(Format-NodeSelector $codeDxNodeSelector), (Format-NodeSelector $masterDatabaseNodeSelector), (Format-NodeSelector $subordinateDatabaseNodeSelector), `
+(Format-PodTolerationNoScheduleNoExecute $codeDxNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $masterDatabaseNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $subordinateDatabaseNoScheduleExecuteToleration)
 
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
@@ -258,6 +272,12 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 	[string]   $workflowEphemeralStorageLimit,	
 	[int]      $kubeApiTargetPort,
 	[string[]] $extraValuesPaths,
+	[Tuple`2[string,string]] $toolServiceNodeSelector,
+	[Tuple`2[string,string]] $minioNodeSelector,
+	[Tuple`2[string,string]] $workflowControllerNodeSelector,
+	[Tuple`2[string,string]] $toolServiceNoScheduleExecuteToleration,
+	[Tuple`2[string,string]] $minioNoScheduleExecuteToleration,
+	[Tuple`2[string,string]] $workflowControllerNoScheduleExecuteToleration,
 	[switch]   $enablePSPs,
 	[switch]   $enableNetworkPolicies,
 	[switch]   $configureTls) {
@@ -327,6 +347,8 @@ toolServiceImagePullSecrets:
 argo:
   installCRD: false
   controller:
+    nodeSelector: {31}
+    tolerations: {34}
 {26}
 
 minio:
@@ -341,6 +363,8 @@ minio:
   persistence:
     storageClass: {23}
     size: {20}Gi
+  nodeSelector: {30}
+  tolerations: {33}
 {27}
 
 minioTlsTrust:
@@ -392,6 +416,8 @@ imageNameHelmPreDelete: '{22}'
 {21}
 
 {25}
+nodeSelectors: {29}
+tolerations: {32}
 '@ -f $minioCredentialSecret,`
 $codedxNamespace,$codedxReleaseName,$toolServiceCredentialSecret,`
 $imagePullSecretName,$toolsImage,$toolsMonoImage,$newAnalysisImage,$sendResultsImage,$sendErrorResultsImage,$toolServiceImage,$numReplicas,
@@ -401,7 +427,9 @@ $tlsConfig,$codedxCaConfigMap,$minioVolumeSizeGiB,$imagePullSecretYaml,$preDelet
 (Format-ResourceLimitRequest -limitMemory $toolServiceMemoryLimit -limitCPU $toolServiceCPULimit -limitEphemeralStorage $toolServiceEphemeralStorageLimit), `
 (Format-ResourceLimitRequest -limitMemory $workflowMemoryLimit -limitCPU $workflowCPULimit -limitEphemeralStorage $workflowEphemeralStorageLimit -indent 4), `
 (Format-ResourceLimitRequest -limitMemory $minioMemoryLimit -limitCPU $minioCPULimit -limitEphemeralStorage $minioEphemeralStorageLimit -indent 2), `
-$minioCertConfigMap
+$minioCertConfigMap,
+(Format-NodeSelector $toolServiceNodeSelector), (Format-NodeSelector $minioNodeSelector), (Format-NodeSelector $workflowControllerNodeSelector), `
+(Format-PodTolerationNoScheduleNoExecute $toolServiceNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $minioNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $workflowControllerNoScheduleExecuteToleration)
 
 	$valuesFile = 'toolsvc-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force

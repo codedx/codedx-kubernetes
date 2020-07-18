@@ -268,7 +268,7 @@ function Remove-Secret([string] $namespace, [string] $name) {
 	}
 }
 
-function New-GenericSecret([string] $namespace, [string] $name, [collections.hashtable] $keyValues) {
+function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $keyValues) {
 	
 	if (Test-Secret $namespace $name) {
 		Remove-Secret $namespace $name
@@ -512,6 +512,41 @@ resources:
 	if ($resourceSpec -match '\s*resources:$') { $resourceSpec += ' {}' }
 
 	$resourceSpec
+}
+
+function Format-NodeSelector([Tuple`2[string,string][]] $keyValues) {
+
+	if ($null -eq $keyValues) {
+		return '{}'
+	}
+
+	$items = @{}
+	$keyValues | ForEach-Object {
+		$items[$_.item1] = $_.item2
+	}
+	ConvertTo-YamlMap $items
+}
+
+function Format-PodTolerationNoScheduleNoExecute([Tuple`2[string,string][]] $keyValues) {
+
+	if ($null -eq $keyValues) {
+		return '[]'
+	}
+	
+	$items = @()
+	$keyValues | ForEach-Object {
+
+		$toleration = @{}
+		$toleration['key'] = $_.item1
+		$toleration['value'] = $_.item2
+		$toleration['operator'] = 'Equal'
+		$toleration['effect'] = 'NoSchedule'
+		$items += ConvertTo-YamlMap $toleration
+
+		$toleration['effect'] = 'NoExecute'
+		$items += ConvertTo-YamlMap $toleration
+	}
+	ConvertTo-YamlStringArray $items
 }
 
 function Set-Replicas([string] $namespace,

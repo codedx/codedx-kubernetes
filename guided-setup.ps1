@@ -190,6 +190,7 @@ Add-StepTransitions $graph $s[[UseNodeSelectors]] $s[[CodeDxNodeSelector]],$s[[M
 Add-StepTransitions $graph $s[[UseNodeSelectors]] $s[[CodeDxNodeSelector]],$s[[ToolServiceNodeSelector]],$s[[MinIONodeSelector]],$s[[WorkflowControllerNodeSelector]],$s[[UseTolerations]]
 Add-StepTransitions $graph $s[[UseNodeSelectors]] $s[[CodeDxNodeSelector]],$s[[UseTolerations]]
 Add-StepTransitions $graph $s[[UseNodeSelectors]] $s[[UseTolerations]]
+Add-StepTransitions $graph $s[[SubordinateDatabaseNodeSelector]] $s[[UseTolerations]]
 Add-StepTransitions $graph $s[[MasterDatabaseNodeSelector]] $s[[ToolServiceNodeSelector]]
 Add-StepTransitions $graph $s[[MasterDatabaseNodeSelector]] $s[[UseTolerations]]
 
@@ -197,8 +198,10 @@ Add-StepTransitions $graph $s[[UseTolerations]] $s[[CodeDxTolerations]],$s[[Mast
 Add-StepTransitions $graph $s[[UseTolerations]] $s[[CodeDxTolerations]],$s[[ToolServiceTolerations]],$s[[MinIOTolerations]],$s[[WorkflowControllerTolerations]],$s[[Finish]]
 Add-StepTransitions $graph $s[[UseTolerations]] $s[[CodeDxTolerations]],$s[[Finish]]
 Add-StepTransitions $graph $s[[UseTolerations]] $s[[Finish]]
+Add-StepTransitions $graph $s[[SubordinateDatabaseTolerations]] $s[[Finish]]
 Add-StepTransitions $graph $s[[MasterDatabaseTolerations]] $s[[ToolServiceTolerations]]
 Add-StepTransitions $graph $s[[MasterDatabaseTolerations]] $s[[Finish]]
+
 
 if ($DebugPreference -eq 'Continue') {
 	# Print graph at https://dreampuf.github.io/GraphvizOnline (select 'dot' Engine and use Format 'png-image-element')
@@ -214,7 +217,7 @@ $vStack = new-object collections.stack
 
 try {
 	$edgeInfo = @()
-	while ($v -ne $s[[Finish]] -and $v -ne $s[[Abort]]) {
+	while ($true) {
 
 		Clear-HostStep
 		Write-Debug "`Previous Edges`: $edgeInfo; Running: $($v.Name)..."
@@ -227,6 +230,11 @@ try {
 				$v.Reset()
 			}
 			continue
+		}
+		$vStack.Push($v)
+
+		if ($v -eq $s[[Finish]] -or $v -eq $s[[Abort]]) {
+			break
 		}
 
 		$edges = $v.getEdges()
@@ -242,16 +250,9 @@ try {
 		if ($null -eq $next) {
 			Write-Error "Found 0 next steps from $v, options included $($v.getNeighbors())."
 		}
-
-		$vStack.Push($v)
 		$v = $next
 	}
-
-	Clear-HostStep
-	$v.Run() | Out-Null
 } finally {
-
-	$vStack.Push($v)
 
 	$workDir = $config.workDir ?? './'
 	Write-StepGraph (join-path $workDir 'graph.path') $s $vStack

@@ -77,11 +77,11 @@ param (
 	[string]   $letsEncryptCertManagerNamespace = 'cert-manager',
 
 	[string]   $serviceTypeCodeDx = '',
-	[string[]] $serviceAnnotationsCodeDx = @(),
+	[hashtable]$serviceAnnotationsCodeDx = @{},
 
 	[switch]   $skipIngressEnabled,
 	[switch]   $skipIngressAssumesNginx,
-	[string[]] $ingressAnnotationsCodeDx = @(),
+	[hashtable]$ingressAnnotationsCodeDx = @{},
 
 	[string]   $namespaceToolOrchestration = 'cdx-svc',
 	[string]   $namespaceCodeDx = 'cdx-app',
@@ -129,6 +129,20 @@ param (
 
 	[switch]   $skipToolOrchestration,
 
+	[Tuple`2[string,string]] $codeDxNodeSelector,
+	[Tuple`2[string,string]] $masterDatabaseNodeSelector,
+	[Tuple`2[string,string]] $subordinateDatabaseNodeSelector,
+	[Tuple`2[string,string]] $toolServiceNodeSelector,
+	[Tuple`2[string,string]] $minioNodeSelector,
+	[Tuple`2[string,string]] $workflowControllerNodeSelector,
+
+	[Tuple`2[string,string]] $codeDxNoScheduleExecuteToleration,
+	[Tuple`2[string,string]] $masterDatabaseNoScheduleExecuteToleration,
+	[Tuple`2[string,string]] $subordinateDatabaseNoScheduleExecuteToleration,
+	[Tuple`2[string,string]] $toolServiceNoScheduleExecuteToleration,
+	[Tuple`2[string,string]] $minioNoScheduleExecuteToleration,
+	[Tuple`2[string,string]] $workflowControllerNoScheduleExecuteToleration,
+
 	[management.automation.scriptBlock] $provisionNetworkPolicy,
 	[management.automation.scriptBlock] $provisionIngressController
 )
@@ -161,38 +175,53 @@ if ($kubeContextName -ne '') {
 }
 
 $dns1123SubdomainExpr = '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
+if (-not $skipIngressEnabled -and -not (Test-IsValidParameterValue $codeDxDnsName $dns1123SubdomainExpr)) { 
+	$codeDxDnsName = Read-HostText 'Enter Code Dx domain name (e.g., www.codedx.io)' -validationExpr $dns1123SubdomainExpr 
+}
 
-if (-not $skipIngressEnabled -and -not (Test-IsValidParameterValue $codeDxDnsName $dns1123SubdomainExpr)) { $codeDxDnsName = Read-HostText 'Enter Code Dx domain name (e.g., www.codedx.io)' -validationExpr $dns1123SubdomainExpr }
-if (-not $skipTLS -and $clusterCertificateAuthorityCertPath -eq '') { $clusterCertificateAuthorityCertPath = Read-Host -Prompt 'Enter path to cluster CA certificate' }
-if (-not $skipToolOrchestration -and $minioAdminUsername -eq '') { $minioAdminUsername = Read-HostSecureText 'Enter a username for the MinIO admin account' 5 }
+if (-not $skipTLS -and $clusterCertificateAuthorityCertPath -eq '') { 
+	$clusterCertificateAuthorityCertPath = Read-Host -Prompt 'Enter path to cluster CA certificate' 
+}
+
+if (-not $skipToolOrchestration -and $minioAdminUsername -eq '') { 
+	$minioAdminUsername = Read-HostSecureText 'Enter a username for the MinIO admin account' 5 
+}
+
 if (-not $skipToolOrchestration -and $minioAdminPwd -eq '') { 
 	$minioAdminPwd = Get-MinioPasswordFromPd $namespaceToolOrchestration $releaseNameToolOrchestration
 	if ($null -eq $minioAdminPwd) {
 		$minioAdminPwd = Read-HostSecureText 'Enter a password for the MinIO admin account' 8 
 	}
 }
+
 if ($codedxAdminPwd -eq '') { 
 	$codeDxAdminPwd = Get-CodeDxAdminPwdFromPd $namespaceCodeDx $releaseNameCodeDx
 	if ($null -eq $codeDxAdminPwd) {
 		$codedxAdminPwd = Read-HostSecureText 'Enter a password for the Code Dx admin account' 8 
 	}
 }
+
 if (-not $skipToolOrchestration -and $toolServiceApiKey -eq '') { 
 	$toolServiceApiKey = Get-ToolServiceApiKeyFromPd $namespaceToolOrchestration $releaseNameToolOrchestration
 	if ($null -eq $toolServiceApiKey) {
 		$toolServiceApiKey = Read-HostSecureText 'Enter an API key for the Code Dx Tool Orchestration service' 8 
 	}
 }
+
 if ($caCertsFileNewPwd -eq '') {
 	$newPwd = Get-CacertsNewPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
 	if ($null -ne $newPwd) {
 		$caCertsFileNewPwd = $newPwd
 	}
 }
-if ($caCertsFileNewPwd -ne '' -and $caCertsFileNewPwd.length -lt 6) { $caCertsFileNewPwd = Read-HostSecureText 'Enter a password to protect the cacerts file' 6 }
+
+if ($caCertsFileNewPwd -ne '' -and $caCertsFileNewPwd.length -lt 6) { 
+	$caCertsFileNewPwd = Read-HostSecureText 'Enter a password to protect the cacerts file' 6 
+}
 
 $externalDatabaseUrl = ''
 if ($skipDatabase) {
+
 	if ($externalDatabaseHost -eq '') { $externalDatabaseHost = Read-HostText 'Enter your external database host name' }
 	if ($externalDatabaseName -eq '') { $externalDatabaseName = Read-HostText 'Enter your external, preexisting Code Dx database name' }
 
@@ -222,6 +251,7 @@ if ($skipDatabase) {
 	$externalDatabaseUrl = Get-DatabaseUrl $externalDatabaseHost $externalDatabasePort $externalDatabaseName $externalDatabaseServerCert -databaseSkipTls:$externalDatabaseSkipTls
 }
 else {
+
 	if ($mariadbRootPwd -eq '') { 
 		$mariadbRootPwd = Get-DatabaseRootPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
 		if ($null -eq $mariadbRootPwd) {
@@ -278,8 +308,7 @@ Write-Verbose "Switching to directory $workDir..."
 Push-Location $workDir
 
 $useNetworkPolicies = -not $skipNetworkPolicies
-if ($useNetworkPolicies -and $provisionNetworkPolicy -ne $null) {
-
+if ($useNetworkPolicies -and $null -ne $provisionNetworkPolicy) {
 	Write-Verbose "Adding network policy provider..."
 	& $provisionNetworkPolicy $waitTimeSeconds
 }
@@ -316,8 +345,8 @@ if (-not $skipNginxIngressControllerInstall) {
 		Add-NginxIngress $nginxIngressControllerNamespace $waitTimeSeconds '' $priorityValuesFile $releaseNameCodeDx $nginxCPUReservation $nginxMemoryReservation $nginxEphemeralStorageReservation
 	}
 
-	$ingressAnnotationsCodeDx += "nginx.ingress.kubernetes.io/proxy-read-timeout: '3600'"
-	$ingressAnnotationsCodeDx += "nginx.ingress.kubernetes.io/proxy-body-size: '0'"
+	$ingressAnnotationsCodeDx['nginx.ingress.kubernetes.io/proxy-read-timeout'] = '3600'
+	$ingressAnnotationsCodeDx['nginx.ingress.kubernetes.io/proxy-body-size'] = '0'
 }
 
 if (-not $skipLetsEncryptCertManagerInstall) {
@@ -328,8 +357,8 @@ if (-not $skipLetsEncryptCertManagerInstall) {
 		'cert-manager-role.yaml' 'cert-manager-role-binding.yaml' 'cert-manager-http-solver-role-binding.yaml' `
 		$waitTimeSeconds -enablePSPs:(-not $skipPSPs)
 
-	$ingressAnnotationsCodeDx += "kubernetes.io/tls-acme: 'true'"
-	$ingressAnnotationsCodeDx += "cert-manager.io/cluster-issuer: '$letsEncryptCertManagerClusterIssuer'"
+	$ingressAnnotationsCodeDx['kubernetes.io/tls-acme'] = 'true'
+	$ingressAnnotationsCodeDx['cert-manager.io/cluster-issuer'] = $letsEncryptCertManagerClusterIssuer
 }
 
 Write-Verbose 'Fetching Code Dx Helm charts...'
@@ -381,6 +410,8 @@ New-CodeDxDeployment $codeDxDnsName $codeDxServicePortNumber $codeDxTlsServicePo
 	$ingressAnnotationsCodeDx `
 	$caCertsFilename (Get-TrustedCaCertsFilePwd $caCertsFilePwd $caCertsFileNewPwd) `
 	$externalDatabaseUrl $externalDatabaseUser $externalDatabasePwd `
+	$codeDxNodeSelector $masterDatabaseNodeSelector $subordinateDatabaseNodeSelector `
+	$codeDxNoScheduleExecuteToleration $masterDatabaseNoScheduleExecuteToleration $subordinateDatabaseNoScheduleExecuteToleration `
 	-ingressEnabled:(-not $skipIngressEnabled) -ingressAssumesNginx:(-not $skipIngressAssumesNginx) `
 	-enablePSPs:(-not $skipPSPs) -enableNetworkPolicies:$useNetworkPolicies -configureTls:(-not $skipTLS) -skipDatabase:$skipDatabase `
 	-offlineMode:($certificateWorkRemains -or $installToolOrchestration)
@@ -426,6 +457,8 @@ if ($installToolOrchestration) {
 		$toolServiceEphemeralStorageReservation $minioEphemeralStorageReservation $workflowEphemeralStorageReservation `
 		$kubeApiTargetPort `
 		$extraToolOrchestrationValuesPath `
+		$toolServiceNodeSelector $minioNodeSelector $workflowControllerNodeSelector `
+		$toolServiceNoScheduleExecuteToleration $minioNoScheduleExecuteToleration $workflowControllerNoScheduleExecuteToleration `
 		-enablePSPs:(-not $skipPSPs) -enableNetworkPolicies:$useNetworkPolicies -configureTls:(-not $skipTLS)
 
 	Write-Verbose 'Updating Code Dx deployment by enabling Tool Orchestration...'

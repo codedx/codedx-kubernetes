@@ -302,6 +302,7 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 
 	$toolOrchestrationFullName = Get-CodeDxToolOrchestrationChartFullName $toolServiceReleaseName
 
+	$minioCertConfigMap = ''
 	if ($configureTls) {
 		$protocol = 'https'
 		$codedxPort = $codeDxTlsTomcatPortNumber

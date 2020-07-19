@@ -144,6 +144,7 @@ Add-StepTransitions $graph $s[[UseDefaultDockerImages]] $s[[IngressKind]]
 Add-StepTransitions $graph $s[[IngressKind]] $s[[NginxIngressNamespace]],$s[[NginxIngressAddress]],$s[[LetsEncryptNamespace]]
 Add-StepTransitions $graph $s[[IngressKind]] $s[[NginxIngressNamespace]],$s[[LetsEncryptNamespace]],$s[[LetsEncryptClusterIssuer]],$s[[LetsEncryptEmail]]
 Add-StepTransitions $graph $s[[IngressKind]] $s[[IngressCertificateArn]]
+Add-StepTransitions $graph $s[[IngressKind]] $s[[DnsName]],$s[[DefaultCPU]]
 Add-StepTransitions $graph $s[[IngressKind]] $s[[DefaultCPU]]
 
 Add-StepTransitions $graph $s[[LetsEncryptEmail]] $s[[DnsName]],$s[[DefaultCPU]]

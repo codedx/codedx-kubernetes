@@ -26,8 +26,12 @@ cluster.
 
 	[IQuestion]MakeQuestion([string] $prompt) {
 
-		$choices = [tuple]::create('None', 'No load balancer/ingress, use port-forward or something else to access Code Dx'),
-			[tuple]::create('NGINX and Cert Manager with &Let''s Encrypt', 'Use NGINX and Cert Manager with Let''s Encrypt')
+		$choices = `
+			[tuple]::create('None', 'Do not configure any type of ingress (use port-forward or something else to access Code Dx)'),
+			[tuple]::create('NGINX and &Let''s Encrypt', 'Install and use NGINX with Let''s Encrypt Cert Manager'),
+			[tuple]::create('Load Balancer', 'Configure the Code Dx Kubernetes service as a LoadBalancer service type'),
+			[tuple]::create('External Ingress Controller', 'Create ingress resource for use with your ingress controller'),
+			[tuple]::create('External NGINX Ingress Controller', 'Create ingress resource for use with your NGINX ingress controller')
 
 		if ($this.config.k8sProvider -eq [ProviderType]::Eks) {
 			$choices += [tuple]::create('AWS &Classic Load Balancer with Certificate Manager', 'Use AWS Classic Load Balancer')
@@ -41,16 +45,21 @@ cluster.
 		switch (([MultipleChoiceQuestion]$question).choice) {
 			0 { $this.config.ingressType = [IngressType]::None }
 			1 { $this.config.ingressType = [IngressType]::NginxLetsEncrypt }
-			2 { $this.config.ingressType = [IngressType]::ClassicElb }
-			3 { $this.config.ingressType = [IngressType]::NetworkElb }
+			2 { $this.config.ingressType = [IngressType]::LoadBalancer }
+			3 { $this.config.ingressType = [IngressType]::ExternalIngressController }
+			4 { $this.config.ingressType = [IngressType]::ExternalNginxIngressController }
+			5 { $this.config.ingressType = [IngressType]::ClassicElb }
+			6 { $this.config.ingressType = [IngressType]::NetworkElb }
 		}
 
 		$this.config.skipNginxIngressControllerInstall = $this.config.ingressType -ne [IngressType]::NginxLetsEncrypt
 		$this.config.skipLetsEncryptCertManagerInstall = $this.config.skipNginxIngressControllerInstall
-		$this.config.skipIngressEnabled = $this.config.skipNginxIngressControllerInstall
-		$this.config.skipIngressAssumesNginx = $this.config.skipNginxIngressControllerInstall
+
+		$this.config.skipIngressEnabled = $this.config.skipNginxIngressControllerInstall -and $this.config.ingressType -ne [IngressType]::ExternalIngressController -and $this.config.ingressType -ne [IngressType]::ExternalNginxIngressController
+		$this.config.skipIngressAssumesNginx = $this.config.skipNginxIngressControllerInstall -and $this.config.ingressType -ne [IngressType]::ExternalNginxIngressController
+		
 		$this.config.ingressAnnotationsCodeDx = @{}
-		$this.config.serviceTypeCodeDx = ($this.config.ingressType -eq [IngressType]::ClassicElb -or $this.config.ingressType -eq [IngressType]::NetworkElb) ? 'LoadBalancer' : ''
+		$this.config.serviceTypeCodeDx = ($this.config.ingressType -eq [IngressType]::LoadBalancer -or $this.config.ingressType -eq [IngressType]::ClassicElb -or $this.config.ingressType -eq [IngressType]::NetworkElb) ? 'LoadBalancer' : ''
 		return $true
 	}
 
@@ -288,6 +297,6 @@ name of a host you will access over the network using a DNS registration.
 	}
 
 	[bool]CanRun() {
-		return $this.config.ingressType -eq [IngressType]::NginxLetsEncrypt
+		return -not $this.config.skipIngressEnabled
 	}
 }

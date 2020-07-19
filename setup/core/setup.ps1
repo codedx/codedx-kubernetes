@@ -292,7 +292,7 @@ if ($dockerImagePullSecretName -ne '') {
 	}
 }
 
-if (-not (test-path $clusterCertificateAuthorityCertPath -PathType Leaf)) {
+if (-not $skipTls -and -not (test-path $clusterCertificateAuthorityCertPath -PathType Leaf)) {
 	write-error "Unable to continue because path '$clusterCertificateAuthorityCertPath' cannot be found."
 }
 

@@ -21,6 +21,9 @@ enum ProviderType {
 enum IngressType {
 	None
 	NginxLetsEncrypt
+	LoadBalancer
+	ExternalIngressController
+	ExternalNginxIngressController
 	ClassicElb
 	NetworkElb
 }

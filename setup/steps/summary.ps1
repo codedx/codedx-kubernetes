@@ -254,10 +254,13 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 
 		$this.PrintNotes()
 		if ($runNow) {
-			$this.RunNow($setupPdCmdLine, $setupCmdLine)
-		} else {
-			$this.SaveScripts($setupPdCmdLine, $setupCmdLine)
+			if ($this.RunNow($setupPdCmdLine, $setupCmdLine)) {
+				return $true
+			}
+			Write-Host 'The setup script failed to run successfully.'
 		}
+
+		$this.SaveScripts($setupPdCmdLine, $setupCmdLine)
 		return $true
 	}
 
@@ -284,7 +287,7 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 		Write-Host "---`n"
 	}
 
-	[void]RunNow([string] $setupPdCmdLine, [string] $setupCmdLine) {
+	[bool]RunNow([string] $setupPdCmdLine, [string] $setupCmdLine) {
 
 		Write-Host 'Starting deployment...'
 		if ($setupPdCmdLine -ne '') {
@@ -293,7 +296,7 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 			$cmd = ([convert]::ToBase64String([text.encoding]::unicode.getbytes($setupPdCmdLine)))
 			$process = Start-Process pwsh '-e',$cmd -Wait -PassThru
 			if ($process.ExitCode -ne 0) {
-				throw "Unable to create k8s secret(s), kubectl exited with code $LASTEXITCODE."
+				return $false
 			}
 		}
 
@@ -301,8 +304,9 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 		$cmd = ([convert]::ToBase64String([text.encoding]::unicode.getbytes($setupCmdLine)))
 		$process = Start-Process pwsh '-e',$cmd -Wait -PassThru
 		if ($process.ExitCode -ne 0) {
-			throw "Unable to run setup command, kubectl exited with code $LASTEXITCODE."
+			return $false
 		}
+		return $true
 	}
 
 	[void]SaveScripts([string] $setupPdCmdLine, [string] $setupCmdLine) {

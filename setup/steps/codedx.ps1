@@ -163,6 +163,8 @@ class CodeDxNamespace : Step {
 Specify the Kubernetes namespace where Code Dx components will be installed. 
 For example, to install components in a namespace named 'cdx-app', enter  
 that name here. The namespace will be created if it does not already exist.
+
+Note: Press Enter to use the example namespace.
 '@
 
 	static [string] hidden $default = 'cdx-app'
@@ -174,8 +176,15 @@ that name here. The namespace will be created if it does not already exist.
 		[CodeDxNamespace]::description,
 		"Enter Code Dx namespace name (e.g., $([CodeDxNamespace]::default))") {}
 
+	[IQuestion] MakeQuestion([string] $prompt) {
+		$question = new-object Question($prompt)
+		$question.allowEmptyResponse = $true
+		$question.emptyResponseLabel = "Accept default ($([CodeDxNamespace]::default))"
+		return $question
+	}
+
 	[bool]HandleResponse([IQuestion] $question) {
-		$this.config.namespaceCodeDx = ([Question]$question).response
+		$this.config.namespaceCodeDx = ([Question]$question).GetResponse([CodeDxNamespace]::default)
 		return $true
 	}
 
@@ -189,6 +198,8 @@ class CodeDxReleaseName : Step {
 	static [string] hidden $description = @'
 Specify the Helm release name for the Code Dx deployment. The name should not 
 conflict with another Helm release in the Kubernetes namespace you chose.
+
+Note: Press Enter to use the example release name.
 '@
 
 	static [string] hidden $default = 'codedx'
@@ -200,8 +211,15 @@ conflict with another Helm release in the Kubernetes namespace you chose.
 		[CodeDxReleaseName]::description,
 		"Enter Code Dx Helm release name (e.g., $([CodeDxReleaseName]::default))") {}
 
+	[IQuestion] MakeQuestion([string] $prompt) {
+		$question = new-object Question($prompt)
+		$question.allowEmptyResponse = $true
+		$question.emptyResponseLabel = "Accept default ($([CodeDxReleaseName]::default))"
+		return $question
+	}
+
 	[bool]HandleResponse([IQuestion] $question) {
-		$this.config.releaseNameCodeDx = ([Question]$question).response
+		$this.config.releaseNameCodeDx = ([Question]$question).GetResponse([CodeDxReleaseName]::default)
 		return $true
 	}
 

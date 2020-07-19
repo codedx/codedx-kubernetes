@@ -74,6 +74,13 @@ class Question : IQuestion {
 		$this.hasResponse = $true
 		$this.response = $result
 	}
+
+	[string] GetResponse([string] $whenEmpty) {
+		if (!$this.hasResponse) {
+			return $null
+		}
+		return $this.isResponseEmpty ? $whenEmpty : $this.response
+	}
 }
 
 class ConfirmationQuestion : Question {

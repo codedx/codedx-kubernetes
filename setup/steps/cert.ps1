@@ -30,7 +30,7 @@ not issued by a well-known certificate authority, you should answer No.
 	[IQuestion]MakeQuestion([string] $prompt) {
 		return new-object YesNoQuestion($prompt,
 			'Yes, use the default cacerts file.',
-			'No, I will specify a path to the cacerts file I want to use.', 0)
+			'No, I will specify a path to the cacerts file I want to use.', -1)
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
@@ -139,7 +139,7 @@ Specify whether you want to change the password of the Java cacerts file.
 	[IQuestion]MakeQuestion([string] $prompt) {
 		return new-object YesNoQuestion($prompt,
 			'Yes, I want to change the password.',
-			'No, I do not want to change the password.', 0)
+			'No, I do not want to change the password.', -1)
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
@@ -207,7 +207,7 @@ you can add the certificates that Code Dx should trust.
 	[IQuestion]MakeQuestion([string] $prompt) {
 		return new-object YesNoQuestion($prompt,
 			'Yes, I want to add extra certificates for Code Dx to trust.',
-			'No, I do not want to add any extra certificates for Code Dx to trust.', 0)
+			'No, I do not want to add any extra certificates for Code Dx to trust.', -1)
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {

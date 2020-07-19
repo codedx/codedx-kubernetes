@@ -51,6 +51,8 @@ Specify the Kubernetes namespace where Code Dx Tool Orchestration components
 will be installed. For example, to install components in a namespace named 
 'cdx-svc', enter that name here. The namespace will be created if it does 
 not already exist.
+
+Note: Press Enter to use the example namespace.
 '@
 
 	static [string] hidden $default = 'cdx-svc'
@@ -62,8 +64,15 @@ not already exist.
 		[ToolOrchestrationNamespace]::description,
 		"Enter Code Dx Tool Orchestration namespace name (e.g., $([ToolOrchestrationNamespace]::default))") {}
 
+	[IQuestion] MakeQuestion([string] $prompt) {
+		$question = new-object Question($prompt)
+		$question.allowEmptyResponse = $true
+		$question.emptyResponseLabel = "Accept default ($([ToolOrchestrationNamespace]::default))"
+		return $question
+	}
+
 	[bool]HandleResponse([IQuestion] $question) {
-		$this.config.namespaceToolOrchestration = ([Question]$question).response
+		$this.config.namespaceToolOrchestration = ([Question]$question).GetResponse([ToolOrchestrationNamespace]::default)
 		return $true
 	}
 
@@ -82,6 +91,8 @@ class ToolOrchestrationReleaseName : Step {
 Specify the Helm release name for the Code Dx Tool Orchestration deployment. 
 The name should not conflict with another Helm release in the Kubernetes 
 namespace you chose.
+
+Note: Press Enter to use the example release name.
 '@
 
 	static [string] hidden $default = 'codedx-tool-orchestration'
@@ -93,8 +104,15 @@ namespace you chose.
 		[ToolOrchestrationReleaseName]::description,
 		"Enter Tool Orchestration Helm release name (e.g., $([ToolOrchestrationReleaseName]::default))") {}
 
+	[IQuestion] MakeQuestion([string] $prompt) {
+		$question = new-object Question($prompt)
+		$question.allowEmptyResponse = $true
+		$question.emptyResponseLabel = "Accept default ($([ToolOrchestrationReleaseName]::default))"
+		return $question
+	}
+
 	[bool]HandleResponse([IQuestion] $question) {
-		$this.config.releaseNameToolOrchestration = ([Question]$question).response
+		$this.config.releaseNameToolOrchestration = ([Question]$question).GetResponse([ToolOrchestrationReleaseName]::default)
 		return $true
 	}
 

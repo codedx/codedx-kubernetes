@@ -35,7 +35,7 @@ https://github.com/codedx/codedx-kubernetes/blob/feature/guide/setup/core/docs/d
 	[IQuestion] MakeQuestion([string] $prompt) {
 		return new-object YesNoQuestion($prompt, 
 			'Yes, I want to use a database that I will provide', 
-			'No, I want to use the database that Code Dx deploys on Kubernetes', 1)
+			'No, I want to use the database that Code Dx deploys on Kubernetes', -1)
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {

@@ -40,6 +40,14 @@ kubectl label nodes your-cluster-node-name node=webapp
 		return $true
 	}
 
+	[bool]CanRun() {
+		# the tool workflows do not currently support node selectors or pod 
+		# tolerations (Argo has support in the workflow spec). since most 
+		# minikube clusters will be one-node clusters, avoid node selectors
+		# and pod tolerations
+		return $this.config.k8sProvider -ne [ProviderType]::Minikube
+	}
+
 	[void]Reset(){
 		$this.config.useNodeSelectors = $false
 	}
@@ -339,6 +347,14 @@ kubectl taint nodes your-cluster-node-name dedicated=webapp:NoExecute
 	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.useTolerations = ([YesNoQuestion]$question).choice -eq 0
 		return $true
+	}
+
+	[bool]CanRun() {
+		# the tool workflows do not currently support node selectors or pod 
+		# tolerations (Argo has support in the workflow spec). since most 
+		# minikube clusters will be one-node clusters, avoid node selectors
+		# and pod tolerations
+		return $this.config.k8sProvider -ne [ProviderType]::Minikube
 	}
 
 	[void]Reset(){

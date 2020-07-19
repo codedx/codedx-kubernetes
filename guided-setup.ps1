@@ -185,6 +185,7 @@ Add-StepTransitions $graph $s[[CodeDxVolumeSize]] $s[[MinIOVolumeSize]],$s[[Stor
 Add-StepTransitions $graph $s[[CodeDxVolumeSize]] $s[[StorageClassName]]
 
 Add-StepTransitions $graph $s[[StorageClassName]] $s[[UseNodeSelectors]]
+Add-StepTransitions $graph $s[[StorageClassName]] $s[[Finish]]
 
 Add-StepTransitions $graph $s[[UseNodeSelectors]] $s[[CodeDxNodeSelector]],$s[[MasterDatabaseNodeSelector]],$s[[SubordinateDatabaseNodeSelector]],$s[[ToolServiceNodeSelector]]
 Add-StepTransitions $graph $s[[UseNodeSelectors]] $s[[CodeDxNodeSelector]],$s[[ToolServiceNodeSelector]],$s[[MinIONodeSelector]],$s[[WorkflowControllerNodeSelector]],$s[[UseTolerations]]

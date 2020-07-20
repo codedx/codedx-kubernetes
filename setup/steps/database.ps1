@@ -104,7 +104,7 @@ changed MariaDB's configuration.
 	}
 
 	[void]Reset(){
-		$this.config.externalDatabasePort = 3306
+		$this.config.externalDatabasePort = [ConfigInput]::externalDatabasePortDefault
 	}
 
 	[bool]CanRun() {

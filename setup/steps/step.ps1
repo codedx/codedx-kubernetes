@@ -30,6 +30,12 @@ enum IngressType {
 
 class ConfigInput {
 
+	static [int] $codeDxTlsServicePortNumberDefault = 9443
+	static [int] $volumeSizeGiBDefault = 32
+	static [int] $toolServiceReplicasDefault = 3
+	static [int] $kubeApiTargetPortDefault = 443
+	static [int] $externalDatabasePortDefault = 3306
+
 	[bool]         $prereqsSatisified
 	[string]       $missingPrereqs
 
@@ -37,6 +43,8 @@ class ConfigInput {
 	[ProviderType] $k8sProvider
 	[string]       $kubeApiTargetPort
 	[string]       $kubeContextName
+
+	[int]          $codeDxTlsServicePortNumber
 
 	[string]       $codeDxDnsName
 
@@ -166,6 +174,17 @@ class ConfigInput {
 	[Tuple`2[string,string]] $workflowControllerNoScheduleExecuteToleration
 
 	[hashtable]  $notes = @{}
+
+	ConfigInput() {
+		$this.codeDxTlsServicePortNumber = [ConfigInput]::codeDxTlsServicePortNumberDefault
+		$this.codeDxVolumeSizeGiB = [ConfigInput]::volumeSizeGiBDefault
+		$this.dbVolumeSizeGiB = [ConfigInput]::volumeSizeGiBDefault
+		$this.dbSlaveVolumeSizeGiB = [ConfigInput]::volumeSizeGiBDefault
+		$this.minioVolumeSizeGiB = [ConfigInput]::volumeSizeGiBDefault
+		$this.toolServiceReplicas = [ConfigInput]::toolServiceReplicasDefault
+		$this.kubeApiTargetPort = [ConfigInput]::kubeApiTargetPortDefault
+		$this.externalDatabasePort = [ConfigInput]::externalDatabasePortDefault
+	}
 
 	[bool]HasContext() {
 		return $this.kubeContextName -ne ''

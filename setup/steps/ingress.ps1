@@ -60,6 +60,11 @@ cluster.
 		
 		$this.config.ingressAnnotationsCodeDx = @{}
 		$this.config.serviceTypeCodeDx = ($this.config.ingressType -eq [IngressType]::LoadBalancer -or $this.config.ingressType -eq [IngressType]::ClassicElb -or $this.config.ingressType -eq [IngressType]::NetworkElb) ? 'LoadBalancer' : ''
+		
+		if ($this.config.ingressType -eq [IngressType]::ClassicElb -or $this.config.ingressType -eq [IngressType]::NetworkElb) {
+			$this.config.codeDxTlsServicePortNumber = 443
+		}
+		
 		return $true
 	}
 
@@ -70,6 +75,7 @@ cluster.
 		$this.config.skipIngressAssumesNginx = $false
 		$this.config.ingressAnnotationsCodeDx = @{}
 		$this.config.serviceTypeCodeDx = ''
+		$this.config.codeDxTlsServicePortNumber = [ConfigInput]::codeDxTlsServicePortNumberDefault
 	}
 }
 

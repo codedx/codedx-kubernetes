@@ -19,7 +19,7 @@ This script includes functions for Helm-related tasks.
 
 function Get-HelmVersionMajorMinor() {
 
-	$versionMatch = helm version | select-string 'Version:"v(?<version>\d+\.\d+)'
+	$versionMatch = helm version -c | select-string 'Version:"v(?<version>\d+\.\d+)'
 	if ($null -eq $versionMatch -or -not $versionMatch.Matches.Success) {
 		return $null
 	}

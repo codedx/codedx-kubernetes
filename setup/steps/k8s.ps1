@@ -198,6 +198,10 @@ class GetKubernetesPort: Step {
 
 		return $true
 	}
+
+	[void]Reset() {
+		$this.config.kubeApiTargetPort = [ConfigInput]::kubeApiTargetPortDefault
+	}
 }
 
 class CertsCAPath : Step {

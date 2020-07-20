@@ -221,7 +221,7 @@ You must run at least one service instance.
 	}
 
 	[void]Reset(){
-		$this.config.toolServiceReplicas = 3
+		$this.config.toolServiceReplicas = [ConfigInput]::toolServiceReplicasDefault
 	}
 
 	[bool]CanRun() {

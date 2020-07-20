@@ -125,7 +125,7 @@ class CodeDxVolumeSize : VolumeSizeStep {
 	}
 	
 	[void]Reset() {
-		$this.config.codeDxVolumeSizeGiB = '32'
+		$this.config.codeDxVolumeSizeGiB = [ConfigInput]::volumeSizeGiBDefault
 	}
 
 	[void]ApplyDefault() {
@@ -146,7 +146,7 @@ class MasterDatabaseVolumeSize : VolumeSizeStep {
 	}
 
 	[void]Reset() {
-		$this.config.dbVolumeSizeGiB = '32'
+		$this.config.dbVolumeSizeGiB = [ConfigInput]::volumeSizeGiBDefault
 	}
 
 	[bool]CanRun() {
@@ -177,7 +177,7 @@ and a volume to store backup files. The volume size specified here applies to
 	}
 
 	[void]Reset() {
-		$this.config.codeDxVolumeSizeGiB = '32'
+		$this.config.codeDxVolumeSizeGiB = [ConfigInput]::volumeSizeGiBDefault
 	}
 
 	[bool]CanRun() {
@@ -210,7 +210,7 @@ class MinIOVolumeSize : VolumeSizeStep {
 	}
 
 	[void]Reset() {
-		$this.config.codeDxVolumeSizeGiB = '32'
+		$this.config.codeDxVolumeSizeGiB = [ConfigInput]::volumeSizeGiBDefault
 	}
 
 	[bool]CanRun() {

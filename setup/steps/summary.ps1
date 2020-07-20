@@ -420,7 +420,7 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 	[void]AddIntParameter([text.stringbuilder] $sb, [string] $parameterName) {
 
 		$parameterValue = ($this.config | select-object -property $parameterName).$parameterName
-		if ($null -ne $parameterValue -and '' -ne $parameterValue) {
+		if ($null -ne $parameterValue) {
 			$sb.appendformat(" -{0} {1}", $parameterName, $parameterValue)
 		}
 	}

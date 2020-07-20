@@ -156,7 +156,9 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 			$this.AddSwitchParameter($sb, $_)
 		}
 
-		$this.AddIntParameter($sb, 'codeDxVolumeSizeGiB')
+		'codeDxVolumeSizeGiB','codeDxTlsServicePortNumber' | ForEach-Object {
+			$this.AddIntParameter($sb, $_)
+		}
 		'codeDxNodeSelector','codeDxNoScheduleExecuteToleration' | ForEach-Object {
 			$this.AddKeyValueParameter($sb, $_)
 		}

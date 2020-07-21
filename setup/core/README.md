@@ -126,5 +126,19 @@ This section describes the setup.ps1 script parameters, which you can specify by
 |                                                    |                                                            |                                                   |
 | `skipToolOrchestration`                            | whether to skip installing the Tool Orchestration feature  | `$false`                                          |
 |                                                    |                                                            |                                                   |
+| `codeDxNodeSelector`                               | node selector for the Code Dx web application              | purpose=codedx (example)                          |
+| `masterDatabaseNodeSelector`                       | node selector for the MariaDB master database pod          | purpose=codedx (example)                          |
+| `subordinateDatabaseNodeSelector`                  | node selector for the MariaDB subordinate database pod(s)  | purpose=codedx (example)                          |
+| `toolServiceNodeSelector`                          | node selector for the tool service pod(s)                  | purpose=codedx (example)                          |
+| `minioNodeSelector`                                | node selector for the minio pod                            | purpose=codedx (example)                          |
+| `workflowControllerNodeSelector`                   | node selector for the workflow controller pod              | purpose=codedx (example)                          |
+|                                                    |                                                            |                                                   |
+| `codeDxNoScheduleExecuteToleration`                | pod toleration for the Code Dx web application             | tag=web (example)                                 |
+| `masterDatabaseNoScheduleExecuteToleration`        | pod toleration for the MariaDB master database pod         | tag=master (example)                              |
+| `subordinateDatabaseNoScheduleExecuteToleration`   | pod toleration for the MariaDB subordinate database pod(s) | tag=subordinate (example)                         |
+| `toolServiceNoScheduleExecuteToleration`           | pod toleration for the tool service pod(s)                 | tag=toolsvc (example)                             |
+| `minioNoScheduleExecuteToleration`                 | pod toleration for the minio pod                           | tag=minio (example)                               |
+| `workflowControllerNoScheduleExecuteToleration`    | pod toleration for the workflow controller pod             | tag=workflowcontroller (example)                  |
+|                                                    |                                                            |                                                   |
 | `provisionNetworkPolicy`                           | script block for optional network policy provisioning      |                                                   |
 | `provisionIngressController`                       | script block for optional ingress controller provisioning  |                                                   |

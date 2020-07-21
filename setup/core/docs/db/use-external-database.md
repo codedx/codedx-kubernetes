@@ -23,9 +23,11 @@ Here are the steps required to use Code Dx with an external database:
    utf8mb4_general_ci with the below configuration. Failure to complete this step will negatively affect Code Dx
    performance or functionality.
 
-   [mysqld]
-   optimizer_search_depth=0
-   character-set-server=utf8mb4
-   collation-server=utf8mb4_general_ci
+```
+[mysqld]
+optimizer_search_depth=0
+character-set-server=utf8mb4
+collation-server=utf8mb4_general_ci
+```
 
    Also, make sure that sql_mode contains neither ONLY_FULL_GROUP_BY nor PAD_CHAR_TO_FULL_LENGTH.

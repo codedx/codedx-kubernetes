@@ -75,7 +75,8 @@ setup script can fetch configuration data.
 		Write-Host
 		
 		$contextNames = Get-KubectlContexts -nameOnly
-		$contextTuples = $contextNames | ForEach-Object {
+		$contextTuples = @()
+		$contextTuples += $contextNames | ForEach-Object {
 			[tuple]::create($_, "Use the kubectl context named $_ for your deployment")
 		}
 		$contextTuples += [tuple]::create([ChooseContext]::noContext, "You do not have a cluster and need to create one first")

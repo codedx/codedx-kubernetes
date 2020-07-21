@@ -165,12 +165,18 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 
 		if (-not $this.config.skipDatabase) {
 
-			'dbVolumeSizeGiB','dbSlaveVolumeSizeGiB','dbSlaveReplicaCount' | ForEach-Object {
-				$this.AddIntParameter($sb, $_)
+			$this.AddIntParameter($sb, 'dbVolumeSizeGiB')
+			if ($this.config.dbSlaveReplicaCount -gt 0) {
+				
+				'dbSlaveVolumeSizeGiB','dbSlaveReplicaCount' | ForEach-Object {
+					$this.AddIntParameter($sb, $_)
+				}
+				'subordinateDatabaseNodeSelector','subordinateDatabaseNoScheduleExecuteToleration' | ForEach-Object {
+					$this.AddKeyValueParameter($sb, $_)
+				}
 			}
 
-			'masterDatabaseNodeSelector','masterDatabaseNoScheduleExecuteToleration',
-			'subordinateDatabaseNodeSelector','subordinateDatabaseNoScheduleExecuteToleration' | ForEach-Object {
+			'masterDatabaseNodeSelector','masterDatabaseNoScheduleExecuteToleration' | ForEach-Object {
 				$this.AddKeyValueParameter($sb, $_)
 			}
 

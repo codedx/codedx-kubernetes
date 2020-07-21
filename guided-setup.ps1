@@ -181,6 +181,8 @@ Add-StepTransitions $graph $s[[DefaultVolumeSize]] $s[[CodeDxVolumeSize]]
 Add-StepTransitions $graph $s[[DefaultVolumeSize]] $s[[StorageClassName]]
 
 Add-StepTransitions $graph $s[[CodeDxVolumeSize]] $s[[MasterDatabaseVolumeSize]],$s[[SubordinateDatabaseVolumeSize]],$s[[MinIOVolumeSize]],$s[[StorageClassName]]
+Add-StepTransitions $graph $s[[MasterDatabaseVolumeSize]] $s[[MinIOVolumeSize]]
+Add-StepTransitions $graph $s[[MasterDatabaseVolumeSize]] $s[[StorageClassName]]
 Add-StepTransitions $graph $s[[SubordinateDatabaseVolumeSize]] $s[[StorageClassName]]
 Add-StepTransitions $graph $s[[CodeDxVolumeSize]] $s[[MinIOVolumeSize]],$s[[StorageClassName]]
 Add-StepTransitions $graph $s[[CodeDxVolumeSize]] $s[[StorageClassName]]

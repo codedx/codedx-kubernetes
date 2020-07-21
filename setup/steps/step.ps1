@@ -30,11 +30,11 @@ enum IngressType {
 
 class ConfigInput {
 
-	static [int] $codeDxTlsServicePortNumberDefault = 9443
-	static [int] $volumeSizeGiBDefault = 32
-	static [int] $toolServiceReplicasDefault = 3
-	static [int] $kubeApiTargetPortDefault = 443
-	static [int] $externalDatabasePortDefault = 3306
+	static [int]   $codeDxTlsServicePortNumberDefault = 9443
+	static [int]   $volumeSizeGiBDefault = 32
+	static [int]   $toolServiceReplicasDefault = 3
+	static [int]   $kubeApiTargetPortDefault = 443
+	static [int]   $externalDatabasePortDefault = 3306
 
 	[bool]         $prereqsSatisified
 	[string]       $missingPrereqs

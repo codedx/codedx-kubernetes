@@ -181,7 +181,7 @@ and a volume to store backup files. The volume size specified here applies to
 	}
 
 	[bool]CanRun() {
-		return ([VolumeSizeStep]$this).CanRun() -and (-not ($this.config.skipDatabase))
+		return ([VolumeSizeStep]$this).CanRun() -and (-not ($this.config.skipDatabase)) -and $this.config.dbSlaveReplicaCount -gt 0
 	}
 
 	[void]ApplyDefault() {

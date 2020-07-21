@@ -144,6 +144,17 @@ in your work directory may contain data that should be kept private.
 	[bool]HandleResponse([IQuestion] $question) {
 		$q = [PathQuestion]$question
 		$this.config.workDir = $q.isResponseEmpty ? "$($this.homeDirectory)/.k8s-codedx" : $q.response
+
+		if (-not (Test-Path $this.config.workDir -Type Container)) {
+			try {
+				New-Item -ItemType Directory $this.config.workDir | out-null
+			} catch {
+				Write-Host "Cannot create directory $($this.config.workDir): " $_
+				$this.config.workDir = ''
+				return $false
+			}
+		}
+
 		return $true
 	}
 }

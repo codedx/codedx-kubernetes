@@ -231,7 +231,7 @@ $externalDb, $caCertsFilename, $offlineMode.ToString().ToLower(), `
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
 
-	$chartFolder = (join-path $workDir codedx-kubernetes/codedx)
+	$chartFolder = (join-path $workDir codedx-kubernetes/setup/core/charts/codedx)
 	Invoke-HelmSingleDeployment 'Code Dx' $waitSeconds $namespace $releaseName $chartFolder $valuesFile $codeDxFullName 1 $extraValuesPaths
 }
 
@@ -435,7 +435,7 @@ $minioCertConfigMap,
 	$valuesFile = 'toolsvc-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
 
-	$chartFolder = (join-path $workDir codedx-kubernetes/codedx-tool-orchestration)
+	$chartFolder = (join-path $workDir codedx-kubernetes/setup/core/charts/codedx-tool-orchestration)
 	
 	Invoke-HelmSingleDeployment 'Tool Orchestration' $waitSeconds $namespace $toolServiceReleaseName $chartFolder $valuesFile $toolOrchestrationFullName $numReplicas $extraValuesPaths
 }
@@ -473,7 +473,7 @@ function Set-TrustedCerts([string] $workDir,
 
 	New-CodeDxPdSecret $codedxNamespace $codedxReleaseName $adminPwd $keystorePwd $externalDbUser $externalDbPwd
 	
-	$chartFolder = (join-path $workDir codedx-kubernetes/codedx)
+	$chartFolder = (join-path $workDir codedx-kubernetes/setup/core/charts/codedx)
 	
 	$values = @'
 cacertsFile: cacerts
@@ -539,7 +539,7 @@ networkPolicy:
 	$valuesFile = 'codedx-orchestration-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
 
-	$chartFolder = (join-path $workDir codedx-kubernetes/codedx)
+	$chartFolder = (join-path $workDir codedx-kubernetes/setup/core/charts/codedx)
 	$deploymentName = Get-CodeDxChartFullName $codedxReleaseName
 
 	Invoke-HelmSingleDeployment 'Code Dx (Configure Tool Orchestration)' $waitSeconds $codedxNamespace $codedxReleaseName $chartFolder $valuesFile $deploymentName 1 $extraValuesPaths

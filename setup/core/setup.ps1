@@ -111,7 +111,7 @@ param (
 	[string]   $codedxHelmRepo = 'https://codedx.github.io/codedx-kubernetes',
 	
 	[string]   $codedxGitRepo = 'https://github.com/codedx/codedx-kubernetes.git',
-	[string]   $codedxGitRepoBranch = 'master',
+	[string]   $codedxGitRepoBranch = 'feature/guide',
 
 	[int]      $kubeApiTargetPort = 443,
 
@@ -381,7 +381,7 @@ if ((-not $skipTLS) -and -not $skipToolOrchestration) {
 $caCertsFilename = ''
 if ($caCertsFilePath -ne '') {
 	Write-Verbose 'Configuring cacerts file...'
-	New-TrustedCaCertsFile $caCertsFilePath $caCertsFilePwd $caCertsFileNewPwd $caCertPaths (join-path $workDir codedx-kubernetes/codedx)
+	New-TrustedCaCertsFile $caCertsFilePath $caCertsFilePwd $caCertsFileNewPwd $caCertPaths (join-path $workDir codedx-kubernetes/setup/core/charts/codedx)
 
 	$caCertsFilename = 'cacerts'
 	$caCertPaths = @() # no more certificate work to do
@@ -424,7 +424,7 @@ if ($caCertsFilePath -eq '') {
 if ($certificateWorkRemains) {
 
 	Write-Verbose 'Configuring cacerts file...'
-	New-TrustedCaCertsFile $caCertsFilePath $caCertsFilePwd $caCertsFileNewPwd $caCertPaths (join-path $workDir codedx-kubernetes/codedx)
+	New-TrustedCaCertsFile $caCertsFilePath $caCertsFilePwd $caCertsFileNewPwd $caCertPaths (join-path $workDir codedx-kubernetes/setup/core/charts/codedx)
 
 	Set-TrustedCerts $workDir `
 		$waitTimeSeconds `

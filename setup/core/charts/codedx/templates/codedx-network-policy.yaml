@@ -73,13 +73,18 @@ spec:
     {{- else }}
     - port: 8080
     {{- end }}
-    {{- if or .Values.networkPolicy.codedx.ingressSelectors .Values.networkPolicy.codedx.toolServiceSelectors }}
-    from:
     {{- if .Values.networkPolicy.codedx.ingressSelectors }}
+    from:
 {{ toYaml .Values.networkPolicy.codedx.ingressSelectors | indent 4 -}}
-    {{ end -}}
+    {{- end }}
+  - ports:
+    {{- if .Values.codedxTls.enabled }}
+    - port: 8443
+    {{- else }}
+    - port: 8080
+    {{- end }}
     {{- if .Values.networkPolicy.codedx.toolServiceSelectors }}
+    from:
 {{ toYaml .Values.networkPolicy.codedx.toolServiceSelectors | indent 4 }}
-    {{- end -}}
     {{- end -}}
   {{ end -}}

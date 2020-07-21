@@ -5,6 +5,8 @@ Running guided-setup.ps1 is the recommended way to deploy Code Dx on Kubernetes 
 
 ## Prerequisites
 
+Code Dx supports a minimum Kubernetes version of 1.14 if you're not using AWS EKS; otherwise, the minimum Kubernetes version is 1.16.
+
 You must run guided-setup.ps1 from a system with administrative access to your cluster. Copy the following prerequisite programs to directories that are included in your PATH environment variable:
 
 - [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)

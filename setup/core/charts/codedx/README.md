@@ -1,124 +1,11 @@
 
 # Code Dx
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+Run the guided-setup.ps1 PowerShell Core script (in the root directory of this repository) to determine the correct setup.ps1 parameters for your Kubernetes cluster. The setup.ps1 script uses Helm to install and configure Code Dx on a Kubernetes cluster.
 
-[Code Dx](https://codedx.com/) is an automated application vulnerability management tool that makes all of your testing tools work together to provide one set of correlated results, then helps you prioritize and manage vulnerabilities — integrating with your application lifecycle management tools so your security and development teams work together for faster remediation.
-
-The Code Dx Helm chart creates Kubernetes resources for a secure, production-ready Code Dx deployment and environment. To make the most of this, check that Network Policies and Pod Security Policies are enabled and enforced on your cluster.
-
->Note: This chart is compatible with a cluster running Kubernetes v1.14.
-
-**This repository contains various in-depth guides in the [docs](docs) folder, outlined below.**
-
-- [Code Dx Config](docs/codedx-config.md)
-- [Code Dx Licensing](docs/codedx-licensing.md)
-- [Ingress](docs/ingress.md)
-- [Installation Guide](docs/installation-walkthrough.md)
-- [Code Dx Native HTTPS](docs/codedx-https.md)
-- [Upgrading Code Dx](docs/upgrading.md)
-
-**Sample installation values can be found [here.](sample-values)**
-
-## TL;DR
-
-Run the following commands after replacing `<admin-password>`, `<root-password>`, and `<replication-password>` with your Code Dx admin, MariaDB root, and MariaDB replication passwords.
-
-```
-$ helm repo add codedx https://codedx.github.io/codedx-kubernetes
-$ helm install codedx codedx/codedx --set codedxAdminPassword=<admin-password> --set mariadb.rootUser.password=<root-password> --set mariadb.replication.password=<replication-password>
-
-OR
-
-$ git clone https://github.com/codedx/codedx-kubernetes.git
-$ cd codedx-kubernetes/codedx
-$ helm dependency update
-$ helm install codedx . --set codedxAdminPassword=<admin-password> --set mariadb.rootUser.password=<root-password> --set mariadb.replication.password=<replication-password>
-```
-
-We recommend keeping any extra installation options in your own `values.yaml` file and using `helm install/upgrade ... -f my-values.yaml`, to prevent accidental changes to the installation when a configuration property is forgotten or missed. Check out the [example YAML files](sample-values) for common use-cases.
-
-## Prerequisite Details
-
-- Kubernetes 1.14+
-- Code Dx license ([purchase](https://codedx.com/purchase-application/) or [request a free trial](https://codedx.com/free-trial/))
-
-## Chart Details
-
-This chart will:
-
-- Deploy a Code Dx instance
-- Deploy the MariaDB chart with master and slaves
-- Create service accounts, PodSecurityPolicies, and NetworkPolicies
-- Create Ingress resources as necessary
-- Create secrets for your Code Dx license, DB credentials, and default Code Dx Admin credentials
+## Deployment Diagram
 
 ![Kubernetes Deployment Diagram](res/CodeDxK8s.png)
-
-## Installing the Chart
-
-Using this chart requires [Helm v3](https://docs.helm.sh/), a Kubernetes package manager. You can find instructions for installing Helm [here](https://helm.sh/docs/intro/install/).
-
-This chart contains a reference to a forked version of the stable/mariadb chart, and deploys MariaDB 10.3.22.
-
-You can use this chart by either registering the Code Dx Helm Repository with `helm repo add` (described above) or by cloning the repository locally.
-
-- Installation using the helm repository helps keep you up to date and doesn't require manually maintaining a copy of the chart
-- Installation from a cloned copy of the chart can be helpful with troubleshooting and allows you to directly use files during configuration, instead of needing to store additional files beforehand (eg cacerts, license, etc.)
-
-After installation, you'll be given commands to retrieve the Code Dx admin credentials. Use `kubectl get pods --watch` to check the status of the Code Dx installation. After installation and changing the admin password, the secret can be ignored entirely.
-
-A complete installation guide can be found [here.](docs/installation-walkthrough.md)
-
-**Before installing, you should first read the recommendations below.**
-
-### Installation Recommendations
-
-#### values.yaml
-We recommend placing any configuration changes in a custom `values.yaml` and using the `-f` option to specify your values file with each call to `helm upgrade`. Otherwise, remember to use the `--reuse-values` when running `helm upgrade` so that you do not lose your changes during an upgrade.
-
-**Some sample files are available in the [sample-values](sample-values) folder.**
-
-#### MariaDB
-When installing the chart in a public-facing environment, be sure to change the passwords for MariaDB Admin and MariaDB Replication. These passwords are not randomly generated and are nontrivial to change after installation. These should be assigned using a `values.yaml` file, either as plaintext, or preferably, in pre-defined secrets. An example of using predefined secrets can be found [here.](sample-values/values-secure-data.yaml)
-
-```
-$ helm install codedx codedx/codedx --set mariadb.rootUser.password=X --set mariadb.replication.password=Y
-```
-
-#### Network Policies and PSPs
-It's recommended to leave PodSecurityPolicies and NetworkPolicies enabled for security. Note that controllers need to be available on the cluster to enforce these policies.
-
-#### Volume Sizes
-The default volume sizes for Code Dx and MariaDB are `128Gi` total for the chart, by default. (Four 32Gi volumes with one for Code Dx, one for MariaDB Master, and two for MariaDB Slave.) `32Gi` is not the minimum disk size - the chart can run with a `100Mi` volume for Code Dx and `1Gi` volumes for MariaDB. However, this will quickly fill up and can cause maintenance headaches. Keep in mind that source code, binaries, and scan results will be uploaded to and stored by Code Dx. The size of these files, frequency of scanning, and number of projects should be considered when determining an initial volume size. Expect MariaDB disk usage to be approximately equivalent to Code Dx.
-
-**Depending on the projects being scanned, the default size may not be sufficient. Be sure to specify an appropriate claim size when installing Code Dx.**
-
-#### Replication/Scalability
-
-Code Dx does not officially support horizontal scaling. Attempting to use more than one replica for the Code Dx deployment can lead to bugs while using Code Dx, and possibly corruption of your database. Work is being done within Code Dx to better support this.
-
-#### Providing Data Files
-
-This chart contains options for handling various customized files for Code Dx, referred to as _Local File Options_. This includes `codedx.props`, `cacerts`, license files, and logging configuration files. These local file options are provided but will only work when installing the chart from source with `helm install codedx .`; if using the helm chart repository `helm install codedx codedx/codedx`, these options are effectively disabled.
-
-When using the direct source code with a local file option, the file should be stored _inside the chart folder_ and file path values are relative to the chart folder. If the chart has been cloned to `/codedx-kubernetes/codedx`, new files should be placed in `/codedx-kubernetes/codedx`.
-
-When using the packaged chart, local files can instead be provided through the `extraMounts` option. Create a ConfigMap or Secret manually and store your file's contents in it, then use the `extraMounts` option for Code Dx to use it. Files provided this way must be manually assigned a path to mount to, unlike the local file options which automatically provide the path. To find the right path for your file, look for the associated local file option in the chart's default `values.yaml` file. Each value has comments describing its use, and local file options will also include the location of the mount point in their comments.
-
-## Uninstalling the Chart
-
-To uninstall a chart with a `codedx` release name, run the following command:
-
-```
-$ helm uninstall codedx
-```
-
-To remove the MariaDB persistent volume claims, run the following command:
-
-```
-$ kubectl delete pvc data-codedx-mariadb-master-0 data-codedx-mariadb-slave-0
-```
 
 ## Configuration
 
@@ -180,7 +67,6 @@ Any values that require locally cloning the chart will be labeled with _"LFV"_ (
 | `codedxProps.file`                      | _(LFV)_ Location of a Code Dx `props` file for configuration                                                                                                                                       | `codedx.props`                       |
 | `codedxProps.configMap`                 | Name of the ConfigMap that will store the Code Dx `props` file                                                                                                                                     |                                      |
 | `codedxProps.annotations`               | Extra annotations attached to a generated codedx `props` ConfigMap                                                                                                                                 | `{}`                                 |
-
 | `codedxProps.extra`                     | List of extra secrets containing Code Dx props to be loaded                                                                                                                                        | `[]`                                 |
 | `codedxProps.extra[i].secretName`       | Name of the secret to be loaded and mounted                                                                                                                                                        |                                      |
 | `codedxProps.extra[i].key`              | Name of the key within the secret that contains Code Dx props text                                                                                                                                 |                                      |

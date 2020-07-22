@@ -37,7 +37,7 @@ if (-not (Test-HelmRelease $namespaceCodeDx $releaseNameCodeDx)) {
 $deploymentCodeDx = Get-CodeDxChartFullName $releaseNameCodeDx
 $statefulSetMariaDBMaster = "$releaseNameCodeDx-mariadb-master"
 $statefulSetMariaDBSlave = "$releaseNameCodeDx-mariadb-slave"
-$mariaDbSecretName = "$releaseNameCodeDx-mariadb"
+$mariaDbSecretName = "$releaseNameCodeDx-mariadb-pd"
 $mariaDbMasterServiceName = "$releaseNameCodeDx-mariadb"
 
 if (-not (Test-Deployment $namespaceCodeDx $deploymentCodeDx)) {
@@ -102,15 +102,20 @@ if (0 -ne $LASTEXITCODE) {
 	Write-Error "Unable to fetch slave pods, kubectl exited with exit code $LASTEXITCODE."
 }
 
+$podNamesSlaves = @()
 if (Test-Path $backupToRestore -PathType Container) {
 
 	Write-Verbose "Copying backup from '$backupToRestore' to '$workDirectory'..."
 	Copy-Item -LiteralPath $backupToRestore -Destination $workDirectory -Recurse
 
+	$podFullNamesSlaves | ForEach-Object {
+
+		$podName = $_ -replace 'pod/',''
+		$podNamesSlaves = $podNamesSlaves + $podName
+	}
 } else {
 
 	Write-Verbose "Finding MariaDB slave pod containing backup named $backupToRestore..."
-	$podNamesSlaves = @()
 	$podNameBackupSlave = ''
 	$podFullNamesSlaves | ForEach-Object {
 

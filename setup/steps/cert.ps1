@@ -11,17 +11,18 @@
 class UseDefaultCACerts : Step {
 
 	static [string] hidden $description = @'
-Specify whether you want to use the default Java cacerts file. Code Dx uses a 
-Java cacerts file to trust secure connections made to third-party applications 
+Specify whether you want to use the default Java cacerts file. Code Dx uses a
+Java cacerts file to trust secure connections made to third-party applications
 such as JIRA, Git, and other tools.
 
-If you want to change the default password for the Java cacerts file or plan 
-to make connections to tools that use self-signed certificates or certificates 
-not issued by a well-known certificate authority, you should answer No.
+If you want to change the default password for the Java cacerts file or plan
+to make connections to tools or endpoints (like LDAPS) that use self-signed
+certificates or certificates not issued by a well-known certificate authority,
+you should answer No.
 '@
 
 	UseDefaultCACerts([ConfigInput] $config) : base(
-		[UseDefaultCACerts].Name, 
+		[UseDefaultCACerts].Name,
 		$config,
 		'Default Java cacerts',
 		[UseDefaultCACerts]::description,
@@ -50,17 +51,17 @@ not issued by a well-known certificate authority, you should answer No.
 class CACertsFile : Step {
 
 	static [string] hidden $description = @'
-Specify the path to your Java cacerts file. You can find the cacerts file 
+Specify the path to your Java cacerts file. You can find the cacerts file
 under your Java installation.
 
-Note: You can find a cacerts file in the jre/lib/security directory under 
-your Java installation directory. On Linux, you can follow the symbolic 
-link for your java file to locate your Java home directory and cacerts 
+Note: You can find a cacerts file in the jre/lib/security directory under
+your Java installation directory. On Linux, you can follow the symbolic
+link for your java file to locate your Java home directory and cacerts
 (e.g., /usr/local/openjdk-8/jre/lib/security).
 '@
 
 	CACertsFile([ConfigInput] $config) : base(
-		[CACertsFile].Name, 
+		[CACertsFile].Name,
 		$config,
 		'Java cacerts File Path',
 		[CACertsFile]::description,
@@ -87,12 +88,12 @@ link for your java file to locate your Java home directory and cacerts
 class CACertsFilePassword : Step {
 
 	static [string] hidden $description = @'
-Specify the password to your Java cacerts file. If you have not set a 
+Specify the password to your Java cacerts file. If you have not set a
 password, use the default Java cacerts file password (changeit).
 '@
 
 	CACertsFilePassword([ConfigInput] $config) : base(
-		[CACertsFilePassword].Name, 
+		[CACertsFilePassword].Name,
 		$config,
 		'Java cacerts File Password',
 		[CACertsFilePassword]::description,
@@ -130,7 +131,7 @@ Specify whether you want to change the password of the Java cacerts file.
 '@
 
 	CACertsChangePassword([ConfigInput] $config) : base(
-		[CACertsChangePassword].Name, 
+		[CACertsChangePassword].Name,
 		$config,
 		'Java cacerts File Change Password',
 		[CACertsChangePassword]::description,
@@ -159,7 +160,7 @@ Specify the new password for your Java cacerts file.
 '@
 
 	CACertsFileNewPassword([ConfigInput] $config) : base(
-		[CACertsFileNewPassword].Name, 
+		[CACertsFileNewPassword].Name,
 		$config,
 		'Java cacerts File New Password',
 		[CACertsFileNewPassword]::description,
@@ -189,16 +190,16 @@ Specify the new password for your Java cacerts file.
 class AddExtraCertificates : Step {
 
 	static [string] hidden $description = @'
-Code Dx uses a Java cacerts file to trust secure connections made to 
+Code Dx uses a Java cacerts file to trust secure connections made to
 third-party applications.
 
-If you want to plan to make connections to tools that use self-signed 
-certificates or certificates not issued by a well-known certificate authority, 
+If you want to plan to make connections to tools that use self-signed
+certificates or certificates not issued by a well-known certificate authority,
 you can add the certificates that Code Dx should trust.
 '@
 
 	AddExtraCertificates([ConfigInput] $config) : base(
-		[AddExtraCertificates].Name, 
+		[AddExtraCertificates].Name,
 		$config,
 		'Add Extra Certificates',
 		[AddExtraCertificates]::description,
@@ -223,12 +224,12 @@ you can add the certificates that Code Dx should trust.
 class ExtraCertificates : Step {
 
 	static [string] hidden $description = @'
-Specify each certificate file you want to add. Press Enter at the prompt when 
+Specify each certificate file you want to add. Press Enter at the prompt when
 you have finished adding certificates.
 '@
 
 	ExtraCertificates([ConfigInput] $config) : base(
-		[ExtraCertificates].Name, 
+		[ExtraCertificates].Name,
 		$config,
 		'Extra Certificate Files',
 		[ExtraCertificates]::description,
@@ -251,7 +252,7 @@ you have finished adding certificates.
 				$question.emptyResponseHelp = 'I finished entering certificate files'
 			}
 			$question.Prompt()
-			
+
 			if (-not $question.hasResponse) {
 				return $false
 			}

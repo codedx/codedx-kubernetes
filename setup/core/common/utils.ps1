@@ -186,19 +186,19 @@ function ConvertTo-Map([hashtable] $table, [string] $prefix, [string] $assignmen
 function ConvertTo-YamlStringArray([string[]] $items) {
 
 	if ($null -eq $items) {
-		return '[]'
+			return '[]'
 	}
 
-	'[' + '{0}' -f ([string]::Join(',', $items)) + ']'
+	'[' + "'{0}'" -f ([string]::Join("','", $items)) + ']'
 }
 
 function ConvertTo-PsonStringArray([string[]] $items) {
-	
+
 	if ($null -eq $items) {
-		return '@()'
+			return '@()'
 	}
 
-	'@(' + '{0}' -f ([string]::Join(',', $items)) + ')'
+	'@(' + "'{0}'" -f ([string]::Join("','", $items)) + ')'
 }
 
 function Format-KeyValueAssignment([string] $key, [string] $value, [string] $assignment) {

@@ -26,4 +26,4 @@ codedxProps:
   - type: values
     key: codedx.ldap.props
     values:
-    - "auth.ldap.userDnTemplate = cn={0},ou=admin,dc=codedx,dc=com"
+    - "auth.ldap.userSearchTemplate = cn={0},ou=admin,dc=codedx,dc=com"

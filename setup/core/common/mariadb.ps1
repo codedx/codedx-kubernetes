@@ -62,7 +62,7 @@ spec:
     spec:
       containers:
       - name: restoredb
-        image: ssalas/codedx-dbrestore:v1.0.1
+        image: codedx/codedx-dbrestore:v1.0.0
         imagePullPolicy: Always
         command: ["/bin/bash"]
         args: ["-c", "/home/sdb/restore"]

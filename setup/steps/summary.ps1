@@ -174,6 +174,8 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 				'subordinateDatabaseNodeSelector','subordinateDatabaseNoScheduleExecuteToleration' | ForEach-Object {
 					$this.AddKeyValueParameter($sb, $_)
 				}
+			} else {
+				$this.AddIntParameter($sb, 'dbSlaveReplicaCount')
 			}
 
 			'masterDatabaseNodeSelector','masterDatabaseNoScheduleExecuteToleration' | ForEach-Object {

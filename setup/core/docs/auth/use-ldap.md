@@ -32,6 +32,7 @@ kubectl -n cdx-app create secret generic codedx-ldap --from-file=codedx-ldap-cre
 5) Create a file named `codedx-extra-props.yaml` and add the following content after specifying your own userSearchTemplate value:
 
 ```
+# set ldap/ldaps to false when not using network policies
 networkPolicy:
   codedx:
     ldap: true

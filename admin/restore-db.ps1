@@ -17,7 +17,8 @@ param (
 	[string] $rootPwd = '',
 	[string] $namespaceCodeDx = 'cdx-app',
 	[string] $releaseNameCodeDx = 'codedx',
-	[int]    $waitSeconds = 600
+	[int]    $waitSeconds = 600,
+	[switch] $skipCodeDxRestart
 )
 
 $ErrorActionPreference = 'Stop'
@@ -136,7 +137,7 @@ if (Test-Path $backupToRestore -PathType Container) {
 		}
 	}
 	if ('' -eq $podNameBackupSlave) {
-		Write-Error "Unable to find $backupToRestore. Does it exist at $backupDirectory"
+		Write-Error "Backup '$backupToRestore' is neither a local directory path nor a backup from a subordinate MariaDB database."
 	}
 
 	Write-Verbose "Copying backup files from pod $podNameBackupSlave..."
@@ -208,7 +209,12 @@ $podNamesSlaves | ForEach-Object {
 	Start-SlaveDB $namespaceCodeDx $_ 'mariadb' $rootPwd $mariaDbMasterServiceName $filePos
 }
 
-Write-Verbose "Starting Code Dx deployment named $deploymentCodeDx..."
-Set-DeploymentReplicas  $namespaceCodeDx $deploymentCodeDx 1 $waitSeconds
+if ($skipCodeDxRestart) {
+	Write-Verbose "Skipping Code Dx Restart..."
+	Write-Verbose " To restart Code Dx, run: kubectl -n $namespaceCodeDx scale --replicas=1 deployment/$deploymentCodeDx"
+} else {
+	Write-Verbose "Starting Code Dx deployment named $deploymentCodeDx..."
+	Set-DeploymentReplicas  $namespaceCodeDx $deploymentCodeDx 1 $waitSeconds
+}
 
 Write-Host 'Done'

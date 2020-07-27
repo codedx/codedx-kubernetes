@@ -576,6 +576,7 @@ mariadb:
       character-set-server=utf8mb4
       collation-server=utf8mb4_general_ci
       optimizer_search_depth=0
+      lower_case_table_names=1
       innodb_flush_log_at_trx_commit=0
 
       [client]
@@ -610,6 +611,7 @@ mariadb:
       character-set-server=utf8mb4
       collation-server=utf8mb4_general_ci
       optimizer_search_depth=0
+      lower_case_table_names=1
       innodb_flush_log_at_trx_commit=0
 
       [client]

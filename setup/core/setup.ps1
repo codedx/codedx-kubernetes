@@ -143,6 +143,8 @@ param (
 	[Tuple`2[string,string]] $minioNoScheduleExecuteToleration,
 	[Tuple`2[string,string]] $workflowControllerNoScheduleExecuteToleration,
 
+	[switch] $pauseAfterGitClone,
+
 	[management.automation.scriptBlock] $provisionNetworkPolicy,
 	[management.automation.scriptBlock] $provisionIngressController
 )
@@ -364,6 +366,9 @@ if (-not $skipLetsEncryptCertManagerInstall) {
 Write-Verbose 'Fetching Code Dx Helm charts...'
 Remove-Item .\codedx-kubernetes -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
 Invoke-GitClone $codedxGitRepo $codedxGitRepoBranch
+if ($pauseAfterGitClone) {
+	Read-Host -Prompt 'git clone complete, press Enter to continue...' | Out-Null
+}
 
 if ($extraCodeDxChartFilesPaths.Count -gt 0) {
 	Copy-Item $extraCodeDxChartFilesPaths .\codedx-kubernetes\codedx

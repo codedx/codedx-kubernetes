@@ -1,6 +1,6 @@
 # Migrate Code Dx Data to Kubernetes
 
-Here are the steps to migrate your Code Dx data from a system created by the Code Dx Installer to a Code Dx deployment running on k8s (without an external database).
+Here are the steps to migrate your Code Dx data from a system created by the Code Dx Installer to a Code Dx deployment running on Kubernetes (without an external database).
 
 The Code Dx version you are running on Kubernetes must be equal to or greater than your non-Kubernetes Code Dx system. If necessary, upgrade your Code Dx version before migrating your Code Dx data.
 
@@ -9,7 +9,7 @@ The Code Dx version you are running on Kubernetes must be equal to or greater th
 2) Run mysqldump to create a backup file. You can run the following command to create a dump-codedx.sql file after specifying the parameters that work for your database.
 
 ```
-mysqldump --host=127.0.0.1 --port=3307 --user=root -p codedx > dump-codedx.sql
+mysqldump --host=127.0.0.1 --port=3306 --user=root -p codedx > dump-codedx.sql
 ```
 
 3) Locate the directory path for your Code Dx AppData directory (e.g., /path/to/codedx_data/codedx_appdata). The AppData directory contains your analysis-files and log-files directories.

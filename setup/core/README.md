@@ -140,5 +140,7 @@ This section describes the setup.ps1 script parameters, which you can specify by
 | `minioNoScheduleExecuteToleration`                 | pod toleration for the minio pod                           | tag=minio (example)                               |
 | `workflowControllerNoScheduleExecuteToleration`    | pod toleration for the workflow controller pod             | tag=workflowcontroller (example)                  |
 |                                                    |                                                            |                                                   |
+| `pauseAfterGitClone`                               | whether to pause (for debug purposes) after git clone      |                                                   |
+|                                                    |                                                            |                                                   |
 | `provisionNetworkPolicy`                           | script block for optional network policy provisioning      |                                                   |
 | `provisionIngressController`                       | script block for optional ingress controller provisioning  |                                                   |

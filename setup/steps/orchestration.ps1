@@ -68,6 +68,8 @@ Note: Press Enter to use the example namespace.
 		$question = new-object Question($prompt)
 		$question.allowEmptyResponse = $true
 		$question.emptyResponseLabel = "Accept default ($([ToolOrchestrationNamespace]::default))"
+		$question.validationExpr = '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
+		$question.validationHelp = 'The Code Dx Tool Orchestration namespace must consist of lowercase alphanumeric characters or ''-'', and must start and end with an alphanumeric character'
 		return $question
 	}
 
@@ -108,6 +110,8 @@ Note: Press Enter to use the example release name.
 		$question = new-object Question($prompt)
 		$question.allowEmptyResponse = $true
 		$question.emptyResponseLabel = "Accept default ($([ToolOrchestrationReleaseName]::default))"
+		$question.validationExpr = '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
+		$question.validationHelp = 'The Code Dx Tool Orchestration release name must consist of lowercase alphanumeric characters or ''-'', and must start and end with an alphanumeric character'
 		return $question
 	}
 

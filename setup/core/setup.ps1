@@ -181,6 +181,24 @@ if (-not $skipIngressEnabled -and -not (Test-IsValidParameterValue $codeDxDnsNam
 	$codeDxDnsName = Read-HostText 'Enter Code Dx domain name (e.g., www.codedx.io)' -validationExpr $dns1123SubdomainExpr 
 }
 
+if (-not (Test-IsValidParameterValue $namespaceCodeDx $dns1123SubdomainExpr)) {
+	$namespaceCodeDx = Read-HostText 'Enter the Code Dx namespace' -validationExpr $dns1123SubdomainExpr 
+}
+
+if (-not (Test-IsValidParameterValue $releaseNameCodeDx $dns1123SubdomainExpr)) {
+	$releaseNameCodeDx = Read-HostText 'Enter the Code Dx release name' -validationExpr $dns1123SubdomainExpr 
+}
+
+if (-not $skipToolOrchestration) {
+	if (-not (Test-IsValidParameterValue $namespaceToolOrchestration $dns1123SubdomainExpr)) {
+		$namespaceToolOrchestration = Read-HostText 'Enter the Code Dx Tool Orchestration namespace' -validationExpr $dns1123SubdomainExpr 
+	}
+	
+	if (-not (Test-IsValidParameterValue $releaseNameToolOrchestration $dns1123SubdomainExpr)) {
+		$releaseNameToolOrchestration = Read-HostText 'Enter the Code Dx Tool Orchestration release name' -validationExpr $dns1123SubdomainExpr 
+	}
+}
+
 if (-not $skipTLS -and $clusterCertificateAuthorityCertPath -eq '') { 
 	$clusterCertificateAuthorityCertPath = Read-Host -Prompt 'Enter path to cluster CA certificate' 
 }

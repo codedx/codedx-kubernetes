@@ -12,6 +12,8 @@ The Code Dx version you are running on Kubernetes must be equal to or greater th
 mysqldump --host=127.0.0.1 --port=3306 --user=root -p codedx > dump-codedx.sql
 ```
 
+>Note: The above command uses a database named codedx. Older versions of Code Dx may use a database named bitnami_codedx.
+
 3) Locate the directory path for your Code Dx AppData directory (e.g., /path/to/codedx_data/codedx_appdata). The AppData directory contains your analysis-files and log-files directories.
 
 4) Clone this repository on your system by running the following command from the directory where you want to store the codedx-kubernetes files:

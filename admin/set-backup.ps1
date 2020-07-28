@@ -23,6 +23,7 @@ param (
 
 	[switch] $useVeleroResticIntegration,
 
+	[switch] $skipDatabaseBackup,
 	[switch] $skipToolOrchestration,
 
 	[string] $workDirectory = '~',
@@ -70,14 +71,14 @@ if (-not (Test-Deployment $namespaceCodeDx $deploymentCodeDx)) {
 
 $applyBackupConfiguration = -not $delete
 
-if ($applyBackupConfiguration) {
+if (-not $skipDatabaseBackup -and $applyBackupConfiguration) {
 	$statefulSetMariaDBSlaveCount = (Get-HelmValues $namespaceCodeDx $releaseNameCodeDx).mariadb.slave.replicas
 	if ($statefulSetMariaDBSlaveCount -eq 0) {
 		Write-Error "Unable to apply backup configuration because database backups require at least one MariaDB slave replica."
 	}
 }
 
-if (-not (Test-StatefulSet $namespaceCodeDx $statefulSetMariaDBSlave)) {
+if (-not $skipDatabaseBackup -and -not (Test-StatefulSet $namespaceCodeDx $statefulSetMariaDBSlave)) {
 	Write-Error "Unable to find StatefulSet named $statefulSetMariaDBSlave in namespace $namespaceCodeDx."
 }
 
@@ -96,17 +97,23 @@ if (-not $skipToolOrchestration) {
 	$deploymentMinio = ''
 }
 
+$subordinateDatabaseLabel = $statefulSetMariaDBSlave
+if ($skipDatabaseBackup) {
+	$subordinateDatabaseLabel = 'n/a'
+}
+
 Write-Host @"
 
 Using the following configuration:
 
 Code Dx Deployment Name: $deploymentCodeDx
-MariaDB Slave StatefulSet Name: $statefulSetMariaDBSlave
+MariaDB Slave StatefulSet Name: $subordinateDatabaseLabel
 Code Dx Tool Orchestration Deployment Name: $deploymentCodeDxToolOrchestration
 MinIO Deployment Name: $deploymentMinio
 Use Restic: $useVeleroResticIntegration
 Install: $applyBackupConfiguration
 Skip Tool Orchestration: $skipToolOrchestration
+Skip Database: $skipDatabaseBackup
 
 "@
 
@@ -120,7 +127,9 @@ if ($useVeleroResticIntegration) {
 		# Add annotations to include volumes in backup
 		$installPatch = "spec:`n  template:`n    metadata:`n      annotations:`n        backup.velero.io/backup-volumes: '{0}'"
 		Edit-ResourceStrategicPatch $namespaceCodeDx 'deployment' $deploymentCodeDx ($installPatch -f 'codedx-appdata')
-		Edit-ResourceStrategicPatch $namespaceCodeDx 'statefulset' $statefulSetMariaDBSlave ($installPatch -f 'backup')
+		if (-not $skipDatabaseBackup) {
+			Edit-ResourceStrategicPatch $namespaceCodeDx 'statefulset' $statefulSetMariaDBSlave ($installPatch -f 'backup')
+		}
 		if (-not $skipToolOrchestration) {
 			Edit-ResourceStrategicPatch $namespaceCodeDxToolOrchestration 'deployment' $deploymentMinio ($installPatch -f 'data')
 		}
@@ -130,7 +139,9 @@ if ($useVeleroResticIntegration) {
 		# Remove annotations that include volumes in backup
 		$uninstallPatch = ConvertTo-Json @(@{'op'='remove';'path'='/spec/template/metadata/annotations/backup.velero.io~1backup-volumes'})
 		Edit-ResourceJsonPath $namespaceCodeDx 'deployment' $deploymentCodeDx $uninstallPatch
-		Edit-ResourceJsonPath $namespaceCodeDx 'statefulset' $statefulSetMariaDBSlave $uninstallPatch
+		if (-not $skipDatabaseBackup) {
+			Edit-ResourceJsonPath $namespaceCodeDx 'statefulset' $statefulSetMariaDBSlave $uninstallPatch
+		}
 		if (-not $skipToolOrchestration) {
 			Edit-ResourceJsonPath $namespaceCodeDxToolOrchestration 'deployment' $deploymentMinio $uninstallPatch
 		}

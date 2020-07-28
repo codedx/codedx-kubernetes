@@ -37,7 +37,11 @@ cd codedx-kubernetes
 pwsh ./guided-setup.ps1
 ```
 
-The guided setup script checks to see whether your system meets the prerequisites before gathering configuration data with a [series of steps](#guided-setup-steps) to help you specify the setup.ps1 parameters necessary to deploy Code Dx in your Kubernetes environment. At the conclusion of the guided setup, you can either run the generated setup commands or save the commands to run them later (recommended).
+The guided setup script checks to see whether your system meets the prerequisites before gathering configuration data with a [series of steps](#guided-setup-steps) to help you specify the setup.ps1 parameters necessary to deploy Code Dx in your Kubernetes environment. If you want to use LDAP for authentication, refer to the [LDAP configuration instructions](./setup/core/docs/auth/use-ldap.md) before starting the guided setup. 
+
+At the conclusion of the guided setup, you can either run the generated setup commands or save the commands to run them later (recommended).
+
+>Note: You can find a description of each setup command parameter [here](./setup/core#setup-script).
 
 ## Data Migration
 

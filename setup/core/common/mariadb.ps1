@@ -159,3 +159,58 @@ function Get-DatabaseUrl([string] $databaseHost, [int] $databasePort,
 	}
 	$url
 }
+
+function Remove-Database([string] $namespace, 
+	[string] $podName,
+	[string] $containerName,
+	[string] $rootPwd,
+	[string] $databaseName) {
+
+	$cmd = "DROP DATABASE IF EXISTS $databaseName"
+
+	kubectl -n $namespace exec -c $containerName $podName -- mysql -uroot --password=$rootPwd -e $cmd
+	if (0 -ne $LASTEXITCODE) {
+		Write-Error "Unable to drop database, kubectl exited with exit code $LASTEXITCODE."
+	}
+}
+
+function New-Database([string] $namespace, 
+	[string] $podName,
+	[string] $containerName,
+	[string] $rootPwd,
+	[string] $databaseName,
+	[string] $databaseDump,
+	[switch] $skipDropDatabase) {
+
+	if (-not $skipDropDatabase) {
+		Remove-Database $namespace $podName $containerName $rootPwd $databaseName 
+	}
+
+	$cmd = "CREATE DATABASE $databaseName"
+
+	kubectl -n $namespace exec -c $containerName $podName -- mysql -uroot --password=$rootPwd -e $cmd
+	if (0 -ne $LASTEXITCODE) {
+		Write-Error "Unable to create database, kubectl exited with exit code $LASTEXITCODE."
+	}
+
+	if (-not (Test-Path $databaseDump -PathType Leaf)) {
+		Write-Error "Unable to find database dump file at $databaseDump."
+	}
+
+	$importPath = '/tmp/import.sql'
+	Copy-K8sItem $namespaceCodeDx $databaseDump $podName $containerName $importPath
+
+	kubectl -n $namespace exec -c $containerName $podName -- bash -c "mysql -uroot --password=""$rootPwd"" $databaseName < $importPath"
+	if (0 -ne $LASTEXITCODE) {
+		Write-Error "Unable to import database dump, kubectl exited with exit code $LASTEXITCODE."
+	}
+}
+
+function Test-Database([string] $namespace, 
+	[string] $podName,
+	[string] $containerName,
+	[string] $rootPwd) {
+
+	kubectl -n $namespace exec -c $containerName $podName -- bash -c "mysqladmin -uroot --password=""$rootPwd"" status" | out-null
+	0 -eq $LASTEXITCODE
+}

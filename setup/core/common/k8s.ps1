@@ -637,3 +637,15 @@ function Remove-ResourceLabel([string] $namespace, [string] $resourceKindAndName
 		throw "Unable to remove label from resource, kubectl exited with code $LASTEXITCODE."
 	}
 }
+
+function Copy-K8sItem([string] $namespace, 
+	[string] $sourcePath,
+	[string] $podName,
+	[string] $containerName,
+	[string] $destinationPath) {
+
+	kubectl -n $namespace cp   -c $containerName $sourcePath $podName`:$destinationPath
+	if (0 -ne $LASTEXITCODE) {
+		Write-Error "Unable to copy to pod, kubectl exited with exit code $LASTEXITCODE."
+	}
+}

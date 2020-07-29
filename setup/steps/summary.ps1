@@ -44,7 +44,7 @@ delete the prerequisites script after it successfully runs.
 Note: If you need to add setup.ps1 parameters such as custom codedx.props 
 settings, save the setup script command to a file and include any extra 
 parameters. Refer to the following URL for details on setup.ps1 parameters: 
-https://github.com/codedx/codedx-kubernetes/tree/feature/guide/setup/core
+https://github.com/codedx/codedx-kubernetes/tree/develop/setup/core
 '@
 		
 	static [string] hidden $k8sSecretScript = @'

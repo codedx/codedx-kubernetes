@@ -111,7 +111,7 @@ param (
 	[string]   $codedxHelmRepo = 'https://codedx.github.io/codedx-kubernetes',
 	
 	[string]   $codedxGitRepo = 'https://github.com/codedx/codedx-kubernetes.git',
-	[string]   $codedxGitRepoBranch = 'feature/guide',
+	[string]   $codedxGitRepoBranch = 'develop',
 
 	[int]      $kubeApiTargetPort = 443,
 

@@ -47,6 +47,10 @@ At the conclusion of the guided setup, you can either run the generated setup co
 
 If you are migrating from a Code Dx system created by the Code Dx Installer to a Code Dx Kubernetes deployment, follow the [data migration steps](./setup/core/docs/config/migrate-data.md) to move your data to Kubernetes.
 
+## Code Dx Backup
+
+Follow the [Code Dx Kubernetes Backup & Restore](./setup/core/docs/config/backup-restore.md) procedure to create a Code Dx backup schedule and test a Code Dx restore.
+
 ## Guided Setup Steps
 
 Below is a graph that shows every step of the guided setup script - you only have to visit the steps that apply to your Code Dx deployment.

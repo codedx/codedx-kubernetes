@@ -546,7 +546,11 @@ function Format-PodTolerationNoScheduleNoExecute([Tuple`2[string,string][]] $key
 		$toleration['effect'] = 'NoExecute'
 		$items += ConvertTo-YamlMap $toleration
 	}
-	ConvertTo-YamlStringArray $items
+
+	if ($items.count -eq 0) {
+		return '[]'
+	}
+	'[' + "{0}" -f ([string]::Join(',', $items)) + ']'
 }
 
 function Set-Replicas([string] $namespace,

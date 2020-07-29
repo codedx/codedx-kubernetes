@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.0
+.VERSION 1.0.1
 .GUID e917c41a-260f-4ea4-980d-db00f8baef1b
 .AUTHOR Code Dx
 #>
@@ -120,7 +120,7 @@ Add-StepTransitions $graph $s[[CodeDxNamespace]] $s[[CodeDxReleaseName]],$s[[Dat
 Add-StepTransitions $graph $s[[DatabaseRootPwd]] $s[[DatabaseReplicationPwd]],$s[[DatabaseReplicaCount]],$s[[UseDefaultCACerts]]
 Add-StepTransitions $graph $s[[ExternalDatabaseHost]] $s[[ExternalDatabasePort]],$s[[ExternalDatabaseName]],$s[[ExternalDatabaseUser]],$s[[ExternalDatabasePwd]],$s[[ExternalDatabaseOneWayAuth]]
 
-Add-StepTransitions $graph $s[[ExternalDatabaseOneWayAuth]] $s[[CACertsFile]]
+Add-StepTransitions $graph $s[[ExternalDatabaseOneWayAuth]] $s[[ExternalDatabaseCert]],$s[[CACertsFile]]
 Add-StepTransitions $graph $s[[ExternalDatabaseOneWayAuth]] $s[[UseDefaultCACerts]]
 
 Add-StepTransitions $graph $s[[UseDefaultCACerts]] $s[[CACertsFile]],$s[[CACertsFilePassword]],$s[[CACertsChangePassword]]

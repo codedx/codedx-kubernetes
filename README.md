@@ -25,7 +25,7 @@ Make sure that you can run PowerShell Core scripts by switching your [PowerShell
 With prerequisites installed, open a Command Prompt/Terminal window and clone this repository on your system by running the following command from the directory where you want to store the codedx-kubernetes files:
 
 ```
-git clone https://github.com/codedx/codedx-kubernetes.git -b feature/guide
+git clone https://github.com/codedx/codedx-kubernetes.git
 ```
 
 ## Run Guided Setup

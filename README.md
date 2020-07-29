@@ -5,5 +5,5 @@
 
 [Code Dx](https://codedx.com/) is an automated application vulnerability management tool that makes all of your testing tools work together to provide one set of correlated results, then helps you prioritize and manage vulnerabilities — integrating with your application lifecycle management tools so your security and development teams work together for faster remediation.
 
-Installation instructions for the Code Dx Helm chart can be found [here](https://github.com/codedx/codedx-kubernetes/blob/master/codedx/README.md).
+Instructions for deploying Code Dx on Kubernetes can be found [here](https://github.com/codedx/codedx-kubernetes).
 

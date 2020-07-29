@@ -4,7 +4,9 @@ Here are the steps to migrate your Code Dx data from a system created by the Cod
 
 The Code Dx version you are running on Kubernetes must be equal to or greater than your non-Kubernetes Code Dx system. If necessary, upgrade your Code Dx version before migrating your Code Dx data.
 
-1) Log on to your Code Dx server
+>Note: You must have adequate disk and memory resources before starting a data migration with a large Code Dx dataset.
+
+1) Log on to your Code Dx server.
 
 2) Run mysqldump to create a backup file. You can run the following command to create a dump-codedx.sql file after specifying the parameters that work for your database.
 

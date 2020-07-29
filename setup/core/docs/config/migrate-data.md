@@ -6,6 +6,8 @@ The Code Dx version you are running on Kubernetes must be equal to or greater th
 
 >Note: You must have adequate disk and memory resources before starting a data migration with a large Code Dx dataset.
 
+The data migration steps below assume that you are migrating data to a new instance of Code Dx running on Kubernetes. If you installed the Tool Orchestration feature and ran an orchestrated analysis, you should re-install Code Dx after manually deleting the Tool Orchestration Helm release and k8s namespace. Doing so will avoid potential conflicts with restored Code Dx data and data in Tool Orchestration storage (i.e., MinIO). If your deployment uses the default release and namespace names, run `helm -n cdx-svc delete codedx-tool-orchestration` and `kubectl delete ns cdx-svc` to uninstall Tool Orchestration components before re-running your saved setup.ps1 command line.
+
 1) Log on to your Code Dx server.
 
 2) Run mysqldump to create a backup file. You can run the following command to create a dump-codedx.sql file after specifying the parameters that work for your database.

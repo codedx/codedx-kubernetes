@@ -115,7 +115,7 @@ class CodeDxTomcatDockerImage : DockerImageNameStep {
 	}
 
 	[void]Reset(){
-		$this.config.imageCodeDxTomcat = 'codedx/codedx-tomcat:v5.0.8'
+		$this.config.imageCodeDxTomcat = ''
 	}
 
 	[bool]CanRun() {
@@ -138,7 +138,7 @@ class CodeDxToolsDockerImage : DockerImageNameStep {
 	}
 
 	[void]Reset(){
-		$this.config.imageCodeDxTools = 'codedx/codedx-tools:v1.0.3'
+		$this.config.imageCodeDxTools = ''
 	}
 
 	[bool]CanRun() {
@@ -161,7 +161,7 @@ class CodeDxToolsMonoDockerImage : DockerImageNameStep {
 	}
 
 	[void]Reset(){
-		$this.config.imageCodeDxToolsMono = 'codedx/codedx-toolsmono:v1.0.3'
+		$this.config.imageCodeDxToolsMono = ''
 	}
 
 	[bool]CanRun() {
@@ -184,7 +184,7 @@ class CodeDxToolServiceDockerImage : DockerImageNameStep {
 	}
 
 	[void]Reset(){
-		$this.config.imageToolService = 'codedx/codedx-tool-service:v1.0.2'
+		$this.config.imageToolService = ''
 	}
 
 	[bool]CanRun() {
@@ -207,7 +207,7 @@ class CodeDxSendResultsDockerImage : DockerImageNameStep {
 	}
 
 	[void]Reset(){
-		$this.config.imageSendResults = 'codedx/codedx-results:v1.0.0'
+		$this.config.imageSendResults = ''
 	}
 
 	[bool]CanRun() {
@@ -230,7 +230,7 @@ class CodeDxSendErrorResultsDockerImage : DockerImageNameStep {
 	}
 
 	[void]Reset(){
-		$this.config.imageSendErrorResults = 'codedx/codedx-error-results:v1.0.0'
+		$this.config.imageSendErrorResults = ''
 	}
 
 	[bool]CanRun() {
@@ -253,7 +253,7 @@ class CodeDxNewAnalysisDockerImage : DockerImageNameStep {
 	}
 
 	[void]Reset(){
-		$this.config.imageNewAnalysis = 'codedx/codedx-newanalysis:v1.0.0'
+		$this.config.imageNewAnalysis = ''
 	}
 
 	[bool]CanRun() {
@@ -276,7 +276,7 @@ class CodeDxPreDeleteDockerImage : DockerImageNameStep {
 	}
 
 	[void]Reset(){
-		$this.config.imagePreDelete = 'codedx/codedx-cleanup:v1.0.0'
+		$this.config.imagePreDelete = ''
 	}
 
 	[bool]CanRun() {

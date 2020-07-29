@@ -28,6 +28,7 @@ Here are the steps required to use Code Dx with an external database:
 optimizer_search_depth=0
 character-set-server=utf8mb4
 collation-server=utf8mb4_general_ci
+lower_case_table_names=1
 ```
 
    Also, make sure that sql_mode contains neither ONLY_FULL_GROUP_BY nor PAD_CHAR_TO_FULL_LENGTH.

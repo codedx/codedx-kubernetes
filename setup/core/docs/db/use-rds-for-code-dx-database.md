@@ -7,6 +7,7 @@ Before using your new database, you must make it compatible with Code Dx by adju
 - optimizer_search_depth=0
 - character_set_server=utf8mb4
 - collation_server=utf8mb4_general_ci
+- lower_case_table_names=1
 - double check that the sql_mode parameter includes neither ONLY_FULL_GROUP_BY nor PAD_CHAR_TO_FULL_LENGTH.
 
 >Note: When editing a parameter value, the column to the right of the edit box shows the allowable values (not the current values).

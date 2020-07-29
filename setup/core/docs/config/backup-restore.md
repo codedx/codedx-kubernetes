@@ -1,6 +1,6 @@
 # Code Dx Kubernetes Backup & Restore Procedure
 
-This document describes how to configure backups so that you can return Code Dx to a previous state when necessary.
+Here are the steps to configure a Code Dx backup and test a restore so that you can return Code Dx to a previous state when necessary.
 
 ## Approach
 

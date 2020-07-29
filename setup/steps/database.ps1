@@ -19,10 +19,10 @@ provide a certificate for your database CA if you want to use TLS to
 secure the communication between Code Dx and your database (recommended).
 
 To use AWS RDS with MariaDB engine, follow these instructions:
-https://github.com/codedx/codedx-kubernetes/blob/develop/setup/core/docs/db/use-rds-for-code-dx-database.md
+https://github.com/codedx/codedx-kubernetes/blob/master/setup/core/docs/db/use-rds-for-code-dx-database.md
 
 Once you have a database server, follow these instructions to create your Code Dx database:
-https://github.com/codedx/codedx-kubernetes/blob/develop/setup/core/docs/db/use-external-database.md
+https://github.com/codedx/codedx-kubernetes/blob/master/setup/core/docs/db/use-external-database.md
 '@
 
 	UseExternalDatabase([ConfigInput] $config) : base(

@@ -206,7 +206,9 @@ if ($delete) {
 		$namespaceCodeDx `
 		$namespaceCodeDxToolOrchestration `
 		$databaseBackupTimeout `
-		$databaseBackupTimeToLive
+		$databaseBackupTimeToLive `
+		-skipDatabaseBackup:$skipDatabaseBackup `
+		-skipToolOrchestration:$skipToolOrchestration
 }
 
 Write-Host 'Done'

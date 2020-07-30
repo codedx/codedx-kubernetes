@@ -28,7 +28,9 @@ function New-VeleroBackupSchedule([string] $workDir,
 	[string] $codeDxNamespace,
 	[string] $codeDxToolOrchestrationNamespace,
 	[string] $backupTimeout,
-	[string] $backupTimeToLive) {
+	[string] $backupTimeToLive,
+	[switch] $skipDatabaseBackup,
+	[switch] $skipToolOrchestration) {
 
 	$scheduleFilePath = join-path $workDir $scheduleFilename
 	if (test-path $scheduleFilePath) {
@@ -40,16 +42,22 @@ function New-VeleroBackupSchedule([string] $workDir,
 	# soon after the backup script finished.
 	$backupLagTime = '1m'
 
+	$namespaces = @($codeDxNamespace)
+	if (-not $skipToolOrchestration) {
+		$namespaces += $codeDxToolOrchestrationNamespace
+	}
+	$includedNamespaces = ConvertTo-YamlStringArray $namespaces
+
 	$scheduleTemplate = @'
 apiVersion: velero.io/v1
 kind: Schedule
 metadata:
-  name: {8}
+  name: {0}
   namespace: {1}
 spec:
   schedule: '{2}'
   template:
-    includedNamespaces: ['{3}','{4}']
+    includedNamespaces: {4}
     storageLocation: default
     ttl: {7}
     includeClusterResources: true
@@ -71,11 +79,11 @@ spec:
             - -c
             - /bitnami/mariadb/scripts/backup.sh && sleep {5}
             timeout: '{6}'
-'@ -f $codeDxReleaseName, `
+'@ -f $scheduleName, `
 	$scheduleNamespace,$scheduleExpression, `
-	$codeDxNamespace,$codeDxToolOrchestrationNamespace, `
-	$backupLagTime, $backupTimeout, $backupTimeToLive, `
-	$scheduleName
+	$codeDxNamespace, `
+	$includedNamespaces, `
+	$backupLagTime, $backupTimeout, $backupTimeToLive
 	
 	$scheduleTemplate | out-file $scheduleFilePath -Encoding ascii -Force
 

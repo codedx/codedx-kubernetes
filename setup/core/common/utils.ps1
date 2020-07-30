@@ -183,6 +183,15 @@ function ConvertTo-Map([hashtable] $table, [string] $prefix, [string] $assignmen
 	return $sb.ToString()
 }
 
+function ConvertTo-YamlStringArray([string[]] $items) {
+
+	if ($null -eq $items) {
+			return '[]'
+	}
+
+	'[' + "'{0}'" -f ([string]::Join("','", $items)) + ']'
+}
+
 function ConvertTo-PsonStringArray([string[]] $items) {
 
 	if ($null -eq $items) {

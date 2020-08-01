@@ -198,7 +198,7 @@ setup again replacing the letsencrypt-staging parameter with letsencrypt-prod.
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
-		$this.config.letsEncryptCertManagerClusterIssuer = ([YesNoQuestion]$question).choice ? 'letsencrypt-staging' : 'letsencrypt-prod'
+		$this.config.letsEncryptCertManagerClusterIssuer = ([YesNoQuestion]$question).choice -eq 0 ? 'letsencrypt-staging' : 'letsencrypt-prod'
 		return $true
 	}
 

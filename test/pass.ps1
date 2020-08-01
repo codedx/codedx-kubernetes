@@ -1,0 +1,451 @@
+function New-Password([string] $pwdValue) {
+	(new-object net.NetworkCredential("",$pwdValue)).securepassword
+}
+
+function Set-DefaultPass([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue($null) # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(0) # choose minikube env
+	$global:inputs.enqueue(0) # choose minikube context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(1) # skip tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # choose default deployment options
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue(0) # specify db replicas
+	$global:inputs.enqueue(0) # choose default cacerts
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(0) # choose default Docker images
+	$global:inputs.enqueue(0) # skip ingress
+	$global:inputs.enqueue(1) # skip cpu reservation
+	$global:inputs.enqueue(1) # skip memory reservation
+	$global:inputs.enqueue(1) # skip storage reservation
+	$global:inputs.enqueue(0) # use default volume sizes
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue($saveOption) # next step save option
+}
+
+function Set-UseToolOrchestrationAndSubordinateDatabasePass([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue($null) # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(0) # choose minikube env
+	$global:inputs.enqueue(0) # choose minikube context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(0) # choose tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # choose default deployment options
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue('cdx-svc') # specify namespace
+	$global:inputs.enqueue('codedx-tool-orchestration')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue(1) # specify db replicas
+	$global:inputs.enqueue(0) # choose default cacerts
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue((New-Password 'my-tool-service-password')) # specify tool service pwd
+	$global:inputs.enqueue((New-Password 'my-tool-service-password')) # specify tool service pwd confirm
+	$global:inputs.enqueue((New-Password 'my-minio-password')) # specify MinIO pwd
+	$global:inputs.enqueue((New-Password 'my-minio-password')) # specify MinIO pwd confirm
+	$global:inputs.enqueue(2) # specify tool service replicas
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(0) # choose default Docker images
+	$global:inputs.enqueue(0) # skip ingress
+	$global:inputs.enqueue(1) # skip cpu reservation
+	$global:inputs.enqueue(1) # skip memory reservation
+	$global:inputs.enqueue(1) # skip storage reservation
+	$global:inputs.enqueue(0) # use default volume sizes
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue($saveOption) # next step save option
+}
+
+function Set-ExternalDatabasePass([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue($null) # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(0) # choose minikube env
+	$global:inputs.enqueue(0) # choose minikube context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(1) # skip tool orchestration
+	$global:inputs.enqueue(0) # skip external db
+	$global:inputs.enqueue(0) # choose default deployment options
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue('my-external-db-host') # specify external db host
+	$global:inputs.enqueue(3306) # specify external db port
+	$global:inputs.enqueue('codedxdb') # specify external db name
+	$global:inputs.enqueue('codedx')   # specify external db username
+	$global:inputs.enqueue((New-Password 'codedx-db-password'))  # specify codedx db pwd
+	$global:inputs.enqueue((New-Password 'codedx-db-password')) # specify codedx db pwd confirm
+	$global:inputs.enqueue(0) # choose TLS db connection
+	$global:inputs.enqueue('db-ca.crt') # specify external db username
+	$global:inputs.enqueue('cacerts') # specify cacerts file
+	$global:inputs.enqueue((New-Password 'changeit')) # specify cacerts file password
+	$global:inputs.enqueue(1) # skip changing cacerts password
+	$global:inputs.enqueue(1) # skip extra certificates
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(0) # choose default Docker images
+	$global:inputs.enqueue(0) # skip ingress
+	$global:inputs.enqueue(1) # skip cpu reservation
+	$global:inputs.enqueue(1) # skip memory reservation
+	$global:inputs.enqueue(1) # skip storage reservation
+	$global:inputs.enqueue(0) # use default volume sizes
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue($saveOption) # next step save option
+}
+
+function Set-ClassicLoadBalancerIngressPass([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue($null) # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(2) # choose EKS env
+	$global:inputs.enqueue(1) # choose EKS context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(1) # skip tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # choose default deployment options
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue(0) # specify db replicas
+	$global:inputs.enqueue(0) # choose default cacerts
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(0) # choose default Docker images
+	$global:inputs.enqueue(5) # choose AWS Classic Load Balancer ingress
+	$global:inputs.enqueue('arn:value') # specify AWS Certificate ARN
+	$global:inputs.enqueue(1) # skip cpu reservation
+	$global:inputs.enqueue(1) # skip memory reservation
+	$global:inputs.enqueue(1) # skip storage reservation
+	$global:inputs.enqueue(0) # use default volume sizes
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue(1) # skip node selectors
+	$global:inputs.enqueue(1) # skip pod tolerations
+	$global:inputs.enqueue($saveOption) # next step save option
+}
+
+function Set-NodeSelectorAndPodTolerationsPass([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue($null) # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(2) # choose EKS env
+	$global:inputs.enqueue(1) # choose EKS context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(1) # skip tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # choose default deployment options
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue(0) # specify db replicas
+	$global:inputs.enqueue(0) # choose default cacerts
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(0) # choose default Docker images
+	$global:inputs.enqueue(5) # choose AWS Classic Load Balancer ingress
+	$global:inputs.enqueue('arn:value') # specify AWS Certificate ARN
+	$global:inputs.enqueue(1) # skip cpu reservation
+	$global:inputs.enqueue(1) # skip memory reservation
+	$global:inputs.enqueue(1) # skip storage reservation
+	$global:inputs.enqueue(0) # use default volume sizes
+	$global:inputs.enqueue('default') # specify storage class name
+	$global:inputs.enqueue(0) # choose node selectors
+	$global:inputs.enqueue('alpha.eksctl.io/nodegroup-name') # specify node selector key (code dx app)
+	$global:inputs.enqueue('codedx-nodes') # specify node selector value (code dx app)
+	$global:inputs.enqueue('alpha.eksctl.io/nodegroup-name') # specify node selector key (master db)
+	$global:inputs.enqueue('codedx-nodes') # specify node selector value (master db)
+	$global:inputs.enqueue(0) # choose pod tolerations
+	$global:inputs.enqueue('host') # specify pod tolerations key (code dx app)
+	$global:inputs.enqueue('codedx-web') # specify pod tolerations value (code dx app)
+	$global:inputs.enqueue('') # skip pod tolerations key (master db)
+	$global:inputs.enqueue(0) # choose/confirm skip pod tolerations (master db)
+	$global:inputs.enqueue($saveOption) # next step save option
+}
+
+function Set-RecommendedResourcesPass([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue($null) # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(0) # choose minikube env
+	$global:inputs.enqueue(0) # choose minikube context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(1) # skip tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # choose default deployment options
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue(0) # specify db replicas
+	$global:inputs.enqueue(0) # choose default cacerts
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(0) # choose default Docker images
+	$global:inputs.enqueue(0) # skip ingress
+	$global:inputs.enqueue(0) # choose cpu recommended
+	$global:inputs.enqueue(0) # choose memory recommended
+	$global:inputs.enqueue(0) # choose storage recommended
+	$global:inputs.enqueue(0) # use default volume sizes
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue($saveOption) # next step save option
+}
+
+function Set-AllNodeSelectorAndPodTolerationsPass([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue($null) # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(2) # choose EKS env
+	$global:inputs.enqueue(1) # choose EKS context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(0) # choose tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # choose default deployment options
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue('cdx-svc') # specify namespace
+	$global:inputs.enqueue('codedx-tool-orchestration')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue(1) # specify db replicas
+	$global:inputs.enqueue(0) # choose default cacerts
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue((New-Password 'my-tool-service-password')) # specify tool service pwd
+	$global:inputs.enqueue((New-Password 'my-tool-service-password')) # specify tool service pwd confirm
+	$global:inputs.enqueue((New-Password 'my-minio-password')) # specify MinIO pwd
+	$global:inputs.enqueue((New-Password 'my-minio-password')) # specify MinIO pwd confirm
+	$global:inputs.enqueue(2) # specify tool service replicas
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(0) # choose default Docker images
+	$global:inputs.enqueue(5) # choose AWS Classic Load Balancer ingress
+	$global:inputs.enqueue('arn:value') # specify AWS Certificate ARN
+	$global:inputs.enqueue(1) # skip cpu reservation
+	$global:inputs.enqueue(1) # skip memory reservation
+	$global:inputs.enqueue(1) # skip storage reservation
+	$global:inputs.enqueue(0) # use default volume sizes
+	$global:inputs.enqueue('default') # specify storage class name
+	$global:inputs.enqueue(0) # choose node selectors
+	$global:inputs.enqueue('alpha.eksctl.io/nodegroup-name') # specify node selector key (code dx app)
+	$global:inputs.enqueue('codedx-nodes-1') # specify node selector value (code dx app)
+	$global:inputs.enqueue('alpha.eksctl.io/nodegroup-name') # specify node selector key (master db)
+	$global:inputs.enqueue('codedx-nodes-2') # specify node selector value (master db)
+	$global:inputs.enqueue('alpha.eksctl.io/nodegroup-name') # specify node selector key (subordinate db)
+	$global:inputs.enqueue('codedx-nodes-3') # specify node selector value (subordinate db)
+	$global:inputs.enqueue('alpha.eksctl.io/nodegroup-name') # specify node selector key (tool service)
+	$global:inputs.enqueue('codedx-nodes-4') # specify node selector value (tool service)
+	$global:inputs.enqueue('alpha.eksctl.io/nodegroup-name') # specify node selector key (MinIO)
+	$global:inputs.enqueue('codedx-nodes-5') # specify node selector value (MinIO)
+	$global:inputs.enqueue('alpha.eksctl.io/nodegroup-name') # specify node selector key (workflow controller)
+	$global:inputs.enqueue('codedx-nodes-6') # specify node selector value (workflow controller)
+	$global:inputs.enqueue(0) # choose pod tolerations
+	$global:inputs.enqueue('host') # specify pod tolerations key (code dx app)
+	$global:inputs.enqueue('codedx-web') # specify pod tolerations value (code dx app)
+	$global:inputs.enqueue('host') # specify pod tolerations key (master db)
+	$global:inputs.enqueue('master-db') # specify pod tolerations value (master db)
+	$global:inputs.enqueue('host') # specify pod tolerations key (subordinate db)
+	$global:inputs.enqueue('subordinate-db') # specify pod tolerations value (subordinate db)
+	$global:inputs.enqueue('host') # specify pod tolerations key (tool service)
+	$global:inputs.enqueue('tool-service') # specify pod tolerations value (tool service)
+	$global:inputs.enqueue('host') # specify pod tolerations key (MinIO)
+	$global:inputs.enqueue('minio') # specify pod tolerations value (MinIO)
+	$global:inputs.enqueue('host') # specify pod tolerations key (workflow controller)
+	$global:inputs.enqueue('workflow-controller') # specify pod tolerations value (workflow controller)
+	$global:inputs.enqueue($saveOption) # next step save option
+}
+
+function Set-NginxLetsEncryptPass([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue($null) # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(1) # choose AKS env
+	$global:inputs.enqueue(0) # choose minikube context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(0) # skip tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # choose default deployment options
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue('cdx-svc') # specify namespace
+	$global:inputs.enqueue('codedx-tool-orchestration')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue(1) # specify db replicas
+	$global:inputs.enqueue(0) # choose default cacerts
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue((New-Password 'my-tool-service-password')) # specify tool service pwd
+	$global:inputs.enqueue((New-Password 'my-tool-service-password')) # specify tool service pwd confirm
+	$global:inputs.enqueue((New-Password 'my-minio-password')) # specify MinIO pwd
+	$global:inputs.enqueue((New-Password 'my-minio-password')) # specify MinIO pwd confirm
+	$global:inputs.enqueue(2) # specify tool service replicas
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(0) # choose default Docker images
+	$global:inputs.enqueue(1) # choose NGINX and Let's Encrypt ingress
+	$global:inputs.enqueue('nginx') # specify nginx namespace
+	$global:inputs.enqueue('10.0.0.1') # specify IP address
+	$global:inputs.enqueue('cert-manager') # specify let's encrypt namespace
+	$global:inputs.enqueue(0) # choose staging clusterissuer
+	$global:inputs.enqueue('support@codedx.com') # specify email contact
+	$global:inputs.enqueue('codedx.com') # specify Code Dx DNS name
+	$global:inputs.enqueue(0) # choose recommended custom
+	$global:inputs.enqueue(0) # choose recommended custom
+	$global:inputs.enqueue(0) # choose recommended custom
+	$global:inputs.enqueue(0) # choose recommended volume sizes
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue(1) # skip node selectors
+	$global:inputs.enqueue(1) # skip pod tolerations
+	$global:inputs.enqueue($saveOption) # next step save option
+}
+
+function Set-DockerImageNamesAndPrivateRegistryPass([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue($null) # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(0) # choose minikube env
+	$global:inputs.enqueue(0) # choose minikube context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(0) # choose tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # choose default deployment options
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue('cdx-svc') # specify namespace
+	$global:inputs.enqueue('codedx-tool-orchestration')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue(1) # specify db replicas
+	$global:inputs.enqueue(0) # choose default cacerts
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue((New-Password 'my-tool-service-password')) # specify tool service pwd
+	$global:inputs.enqueue((New-Password 'my-tool-service-password')) # specify tool service pwd confirm
+	$global:inputs.enqueue((New-Password 'my-minio-password')) # specify MinIO pwd
+	$global:inputs.enqueue((New-Password 'my-minio-password')) # specify MinIO pwd confirm
+	$global:inputs.enqueue(2) # specify tool service replicas
+	$global:inputs.enqueue(0) # choose private reg
+	$global:inputs.enqueue('private-reg') # skip reg k8s name
+	$global:inputs.enqueue('private-reg-host') # skip reg host name
+	$global:inputs.enqueue('private-reg-username') # skip reg username
+	$global:inputs.enqueue((New-Password 'private-reg-password')) # specify reg pwd
+	$global:inputs.enqueue((New-Password 'private-reg-password')) # specify reg pwd confirm
+	$global:inputs.enqueue(1) # choose default Docker images
+	$global:inputs.enqueue('codedx-tomcat') # specify tomcat name
+	$global:inputs.enqueue('codedx-tools') # specify tools name
+	$global:inputs.enqueue('codedx-toolsmono') # specify toolsmono name
+	$global:inputs.enqueue('codedx-toolservice') # specify toolservice name
+	$global:inputs.enqueue('codedx-sendresults') # specify sendresults name
+	$global:inputs.enqueue('codedx-senderrorresults') # specify senderrorresults name
+	$global:inputs.enqueue('codedx-newanalysis') # specify newanalysis name
+	$global:inputs.enqueue('codedx-cleanup') # specify cleanup name
+	$global:inputs.enqueue(0) # skip ingress
+	$global:inputs.enqueue(1) # skip cpu reservation
+	$global:inputs.enqueue(1) # skip memory reservation
+	$global:inputs.enqueue(1) # skip storage reservation
+	$global:inputs.enqueue(0) # use default volume sizes
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue($saveOption) # next step save option
+}
+
+function Set-ConfigCertsPass([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue($null) # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(0) # choose minikube env
+	$global:inputs.enqueue(0) # choose minikube context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(1) # skip tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # choose default deployment options
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue(0) # specify db replicas
+	$global:inputs.enqueue(1) # choose default cacerts
+
+	$global:inputs.enqueue('cacerts') # specify cacerts file
+	$global:inputs.enqueue((New-Password 'changeit')) # specify cacerts file pwd
+	$global:inputs.enqueue(0) # choose change cacerts file pwd
+	$global:inputs.enqueue((New-Password 'changed')) # specify new cacerts file pwd
+	$global:inputs.enqueue((New-Password 'changed')) # specify new cacerts file pwd confirm
+	$global:inputs.enqueue(0) # choose extra certificates
+	$global:inputs.enqueue('extra1.pem') # specify extra certificate 1
+	$global:inputs.enqueue('extra2.pem') # specify extra certificate 2
+	$global:inputs.enqueue('') # specify end of extra certificates
+	$global:inputs.enqueue(0) # specify end of extra certificates confirm
+
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(0) # choose default Docker images
+	$global:inputs.enqueue(0) # skip ingress
+	$global:inputs.enqueue(1) # skip cpu reservation
+	$global:inputs.enqueue(1) # skip memory reservation
+	$global:inputs.enqueue(1) # skip storage reservation
+	$global:inputs.enqueue(0) # use default volume sizes
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue($saveOption) # next step save option
+}

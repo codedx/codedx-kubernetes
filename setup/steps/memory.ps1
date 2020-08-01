@@ -229,7 +229,7 @@ class SubordinateDatabaseMemory : MemoryStep {
 	}
 
 	[bool]CanRun() {
-		return ([MemoryStep]$this).CanRun() -and (-not ($this.config.skipDatabase))
+		return ([MemoryStep]$this).CanRun() -and (-not ($this.config.skipDatabase)) -and $this.config.dbSlaveReplicaCount -gt 0
 	}
 
 	[void]ApplyDefault() {

@@ -229,7 +229,7 @@ class SubordinateDatabaseEphemeralStorage : EphemeralStorageStep {
 	}
 
 	[bool]CanRun() {
-		return ([EphemeralStorageStep]$this).CanRun() -and (-not ($this.config.skipDatabase))
+		return ([EphemeralStorageStep]$this).CanRun() -and (-not ($this.config.skipDatabase)) -and $this.config.dbSlaveReplicaCount -gt 0
 	}
 
 	[void]ApplyDefault() {

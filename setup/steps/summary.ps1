@@ -462,7 +462,7 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 	[void]AddKeyValueParameter([text.stringbuilder] $sb, [string] $parameterName) {
 
 		$parameterValue = ($this.config | select-object -property $parameterName).$parameterName
-		if ($null -ne $parameterValue -and $null -ne $parameterValue) {
+		if ($null -ne $parameterValue) {
 			$kv = [Tuple`2[string,string]]$parameterValue
 			$sb.appendformat(" -{0} ([Tuple``2[string,string]]::new('{1}','{2}'))", $parameterName, $kv.item1.Replace("'","''"), $kv.item2.Replace("'","''"))
 		}

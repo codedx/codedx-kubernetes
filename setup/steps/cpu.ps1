@@ -222,9 +222,9 @@ class SubordinateDatabaseCPU : CPUStep {
 	}
 
 	[bool]CanRun() {
-		return ([CPUStep]$this).CanRun() -and (-not ($this.config.skipDatabase))
+		return ([CPUStep]$this).CanRun() -and (-not ($this.config.skipDatabase)) -and $this.config.dbSlaveReplicaCount -gt 0
 	}
-
+	
 	[void]ApplyDefault() {
 		$this.config.dbSlaveCPUReservation = $this.GetDefault()
 	}

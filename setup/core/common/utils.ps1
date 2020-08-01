@@ -173,7 +173,7 @@ function ConvertTo-Map([hashtable] $table, [string] $prefix, [string] $assignmen
 	
 	$sb = new-object text.stringbuilder("$prefix{")
 	$initialLength = $sb.Length
-	$table.Keys | ForEach-Object {
+	$table.Keys | Sort-Object | ForEach-Object {
 		if ($sb.Length -ne $initialLength) {
 			$sb.Append($separator) | out-null
 		}

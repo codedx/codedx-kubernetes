@@ -17,6 +17,8 @@ push-location ($location)
 	. $path | out-null
 }
 
+$DebugPreference = 'Continue'
+
 function Test-SetupParameters([string] $testScriptPath, [string] $runSetupPath, [string] $workDir, [string] $params) {
 
 	$scriptPath = join-path (split-path $testScriptPath) 'setup/steps/../core/setup.ps1'
@@ -194,6 +196,19 @@ Describe 'Generate Setup Commands' {
 		$runSetupFile = join-path $TestDrive run-setup.ps1
 		$runSetupFile | Should -Exist
 		$expectedParams = "-kubeContextName 'minikube' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -storageClassName 'default' -caCertsFilePath 'cacerts' -codedxAdminPwd 'my-codedx-password' -caCertsFilePwd 'changeit' -caCertsFileNewPwd 'changed' -skipIngressEnabled -skipIngressAssumesNginx -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 9443 -dbVolumeSizeGiB 64 -dbSlaveReplicaCount 0 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -skipToolOrchestration -skipNginxIngressControllerInstall -skipLetsEncryptCertManagerInstall -extraCodeDxTrustedCaCertPaths @('extra1.pem','extra2.pem')"
+		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
+	}
+
+	It '(13) Should generate minikube setup.ps1 command with custom resources' -Tag 'Resources' {
+	
+		Set-UseCustomResourcesPass 1
+
+		New-Mocks
+		. ./guided-setup.ps1
+
+		$runSetupFile = join-path $TestDrive run-setup.ps1
+		$runSetupFile | Should -Exist
+		$expectedParams = "-kubeContextName 'minikube' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -codeDxMemoryReservation '501Mi' -dbMasterMemoryReservation '502Mi' -dbSlaveMemoryReservation '503Mi' -toolServiceMemoryReservation '504Mi' -minioMemoryReservation '505Mi' -workflowMemoryReservation '506Mi' -codeDxCPUReservation '1001m' -dbMasterCPUReservation '1002m' -dbSlaveCPUReservation '1003m' -toolServiceCPUReservation '1004m' -minioCPUReservation '1005m' -workflowCPUReservation '1006m' -storageClassName 'default' -codedxAdminPwd 'my-codedx-password' -skipIngressEnabled -skipIngressAssumesNginx -codeDxVolumeSizeGiB 20 -codeDxTlsServicePortNumber 9443 -dbVolumeSizeGiB 25 -dbSlaveVolumeSizeGiB 30 -dbSlaveReplicaCount 1 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -minioVolumeSizeGiB 35 -toolServiceReplicas 2 -namespaceToolOrchestration 'cdx-svc' -releaseNameToolOrchestration 'codedx-tool-orchestration' -toolServiceApiKey 'my-tool-service-password' -minioAdminPwd 'my-minio-password' -skipNginxIngressControllerInstall -skipLetsEncryptCertManagerInstall"
 		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
 	}
 }

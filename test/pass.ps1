@@ -449,3 +449,66 @@ function Set-ConfigCertsPass([int] $saveOption) {
 	$global:inputs.enqueue('default') # storage class name
 	$global:inputs.enqueue($saveOption) # next step save option
 }
+
+function Set-UseCustomResourcesPass([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue($null) # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(0) # choose minikube env
+	$global:inputs.enqueue(0) # choose minikube context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(0) # choose tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # choose default deployment options
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue('cdx-svc') # specify namespace
+	$global:inputs.enqueue('codedx-tool-orchestration')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue(1) # specify db replicas
+	$global:inputs.enqueue(0) # choose default cacerts
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue((New-Password 'my-tool-service-password')) # specify tool service pwd
+	$global:inputs.enqueue((New-Password 'my-tool-service-password')) # specify tool service pwd confirm
+	$global:inputs.enqueue((New-Password 'my-minio-password')) # specify MinIO pwd
+	$global:inputs.enqueue((New-Password 'my-minio-password')) # specify MinIO pwd confirm
+	$global:inputs.enqueue(2) # specify tool service replicas
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(0) # choose default Docker images
+	$global:inputs.enqueue(0) # skip ingress
+	$global:inputs.enqueue(2) # choose custom cpu reservation
+	$global:inputs.enqueue('1001m')
+	$global:inputs.enqueue('1002m')
+	$global:inputs.enqueue('1003m')
+	$global:inputs.enqueue('1004')
+	$global:inputs.enqueue('1005')
+	$global:inputs.enqueue('1006')
+	$global:inputs.enqueue(2) # choose custom memory reservation
+	$global:inputs.enqueue('501')
+	$global:inputs.enqueue('502')
+	$global:inputs.enqueue('503')
+	$global:inputs.enqueue('504Mi')
+	$global:inputs.enqueue('505Mi')
+	$global:inputs.enqueue('506Mi')
+	$global:inputs.enqueue(2) # choose custom storage reservation
+	$global:inputs.enqueue('1025')
+	$global:inputs.enqueue('1026Mi')
+	$global:inputs.enqueue('1027')
+	$global:inputs.enqueue('1028Mi')
+	$global:inputs.enqueue('1029Mi')
+	$global:inputs.enqueue('1030')
+	$global:inputs.enqueue(1) # choose default volume sizes
+	$global:inputs.enqueue(20)
+	$global:inputs.enqueue(25)
+	$global:inputs.enqueue(30)
+	$global:inputs.enqueue(35)
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue($saveOption) # next step save option
+}

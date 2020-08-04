@@ -227,10 +227,16 @@ From Terminal 1: exit
 	static [string] hidden $eksDescription = @'
 For EKS clusters, open the EKS AWS console and download the base64 
 representation of your cluster's CA certificate. Decode the certificate data 
-and store it in a .pem file. On Linux, you can replace the 'encoded-cert-data' 
-in the command below to generate an aws-eks.pem file for this step.
+and store it in a .pem file. 
 
-echo 'encoded-cert-data' | base64 -d > aws-eks.pem
+You can use PowerShell Core to decode the certificate data and save it in a 
+aws-eks.pem file. Run pwsh to start a new PowerShell Core session and run 
+the following PowerShell commands, replacing encoded-cert-data with the string 
+you copied from the EKS AWS console.
+
+$ pwsh
+PS> $d = 'encoded-cert-data'
+PS> [text.encoding]::utf8.getstring([convert]::FromBase64String($d)) | out-file aws-eks.pem -nonewline
 '@
 
 	static [string] hidden $minikubeDescription = @'

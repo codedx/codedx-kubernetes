@@ -13,8 +13,9 @@ You must run guided-setup.ps1 from a system with administrative access to your c
 - [PowerShell Core 7](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-7)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 - [openssl](https://www.openssl.org/)
-- [keytool](https://adoptopenjdk.net/) - The keytool application is bundled with the Java JRE.
 - [helm v3.1+](https://github.com/helm/helm/releases/tag/v3.2.4) - Download the Helm release for your platform and extract helm (or helm.exe).
+- [keytool](https://adoptopenjdk.net/) - The keytool application is bundled with the Java JRE.
+  If your Code Dx deployment requires specifying a path to a cacerts file, use the cacerts file from a Java 8 JRE install.
 
 >Note: On Windows, make sure that you can run PowerShell Core scripts by switching your [PowerShell Execution Policy](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies) to RemoteSigned (recommended) or Unrestricted. You must run the `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned` command from an elevated/administrator Command Prompt.
 
@@ -35,7 +36,7 @@ cd codedx-kubernetes
 pwsh ./guided-setup.ps1
 ```
 
-The guided setup script checks to see whether your system meets the prerequisites before gathering configuration data with a [series of steps](#guided-setup-steps) to help you specify the setup.ps1 parameters necessary to deploy Code Dx in your Kubernetes environment. If you want to use LDAP for authentication, refer to the [LDAP configuration instructions](./setup/core/docs/auth/use-ldap.md) before starting the guided setup. 
+The guided setup script checks to see whether your system meets the prerequisites before gathering configuration data with a [series of steps](#guided-setup-steps) to help you specify the setup.ps1 parameters necessary to deploy Code Dx in your Kubernetes environment. If you want to use LDAP for authentication, refer to the [LDAP configuration instructions](./setup/core/docs/auth/use-ldap.md) before starting the guided setup.
 
 At the conclusion of the guided setup, you can either run the generated setup commands or save the commands to run them later (recommended).
 

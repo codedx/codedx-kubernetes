@@ -52,7 +52,7 @@ Follow the [Code Dx Kubernetes Backup & Restore](./setup/core/docs/config/backup
 
 ## Upgrading
 
-The codedx-kubernetes repository gets updated with each new Code Dx release, so you can download the latest repository files and re-run either the guided setup or the setup.ps1 command you previously saved. If your setup.ps1 command references specific Docker image names (e.g., `-imageCodeDxTomcat codedx/codedx-tomcat:v5.0.8`), update those parameters to install the Docker image versions associated with a specific Code Dx release.
+The codedx-kubernetes repository gets updated with each new Code Dx release, so you can download the latest repository files and re-run either the guided setup or the setup commands you previously saved (run-setup.ps1 and run-prereqs.ps1, if you saved a run-prereqs.ps1 file). If your setup.ps1 command references specific Docker image names (e.g., `-imageCodeDxTomcat codedx/codedx-tomcat:v5.0.8`), update those parameters to install the Docker image versions associated with a specific Code Dx release.
 
 >Note: Refer to the changelog for a specific codedx-kubernetes release for any important notes regarding backward compatibility.
 

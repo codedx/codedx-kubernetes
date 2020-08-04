@@ -38,8 +38,7 @@ can save the script command line to a file to run it at a later time.
 If you want to save the script command line, you can exclude passwords/keys 
 by generating a prerequisites script that you must run before running the 
 setup script. The prerequisites script will create Kubernetes secrets with 
-passwords/keys that the setup script expects to find at run-time. You can 
-delete the prerequisites script after it successfully runs.
+passwords/keys that the setup script expects to find at run-time.
 	
 Note: If you need to add setup.ps1 parameters such as custom codedx.props 
 settings, save the setup script command to a file and include any extra 

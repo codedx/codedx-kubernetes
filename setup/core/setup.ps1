@@ -389,7 +389,7 @@ if ($pauseAfterGitClone) {
 }
 
 if ($extraCodeDxChartFilesPaths.Count -gt 0) {
-	Copy-Item $extraCodeDxChartFilesPaths .\codedx-kubernetes\codedx
+	Copy-Item $extraCodeDxChartFilesPaths ./codedx-kubernetes/setup/core/charts/codedx
 }
 
 if ($skipNginxIngressControllerInstall -and $null -eq $provisionIngressController) {

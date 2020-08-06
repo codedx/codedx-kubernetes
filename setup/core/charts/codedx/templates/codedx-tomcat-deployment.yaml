@@ -61,7 +61,7 @@ spec:
         name: "{{ include "codedx.name" . }}"
         readinessProbe:
           httpGet:
-            path: /codedx/login
+            path: /codedx/login?local
             {{- if .Values.codedxTls.enabled }}
             scheme: HTTPS
             port: 8443
@@ -72,7 +72,7 @@ spec:
           periodSeconds: 3
         livenessProbe:
           httpGet:
-            path: /codedx/login
+            path: /codedx/login?local
             {{- if .Values.codedxTls.enabled }}
             scheme: HTTPS
             port: 8443

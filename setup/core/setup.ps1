@@ -13,7 +13,7 @@ parameters for this script.
 
 param (
 	[string]   $workDir = "$HOME/.k8s-codedx",
-	[string]   $kubeContextName = '',
+	[string]   $kubeContextName,
 
 	[string]   $clusterCertificateAuthorityCertPath,
 	[string]   $codeDxDnsName,
@@ -26,31 +26,31 @@ param (
 	[int]      $dbSlaveVolumeSizeGiB = 32,
 	[int]      $minioVolumeSizeGiB = 32,
 	[int]      $codeDxVolumeSizeGiB = 32,
-	[string]   $storageClassName = '',
+	[string]   $storageClassName,
 
-	[string]   $codeDxMemoryReservation = '',
-	[string]   $dbMasterMemoryReservation = '',
-	[string]   $dbSlaveMemoryReservation = '',
-	[string]   $toolServiceMemoryReservation = '',
-	[string]   $minioMemoryReservation = '',
-	[string]   $workflowMemoryReservation = '',
-	[string]   $nginxMemoryReservation = '',
+	[string]   $codeDxMemoryReservation,
+	[string]   $dbMasterMemoryReservation,
+	[string]   $dbSlaveMemoryReservation,
+	[string]   $toolServiceMemoryReservation,
+	[string]   $minioMemoryReservation,
+	[string]   $workflowMemoryReservation,
+	[string]   $nginxMemoryReservation,
 
-	[string]   $codeDxCPUReservation = '',
-	[string]   $dbMasterCPUReservation = '',
-	[string]   $dbSlaveCPUReservation = '',
-	[string]   $toolServiceCPUReservation = '',
-	[string]   $minioCPUReservation = '',
-	[string]   $workflowCPUReservation = '',
-	[string]   $nginxCPUReservation = '',
+	[string]   $codeDxCPUReservation,
+	[string]   $dbMasterCPUReservation,
+	[string]   $dbSlaveCPUReservation,
+	[string]   $toolServiceCPUReservation,
+	[string]   $minioCPUReservation,
+	[string]   $workflowCPUReservation,
+	[string]   $nginxCPUReservation,
 
 	[string]   $codeDxEphemeralStorageReservation = '2Gi',
-	[string]   $dbMasterEphemeralStorageReservation = '',
-	[string]   $dbSlaveEphemeralStorageReservation = '',
-	[string]   $toolServiceEphemeralStorageReservation = '',
-	[string]   $minioEphemeralStorageReservation = '',
-	[string]   $workflowEphemeralStorageReservation = '',
-	[string]   $nginxEphemeralStorageReservation = '',
+	[string]   $dbMasterEphemeralStorageReservation,
+	[string]   $dbSlaveEphemeralStorageReservation,
+	[string]   $toolServiceEphemeralStorageReservation,
+	[string]   $minioEphemeralStorageReservation,
+	[string]   $workflowEphemeralStorageReservation,
+	[string]   $nginxEphemeralStorageReservation,
 
 	[string]   $imageCodeDxTomcat = 'codedx/codedx-tomcat:v5.1.0',
 	[string]   $imageCodeDxTools = 'codedx/codedx-tools:v1.0.4',
@@ -68,15 +68,15 @@ param (
 	[switch]   $skipNetworkPolicies,
 
 	[switch]   $skipNginxIngressControllerInstall,
-	[string]   $nginxIngressControllerLoadBalancerIP = '',
+	[string]   $nginxIngressControllerLoadBalancerIP,
 	[string]   $nginxIngressControllerNamespace = 'nginx',
 
 	[switch]   $skipLetsEncryptCertManagerInstall,
-	[string]   $letsEncryptCertManagerRegistrationEmailAddress = '',
+	[string]   $letsEncryptCertManagerRegistrationEmailAddress,
 	[string]   $letsEncryptCertManagerClusterIssuer = 'letsencrypt-staging',
 	[string]   $letsEncryptCertManagerNamespace = 'cert-manager',
 
-	[string]   $serviceTypeCodeDx = '',
+	[string]   $serviceTypeCodeDx,
 	[hashtable]$serviceAnnotationsCodeDx = @{},
 
 	[switch]   $skipIngressEnabled,
@@ -97,13 +97,13 @@ param (
 	[string]   $mariadbReplicatorPwd,
 
 	[string]   $caCertsFilePath,
-	[string]   $caCertsFilePwd = 'changeit',
-	[string]   $caCertsFileNewPwd = '',
+	[string]   $caCertsFilePwd,
+	[string]   $caCertsFileNewPwd,
 	
 	[string[]] $extraCodeDxChartFilesPaths = @(),
 	[string[]] $extraCodeDxTrustedCaCertPaths = @(),
 
-	[string]   $dockerImagePullSecretName = '',
+	[string]   $dockerImagePullSecretName,
 	[string]   $dockerRegistry,
 	[string]   $dockerRegistryUser,
 	[string]   $dockerRegistryPwd,
@@ -128,6 +128,12 @@ param (
 	[switch]   $externalDatabaseSkipTls,
 
 	[switch]   $skipToolOrchestration,
+
+	[switch]   $useSaml,
+	[string]   $samlAppName,
+	[string]   $samlIdentityProviderMetadataPath,
+	[string]   $samlKeystorePwd,
+	[string]   $samlPrivateKeyPwd,
 
 	[Tuple`2[string,string]] $codeDxNodeSelector,
 	[Tuple`2[string,string]] $masterDatabaseNodeSelector,
@@ -154,7 +160,7 @@ $VerbosePreference = 'Continue'
 
 Set-PSDebug -Strict
 
-'./common/helm.ps1','./common/codedx.ps1','./common/mariadb.ps1','./common/keytool.ps1' | ForEach-Object {
+'./common/helm.ps1','./common/codedx.ps1','./common/prereqs.ps1','./common/mariadb.ps1','./common/keytool.ps1' | ForEach-Object {
 	$path = join-path $PSScriptRoot $_
 	if (-not (Test-Path $path)) {
 		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
@@ -228,15 +234,24 @@ if (-not $skipToolOrchestration -and $toolServiceApiKey -eq '') {
 	}
 }
 
+if ($caCertsFilePwd -eq '') {
+	$caCertsFilePwd = Get-CacertsPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+}
+
 if ($caCertsFileNewPwd -eq '') {
-	$newPwd = Get-CacertsNewPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
-	if ('' -ne $newPwd) {
-		$caCertsFileNewPwd = $newPwd
-	}
+	$caCertsFileNewPwd = Get-CacertsNewPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
 }
 
 if ($caCertsFileNewPwd -ne '' -and $caCertsFileNewPwd.length -lt 6) { 
 	$caCertsFileNewPwd = Read-HostSecureText 'Enter a password to protect the cacerts file' 6 
+}
+
+if ($samlKeystorePwd -eq '') {
+	$samlKeystorePwd = Get-SamlKeystorePasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+}
+
+if ($samlPrivateKeyPwd -eq '') {
+	$samlPrivateKeyPwd = Get-SamlPrivateKeyPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
 }
 
 $externalDatabaseUrl = ''
@@ -381,6 +396,15 @@ if (-not $skipLetsEncryptCertManagerInstall) {
 	$ingressAnnotationsCodeDx['cert-manager.io/cluster-issuer'] = $letsEncryptCertManagerClusterIssuer
 }
 
+New-CodeDxPdSecret $namespaceCodeDx $releaseNameCodeDx `
+	$codedxAdminPwd `
+	$caCertsFilePwd `
+	$externalDatabaseUser $externalDatabasePwd `
+	$dockerRegistryPwd `
+	$caCertsFileNewPwd `
+	$samlKeystorePwd `
+	$samlPrivateKeyPwd
+
 Write-Verbose 'Fetching Code Dx Helm charts...'
 Remove-Item .\codedx-kubernetes -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
 Invoke-GitClone $codedxGitRepo $codedxGitRepoBranch
@@ -389,7 +413,9 @@ if ($pauseAfterGitClone) {
 }
 
 if ($extraCodeDxChartFilesPaths.Count -gt 0) {
-	Copy-Item $extraCodeDxChartFilesPaths ./codedx-kubernetes/setup/core/charts/codedx
+	$codeDxChartsDirectory = './codedx-kubernetes/setup/core/charts/codedx'
+	Write-Verbose "Copying the following extra files to '$codeDxChartsDirectory':`n$extraCodeDxChartFilesPaths"
+	Copy-Item -LiteralPath $extraCodeDxChartFilesPaths -Destination $codeDxChartsDirectory
 }
 
 if ($skipNginxIngressControllerInstall -and $null -eq $provisionIngressController) {
@@ -401,22 +427,24 @@ if ((-not $skipTLS) -and -not $skipToolOrchestration) {
 	$caCertPaths += $clusterCertificateAuthorityCertPath
 }
 
+$codeDxChartsFolder = join-path $workDir 'codedx-kubernetes/setup/core/charts/codedx'
+
 $caCertsFilename = ''
+$certificateWorkRemains = $true
 if ($caCertsFilePath -ne '') {
 	Write-Verbose 'Configuring cacerts file...'
-	New-TrustedCaCertsFile $caCertsFilePath $caCertsFilePwd $caCertsFileNewPwd $caCertPaths (join-path $workDir codedx-kubernetes/setup/core/charts/codedx)
+	New-TrustedCaCertsFile $caCertsFilePath $caCertsFilePwd $caCertsFileNewPwd $caCertPaths $codeDxChartsFolder
 
 	$caCertsFilename = 'cacerts'
-	$caCertPaths = @() # no more certificate work to do
+	$certificateWorkRemains = $false
 }
 
-$certificateWorkRemains = $caCertPaths.count -ne 0
 $installToolOrchestration = -not $skipToolOrchestration
 
 Write-Verbose 'Deploying Code Dx with Tool Orchestration disabled...'
 New-CodeDxDeployment $codeDxDnsName $codeDxServicePortNumber $codeDxTlsServicePortNumber $workDir $waitTimeSeconds `
 	$clusterCertificateAuthorityCertPath `
-	$namespaceCodeDx $releaseNameCodeDx $codedxAdminPwd $imageCodeDxTomcat `
+	$namespaceCodeDx $releaseNameCodeDx $imageCodeDxTomcat `
 	$dockerImagePullSecretName `
 	$dockerRegistry $dockerRegistryUser $dockerRegistryPwd `
 	$mariadbRootPwd $mariadbReplicatorPwd `
@@ -431,10 +459,12 @@ New-CodeDxDeployment $codeDxDnsName $codeDxServicePortNumber $codeDxTlsServicePo
 	$serviceTypeCodeDx $serviceAnnotationsCodeDx `
 	$nginxIngressControllerNamespace `
 	$ingressAnnotationsCodeDx `
-	$caCertsFilename (Get-TrustedCaCertsFilePwd $caCertsFilePwd $caCertsFileNewPwd) `
-	$externalDatabaseUrl $externalDatabaseUser $externalDatabasePwd `
+	$caCertsFilename `
+	$externalDatabaseUrl `
+	$samlAppName $samlIdentityProviderMetadataPath `
 	$codeDxNodeSelector $masterDatabaseNodeSelector $subordinateDatabaseNodeSelector `
 	$codeDxNoScheduleExecuteToleration $masterDatabaseNoScheduleExecuteToleration $subordinateDatabaseNoScheduleExecuteToleration `
+	-useSaml:$useSaml `
 	-ingressEnabled:(-not $skipIngressEnabled) -ingressAssumesNginx:(-not $skipIngressAssumesNginx) `
 	-enablePSPs:(-not $skipPSPs) -enableNetworkPolicies:$useNetworkPolicies -configureTls:(-not $skipTLS) -skipDatabase:$skipDatabase `
 	-offlineMode:($certificateWorkRemains -or $installToolOrchestration)
@@ -447,16 +477,13 @@ if ($caCertsFilePath -eq '') {
 if ($certificateWorkRemains) {
 
 	Write-Verbose 'Configuring cacerts file...'
-	New-TrustedCaCertsFile $caCertsFilePath $caCertsFilePwd $caCertsFileNewPwd $caCertPaths (join-path $workDir codedx-kubernetes/setup/core/charts/codedx)
+	New-TrustedCaCertsFile $caCertsFilePath $caCertsFilePwd $caCertsFileNewPwd $caCertPaths $codeDxChartsFolder
 
 	Set-TrustedCerts $workDir `
 		$waitTimeSeconds `
 		$namespaceCodeDx `
 		$releaseNameCodeDx `
 		$extraCodeDxValuesPaths `
-		$codedxAdminPwd `
-		(Get-TrustedCaCertsFilePwd $caCertsFilePwd $caCertsFileNewPwd) `
-		$externalDatabaseUser $externalDatabasePwd `
 		-offlineMode:$installToolOrchestration
 }
 
@@ -497,7 +524,6 @@ if ($installToolOrchestration) {
 		$namespaceToolOrchestration $namespaceCodeDx `
 		"$protocol`://$toolOrchestrationFullName.$namespaceToolOrchestration.svc.cluster.local:3333" $toolServiceApiKey `
 		$releaseNameCodeDx `
-		$caCertsFilePwd $caCertsFileNewPwd `
 		$extraCodeDxValuesPaths `
 		-enableNetworkPolicies:$useNetworkPolicies
 }

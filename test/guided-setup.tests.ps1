@@ -7,6 +7,7 @@ push-location ($location)
 './setup/core/common/question.ps1',
 './setup/core/common/k8s.ps1',
 './setup/core/common/codedx.ps1',
+'./setup/core/common/prereqs.ps1',
 './setup/powershell-algorithms/data-structures.ps1',
 './setup/steps/step.ps1' | ForEach-Object {
 	Write-Debug "'$PSCommandPath' is including file '$_'"
@@ -209,6 +210,19 @@ Describe 'Generate Setup Commands' {
 		$runSetupFile = join-path $TestDrive run-setup.ps1
 		$runSetupFile | Should -Exist
 		$expectedParams = "-kubeContextName 'minikube' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -codeDxMemoryReservation '501Mi' -dbMasterMemoryReservation '502Mi' -dbSlaveMemoryReservation '503Mi' -toolServiceMemoryReservation '504Mi' -minioMemoryReservation '505Mi' -workflowMemoryReservation '506Mi' -codeDxCPUReservation '1001m' -dbMasterCPUReservation '1002m' -dbSlaveCPUReservation '1003m' -toolServiceCPUReservation '1004m' -minioCPUReservation '1005m' -workflowCPUReservation '1006m' -storageClassName 'default' -codedxAdminPwd 'my-codedx-password' -skipIngressEnabled -skipIngressAssumesNginx -codeDxVolumeSizeGiB 20 -codeDxTlsServicePortNumber 9443 -dbVolumeSizeGiB 25 -dbSlaveVolumeSizeGiB 30 -dbSlaveReplicaCount 1 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -minioVolumeSizeGiB 35 -toolServiceReplicas 2 -namespaceToolOrchestration 'cdx-svc' -releaseNameToolOrchestration 'codedx-tool-orchestration' -toolServiceApiKey 'my-tool-service-password' -minioAdminPwd 'my-minio-password' -skipNginxIngressControllerInstall -skipLetsEncryptCertManagerInstall"
+		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
+	}
+
+	It '(14) Should generate minikube setup.ps1 command with SAML configuration' -Tag 'SAML' {
+	
+		Set-UseSamlPass 1
+
+		New-Mocks
+		. ./guided-setup.ps1
+
+		$runSetupFile = join-path $TestDrive run-setup.ps1
+		$runSetupFile | Should -Exist
+		$expectedParams = "-kubeContextName 'minikube' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -codeDxDnsName 'codedx.com' -clusterCertificateAuthorityCertPath 'ca.crt' -storageClassName 'default' -codedxAdminPwd 'my-codedx-password' -skipIngressEnabled -skipIngressAssumesNginx -useSaml -samlIdentityProviderMetadataPath 'idp-metadata.xml' -samlAppName 'codedxclient' -samlKeystorePwd 'my-keystore-password' -samlPrivateKeyPwd 'my-private-key-password' -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 9443 -dbVolumeSizeGiB 64 -dbSlaveReplicaCount 0 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -skipToolOrchestration -skipNginxIngressControllerInstall -skipLetsEncryptCertManagerInstall"
 		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
 	}
 }

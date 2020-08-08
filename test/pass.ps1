@@ -28,6 +28,7 @@ function Set-DefaultPass([int] $saveOption) {
 	$global:inputs.enqueue(1) # skip private reg
 	$global:inputs.enqueue(0) # choose default Docker images
 	$global:inputs.enqueue(0) # skip ingress
+	$global:inputs.enqueue(0) # use local accounts
 	$global:inputs.enqueue(1) # skip cpu reservation
 	$global:inputs.enqueue(1) # skip memory reservation
 	$global:inputs.enqueue(1) # skip storage reservation
@@ -69,6 +70,7 @@ function Set-UseToolOrchestrationAndSubordinateDatabasePass([int] $saveOption) {
 	$global:inputs.enqueue(1) # skip private reg
 	$global:inputs.enqueue(0) # choose default Docker images
 	$global:inputs.enqueue(0) # skip ingress
+	$global:inputs.enqueue(0) # use local accounts
 	$global:inputs.enqueue(1) # skip cpu reservation
 	$global:inputs.enqueue(1) # skip memory reservation
 	$global:inputs.enqueue(1) # skip storage reservation
@@ -109,6 +111,7 @@ function Set-ExternalDatabasePass([int] $saveOption) {
 	$global:inputs.enqueue(1) # skip private reg
 	$global:inputs.enqueue(0) # choose default Docker images
 	$global:inputs.enqueue(0) # skip ingress
+	$global:inputs.enqueue(0) # use local accounts
 	$global:inputs.enqueue(1) # skip cpu reservation
 	$global:inputs.enqueue(1) # skip memory reservation
 	$global:inputs.enqueue(1) # skip storage reservation
@@ -144,6 +147,7 @@ function Set-ClassicLoadBalancerIngressPass([int] $saveOption) {
 	$global:inputs.enqueue(0) # choose default Docker images
 	$global:inputs.enqueue(5) # choose AWS Classic Load Balancer ingress
 	$global:inputs.enqueue('arn:value') # specify AWS Certificate ARN
+	$global:inputs.enqueue(0) # use local accounts
 	$global:inputs.enqueue(1) # skip cpu reservation
 	$global:inputs.enqueue(1) # skip memory reservation
 	$global:inputs.enqueue(1) # skip storage reservation
@@ -181,6 +185,7 @@ function Set-NodeSelectorAndPodTolerationsPass([int] $saveOption) {
 	$global:inputs.enqueue(0) # choose default Docker images
 	$global:inputs.enqueue(5) # choose AWS Classic Load Balancer ingress
 	$global:inputs.enqueue('arn:value') # specify AWS Certificate ARN
+	$global:inputs.enqueue(0) # use local accounts
 	$global:inputs.enqueue(1) # skip cpu reservation
 	$global:inputs.enqueue(1) # skip memory reservation
 	$global:inputs.enqueue(1) # skip storage reservation
@@ -225,6 +230,7 @@ function Set-RecommendedResourcesPass([int] $saveOption) {
 	$global:inputs.enqueue(1) # skip private reg
 	$global:inputs.enqueue(0) # choose default Docker images
 	$global:inputs.enqueue(0) # skip ingress
+	$global:inputs.enqueue(0) # use local accounts
 	$global:inputs.enqueue(0) # choose cpu recommended
 	$global:inputs.enqueue(0) # choose memory recommended
 	$global:inputs.enqueue(0) # choose storage recommended
@@ -267,6 +273,7 @@ function Set-AllNodeSelectorAndPodTolerationsPass([int] $saveOption) {
 	$global:inputs.enqueue(0) # choose default Docker images
 	$global:inputs.enqueue(5) # choose AWS Classic Load Balancer ingress
 	$global:inputs.enqueue('arn:value') # specify AWS Certificate ARN
+	$global:inputs.enqueue(0) # use local accounts
 	$global:inputs.enqueue(1) # skip cpu reservation
 	$global:inputs.enqueue(1) # skip memory reservation
 	$global:inputs.enqueue(1) # skip storage reservation
@@ -340,6 +347,7 @@ function Set-NginxLetsEncryptPass([int] $saveOption) {
 	$global:inputs.enqueue(0) # choose staging clusterissuer
 	$global:inputs.enqueue('support@codedx.com') # specify email contact
 	$global:inputs.enqueue('codedx.com') # specify Code Dx DNS name
+	$global:inputs.enqueue(0) # use local accounts
 	$global:inputs.enqueue(0) # choose recommended custom
 	$global:inputs.enqueue(0) # choose recommended custom
 	$global:inputs.enqueue(0) # choose recommended custom
@@ -396,6 +404,7 @@ function Set-DockerImageNamesAndPrivateRegistryPass([int] $saveOption) {
 	$global:inputs.enqueue('codedx-newanalysis') # specify newanalysis name
 	$global:inputs.enqueue('codedx-cleanup') # specify cleanup name
 	$global:inputs.enqueue(0) # skip ingress
+	$global:inputs.enqueue(0) # use local accounts
 	$global:inputs.enqueue(1) # skip cpu reservation
 	$global:inputs.enqueue(1) # skip memory reservation
 	$global:inputs.enqueue(1) # skip storage reservation
@@ -442,6 +451,7 @@ function Set-ConfigCertsPass([int] $saveOption) {
 	$global:inputs.enqueue(1) # skip private reg
 	$global:inputs.enqueue(0) # choose default Docker images
 	$global:inputs.enqueue(0) # skip ingress
+	$global:inputs.enqueue(0) # use local accounts
 	$global:inputs.enqueue(1) # skip cpu reservation
 	$global:inputs.enqueue(1) # skip memory reservation
 	$global:inputs.enqueue(1) # skip storage reservation
@@ -483,6 +493,7 @@ function Set-UseCustomResourcesPass([int] $saveOption) {
 	$global:inputs.enqueue(1) # skip private reg
 	$global:inputs.enqueue(0) # choose default Docker images
 	$global:inputs.enqueue(0) # skip ingress
+	$global:inputs.enqueue(0) # use local accounts
 	$global:inputs.enqueue(2) # choose custom cpu reservation
 	$global:inputs.enqueue('1001m')
 	$global:inputs.enqueue('1002m')
@@ -509,6 +520,48 @@ function Set-UseCustomResourcesPass([int] $saveOption) {
 	$global:inputs.enqueue(25)
 	$global:inputs.enqueue(30)
 	$global:inputs.enqueue(35)
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue($saveOption) # next step save option
+}
+
+function Set-UseSamlPass([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue($null) # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(0) # choose minikube env
+	$global:inputs.enqueue(0) # choose minikube context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(1) # skip tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # choose default deployment options
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue(0) # specify db replicas
+	$global:inputs.enqueue(0) # choose default cacerts
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(0) # choose default Docker images
+	$global:inputs.enqueue(0) # skip ingress
+	$global:inputs.enqueue(1) # use SAML accounts
+	$global:inputs.enqueue('codedx.com') # specify DNS name
+	$global:inputs.enqueue('idp-metadata.xml') # specify IdP metadata
+	$global:inputs.enqueue('codedxclient') # specify SAML application name
+	$global:inputs.enqueue((New-Password 'my-keystore-password')) # specify keystore pwd
+	$global:inputs.enqueue((New-Password 'my-keystore-password')) # specify keystore pwd confirm
+	$global:inputs.enqueue((New-Password 'my-private-key-password')) # specify private key pwd
+	$global:inputs.enqueue((New-Password 'my-private-key-password')) # specify private key pwd confirm
+	$global:inputs.enqueue(1) # skip cpu reservation
+	$global:inputs.enqueue(1) # skip memory reservation
+	$global:inputs.enqueue(1) # skip storage reservation
+	$global:inputs.enqueue(0) # use default volume sizes
 	$global:inputs.enqueue('default') # storage class name
 	$global:inputs.enqueue($saveOption) # next step save option
 }

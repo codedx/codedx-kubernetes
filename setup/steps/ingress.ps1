@@ -302,6 +302,10 @@ name of a host you will access over the network using a DNS registration.
 		return $true
 	}
 
+	[void]Reset(){
+		$this.config.codeDxDnsName = ''
+	}
+
 	[bool]CanRun() {
 		return -not $this.config.skipIngressEnabled
 	}

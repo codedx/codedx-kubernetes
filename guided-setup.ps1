@@ -13,12 +13,14 @@ Write-Host 'Loading...' -NoNewline
 
 './setup/powershell-algorithms/data-structures.ps1',
 './setup/core/common/question.ps1',
+'./setup/core/common/prereqs.ps1',
 './setup/steps/step.ps1',
 './setup/steps/welcome.ps1',
 './setup/steps/k8s.ps1',
 './setup/steps/ingress.ps1',
 './setup/steps/image.ps1',
 './setup/steps/orchestration.ps1',
+'./setup/steps/authentication.ps1',
 './setup/steps/cpu.ps1',
 './setup/steps/memory.ps1',
 './setup/steps/volume.ps1',
@@ -88,6 +90,7 @@ $s = @{}
 [IngressKind],[NginxIngressNamespace],[NginxIngressAddress],
 [LetsEncryptNamespace],[LetsEncryptClusterIssuer],[LetsEncryptEmail],[IngressCertificateArn],
 [DnsName],
+[AuthenticationType],[LdapInstructions],[SamlAuthenticationDnsName],[SamlIdpMetadata],[SamlAppName],[SamlKeystorePwd],[SamlPrivateKeyPwd],
 [DefaultCPU],[NginxCPU],[CodeDxCPU],[MasterDatabaseCPU],[SubordinateDatabaseCPU],[ToolServiceCPU],[MinIOCPU],[WorkflowCPU],
 [DefaultMemory],[NginxMemory],[CodeDxMemory],[MasterDatabaseMemory],[SubordinateDatabaseMemory],[ToolServiceMemory],[MinIOMemory],[WorkflowMemory],
 [DefaultEphemeralStorage],[NginxEphemeralStorage],[CodeDxEphemeralStorage],[MasterDatabaseEphemeralStorage],[SubordinateDatabaseEphemeralStorage],[ToolServiceEphemeralStorage],[MinIOEphemeralStorage],[WorkflowEphemeralStorage],
@@ -144,11 +147,16 @@ Add-StepTransitions $graph $s[[UseDefaultDockerImages]] $s[[IngressKind]]
 Add-StepTransitions $graph $s[[IngressKind]] $s[[NginxIngressNamespace]],$s[[NginxIngressAddress]],$s[[LetsEncryptNamespace]]
 Add-StepTransitions $graph $s[[IngressKind]] $s[[NginxIngressNamespace]],$s[[LetsEncryptNamespace]],$s[[LetsEncryptClusterIssuer]],$s[[LetsEncryptEmail]]
 Add-StepTransitions $graph $s[[IngressKind]] $s[[IngressCertificateArn]]
-Add-StepTransitions $graph $s[[IngressKind]] $s[[DnsName]],$s[[DefaultCPU]]
-Add-StepTransitions $graph $s[[IngressKind]] $s[[DefaultCPU]]
+Add-StepTransitions $graph $s[[IngressKind]] $s[[DnsName]],$s[[AuthenticationType]]
+Add-StepTransitions $graph $s[[IngressKind]] $s[[AuthenticationType]]
 
-Add-StepTransitions $graph $s[[LetsEncryptEmail]] $s[[DnsName]],$s[[DefaultCPU]]
-Add-StepTransitions $graph $s[[IngressCertificateArn]] $s[[DefaultCPU]]
+Add-StepTransitions $graph $s[[LetsEncryptEmail]] $s[[DnsName]],$s[[AuthenticationType]]
+Add-StepTransitions $graph $s[[IngressCertificateArn]] $s[[AuthenticationType]]
+
+Add-StepTransitions $graph $s[[AuthenticationType]] $s[[LdapInstructions]],$s[[DefaultCPU]]
+Add-StepTransitions $graph $s[[AuthenticationType]] $s[[SamlAuthenticationDnsName]],$s[[SamlIdpMetadata]],$s[[SamlAppName]],$s[[SamlKeystorePwd]],$s[[SamlPrivateKeyPwd]],$s[[DefaultCPU]]
+Add-StepTransitions $graph $s[[AuthenticationType]] $s[[SamlIdpMetadata]]
+Add-StepTransitions $graph $s[[AuthenticationType]] $s[[DefaultCPU]]
 
 Add-StepTransitions $graph $s[[DefaultCPU]] $s[[NginxCPU]],$s[[CodeDxCPU]]
 Add-StepTransitions $graph $s[[DefaultCPU]] $s[[CodeDxCPU]]

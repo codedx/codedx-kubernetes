@@ -151,8 +151,20 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 			}
 		}
 
-		'skipTLS','skipPSPs','skipNetworkPolicies','skipIngressEnabled','skipIngressAssumesNginx' | ForEach-Object {
+		'skipTLS','skipPSPs','skipNetworkPolicies','skipIngressEnabled','skipIngressAssumesNginx','useSaml' | ForEach-Object {
 			$this.AddSwitchParameter($sb, $_)
+		}
+
+		if ($this.config.useSaml) {
+			'samlIdentityProviderMetadataPath','samlAppName' | ForEach-Object {
+				$this.AddParameter($sb, $_)
+			}
+
+			if (-not $usePd) {
+				'samlKeystorePwd','samlPrivateKeyPwd' | ForEach-Object {
+					$this.AddParameter($sb, $_)
+				}
+			}
 		}
 
 		'codeDxVolumeSizeGiB','codeDxTlsServicePortNumber' | ForEach-Object {
@@ -355,6 +367,10 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 			$pd['mariadb-codedx-password'] = $this.config.externalDatabasePwd
 		}
 
+		if ($this.config.useSaml) {
+			$pd['saml-keystore-password'] = $this.config.samlKeystorePwd
+			$pd['saml-private-key-password'] = $this.config.samlPrivateKeyPwd
+		}
 		return $pd
 	}
 

@@ -9,7 +9,7 @@ $VerbosePreference = 'Continue'
 
 Set-PSDebug -Strict
 
-'./setup/core/common/codedx.ps1' | ForEach-Object {
+'./setup/core/common/prereqs.ps1' | ForEach-Object {
 	Write-Debug "'$PSCommandPath' is including file '$_'"
 	$path = join-path $PSScriptRoot $_
 	if (-not (Test-Path $path)) {

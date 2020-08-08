@@ -55,7 +55,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: {{ include "codedx.cacerts.pwd.secretName" . | quote }}
-              key: cacerts-password
+              key: {{ include "codedx.cacerts.pwd.secretKeyName" . | quote }}
         image: {{ required "A tomcat image must be provided! Assign codedxTomcatImage!" .Values.codedxTomcatImage | quote }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.codedxTomcatImagePullPolicy | quote }}
         name: "{{ include "codedx.name" . }}"
@@ -130,7 +130,7 @@ spec:
           name: codedx-logback
           subPath: logback.xml
         {{- end }}
-        {{ if .Values.samlIdpXmlFile -}}
+        {{ if .Values.authentication.saml.samlIdpXmlFile -}}
         - mountPath: /opt/codedx/saml-idp.xml
           name: codedx-saml-idp
           subPath: saml-idp.xml
@@ -246,7 +246,7 @@ spec:
           - key: logback.xml
             path: logback.xml
       {{- end }}
-      {{ if .Values.samlIdpXmlFile -}}
+      {{ if .Values.authentication.saml.samlIdpXmlFile -}}
       - name: codedx-saml-idp
         configMap:
           name: {{ include "codedx.props.configMapName" . | quote }}

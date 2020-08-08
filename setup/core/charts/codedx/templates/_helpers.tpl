@@ -195,11 +195,25 @@ credentials, which will be mounted for Code Dx.
 {{- end -}}
 
 {{- define "codedx.props.saml.params" -}}
-{{- if .Values.samlIdpXmlFile -}}
+{{- if .Values.authentication.saml.samlIdpXmlFile -}}
 {{- printf " -Dcodedx.additional-props-saml=\"/opt/codedx/codedx-saml.props\"" -}}
 {{- else -}}
 {{ printf "" }}
 {{- end -}}
+{{- end -}}
+
+{{- define "codedx.saml.keystore.pwd" -}}
+    {{- $existingSecret := required "you must use .Values.existingSecret to specify the keystore password" .Values.existingSecret }}
+    {{- /* Note: lookup function does not support --dry-run */ -}}
+    {{- $data := (lookup "v1" "Secret" .Release.Namespace $existingSecret).data -}}
+    {{- index $data "saml-keystore-password" | b64dec -}}
+{{- end -}}
+
+{{- define "codedx.saml.private.key.pwd" -}}
+    {{- $existingSecret := required "you must use .Values.existingSecret to specify the private key password" .Values.existingSecret }}
+    {{- /* Note: lookup function does not support --dry-run */ -}}
+    {{- $data := (lookup "v1" "Secret" .Release.Namespace $existingSecret).data -}}
+    {{- index $data "saml-private-key-password" | b64dec -}}
 {{- end -}}
 
 {{/*
@@ -282,6 +296,20 @@ Determine the name to use to create and/or bind MariaDB's PodSecurityPolicy.
 {{- $fullName := printf "%s-cacerts-pwd-secret" (include "codedx.fullname" .) -}}
 {{- include "sanitize" $fullName -}}
 {{- end -}}
+{{- end -}}
+
+{{- define "codedx.cacerts.pwd.secretKeyName" -}}
+    {{- $keyName := "cacerts-password" }}
+    {{- $existingSecret := .Values.existingSecret -}}
+    {{- if $existingSecret -}}
+        {{- /* Note: lookup function does not support --dry-run */ -}}
+        {{- $data := (lookup "v1" "Secret" .Release.Namespace $existingSecret).data -}}
+        {{- $val := index $data "cacerts-new-password" -}}
+        {{- if $val -}}
+            {{- $keyName = "cacerts-new-password" -}}
+        {{- end -}}
+    {{- end -}}
+    {{- $keyName -}}
 {{- end -}}
 
 {{- define "codedx.adminSecretName" -}}

@@ -180,7 +180,7 @@ password must be at least eight characters long.
 		'Enter a password for the MinIO admin account') {}
 
 	[IQuestion]MakeQuestion([string] $prompt) {
-		$question = new-object ConfirmationQuestion('Enter a password for the MinIO admin account')
+		$question = new-object ConfirmationQuestion($prompt)
 		$question.isSecure = $true
 		$question.minimumLength = 8
 		return $question

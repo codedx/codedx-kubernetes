@@ -27,7 +27,9 @@ function New-CodeDxPdSecret([string] $namespace, [string] $releaseName,
 	[string] $adminPwd, [string] $caCertsFilePwd,
 	[string] $externalDbUser, [string] $externalDbPwd,
 	[string] $dockerRegistryPwd,
-	[string] $caCertsFileNewPwd) {
+	[string] $caCertsFileNewPwd,
+	[string] $samlKeystorePwd,
+	[string] $samlPrivateKeyPwd) {
 
 	$data = @{"admin-password"=$adminPwd;"cacerts-password"=$caCertsFilePwd}
 	
@@ -42,6 +44,12 @@ function New-CodeDxPdSecret([string] $namespace, [string] $releaseName,
 	}
 	if ('' -ne $caCertsFileNewPwd) {
 		$data['cacerts-new-password'] = $caCertsFileNewPwd
+	}
+	if ('' -ne $samlKeystorePwd) {
+		$data['saml-keystore-password'] = $samlKeystorePwd
+	}
+	if ('' -ne $samlPrivateKeyPwd) {
+		$data['saml-private-key-password'] = $samlPrivateKeyPwd
 	}
 
 	New-GenericSecret $namespace (Get-CodeDxPdSecretName $releaseName) $data
@@ -69,6 +77,14 @@ function Get-ExternalDatabasePasswordFromPd([string] $namespace, [string] $relea
 
 function Get-DockerRegistryPasswordFromPd([string] $namespace, [string] $releaseName) {
 	Get-SecretFieldValue $namespace (Get-CodeDxPdSecretName $releaseName) 'docker-registry-password'
+}
+
+function Get-SamlKeystorePasswordFromPd([string] $namespace, [string] $releaseName) {
+	Get-SecretFieldValue $namespace (Get-CodeDxPdSecretName $releaseName) 'saml-keystore-password'
+}
+
+function Get-SamlPrivateKeyPasswordFromPd([string] $namespace, [string] $releaseName) {
+	Get-SecretFieldValue $namespace (Get-CodeDxPdSecretName $releaseName) 'saml-private-key-password'
 }
 
 function Get-DatabasePdSecretName([string] $releaseName) {

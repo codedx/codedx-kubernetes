@@ -28,7 +28,6 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[string]   $caCertPathCodeDx,
 	[string]   $namespace,
 	[string]   $releaseName,
-	[string]   $adminPwd,
 	[string]   $tomcatImage,
 	[string]   $tomcatImagePullSecretName,
 	[string]   $dockerRegistry,
@@ -56,16 +55,16 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[string]   $ingressControllerNamespace,
 	[hashtable]$ingressAnnotations,
 	[string]   $caCertsFilename,
-	[string]   $caCertsFilePwd,
 	[string]   $externalDbUrl,
-	[string]   $externalDbUser,
-	[string]   $externalDbPwd,
+	[string]   $samlAppName,
+	[string]   $samlIdentityProviderMetadataPath,
 	[Tuple`2[string,string]] $codeDxNodeSelector,
 	[Tuple`2[string,string]] $masterDatabaseNodeSelector,
 	[Tuple`2[string,string]] $subordinateDatabaseNodeSelector,
 	[Tuple`2[string,string]] $codeDxNoScheduleExecuteToleration,
 	[Tuple`2[string,string]] $masterDatabaseNoScheduleExecuteToleration,
 	[Tuple`2[string,string]] $subordinateDatabaseNoScheduleExecuteToleration,
+	[switch]   $useSaml,
 	[switch]   $ingressEnabled,
 	[switch]   $ingressAssumesNginx,
 	[switch]   $enablePSPs,
@@ -78,8 +77,6 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 		New-Namespace  $namespace
 	}
 	Set-NamespaceLabel $namespace 'name' $namespace
-
-	New-CodeDxPdSecret $namespace $releaseName $adminPwd $caCertsFilePwd $externalDbUser $externalDbPwd
 
 	$mariadbCredentialSecret = Get-DatabasePdSecretName $releaseName
 	New-DatabasePdSecret $namespace $releaseName $mariadbRootPwd $mariadbReplicatorPwd
@@ -132,6 +129,23 @@ codedxTomcatImagePullSecrets:
 	}
 
 	$defaultKeyStorePwd = 'changeit'
+
+	$chartFolder = (join-path $workDir codedx-kubernetes/setup/core/charts/codedx)
+
+	$hostBasePath = ''
+	$samlIdpXmlFile = ''
+	if ($useSaml) {
+
+		$samlIdPFilename = 'saml-idp-metadata.xml'
+		Copy-Item -LiteralPath $samlIdentityProviderMetadataPath -Destination (join-path $chartFolder $samlIdPFilename)
+		$samlIdpXmlFile = $samlIdPFilename
+
+		$protocol = 'https'
+		if (-not $tlsEnabled) {
+			$protocol = 'http'
+		}
+		$hostBasePath = "$protocol`://$codeDxDnsName/codedx"
+	}
 
 	$values = @'
 existingSecret: '{0}'
@@ -210,6 +224,12 @@ codedxProps:
 {29}
 nodeSelectors: {32}
 tolerations: {35}
+authentication:
+  hostBasePath: '{38}'
+  saml:
+    enabled: {39}
+    appName: '{40}'
+    samlIdpXmlFile: '{41}'
 '@ -f (Get-CodeDxPdSecretName $releaseName), $tomcatImage, $imagePullSecretYaml, `
 $psp, $networkPolicy, `
 $tlsEnabled, $tlsSecretName, 'tls.crt', 'tls.key', `
@@ -226,12 +246,12 @@ $serviceTypeCodeDx, (ConvertTo-YamlMap $serviceAnnotationsCodeDx), `
 $enableDb, $ingressNginxAssumption, `
 $externalDb, $caCertsFilename, $offlineMode.ToString().ToLower(), `
 (Format-NodeSelector $codeDxNodeSelector), (Format-NodeSelector $masterDatabaseNodeSelector), (Format-NodeSelector $subordinateDatabaseNodeSelector), `
-(Format-PodTolerationNoScheduleNoExecute $codeDxNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $masterDatabaseNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $subordinateDatabaseNoScheduleExecuteToleration)
+(Format-PodTolerationNoScheduleNoExecute $codeDxNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $masterDatabaseNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $subordinateDatabaseNoScheduleExecuteToleration), `
+$hostBasePath, $useSaml.tostring().tolower(), $samlAppName, $samlIdpXmlFile
 
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
 
-	$chartFolder = (join-path $workDir codedx-kubernetes/setup/core/charts/codedx)
 	Invoke-HelmSingleDeployment 'Code Dx' $waitSeconds $namespace $releaseName $chartFolder $valuesFile $codeDxFullName 1 $extraValuesPaths
 }
 
@@ -465,14 +485,8 @@ function Set-TrustedCerts([string] $workDir,
 	[string]   $codedxNamespace,
 	[string]   $codedxReleaseName,
 	[string[]] $extraValuesPaths,
-	[string]   $adminPwd,
-	[string]   $keystorePwd,
-	[string]   $externalDbUser,
-	[string]   $externalDbPwd,
 	[switch]   $offlineMode) {
 
-	New-CodeDxPdSecret $codedxNamespace $codedxReleaseName $adminPwd $keystorePwd $externalDbUser $externalDbPwd
-	
 	$chartFolder = (join-path $workDir codedx-kubernetes/setup/core/charts/codedx)
 	
 	$values = @'
@@ -502,8 +516,6 @@ function Set-UseToolOrchestration([string] $workDir,
 	[string] $namespace, [string] $codedxNamespace,
 	[string] $toolServiceUrl, [string] $toolServiceApiKey,
 	[string] $codedxReleaseName,
-	[string] $caCertsFilePwd,
-	[string] $caCertsFileNewPwd,
 	[string[]] $extraValuesPaths,
 	[switch] $enableNetworkPolicies) {
 
@@ -752,13 +764,15 @@ function Get-CommonName([string] $name) {
 	$name.TrimEnd('-')
 }
 
-function Get-TrustedCaCertsFilePwd([string] $currentPwd, [string] $newPwd) {
+function Get-TrustedCaCertsFilePwd([string] $cacertsFilePath, [string] $currentPwd, [string] $newPwd) {
 
-	$pwd = $currentPwd
-	if ('' -ne $newPwd -and $pwd -ne $newPwd) {
-		$pwd = $newPwd
+	if (Test-KeystorePassword $cacertsFilePath $currentPwd) {
+		return $currentPwd
 	}
-	$pwd
+	if (Test-KeystorePassword $cacertsFilePath $newPwd) {
+		return $newPwd
+	}
+	'changeit' # assume default Java keystore password
 }
 
 function New-TrustedCaCertsFile([string] $basePath,
@@ -770,43 +784,15 @@ function New-TrustedCaCertsFile([string] $basePath,
 	if (Test-Path $filePath) {
 		Remove-Item $filePath -force
 	}
-	Copy-Item $basePath $filePath
+	Copy-Item -LiteralPath $basePath -Destination $filePath
 
-	$pwd = (Get-TrustedCaCertsFilePwd $currentPwd $newPwd)
-	Set-KeystorePassword $filePath $currentPwd $pwd
+	$keystorePwd = (Get-TrustedCaCertsFilePwd $filePath $currentPwd $newPwd)
 
-	Import-TrustedCaCerts $filePath $pwd $certPathsToImport
-	Copy-Item $filePath $destinationDirectory -Force
-}
-
-function Test-SetupPreqs([ref] $messages) {
-
-	$messages.Value = @()
-	$isCore = Test-IsCore
-	if (-not $isCore) {
-		$messages.Value += 'Unable to continue because you must run this script with PowerShell Core (pwsh)'
+	if ('' -ne $newPwd -and $currentPwd -ne $newPwd) {
+		Set-KeystorePassword $filePath $currentPwd $newPwd
+		$keystorePwd = $newPwd
 	}
-	
-	if ($isCore -and -not (Test-MinPsMajorVersion 7)) {
-		$messages.Value += 'Unable to continue because you must run this script with PowerShell Core 7 or later'
-	}
-	
-	'helm','kubectl','openssl','git','keytool' | foreach-object {
-		$found = $null -ne (Get-AppCommandPath $_)
-		if (-not $found) {
-			$messages.Value += "Unable to continue because $_ cannot be found. Is $_ installed and included in your PATH?"
-		}
-		if ($found -and $_ -eq 'helm') {
-			$helmVersion = Get-HelmVersionMajorMinor
-			if ($null -eq $helmVersion) {
-				$messages.Value += 'Unable to continue because helm version was not detected.'
-			}
-			
-			$minimumHelmVersion = 3.1 # required for helm lookup function
-			if ($helmVersion -lt $minimumHelmVersion) {
-				$messages.Value += "Unable to continue with helm version $helmVersion, version $minimumHelmVersion or later is required"
-			}
-		}
-	}
-	$messages.Value.count -eq 0
+
+	Import-TrustedCaCerts $filePath $keystorePwd $certPathsToImport
+	Copy-Item -LiteralPath $filePath -Destination $destinationDirectory -Force
 }

@@ -173,6 +173,14 @@ class ConfigInput {
 	[Tuple`2[string,string]] $minioNoScheduleExecuteToleration
 	[Tuple`2[string,string]] $workflowControllerNoScheduleExecuteToleration
 
+	[string] $hostBasePath
+	[bool]   $useSaml
+	[string] $samlIdentityProviderMetadataPath
+	[string] $samlAppName
+	[string] $samlKeystorePwd
+	[string] $samlPrivateKeyPwd
+	[bool]   $useLdap
+
 	[hashtable]  $notes = @{}
 
 	ConfigInput() {

@@ -82,7 +82,7 @@ link for your java file to locate your Java home directory and cacerts
 	}
 
 	[void]Reset(){
-		$this.config.caCertsFilePath = 'changeit'
+		$this.config.caCertsFilePath = ''
 	}
 }
 

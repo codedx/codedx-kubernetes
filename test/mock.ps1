@@ -42,7 +42,7 @@ function New-Mocks() {
 
 	Mock Test-Path {
 		$global:caCertFileExists
-	} -ParameterFilter { 'ca.crt','db-ca.crt','cacerts','extra1.pem','extra2.pem' -contains $path }
+	} -ParameterFilter { 'ca.crt','db-ca.crt','cacerts','extra1.pem','extra2.pem','idp-metadata.xml' -contains $path }
 
 	Mock Start-Sleep {
 	}

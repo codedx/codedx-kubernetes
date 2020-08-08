@@ -29,8 +29,11 @@ codedxTlsTomcatPort: 9443
 #
 codedxJavaOpts: "-XX:MaxRAMPercentage=90.0"
 
-# existingSecret lets you use an existing secret, with fields admin-password and cacerts-password, as an 
-# alternative to codedxAdminPassword and cacertsFilePwd
+# existingSecret lets you use an existing secret with fields admin-password (as an alternative to 
+# codedxAdminPassword), cacerts-password (as an alternative to cacertsFilePwd), cacerts-new-password (to 
+# change the cacerts file password), saml-keystore-password (to configure the password for the separate 
+# Java keystore used to connect to your SAML IdP), and saml-private-key-password (to configure the password
+# for the private key of the public-private key pair used to connect to your SAML IdP).
 #
 existingSecret:
 
@@ -48,8 +51,9 @@ codedxAdminPassword: ""
 #
 cacertsFile: ""
 
-# cacertsFilePwd provides the password for the cacertsFile specified. Set to 'changeit' when the
-# cacertsFile value is unset/empty so that Code Dx can access the default Java cacerts file.
+# cacertsFilePwd is used when existingSecret is not set. cacertsFilePwd provides the 
+# password for the cacertsFile specified. Set to 'changeit' when the cacertsFile value is 
+# unset/empty so that Code Dx can access the default Java cacerts file.
 #
 cacertsFilePwd: 'changeit'
 
@@ -426,19 +430,29 @@ license: {}
 #
 loggingConfigFile: logback.xml
 
-# Use 'samldpXmlFile' to provide an XML file for your Identity Provider when using SAML. The contents
-# of this file will be mounted at `/opt/codedx/saml-idp.xml`.
-#
-# If using SAML, the `auth.saml2.identityProviderMetadataPath` Code Dx property will automatically
-# be assigned. You'll still need to provide the following props in a separate secret:
-# - auth.saml2.keystorePassword
-# - auth.saml2.privateKeyPassword
-# - auth.hostBasePath
-#
-# Use the "codedxProps.extra" value to provide the needed configuration.
-# _Note: This is a Local File Value and will only work if installing this chart from source._
-#
-samlIdpXmlFile:
+authentication:
+  # Use `hostBasePath` to configure the base portion of authentication callbacks such as the 
+  # endpoint for the Code Dx Assertion Consumer Service. When using TLS, this value should be 
+  # https://your-code-dx-fqdn/codedx, or http://your-code-dx-fqdn/codedx otherwise.
+  #
+  hostBasePath:
+
+  saml:
+    # Set saml.enabled to "true" to configure a SAML identity provider. Use saml-keystore-password and 
+    # saml-private-key-password fields of `existingSecret` to 
+    #
+    enabled: false
+
+    # saml.appName is the applicate name or ID that was previously registered with your SAML 
+    # identity provider and is associated with your Code Dx application.
+    #
+    appName:
+
+    # Use saml.samlIdpXmlFile to provide an XML file for your Identity Provider when using SAML. The contents
+    # of this file will be mounted at `/opt/codedx/saml-idp.xml`.
+    # _Note: This is a Local File Value and will only work if installing this chart from source._
+    #
+    samlIdpXmlFile:
 
 # Use 'extraMounts' to mount any additional, pre-existing data that may be necessary for your Code Dx
 # installation via config-maps, secrets, PVs, etc. Uses original Volume mounting syntax; see

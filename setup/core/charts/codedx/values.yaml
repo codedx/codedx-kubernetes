@@ -443,7 +443,7 @@ authentication:
     #
     enabled: false
 
-    # saml.appName is the applicate name or ID that was previously registered with your SAML 
+    # saml.appName is the application name or ID that was previously registered with your SAML 
     # identity provider and is associated with your Code Dx application.
     #
     appName:

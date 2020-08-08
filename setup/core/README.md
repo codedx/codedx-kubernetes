@@ -140,6 +140,11 @@ This section describes the setup.ps1 script parameters, which you can specify by
 | `minioNoScheduleExecuteToleration`                 | pod toleration for the minio pod                           | tag=minio (example)                               |
 | `workflowControllerNoScheduleExecuteToleration`    | pod toleration for the workflow controller pod             | tag=workflowcontroller (example)                  |
 |                                                    |                                                            |                                                   |
+| `hostBasePath`                                     | base path from which the ACS endpoint is derived           | https://app.codedx.com/codedx (example)           |
+| `saml.enabled`                                     | whether to configure a SAML identity provider              | false                                             |
+| `saml.appName`                                     | application name previously registered with your SAML IdP  | codedxclient (example)                            |
+| `saml.samlIdpXmlFile`                              | XML metadata file for your SAML IdP                        | idp-metadata.xml (example)                        |
+|                                                    |                                                            |                                                   |
 | `pauseAfterGitClone`                               | whether to pause (for debug purposes) after git clone      |                                                   |
 |                                                    |                                                            |                                                   |
 | `provisionNetworkPolicy`                           | script block for optional network policy provisioning      |                                                   |

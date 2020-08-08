@@ -236,6 +236,9 @@ if (-not $skipToolOrchestration -and $toolServiceApiKey -eq '') {
 
 if ($caCertsFilePwd -eq '') {
 	$caCertsFilePwd = Get-CacertsPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+	if ($caCertsFilePwd -eq '') {
+		$caCertsFilePwd = 'changeit'
+	}
 }
 
 if ($caCertsFileNewPwd -eq '') {

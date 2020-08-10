@@ -1,4 +1,3 @@
-Import-Module 'pester'
 
 function New-Mocks() {
 

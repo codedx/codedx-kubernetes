@@ -2,7 +2,7 @@
 
 Here are the deployment steps required to use [Code Dx with LDAP](https://codedx.com/Documentation/InstallGuide.html#ActiveDirectoryLDAPConfiguration):
 
-1) Complete the guided setup to determine the setup command(s) for Deploying Code Dx on your Kubernetes cluster.
+1) Complete the guided setup to determine the setup command(s) for deploying Code Dx on your Kubernetes cluster. End the guided setup by using one of the options to save your setup command to a file.
 
 >Note: If you're planning to use LDAPS and your LDAP server uses either a self-signed certificate or a certificate issued by a CA other than a well-known one, you must select a custom cacerts file and add the certificate for your LDAP server.
 

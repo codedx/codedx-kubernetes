@@ -1,4 +1,11 @@
 
+
+Import-Module 'pester' -ErrorAction SilentlyContinue
+if (-not $?) {
+	Write-Host 'Pester is not installed, so this test cannot run. Run pwsh, install the Pester module (Install-Module Pester), and re-run this script.'
+	exit 1
+}
+
 $location = join-path $PSScriptRoot '..'
 push-location ($location)
 

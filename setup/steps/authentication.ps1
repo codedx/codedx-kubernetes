@@ -247,3 +247,43 @@ will use to connect to your SAML identify provider.
 		$this.config.samlPrivateKeyPwd = ''
 	}
 }
+
+class SamlExtraConfig : Step {
+	static [string] hidden $description = @'
+The setup script will configure the following Code Dx SAML properties based on 
+the information you have provided thus far:
+
+- auth.saml2.identityProviderMetadataPath
+- auth.saml2.entityId
+- auth.saml2.keystorePassword
+- auth.saml2.privateKeyPassword
+- auth.hostBasePath
+
+You can find the entire list of Code Dx SAML properties at 
+https://codedx.com/Documentation/InstallGuide.html#SAMLConfiguration
+
+To configure additional SAML properties, follow these instructions:
+https://github.com/codedx/codedx-kubernetes/blob/master/setup/core/docs/auth/use-saml.md
+'@
+
+	SamlExtraConfig([ConfigInput] $config) : base(
+		[SamlExtraConfig].Name, 
+		$config,
+		'SAML Extra Config',
+		[SamlExtraConfig]::description,
+		'Do you want to continue?') {}
+
+	[IQuestion]MakeQuestion([string] $prompt) {
+		return new-object MultipleChoiceQuestion($prompt, 
+			[tuple]::create('&Yes', 'Yes, continue to the next step'),
+			-1)
+	}
+
+	[bool]HandleResponse([IQuestion] $question) {
+		return $true
+	}
+
+	[bool]CanRun() {
+		return $this.config.useSaml
+	}
+}

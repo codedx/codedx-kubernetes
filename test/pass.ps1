@@ -558,6 +558,7 @@ function Set-UseSamlPass([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-keystore-password')) # specify keystore pwd confirm
 	$global:inputs.enqueue((New-Password 'my-private-key-password')) # specify private key pwd
 	$global:inputs.enqueue((New-Password 'my-private-key-password')) # specify private key pwd confirm
+	$global:inputs.enqueue(0) # continue past instructions
 	$global:inputs.enqueue(1) # skip cpu reservation
 	$global:inputs.enqueue(1) # skip memory reservation
 	$global:inputs.enqueue(1) # skip storage reservation

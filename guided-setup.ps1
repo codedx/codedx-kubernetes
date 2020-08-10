@@ -90,7 +90,7 @@ $s = @{}
 [IngressKind],[NginxIngressNamespace],[NginxIngressAddress],
 [LetsEncryptNamespace],[LetsEncryptClusterIssuer],[LetsEncryptEmail],[IngressCertificateArn],
 [DnsName],
-[AuthenticationType],[LdapInstructions],[SamlAuthenticationDnsName],[SamlIdpMetadata],[SamlAppName],[SamlKeystorePwd],[SamlPrivateKeyPwd],
+[AuthenticationType],[LdapInstructions],[SamlAuthenticationDnsName],[SamlIdpMetadata],[SamlAppName],[SamlKeystorePwd],[SamlPrivateKeyPwd],[SamlExtraConfig],
 [DefaultCPU],[NginxCPU],[CodeDxCPU],[MasterDatabaseCPU],[SubordinateDatabaseCPU],[ToolServiceCPU],[MinIOCPU],[WorkflowCPU],
 [DefaultMemory],[NginxMemory],[CodeDxMemory],[MasterDatabaseMemory],[SubordinateDatabaseMemory],[ToolServiceMemory],[MinIOMemory],[WorkflowMemory],
 [DefaultEphemeralStorage],[NginxEphemeralStorage],[CodeDxEphemeralStorage],[MasterDatabaseEphemeralStorage],[SubordinateDatabaseEphemeralStorage],[ToolServiceEphemeralStorage],[MinIOEphemeralStorage],[WorkflowEphemeralStorage],
@@ -154,7 +154,7 @@ Add-StepTransitions $graph $s[[LetsEncryptEmail]] $s[[DnsName]],$s[[Authenticati
 Add-StepTransitions $graph $s[[IngressCertificateArn]] $s[[AuthenticationType]]
 
 Add-StepTransitions $graph $s[[AuthenticationType]] $s[[LdapInstructions]],$s[[DefaultCPU]]
-Add-StepTransitions $graph $s[[AuthenticationType]] $s[[SamlAuthenticationDnsName]],$s[[SamlIdpMetadata]],$s[[SamlAppName]],$s[[SamlKeystorePwd]],$s[[SamlPrivateKeyPwd]],$s[[DefaultCPU]]
+Add-StepTransitions $graph $s[[AuthenticationType]] $s[[SamlAuthenticationDnsName]],$s[[SamlIdpMetadata]],$s[[SamlAppName]],$s[[SamlKeystorePwd]],$s[[SamlPrivateKeyPwd]],$s[[SamlExtraConfig]],$s[[DefaultCPU]]
 Add-StepTransitions $graph $s[[AuthenticationType]] $s[[SamlIdpMetadata]]
 Add-StepTransitions $graph $s[[AuthenticationType]] $s[[DefaultCPU]]
 

@@ -5,8 +5,8 @@ codedxTls:
     enabled: false
     caConfigMap: 
 
-imageNameCodeDxTools: "codedx/codedx-tools:v1.0.4"
-imageNameCodeDxToolsMono: "codedx/codedx-toolsmono:v1.0.4"
+imageNameCodeDxTools: "codedx/codedx-tools:v1.0.5"
+imageNameCodeDxToolsMono: "codedx/codedx-toolsmono:v1.0.5"
 imageNameNewAnalysis: "codedx/codedx-newanalysis:v1.0.0"
 imageNameSendResults: "codedx/codedx-results:v1.0.0"
 imageNameSendErrorResults: "codedx/codedx-error-results:v1.0.0"

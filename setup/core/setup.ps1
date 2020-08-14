@@ -88,7 +88,7 @@ param (
 	[string]   $releaseNameCodeDx = 'codedx',
 	[string]   $releaseNameToolOrchestration = 'codedx-tool-orchestration',
 
-	[string]   $toolServiceApiKey = [guid]::newguid().toString(),
+	[string]   $toolServiceApiKey,
 
 	[string]   $codedxAdminPwd,
 	[string]   $minioAdminUsername = 'admin',

@@ -178,6 +178,13 @@ $codeDxPodName = $codeDxPodName -replace 'pod/',''
 Write-Verbose "Copying analysis-files to Code Dx volume..."
 Copy-K8sItem $namespaceCodeDx $analysisFiles $codeDxPodName 'codedx' '/opt/codedx'
 
+$keystoreFiles = join-path $appDataPath 'keystore'
+if (Test-Path $keystoreFiles -PathType Container) {
+	Write-Verbose 'Copying keystore to Code Dx volume...'
+	Write-Verbose 'NOTE: SAML configuration under keystore must be compatible with current k8s deployment.'
+	Copy-K8sItem $namespaceCodeDx $keystoreFiles $codeDxPodName 'codedx' '/opt/codedx'
+}
+
 $mlTriageFiles = join-path $appDataPath 'mltriage-files'
 if (Test-Path $mlTriageFiles -PathType Container) {
 	Write-Verbose "Copying mltriage-files to Code Dx volume..."

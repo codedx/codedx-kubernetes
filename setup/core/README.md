@@ -140,10 +140,11 @@ This section describes the setup.ps1 script parameters, which you can specify by
 | `minioNoScheduleExecuteToleration`                 | pod toleration for the minio pod                           | tag=minio (example)                               |
 | `workflowControllerNoScheduleExecuteToleration`    | pod toleration for the workflow controller pod             | tag=workflowcontroller (example)                  |
 |                                                    |                                                            |                                                   |
-| `hostBasePath`                                     | base path from which the ACS endpoint is derived           | https://app.codedx.com/codedx (example)           |
-| `saml.enabled`                                     | whether to configure a SAML identity provider              | false                                             |
-| `saml.appName`                                     | application name previously registered with your SAML IdP  | codedxclient (example)                            |
-| `saml.samlIdpXmlFile`                              | XML metadata file for your SAML IdP                        | idp-metadata.xml (example)                        |
+| `useSaml`                                          | whether to use a SAML IdP                                  | false                                             |
+| `samlAppName`                                      | application name previously registered with your SAML IdP  | codedxclient (example)                            |
+| `samlIdentityProviderMetadataPath`                 | XML metadata file for your SAML IdP                        | idp-metadata.xml (example)                        |
+| `samlKeystorePwd`                                  | password to secure SAML-related Java keystore              | `5Ed3&#Rutdcw` (example)                          |
+| `samlPrivateKeyPwd`                                | password to secure private key stored in Java keystore     | `5Ed3&#Rutcwd` (example)                          |
 |                                                    |                                                            |                                                   |
 | `pauseAfterGitClone`                               | whether to pause (for debug purposes) after git clone      |                                                   |
 |                                                    |                                                            |                                                   |

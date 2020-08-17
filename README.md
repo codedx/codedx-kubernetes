@@ -36,7 +36,7 @@ cd codedx-kubernetes
 pwsh ./guided-setup.ps1
 ```
 
->Note: If running `pwsh ./guided-setup.ps1` generates errors mentioning unexpected tokens, run `pwsh ./guided-setup-check-prereqs.ps1` to test whether your system meets the PowerShell Core v7 prerequisite. 
+>Note: If running `pwsh ./guided-setup.ps1` generates errors mentioning unexpected tokens, run `pwsh ./guided-setup-check-prereqs.ps1` to test whether your system meets the PowerShell Core v7 prerequisite.
 
 The guided setup script checks to see whether your system meets the prerequisites before gathering configuration data with a [series of steps](#guided-setup-steps) to help you specify the setup.ps1 parameters necessary to deploy Code Dx in your Kubernetes environment. If you want to use LDAP for authentication, refer to the [LDAP configuration instructions](./setup/core/docs/auth/use-ldap.md) before starting the guided setup.
 
@@ -59,6 +59,16 @@ The codedx-kubernetes repository gets updated with each new Code Dx release, so 
 >Note: Refer to the changelog for a specific codedx-kubernetes release for any important notes regarding backward compatibility.
 
 You can run the setup script commands multiple times. On subsequent runs with modified setup parameters, depending on what you changed, you may need to restart a system component like the Code Dx web application pod. For example, restarting the Code Dx web application pod is necessary when changing a codedx.props setting with a custom values.yaml file so that Code Dx can observe the new file contents.
+
+## Uninstalling
+
+Follow the steps below to uninstall Code Dx from your cluster, replacing `cdx-app` and `cdx-svc` with your Code Dx Kubernetes namespaces.
+
+1. Delete the Code Dx Helm release: helm -n cdx-app delete codedx
+2. Delete the Code Dx Tool Orchestration release, if it exists: helm -n cdx-svc delete codedx-tool-orchestration
+3. Delete the Code Dx k8s namespace: kubectl delete ns cdx-app
+4. Delete the Code Dx Tool Orchestration k8s namespace, if it exists: kubectl delete ns cdx-svc
+5. Delete any remaining Persistent Volumes (PV) and any related PV data
 
 ## Guided Setup Steps
 

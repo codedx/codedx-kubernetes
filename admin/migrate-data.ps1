@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.1
+.VERSION 1.0.2
 .GUID 1830f430-23af-46c2-b73c-8b936957b671
 .AUTHOR Code Dx
 #>
@@ -195,4 +195,5 @@ Write-Verbose "Restarting Code Dx deployment named $deploymentCodeDx..."
 Set-DeploymentReplicas  $namespaceCodeDx $deploymentCodeDx 0 $waitSeconds
 Set-DeploymentReplicas  $namespaceCodeDx $deploymentCodeDx 1 $waitSeconds
 
+Write-Verbose "`nNote: The database restore may have changed your Code Dx admin password.`n"
 Write-Host 'Done'

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.2.2
+.VERSION 1.2.3
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -111,7 +111,7 @@ param (
 	[string]   $codedxHelmRepo = 'https://codedx.github.io/codedx-kubernetes',
 	
 	[string]   $codedxGitRepo = 'https://github.com/codedx/codedx-kubernetes.git',
-	[string]   $codedxGitRepoBranch = 'v1.3.2',
+	[string]   $codedxGitRepoBranch = 'v1.3.3',
 
 	[int]      $kubeApiTargetPort = 443,
 
@@ -397,6 +397,10 @@ if (-not $skipLetsEncryptCertManagerInstall) {
 
 	$ingressAnnotationsCodeDx['kubernetes.io/tls-acme'] = 'true'
 	$ingressAnnotationsCodeDx['cert-manager.io/cluster-issuer'] = $letsEncryptCertManagerClusterIssuer
+}
+
+if (-not (Test-Namespace $namespaceCodeDx)) {
+	New-Namespace $namespaceCodeDx
 }
 
 New-CodeDxPdSecret $namespaceCodeDx $releaseNameCodeDx `

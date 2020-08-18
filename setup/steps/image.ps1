@@ -90,6 +90,13 @@ you cannot specify a private Docker image here.
 		$this.titleDetails = $titleDetails
 	}
 
+	[IQuestion]MakeQuestion([string] $prompt) {
+
+		$question = new-object Question($prompt)
+		$question.allowEmptyResponse = $true
+		return $question
+	}
+
 	[string]GetMessage() {
 
 		$note = [DockerImageNameStep]::descriptionPrivateAllowed

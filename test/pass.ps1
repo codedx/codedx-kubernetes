@@ -394,7 +394,7 @@ function Set-DockerImageNamesAndPrivateRegistryPass([int] $saveOption) {
 	$global:inputs.enqueue('private-reg-username') # skip reg username
 	$global:inputs.enqueue((New-Password 'private-reg-password')) # specify reg pwd
 	$global:inputs.enqueue((New-Password 'private-reg-password')) # specify reg pwd confirm
-	$global:inputs.enqueue(1) # choose default Docker images
+	$global:inputs.enqueue(1) # choose Docker images
 	$global:inputs.enqueue('codedx-tomcat') # specify tomcat name
 	$global:inputs.enqueue('codedx-tools') # specify tools name
 	$global:inputs.enqueue('codedx-toolsmono') # specify toolsmono name
@@ -559,6 +559,57 @@ function Set-UseSamlPass([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-private-key-password')) # specify private key pwd
 	$global:inputs.enqueue((New-Password 'my-private-key-password')) # specify private key pwd confirm
 	$global:inputs.enqueue(0) # continue past instructions
+	$global:inputs.enqueue(1) # skip cpu reservation
+	$global:inputs.enqueue(1) # skip memory reservation
+	$global:inputs.enqueue(1) # skip storage reservation
+	$global:inputs.enqueue(0) # use default volume sizes
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue($saveOption) # next step save option
+}
+
+function Set-SomeDockerImageNames([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue($null) # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(0) # choose minikube env
+	$global:inputs.enqueue(0) # choose minikube context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(0) # choose tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # choose default deployment options
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue('cdx-svc') # specify namespace
+	$global:inputs.enqueue('codedx-tool-orchestration')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue(1) # specify db replicas
+	$global:inputs.enqueue(0) # choose default cacerts
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue((New-Password 'my-tool-service-password')) # specify tool service pwd
+	$global:inputs.enqueue((New-Password 'my-tool-service-password')) # specify tool service pwd confirm
+	$global:inputs.enqueue((New-Password 'my-minio-password')) # specify MinIO pwd
+	$global:inputs.enqueue((New-Password 'my-minio-password')) # specify MinIO pwd confirm
+	$global:inputs.enqueue(2) # specify tool service replicas
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(1) # choose Docker images
+	$global:inputs.enqueue('codedx-tomcat') # specify tomcat name
+	$global:inputs.enqueue('') # skip tools name
+	$global:inputs.enqueue(0) # skip confirm tools name
+	$global:inputs.enqueue('codedx-toolsmono') # specify toolsmono name
+	$global:inputs.enqueue('codedx-toolservice') # specify toolservice name
+	$global:inputs.enqueue('codedx-sendresults') # specify sendresults name
+	$global:inputs.enqueue('codedx-senderrorresults') # specify senderrorresults name
+	$global:inputs.enqueue('codedx-newanalysis') # specify newanalysis name
+	$global:inputs.enqueue('codedx-cleanup') # specify cleanup name
+	$global:inputs.enqueue(0) # skip ingress
+	$global:inputs.enqueue(0) # use local accounts
 	$global:inputs.enqueue(1) # skip cpu reservation
 	$global:inputs.enqueue(1) # skip memory reservation
 	$global:inputs.enqueue(1) # skip storage reservation

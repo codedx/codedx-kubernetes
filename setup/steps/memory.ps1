@@ -117,7 +117,12 @@ Note: You can skip making a reservation by accepting the default value.
 			$question.response += 'Mi'
 		}
 
-		return $this.HandleMemoryResponse($question.response)
+		$response = $question.response
+		if ($question.isResponseEmpty) {
+			$response = $this.GetDefault()
+		}
+
+		return $this.HandleMemoryResponse($response)
 	}
 
 	[bool]HandleMemoryResponse([string] $cpu) {

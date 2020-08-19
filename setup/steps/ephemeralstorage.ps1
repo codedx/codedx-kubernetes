@@ -125,7 +125,12 @@ Note: You can skip making a reservation by accepting the default value.
 			$question.response += 'Mi'
 		}
 
-		return $this.HandleStorageResponse($question.response)
+		$response = $question.response
+		if ($question.isResponseEmpty) {
+			$response = $this.GetDefault()
+		}
+
+		return $this.HandleStorageResponse($response)		
 	}
 
 	[bool]HandleStorageResponse([string] $storage) {
@@ -145,7 +150,7 @@ class NginxEphemeralStorage : EphemeralStorageStep {
 		$config) {}
 
 	[bool]HandleStorageResponse([string] $storage) {
-		$this.config.nginxEphemeralStorageReservation = $this.storage
+		$this.config.nginxEphemeralStorageReservation = $storage
 		return $true
 	}
 
@@ -170,12 +175,12 @@ class CodeDxEphemeralStorage : EphemeralStorageStep {
 		$config) {}
 
 	[bool]HandleStorageResponse([string] $storage) {
-		$this.config.codeDxEphemeralStorageReservation = $this.storage
+		$this.config.codeDxEphemeralStorageReservation = $storage
 		return $true
 	}
 
 	[void]Reset(){
-		$this.config.codeDxEphemeralStorageReservation = '2048Mi'
+		$this.config.codeDxEphemeralStorageReservation = $this.GetDefault()
 	}
 
 	[void]ApplyDefault() {
@@ -195,7 +200,7 @@ class MasterDatabaseEphemeralStorage : EphemeralStorageStep {
 		$config) {}
 
 	[bool]HandleStorageResponse([string] $storage) {
-		$this.config.dbMasterEphemeralStorageReservation = $this.storage
+		$this.config.dbMasterEphemeralStorageReservation = $storage
 		return $true
 	}
 
@@ -220,7 +225,7 @@ class SubordinateDatabaseEphemeralStorage : EphemeralStorageStep {
 		$config) {}
 
 	[bool]HandleStorageResponse([string] $storage) {
-		$this.config.dbSlaveEphemeralStorageReservation = $this.storage
+		$this.config.dbSlaveEphemeralStorageReservation = $storage
 		return $true
 	}
 
@@ -245,7 +250,7 @@ class ToolServiceEphemeralStorage : EphemeralStorageStep {
 		$config) {}
 
 	[bool]HandleStorageResponse([string] $storage) {
-		$this.config.toolServiceEphemeralStorageReservation = $this.storage
+		$this.config.toolServiceEphemeralStorageReservation = $storage
 		return $true
 	}
 
@@ -270,7 +275,7 @@ class MinIOEphemeralStorage : EphemeralStorageStep {
 		$config) {}
 
 	[bool]HandleStorageResponse([string] $storage) {
-		$this.config.minioEphemeralStorageReservation = $this.storage
+		$this.config.minioEphemeralStorageReservation = $storage
 		return $true
 	}
 
@@ -295,7 +300,7 @@ class WorkflowEphemeralStorage : EphemeralStorageStep {
 		$config) {}
 
 	[bool]HandleStorageResponse([string] $storage) {
-		$this.config.workflowEphemeralStorageReservation = $this.storage
+		$this.config.workflowEphemeralStorageReservation = $storage
 		return $true
 	}
 

@@ -120,7 +120,12 @@ Note: You can skip making a reservation by accepting the default value.
 			$question.response += 'm'
 		}
 
-		return $this.HandleCpuResponse($question.response)
+		$response = $question.response
+		if ($question.isResponseEmpty) {
+			$response = $this.GetDefault()
+		}
+
+		return $this.HandleCpuResponse($response)
 	}
 
 	[bool]HandleCpuResponse([string] $cpu) {

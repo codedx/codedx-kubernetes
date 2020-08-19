@@ -134,6 +134,13 @@ class NodeSelectorStep : KeyValueStep {
 		$this.config.notes[($this.GetType().Name)] = "kubectl label nodes $($this.nodeNameExample) $($keyValue.Item1)=$($keyValue.Item2)"
 	}
 
+	[void]Reset() {
+		$name = $this.GetType().Name
+		if ($this.config.notes.containskey($name)) {
+			$this.config.notes.remove($name)
+		}
+	}
+
 	[bool]CanRun() {
 		return $this.config.useNodeSelectors
 	}
@@ -161,6 +168,7 @@ Note: You can use the same node selector key and value for multiple workloads.
 	}
 
 	[void]Reset(){
+		([NodeSelectorStep]$this).Reset()
 		$this.config.codeDxNodeSelector = $null
 	}
 }
@@ -191,6 +199,7 @@ Note: You can use the same node selector key and value for multiple workloads.
 	}
 
 	[void]Reset(){
+		([NodeSelectorStep]$this).Reset()
 		$this.config.masterDatabaseNodeSelector = $null
 	}
 }
@@ -221,6 +230,7 @@ Note: You can use the same node selector key and value for multiple workloads.
 	}
 
 	[void]Reset(){
+		([NodeSelectorStep]$this).Reset()
 		$this.config.subordinateDatabaseNodeSelector = $null
 	}
 }
@@ -251,6 +261,7 @@ Note: You can use the same node selector key and value for multiple workloads.
 	}
 
 	[void]Reset(){
+		([NodeSelectorStep]$this).Reset()
 		$this.config.toolServiceNodeSelector = $null
 	}
 }
@@ -281,6 +292,7 @@ Note: You can use the same node selector key and value for multiple workloads.
 	}
 
 	[void]Reset(){
+		([NodeSelectorStep]$this).Reset()
 		$this.config.minioNodeSelector = $null
 	}
 }
@@ -311,6 +323,7 @@ Note: You can use the same node selector key and value for multiple workloads.
 	}
 
 	[void]Reset(){
+		([NodeSelectorStep]$this).Reset()
 		$this.config.workflowControllerNodeSelector = $null
 	}
 }
@@ -384,6 +397,13 @@ class PodTolerationStep : KeyValueStep {
 	[bool]CanRun() {
 		return $this.config.useTolerations
 	}
+
+	[void]Reset() {
+		$name = $this.GetType().Name
+		if ($this.config.notes.containskey($name)) {
+			$this.config.notes.remove($name)
+		}
+	}
 }
 
 class CodeDxTolerations : PodTolerationStep {
@@ -410,6 +430,7 @@ Note: You can use the same pod toleration key and value for multiple workloads.
 	}
 
 	[void]Reset(){
+		([PodTolerationStep]$this).Reset()
 		$this.config.codeDxNoScheduleExecuteToleration = $null
 	}
 }
@@ -442,6 +463,7 @@ Note: You can use the same pod toleration key and value for multiple workloads.
 	}
 
 	[void]Reset(){
+		([PodTolerationStep]$this).Reset()
 		$this.config.masterDatabaseNoScheduleExecuteToleration = $null
 	}
 }
@@ -474,6 +496,7 @@ Note: You can use the same pod toleration key and value for multiple workloads.
 	}
 
 	[void]Reset(){
+		([PodTolerationStep]$this).Reset()
 		$this.config.subordinateDatabaseNoScheduleExecuteToleration = $null
 	}
 }
@@ -506,6 +529,7 @@ Note: You can use the same pod toleration key and value for multiple workloads.
 	}
 
 	[void]Reset(){
+		([PodTolerationStep]$this).Reset()
 		$this.config.toolServiceNoScheduleExecuteToleration = $null
 	}
 }
@@ -538,6 +562,7 @@ Note: You can use the same pod toleration key and value for multiple workloads.
 	}
 
 	[void]Reset(){
+		([PodTolerationStep]$this).Reset()
 		$this.config.minioNoScheduleExecuteToleration = $null
 	}
 }
@@ -570,6 +595,7 @@ Note: You can use the same pod toleration key and value for multiple workloads.
 	}
 
 	[void]Reset(){
+		([PodTolerationStep]$this).Reset()
 		$this.config.workflowControllerNoScheduleExecuteToleration = $null
 	}
 }

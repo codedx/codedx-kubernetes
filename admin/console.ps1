@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.1
+.VERSION 1.0.2
 .GUID 9b147f81-cb5d-4f13-830c-f0eb653520a7
 .AUTHOR Code Dx
 #>
@@ -54,13 +54,27 @@ function Get-Confirmation([string] $confirmation) {
 	(Read-Host -prompt "Are you sure? Enter '$confirmation' to proceed") -eq $confirmation
 }
 
+function Test-AppCommandPath([string] $commandName) {
+
+	$command = Get-Command $commandName -Type Application -ErrorAction SilentlyContinue
+	$null -ne $command
+}
+
+function Test-Vim() {
+	Test-AppCommandPath 'vim'
+}
+
+function Test-Argo() {
+	Test-AppCommandPath 'argo'
+}
+
 $choices = @(
 
 	@{id="A1"; name='Show All Workflows';
 		action={
 			argo -n $toolOrchestrationNamespace list
 		};
-		valid = {$toolOrchestrationNamespace -ne ''}
+		valid = {$toolOrchestrationNamespace -ne '' -and (Test-Argo)}
 	}
 
 	@{id="A2"; name='Show All Workflow Details';
@@ -70,14 +84,14 @@ $choices = @(
 				argo -n $toolOrchestrationNamespace get $_
 			}
 		};
-		valid = {$toolOrchestrationNamespace -ne ''}
+		valid = {$toolOrchestrationNamespace -ne '' -and (Test-Argo)}
 	}
 
 	@{id="A3"; name='Show Running Workflows';
 		action={
 			argo -n $toolOrchestrationNamespace list --running
 		};
-		valid = {$toolOrchestrationNamespace -ne ''}
+		valid = {$toolOrchestrationNamespace -ne '' -and (Test-Argo)}
 	}
 
 	@{id="A4"; name='Show Running Workflow Details';
@@ -87,7 +101,7 @@ $choices = @(
 				argo -n $toolOrchestrationNamespace get $_
 			}
 		};
-		valid = {$toolOrchestrationNamespace -ne ''}
+		valid = {$toolOrchestrationNamespace -ne '' -and (Test-Argo)}
 	}
 
 	@{id="A5"; name='Show Workflow Detail';
@@ -95,7 +109,7 @@ $choices = @(
 			$workflowName = read-host -prompt 'Enter workflow ID'
 			argo -n $toolOrchestrationNamespace get $workflowName
 		};
-		valid = {$toolOrchestrationNamespace -ne ''}
+		valid = {$toolOrchestrationNamespace -ne '' -and (Test-Argo)}
 	}
 
 	@{id="C1"; name='Get Code Dx Namespace Pods';
@@ -179,12 +193,12 @@ $choices = @(
 		valid = {$codedxNamespace -ne ''}
 	}
 
-	@{id="L2"; name='Open Code Dx Log in vim (requires vim)';
+	@{id="L2"; name='Open Code Dx Log in vim';
 		action={
 			$podName = kubectl -n $codedxNamespace get pod -l app=codedx -o name
 			kubectl -n $codedxNamespace logs $podName | vim -
 		};
-		valid = {$codedxNamespace -ne ''}
+		valid = {$codedxNamespace -ne '' -and (Test-Vim)}
 	}
 
 	@{id="L3"; name='Show Code Dx Log (ERRORs)';
@@ -213,14 +227,14 @@ $choices = @(
 		valid = {$toolOrchestrationNamespace -ne ''}
 	}
 
-	@{id="L6"; name='Open Tool Orchestration Log(s) in vim (requires vim)';
+	@{id="L6"; name='Open Tool Orchestration Log(s) in vim';
 		action={
 			kubectl -n $toolOrchestrationNamespace get pod -l component=service -o name | ForEach-Object {
 				write-host "`n--------$_--------" -fore red
 				kubectl -n $toolOrchestrationNamespace logs $_ | vim -
 			}
 		};
-		valid = {$toolOrchestrationNamespace -ne ''}
+		valid = {$toolOrchestrationNamespace -ne '' -and (Test-Vim)}
 	}
 
 	@{id="L7"; name='Show Tool Orchestration Log(s) (Last 10 Minutes)';
@@ -322,6 +336,14 @@ $choices = @(
 		};
 		valid = {$toolOrchestrationNamespace -ne ''}
 	}
+
+
+	@{id="T4"; name='Describe Resource Requirement(s)';
+		action={
+			kubectl -n $toolOrchestrationNamespace describe cm cdx-toolsvc
+		};
+		valid = {$toolOrchestrationNamespace -ne ''}
+	}
 )
 
 kubectl config use-context $kubeContext
@@ -339,6 +361,7 @@ $missingCmds = $cmdCount -ne $choices.count
 
 $choices = $choices + @{id="QA"; name='Quit'; action={ exit }} 
 
+$choice = ''
 $awaitingChoice = $false
 while ($true) {
 
@@ -352,12 +375,16 @@ while ($true) {
 		$missingCmds=$false
 	}
 
-	$choice = read-host -prompt 'Enter code (e.g., A1)'
+	if ('' -eq $choice) {
+		$choice = read-host -prompt 'Enter code (e.g., C1)'
+	}
+
 	$action = $choices | Where-Object {
 		$_.id -eq $choice
 	}
 
 	if ($null -eq $action) {
+		$choice = ''
 		Write-Host 'Try again by specifying a choice from the above list (enter QA to quit)'
 		continue
 	}
@@ -366,6 +393,11 @@ while ($true) {
 	& $action.action
 	Write-Host "`n---"
 
-	Read-Host 'Press Enter to continue...'
-	$awaitingChoice = $false
+	$choice = Read-Host 'Specify another command or press Enter to continue...'
+	if ('' -ne $choice -and ($choices | select-object -ExpandProperty id) -notcontains $choice) {
+		Write-Host 'Invalid choice'
+		$choice = ''
+	}
+
+	$awaitingChoice = '' -ne $choice
 }

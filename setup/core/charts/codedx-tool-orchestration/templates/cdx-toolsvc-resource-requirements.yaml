@@ -7,3 +7,11 @@ data:
   limits.cpu: {{ .Values.limits.tool.cpu | quote }}
   requests.memory: {{ .Values.requests.tool.memory | quote }}
   limits.memory: {{ .Values.limits.tool.memory | quote }}
+  {{- if and .Values.tools.nodeSelectorKey .Values.tools.nodeSelectorValue }}
+  nodeSelectorKey: {{ .Values.tools.nodeSelectorKey | quote }}
+  nodeSelectorValue: {{ .Values.tools.nodeSelectorValue | quote }}
+  {{- end }}
+  {{- if and .Values.tools.podTolerationKey .Values.tools.podTolerationValue }}
+  podTolerationKey: {{ .Values.tools.podTolerationKey | quote }}
+  podTolerationValue: {{ .Values.tools.podTolerationValue | quote }}
+  {{- end }}

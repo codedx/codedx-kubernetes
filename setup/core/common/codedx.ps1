@@ -295,9 +295,11 @@ function New-ToolOrchestrationDeployment([string] $workDir,
 	[Tuple`2[string,string]] $toolServiceNodeSelector,
 	[Tuple`2[string,string]] $minioNodeSelector,
 	[Tuple`2[string,string]] $workflowControllerNodeSelector,
+	[Tuple`2[string,string]] $toolNodeSelector,
 	[Tuple`2[string,string]] $toolServiceNoScheduleExecuteToleration,
 	[Tuple`2[string,string]] $minioNoScheduleExecuteToleration,
 	[Tuple`2[string,string]] $workflowControllerNoScheduleExecuteToleration,
+	[Tuple`2[string,string]] $toolNoScheduleExecuteToleration,
 	[switch]   $enablePSPs,
 	[switch]   $enableNetworkPolicies,
 	[switch]   $configureTls) {
@@ -439,6 +441,12 @@ imageNameHelmPreDelete: '{22}'
 {25}
 nodeSelectors: {29}
 tolerations: {32}
+
+tools:
+  nodeSelectorKey: '{35}'
+  nodeSelectorValue: '{36}'
+  tolerationKey: '{37}'
+  tolerationValue: '{38}'
 '@ -f $minioCredentialSecret,`
 $codedxNamespace,$codedxReleaseName,$toolServiceCredentialSecret,`
 $imagePullSecretName,$toolsImage,$toolsMonoImage,$newAnalysisImage,$sendResultsImage,$sendErrorResultsImage,$toolServiceImage,$numReplicas,
@@ -451,6 +459,10 @@ $tlsConfig,$codedxCaConfigMap,$minioVolumeSizeGiB,$imagePullSecretYaml,$preDelet
 $minioCertConfigMap,
 (Format-NodeSelector $toolServiceNodeSelector), (Format-NodeSelector $minioNodeSelector), (Format-NodeSelector $workflowControllerNodeSelector), `
 (Format-PodTolerationNoScheduleNoExecute $toolServiceNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $minioNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $workflowControllerNoScheduleExecuteToleration)
+$null -eq $toolNodeSelector ? '' : $toolNodeSelector.Item1,
+$null -eq $toolNodeSelector ? '' : $toolNodeSelector.Item2,
+$null -eq $toolNoScheduleExecuteToleration ? '' : $toolNoScheduleExecuteToleration.Item1,
+$null -eq $toolNoScheduleExecuteToleration ? '' : $toolNoScheduleExecuteToleration.Item2
 
 	$valuesFile = 'toolsvc-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force

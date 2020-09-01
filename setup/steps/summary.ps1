@@ -230,7 +230,8 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 			}
 			'toolServiceNodeSelector','toolServiceNoScheduleExecuteToleration',
 			'minioNodeSelector','minioNoScheduleExecuteToleration',
-			'workflowControllerNodeSelector','workflowControllerNoScheduleExecuteToleration' | ForEach-Object {
+			'workflowControllerNodeSelector','workflowControllerNoScheduleExecuteToleration',
+			'toolNodeSelector','toolNoScheduleExecuteToleration' | ForEach-Object {
 				$this.AddKeyValueParameter($sb, $_)
 			}
 

@@ -141,6 +141,7 @@ param (
 	[Tuple`2[string,string]] $toolServiceNodeSelector,
 	[Tuple`2[string,string]] $minioNodeSelector,
 	[Tuple`2[string,string]] $workflowControllerNodeSelector,
+	[Tuple`2[string,string]] $toolNodeSelector,
 
 	[Tuple`2[string,string]] $codeDxNoScheduleExecuteToleration,
 	[Tuple`2[string,string]] $masterDatabaseNoScheduleExecuteToleration,
@@ -148,6 +149,7 @@ param (
 	[Tuple`2[string,string]] $toolServiceNoScheduleExecuteToleration,
 	[Tuple`2[string,string]] $minioNoScheduleExecuteToleration,
 	[Tuple`2[string,string]] $workflowControllerNoScheduleExecuteToleration,
+	[Tuple`2[string,string]] $toolNoScheduleExecuteToleration,
 
 	[switch] $pauseAfterGitClone,
 
@@ -514,8 +516,8 @@ if ($installToolOrchestration) {
 		$toolServiceEphemeralStorageReservation $minioEphemeralStorageReservation $workflowEphemeralStorageReservation `
 		$kubeApiTargetPort `
 		$extraToolOrchestrationValuesPath `
-		$toolServiceNodeSelector $minioNodeSelector $workflowControllerNodeSelector `
-		$toolServiceNoScheduleExecuteToleration $minioNoScheduleExecuteToleration $workflowControllerNoScheduleExecuteToleration `
+		$toolServiceNodeSelector $minioNodeSelector $workflowControllerNodeSelector $toolNodeSelector `
+		$toolServiceNoScheduleExecuteToleration $minioNoScheduleExecuteToleration $workflowControllerNoScheduleExecuteToleration $toolNoScheduleExecuteToleration `
 		-enablePSPs:(-not $skipPSPs) -enableNetworkPolicies:$useNetworkPolicies -configureTls:(-not $skipTLS)
 
 	Write-Verbose 'Updating Code Dx deployment by enabling Tool Orchestration...'

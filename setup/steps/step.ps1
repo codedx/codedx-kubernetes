@@ -164,6 +164,7 @@ class ConfigInput {
 	[Tuple`2[string,string]] $toolServiceNodeSelector
 	[Tuple`2[string,string]] $minioNodeSelector
 	[Tuple`2[string,string]] $workflowControllerNodeSelector
+	[Tuple`2[string,string]] $toolNodeSelector
 
 	[bool]                   $useTolerations
 	[Tuple`2[string,string]] $codeDxNoScheduleExecuteToleration
@@ -172,6 +173,7 @@ class ConfigInput {
 	[Tuple`2[string,string]] $toolServiceNoScheduleExecuteToleration
 	[Tuple`2[string,string]] $minioNoScheduleExecuteToleration
 	[Tuple`2[string,string]] $workflowControllerNoScheduleExecuteToleration
+	[Tuple`2[string,string]] $toolNoScheduleExecuteToleration
 
 	[string] $hostBasePath
 	[bool]   $useSaml

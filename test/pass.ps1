@@ -292,6 +292,8 @@ function Set-AllNodeSelectorAndPodTolerationsPass([int] $saveOption) {
 	$global:inputs.enqueue('codedx-nodes-5') # specify node selector value (MinIO)
 	$global:inputs.enqueue('alpha.eksctl.io/nodegroup-name') # specify node selector key (workflow controller)
 	$global:inputs.enqueue('codedx-nodes-6') # specify node selector value (workflow controller)
+	$global:inputs.enqueue('alpha.eksctl.io/nodegroup-name') # specify node selector key (tools)
+	$global:inputs.enqueue('codedx-nodes-7') # specify node selector value (tools)
 	$global:inputs.enqueue(0) # choose pod tolerations
 	$global:inputs.enqueue('host') # specify pod tolerations key (code dx app)
 	$global:inputs.enqueue('codedx-web') # specify pod tolerations value (code dx app)
@@ -305,6 +307,8 @@ function Set-AllNodeSelectorAndPodTolerationsPass([int] $saveOption) {
 	$global:inputs.enqueue('minio') # specify pod tolerations value (MinIO)
 	$global:inputs.enqueue('host') # specify pod tolerations key (workflow controller)
 	$global:inputs.enqueue('workflow-controller') # specify pod tolerations value (workflow controller)
+	$global:inputs.enqueue('host') # specify pod tolerations key (tools)
+	$global:inputs.enqueue('tools') # specify pod tolerations value (tools)
 	$global:inputs.enqueue($saveOption) # next step save option
 }
 

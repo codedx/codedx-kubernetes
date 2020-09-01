@@ -328,6 +328,43 @@ Note: You can use the same node selector key and value for multiple workloads.
 	}
 }
 
+class ToolNodeSelector : NodeSelectorStep {
+
+	static [string] hidden $description = @'
+Specify a node selector for all tools by entering a key and a value that 
+you define. You must separately label your cluster node(s). 
+
+You can configure a node selector for specific projects and/or tools by 
+adding the nodeSelectorKey and nodeSelectorValue fields to a Code Dx 
+Resource Requirement - browse to the following URL for more details:
+
+https://codedx.com/Documentation/UserGuide.html#ResourceRequirements
+
+Note: You can use the same node selector key and value for multiple workloads.
+'@
+
+	ToolNodeSelector([ConfigInput] $config) : base(
+		$config,
+		[ToolNodeSelector].Name, 
+		'Tool Node Selector',
+		[ToolNodeSelector]::description,
+		'tool-node') {}
+
+	[bool]HandleKeyValueResponse([Tuple`2[string,string]] $keyValue) {
+		$this.config.toolNodeSelector = $keyValue
+		return $true
+	}
+
+	[bool]CanRun() {
+		return ([NodeSelectorStep]$this).CanRun() -and -not $this.config.skipToolOrchestration
+	}
+
+	[void]Reset(){
+		([NodeSelectorStep]$this).Reset()
+		$this.config.toolNodeSelector = $null
+	}
+}
+
 class UseTolerations : Step {
 
 	static [string] hidden $description = @'
@@ -597,5 +634,44 @@ Note: You can use the same pod toleration key and value for multiple workloads.
 	[void]Reset(){
 		([PodTolerationStep]$this).Reset()
 		$this.config.workflowControllerNoScheduleExecuteToleration = $null
+	}
+}
+
+class ToolTolerations : PodTolerationStep {
+
+	static [string] hidden $description = @'
+Specify a pod toleration for all tools by entering a key and a value that 
+you define. You must separately apply a taint to your cluster node(s). 
+The key and value you define will be associated with the NoSchedule 
+and NoExecute effects.
+
+You can configure a pod toleration for specific projects and/or tools by 
+adding the podTolerationKey and podTolerationValue fields to a Code Dx 
+Resource Requirement - browse to the following URL for more details:
+
+https://codedx.com/Documentation/UserGuide.html#ResourceRequirements
+
+Note: You can use the same pod toleration key and value for multiple workloads.
+'@
+
+	ToolTolerations([ConfigInput] $config) : base(
+		$config,
+		[ToolTolerations].Name, 
+		'Tool Pod Toleration',
+		[ToolTolerations]::description,
+		'tool-node') {}
+
+	[bool]HandleKeyValueResponse([Tuple`2[string,string]] $keyValue) {
+		$this.config.toolNoScheduleExecuteToleration = $keyValue
+		return $true
+	}
+
+	[bool]CanRun() {
+		return ([PodTolerationStep]$this).CanRun() -and -not $this.config.skipToolOrchestration
+	}
+
+	[void]Reset(){
+		([PodTolerationStep]$this).Reset()
+		$this.config.toolNoScheduleExecuteToleration = $null
 	}
 }

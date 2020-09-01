@@ -69,7 +69,36 @@ nodeSelectors: {}
 #   value: 'codedx-tool-service-node'
 #   effect: 'NoExecute'
 #
-tolerations: {}    
+tolerations: {}  
+
+tools:
+  # Use nodeSelectorKey and nodeSelectorValue to influence the scheduling of tool pods.
+  #
+  # For example, run this command to tag a node with codedx-tool-node:
+  # kubectl label nodes cluster-node tag=codedx-tool-node 
+  #
+  # Then use this configuration to create a node selector for tool instances:
+  #
+  # nodeSelectorKey: tag
+  # nodeSelectorValue: codedx-tool-node
+  #
+  nodeSelectorKey:
+  nodeSelectorValue:
+
+  # Use tolerationKey and tolerationValue to influence the scheduling of tool pods
+  #
+  # For example, run these commands to add codedx-tool-node taints to a node:
+  #
+  # kubectl taint nodes cluster-node dedicated=codedx-tool-node:NoSchedule
+  # kubectl taint nodes cluster-node dedicated=codedx-tool-node:NoExecute
+  #
+  # Then use this configuration to create a toleration for codedx-tool-node:
+  #
+  # tolerationKey: dedicated
+  # tolerationValue: codedx-tool-node
+  #
+  tolerationKey:
+  tolerationValue:
 
 logs:
   # Maximum size in MB for each log file

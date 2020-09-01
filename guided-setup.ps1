@@ -96,8 +96,8 @@ $s = @{}
 [DefaultEphemeralStorage],[NginxEphemeralStorage],[CodeDxEphemeralStorage],[MasterDatabaseEphemeralStorage],[SubordinateDatabaseEphemeralStorage],[ToolServiceEphemeralStorage],[MinIOEphemeralStorage],[WorkflowEphemeralStorage],
 [DefaultVolumeSize],[CodeDxVolumeSize],[MasterDatabaseVolumeSize],[SubordinateDatabaseVolumeSize],[MinIOVolumeSize],[StorageClassName],
 [UseDefaultCACerts],[CACertsFile],[CACertsFilePassword],[CACertsChangePassword],[CACertsFileNewPassword],[AddExtraCertificates],[ExtraCertificates],
-[UseNodeSelectors],[CodeDxNodeSelector],[MasterDatabaseNodeSelector],[SubordinateDatabaseNodeSelector],[ToolServiceNodeSelector],[MinIONodeSelector],[WorkflowControllerNodeSelector],
-[UseTolerations],[CodeDxTolerations],[MasterDatabaseTolerations],[SubordinateDatabaseTolerations],[ToolServiceTolerations],[MinIOTolerations],[WorkflowControllerTolerations],
+[UseNodeSelectors],[CodeDxNodeSelector],[MasterDatabaseNodeSelector],[SubordinateDatabaseNodeSelector],[ToolServiceNodeSelector],[MinIONodeSelector],[WorkflowControllerNodeSelector],[ToolNodeSelector],
+[UseTolerations],[CodeDxTolerations],[MasterDatabaseTolerations],[SubordinateDatabaseTolerations],[ToolServiceTolerations],[MinIOTolerations],[WorkflowControllerTolerations],[ToolTolerations],
 [Finish],[Abort]
 | ForEach-Object {
 	$s[$_] = new-object -type $_ -args $config
@@ -205,7 +205,7 @@ Add-StepTransitions $graph $s[[StorageClassName]] $s[[UseNodeSelectors]]
 Add-StepTransitions $graph $s[[StorageClassName]] $s[[Finish]]
 
 Add-StepTransitions $graph $s[[UseNodeSelectors]] $s[[CodeDxNodeSelector]],$s[[MasterDatabaseNodeSelector]],$s[[SubordinateDatabaseNodeSelector]],$s[[ToolServiceNodeSelector]]
-Add-StepTransitions $graph $s[[UseNodeSelectors]] $s[[CodeDxNodeSelector]],$s[[ToolServiceNodeSelector]],$s[[MinIONodeSelector]],$s[[WorkflowControllerNodeSelector]],$s[[UseTolerations]]
+Add-StepTransitions $graph $s[[UseNodeSelectors]] $s[[CodeDxNodeSelector]],$s[[ToolServiceNodeSelector]],$s[[MinIONodeSelector]],$s[[WorkflowControllerNodeSelector]],$s[[ToolNodeSelector]],$s[[UseTolerations]]
 Add-StepTransitions $graph $s[[UseNodeSelectors]] $s[[CodeDxNodeSelector]],$s[[UseTolerations]]
 Add-StepTransitions $graph $s[[UseNodeSelectors]] $s[[UseTolerations]]
 Add-StepTransitions $graph $s[[SubordinateDatabaseNodeSelector]] $s[[UseTolerations]]
@@ -213,7 +213,7 @@ Add-StepTransitions $graph $s[[MasterDatabaseNodeSelector]] $s[[ToolServiceNodeS
 Add-StepTransitions $graph $s[[MasterDatabaseNodeSelector]] $s[[UseTolerations]]
 
 Add-StepTransitions $graph $s[[UseTolerations]] $s[[CodeDxTolerations]],$s[[MasterDatabaseTolerations]],$s[[SubordinateDatabaseTolerations]],$s[[ToolServiceTolerations]]
-Add-StepTransitions $graph $s[[UseTolerations]] $s[[CodeDxTolerations]],$s[[ToolServiceTolerations]],$s[[MinIOTolerations]],$s[[WorkflowControllerTolerations]],$s[[Finish]]
+Add-StepTransitions $graph $s[[UseTolerations]] $s[[CodeDxTolerations]],$s[[ToolServiceTolerations]],$s[[MinIOTolerations]],$s[[WorkflowControllerTolerations]],$s[[ToolTolerations]],$s[[Finish]]
 Add-StepTransitions $graph $s[[UseTolerations]] $s[[CodeDxTolerations]],$s[[Finish]]
 Add-StepTransitions $graph $s[[UseTolerations]] $s[[Finish]]
 Add-StepTransitions $graph $s[[SubordinateDatabaseTolerations]] $s[[Finish]]

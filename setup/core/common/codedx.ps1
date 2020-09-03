@@ -230,23 +230,23 @@ authentication:
     enabled: {39}
     appName: '{40}'
     samlIdpXmlFile: '{41}'
-'@ -f (Get-CodeDxPdSecretName $releaseName), $tomcatImage, $imagePullSecretYaml, `
-$psp, $networkPolicy, `
-$tlsEnabled, $tlsSecretName, 'tls.crt', 'tls.key', `
-$mariadbCredentialSecret, `
-$dbVolumeSizeGiB, $codeDxVolumeSizeGiB, $codeDxDnsName, $ingress, `
-$dbSlaveVolumeSizeGiB, $dbSlaveReplicaCount, $ingressNamespaceSelector, $storageClassName, `
-(Format-ResourceLimitRequest -limitMemory $codeDxMemoryLimit -limitCPU $codeDxCPULimit -limitEphemeralStorage $codeDxEphemeralStorageLimit), `
-(Format-ResourceLimitRequest -limitMemory $dbMasterMemoryLimit -limitCPU $dbMasterCPULimit -limitEphemeralStorage $dbMasterEphemeralStorageLimit -indent 4), `
-(ConvertTo-YamlMap $ingressAnnotations), `
-$defaultKeyStorePwd, `
-(Format-ResourceLimitRequest -limitMemory $dbSlaveMemoryLimit -limitCPU $dbSlaveCPULimit -limitEphemeralStorage $dbSlaveEphemeralStorageLimit -indent 4), `
-$codeDxTomcatPortNumber, $codeDxTlsTomcatPortNumber, `
-$serviceTypeCodeDx, (ConvertTo-YamlMap $serviceAnnotationsCodeDx), `
-$enableDb, $ingressNginxAssumption, `
-$externalDb, $caCertsFilename, $offlineMode.ToString().ToLower(), `
-(Format-NodeSelector $codeDxNodeSelector), (Format-NodeSelector $masterDatabaseNodeSelector), (Format-NodeSelector $subordinateDatabaseNodeSelector), `
-(Format-PodTolerationNoScheduleNoExecute $codeDxNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $masterDatabaseNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $subordinateDatabaseNoScheduleExecuteToleration), `
+'@ -f (Get-CodeDxPdSecretName $releaseName), $tomcatImage, $imagePullSecretYaml,
+$psp, $networkPolicy,
+$tlsEnabled, $tlsSecretName, 'tls.crt', 'tls.key',
+$mariadbCredentialSecret,
+$dbVolumeSizeGiB, $codeDxVolumeSizeGiB, $codeDxDnsName, $ingress,
+$dbSlaveVolumeSizeGiB, $dbSlaveReplicaCount, $ingressNamespaceSelector, $storageClassName,
+(Format-ResourceLimitRequest -limitMemory $codeDxMemoryLimit -limitCPU $codeDxCPULimit -limitEphemeralStorage $codeDxEphemeralStorageLimit),
+(Format-ResourceLimitRequest -limitMemory $dbMasterMemoryLimit -limitCPU $dbMasterCPULimit -limitEphemeralStorage $dbMasterEphemeralStorageLimit -indent 4),
+(ConvertTo-YamlMap $ingressAnnotations),
+$defaultKeyStorePwd,
+(Format-ResourceLimitRequest -limitMemory $dbSlaveMemoryLimit -limitCPU $dbSlaveCPULimit -limitEphemeralStorage $dbSlaveEphemeralStorageLimit -indent 4),
+$codeDxTomcatPortNumber, $codeDxTlsTomcatPortNumber,
+$serviceTypeCodeDx, (ConvertTo-YamlMap $serviceAnnotationsCodeDx),
+$enableDb, $ingressNginxAssumption,
+$externalDb, $caCertsFilename, $offlineMode.ToString().ToLower(),
+(Format-NodeSelector $codeDxNodeSelector), (Format-NodeSelector $masterDatabaseNodeSelector), (Format-NodeSelector $subordinateDatabaseNodeSelector),
+(Format-PodTolerationNoScheduleNoExecute $codeDxNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $masterDatabaseNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $subordinateDatabaseNoScheduleExecuteToleration),
 $hostBasePath, $useSaml.tostring().tolower(), $samlAppName, $samlIdpXmlFile
 
 	$valuesFile = 'codedx-values.yaml'
@@ -447,22 +447,22 @@ tools:
   nodeSelectorValue: '{36}'
   tolerationKey: '{37}'
   tolerationValue: '{38}'
-'@ -f $minioCredentialSecret,`
-$codedxNamespace,$codedxReleaseName,$toolServiceCredentialSecret,`
+'@ -f $minioCredentialSecret,
+$codedxNamespace,$codedxReleaseName,$toolServiceCredentialSecret,
 $imagePullSecretName,$toolsImage,$toolsMonoImage,$newAnalysisImage,$sendResultsImage,$sendErrorResultsImage,$toolServiceImage,$numReplicas,
 $tlsConfig,$tlsMinioCertSecret,$tlsToolServiceCertSecret,
-$psp,$networkPolicy,$codedxBaseUrl,`
-$tlsConfig,$codedxCaConfigMap,$minioVolumeSizeGiB,$imagePullSecretYaml,$preDeleteImageName,$storageClassName, $kubeApiTargetPort, `
-(Format-ResourceLimitRequest -limitMemory $toolServiceMemoryLimit -limitCPU $toolServiceCPULimit -limitEphemeralStorage $toolServiceEphemeralStorageLimit), `
-(Format-ResourceLimitRequest -limitMemory $workflowMemoryLimit -limitCPU $workflowCPULimit -limitEphemeralStorage $workflowEphemeralStorageLimit -indent 4), `
-(Format-ResourceLimitRequest -limitMemory $minioMemoryLimit -limitCPU $minioCPULimit -limitEphemeralStorage $minioEphemeralStorageLimit -indent 2), `
+$psp,$networkPolicy,$codedxBaseUrl,
+$tlsConfig,$codedxCaConfigMap,$minioVolumeSizeGiB,$imagePullSecretYaml,$preDeleteImageName,$storageClassName, $kubeApiTargetPort,
+(Format-ResourceLimitRequest -limitMemory $toolServiceMemoryLimit -limitCPU $toolServiceCPULimit -limitEphemeralStorage $toolServiceEphemeralStorageLimit),
+(Format-ResourceLimitRequest -limitMemory $workflowMemoryLimit -limitCPU $workflowCPULimit -limitEphemeralStorage $workflowEphemeralStorageLimit -indent 4),
+(Format-ResourceLimitRequest -limitMemory $minioMemoryLimit -limitCPU $minioCPULimit -limitEphemeralStorage $minioEphemeralStorageLimit -indent 2),
 $minioCertConfigMap,
-(Format-NodeSelector $toolServiceNodeSelector), (Format-NodeSelector $minioNodeSelector), (Format-NodeSelector $workflowControllerNodeSelector), `
-(Format-PodTolerationNoScheduleNoExecute $toolServiceNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $minioNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $workflowControllerNoScheduleExecuteToleration)
-$null -eq $toolNodeSelector ? '' : $toolNodeSelector.Item1,
-$null -eq $toolNodeSelector ? '' : $toolNodeSelector.Item2,
-$null -eq $toolNoScheduleExecuteToleration ? '' : $toolNoScheduleExecuteToleration.Item1,
-$null -eq $toolNoScheduleExecuteToleration ? '' : $toolNoScheduleExecuteToleration.Item2
+(Format-NodeSelector $toolServiceNodeSelector), (Format-NodeSelector $minioNodeSelector), (Format-NodeSelector $workflowControllerNodeSelector),
+(Format-PodTolerationNoScheduleNoExecute $toolServiceNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $minioNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $workflowControllerNoScheduleExecuteToleration),
+($null -eq $toolNodeSelector ? '' : $toolNodeSelector.Item1),
+($null -eq $toolNodeSelector ? '' : $toolNodeSelector.Item2),
+($null -eq $toolNoScheduleExecuteToleration ? '' : $toolNoScheduleExecuteToleration.Item1),
+($null -eq $toolNoScheduleExecuteToleration ? '' : $toolNoScheduleExecuteToleration.Item2)
 
 	$valuesFile = 'toolsvc-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force

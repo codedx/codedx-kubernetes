@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.2
+.VERSION 1.0.3
 .GUID 9b147f81-cb5d-4f13-830c-f0eb653520a7
 .AUTHOR Code Dx
 #>
@@ -72,14 +72,14 @@ $choices = @(
 
 	@{id="A1"; name='Show All Workflows';
 		action={
-			argo -n $toolOrchestrationNamespace list
+			argo -n $toolOrchestrationNamespace list | sort-object
 		};
 		valid = {$toolOrchestrationNamespace -ne '' -and (Test-Argo)}
 	}
 
 	@{id="A2"; name='Show All Workflow Details';
 		action={
-			argo -n $toolOrchestrationNamespace list -o name | ForEach-Object {
+			argo -n $toolOrchestrationNamespace list -o name | sort-object | ForEach-Object {
 				write-host "`n--------$_--------" -fore red
 				argo -n $toolOrchestrationNamespace get $_
 			}
@@ -89,7 +89,7 @@ $choices = @(
 
 	@{id="A3"; name='Show Running Workflows';
 		action={
-			argo -n $toolOrchestrationNamespace list --running
+			argo -n $toolOrchestrationNamespace list --running | sort-object
 		};
 		valid = {$toolOrchestrationNamespace -ne '' -and (Test-Argo)}
 	}

@@ -13,8 +13,18 @@ data:
   {{- /* or change the `codedx.props` sample file, we use a simple text-replace for flexibility. */ -}}
   {{- $dbUrl := (printf "jdbc:mysql://%s-mariadb/codedx" .Release.Name) -}}
   {{- if not .Values.mariadb.enabled -}}
-  {{- $dbUrl = (required ".Values.codedxProps.dbconnection.externalDbUrl must be specified when using an external MariaDB instance" .Values.codedxProps.dbconnection.externalDbUrl) -}}
+  {{-   $dbUrl = (required ".Values.codedxProps.dbconnection.externalDbUrl must be specified when using an external MariaDB instance" .Values.codedxProps.dbconnection.externalDbUrl) -}}
   {{- end -}}
+
+  {{- if contains "?" $dbUrl -}}
+  {{-   $dbUrl = (printf "%s&" $dbUrl) -}}
+  {{- else -}}
+  {{-   $dbUrl = (printf "%s?" $dbUrl) -}}
+  {{- end -}}  
+
+  {{- $sessionVariables := "sessionVariables=sql_mode='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'" -}}
+  {{- $dbUrl = (printf "%s%s" $dbUrl $sessionVariables) -}}
+
   {{- $propsContents := (required "codedx.props cannot be an empty file!" (.Files.Get .Values.codedxProps.file)) -}}
 
   {{- $propsContents := ($propsContents | replace "TPL_K8S_DB_URL" $dbUrl) }}

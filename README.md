@@ -60,6 +60,10 @@ The codedx-kubernetes repository gets updated with each new Code Dx release, so 
 
 You can run the setup script commands multiple times. On subsequent runs with modified setup parameters, depending on what you changed, you may need to restart a system component like the Code Dx web application pod. For example, restarting the Code Dx web application pod is necessary when changing a codedx.props setting with a custom values.yaml file so that Code Dx can observe the new file contents.
 
+## Troubleshooting
+
+If you encounter a problem with your Code Dx Kubernetes deployment, contact Code Dx Support by visiting https://codedx.com/support/. You can also check out the codedx-kubernetes [Troubleshooting](https://github.com/codedx/codedx-kubernetes/wiki/Troubleshooting) wiki page.
+
 ## Uninstalling
 
 Follow the steps below to uninstall Code Dx from your cluster, replacing `cdx-app` and `cdx-svc` with your Code Dx Kubernetes namespaces.

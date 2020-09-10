@@ -137,6 +137,13 @@ Determine the name of the configmap to create and/or use for holding the regular
 {{- end -}}
 
 {{/*
+Determine the name of the secret to create and/or use for holding the regular `codedx-saml-keystore.props` file.
+*/}}
+{{- define "codedx.props.samlKeystoreSecretName" -}}
+{{- include "sanitize" (printf "%s-saml-keystore" (include "codedx.fullname" .)) -}}
+{{- end -}}
+
+{{/*
 Create the name of the service account to use for Code Dx.
 */}}
 {{- define "codedx.serviceAccountName" -}}
@@ -196,7 +203,7 @@ credentials, which will be mounted for Code Dx.
 
 {{- define "codedx.props.saml.params" -}}
 {{- if .Values.authentication.saml.samlIdpXmlFile -}}
-{{- printf " -Dcodedx.additional-props-saml=\"/opt/codedx/codedx-saml.props\"" -}}
+{{- printf " -Dcodedx.additional-props-saml=\"/opt/codedx/codedx-saml.props\" -Dcodedx.additional-props-saml-keystore=\"/opt/codedx/codedx-saml-keystore.props\"" -}}
 {{- else -}}
 {{ printf "" }}
 {{- end -}}
@@ -391,6 +398,13 @@ swa.db.password =
 {{- else -}}
 {{- include "codedx.mariadb.root.pwd" . | quote -}}
 {{- end }}
+{{- end -}}
+
+{{- define "codedx.saml-keystore.propsTemplate" -}}
+auth.saml2.keystorePassword = 
+{{- include "codedx.saml.keystore.pwd" . | quote }}
+auth.saml2.privateKeyPassword = 
+{{- include "codedx.saml.private.key.pwd" . | quote }}
 {{- end -}}
 
 {{/*

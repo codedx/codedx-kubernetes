@@ -70,7 +70,5 @@ data:
     auth.saml2.identityProviderMetadataPath = /opt/codedx/saml-idp.xml
     auth.hostBasePath = {{ .Values.authentication.hostBasePath | quote }}
     auth.saml2.entityId = {{ .Values.authentication.saml.appName | quote }}
-    auth.saml2.keystorePassword = {{ include "codedx.saml.keystore.pwd" . | quote }}
-    auth.saml2.privateKeyPassword = {{ include "codedx.saml.private.key.pwd" . | quote }}
   {{- end -}}
 {{- end -}}

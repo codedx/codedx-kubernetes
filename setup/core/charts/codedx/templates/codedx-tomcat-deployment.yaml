@@ -137,6 +137,9 @@ spec:
         - mountPath: /opt/codedx/codedx-saml.props
           name: codedx-saml-props
           subPath: codedx-saml.props
+        - mountPath: /opt/codedx/codedx-saml-keystore.props
+          name: codedx-saml-keystore-props
+          subPath: codedx-saml-keystore.props
         {{- end }}
         - mountPath: /opt/codedx/codedx-ml.props
           name: codedx-ml-props
@@ -259,6 +262,12 @@ spec:
           items:
           - key: codedx-saml.props
             path: codedx-saml.props
+      - name: codedx-saml-keystore-props
+        secret:
+          secretName: {{ include "codedx.props.samlKeystoreSecretName" . | quote }}
+          items:
+          - key: codedx-saml-keystore.props
+            path: codedx-saml-keystore.props
       {{- end }}
       - name: codedx-ml-props
         configMap:

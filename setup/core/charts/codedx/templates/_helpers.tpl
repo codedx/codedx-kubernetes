@@ -105,26 +105,6 @@ Determine the URL of the Code Dx service.
 {{- end -}}
 
 {{/*
-Check whether or not a Code Dx License has been defined in some way and can be mounted for use during
-installation. The `default "" ...` ensures that unassigned values revert to an empty string, rather than
-the placeholder text for an unassigned value which would be evaluated as "true" in the `or` statement.
-*/}}
-{{- define "codedx.license.exists" -}}
-{{- or (default "" .Values.license.secret) (default "" .Values.license.file) -}}
-{{- end -}}
-
-{{/*
-Determine the name of the secret to create and/or use for holding the Code Dx license.
-*/}}
-{{- define "codedx.license.secretName" -}}
-{{- if .Values.license.secret -}}
-{{- .Values.license.secret -}}
-{{- else -}}
-{{- include "sanitize" (printf "%s-license-secret" (include "codedx.fullname" .)) -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Determine the name of the configmap to create and/or use for holding the regular `codedx.props` file,
 `logback.xml` file, and `setenv.sh` file.
 */}}

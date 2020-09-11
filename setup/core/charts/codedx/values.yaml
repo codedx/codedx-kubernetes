@@ -401,26 +401,10 @@ codedxProps:
   #   - "other.prop = other value"
 
 
-license: {}
-  # Specify 'codedx.license.file' to automatically create a secret based on the given license
-  #
-  # _Note: This is a Local File Value and will only work if installing this chart from source._
-  # file: my-license-file.lic
-
-  # Specify 'codedx.license.secret' to use an existing secret for the Code Dx license. This secret MUST
-  # contain a key named 'license.lic' with the contents of the license to use.
-  #
-  # (If both file and secret are specified, the existing 'secret' will be used and no new secret
-  #  will be created.)
-  #
-  # secret: my-codedx-license-secret
-
-  # Specify annotations to attach to a generated Secret
-  #
-  # annotations:
-  #   abc: "123"
-  #   def: "456"
-
+# licenseSecret lets you use an existing secret with field license.lic to specify a Code Dx license so that
+# one does not need to be entered on initial startup
+#
+licenseSecret:
 
 # Use `loggingConfigFile` to specify a local "logback.xml" file to be inserted into the Code Dx configmap and used,
 # allowing you to customize how Code Dx filters its logs. The logback.xml file provided with this chart logs to both

@@ -6,7 +6,6 @@ metadata:
   labels:
     {{- include "codedx.commonLabels" . | nindent 4 }}
 spec:
-  {{ $hasLicense := (include "codedx.license.exists" .) -}}
   # Code Dx does not officially support more than one instance running against the 
   # same MariaDB server - doing so will lead to errors in the web interface. More
   # than one Code Dx instance running during an installation or database schema
@@ -115,7 +114,7 @@ spec:
         - mountPath: /usr/local/tomcat/bin/setenv.sh
           name: codedx-props-env
           subPath: setenv.sh
-        {{ if $hasLicense -}}
+        {{ if .Values.licenseSecret -}}
         - mountPath: /opt/codedx/license.lic
           name: codedx-license
           subPath: license.lic
@@ -225,10 +224,10 @@ spec:
             path: {{ .key | quote }}
         {{- end -}}
       {{- end }}      
-      {{ if $hasLicense -}}
+      {{ if .Values.licenseSecret -}}
       - name: codedx-license
         secret:
-          secretName: {{ include "codedx.license.secretName" . | quote }}
+          secretName: {{ .Values.licenseSecret | quote }}
           items:
           - key: license.lic
             path: license.lic

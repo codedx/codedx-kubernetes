@@ -240,7 +240,7 @@ minio:
       enabled: false
       # Specifies the name of a k8s secret containing the certificate info used to configure
       # MinIO TLS. Create the secret using the following command:
-      # kubectl create secret generic cdx-minio-tls --from-file=path/to/minio.pem --from-file=path/to/minio.key
+      # kubectl create secret generic cdx-minio-tls --from-file=minio.pem=path/to/minio.pem --from-file=minio.key=path/to/minio.key
       certSecret: "cdx-minio-tls"
       # The name of the MinIO public certificate in certSecret
       publicCrt: "minio.pem"

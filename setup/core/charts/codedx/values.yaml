@@ -312,54 +312,11 @@ service:
 # Code Dx Properties Configuration
 #
 #
-#   Code Dx can accept multiple "props" files at startup. This feature is used to store common
-# properties in a ConfigMap (generated from the value at 'codedxProps.file'), and store more
-# sensitive information as secrets.
-#
-# The file retrieved from the value `codedxProps.file` will be created as a ConfigMap and mounted
-#   at /opt/codedx/codedx.props.
-#
-# MariaDB creds provided to this chart will be stored in a secret, containing a "props" file
-#   to be mounted at /opt/codedx/codedx.mariadb.props.
-#
-# Additional sensitive information (ie LDAP config) can also be provided to Code Dx as secrets
-#   mounted as prop files by adding to the "codedx.extraProps" list.
+# Code Dx can accept multiple "props" files at startup. Use the codedx.extraProps list to add properties
+# using a ConfigMap or to store more sensitive information, like LDAP config, using k8s secrets.
 
 codedxProps:
-  # Specify 'codedx.props.file' to create a config-map for Code Dx based on the given 'codedx.props' file.
-  # If changed, the modified file should contain the database connection properties from the 'codedx.props'
-  # file bundled with this chart.
-  # _Note: This is a Local File Value and will only work if installing this chart from source._
-  file: codedx.props
 
-  # Specify 'codedxProps.configMap' to use an existing config-map for Code Dx.
-  # This config-map MUST contain:
-  # - a key named 'codedx.props' with the contents of the properties to use. Check the provided
-  #   'codedx.props' file included with this chart and use the same 'swa.db.*' values to ensure that
-  #   Code Dx properly connects to the generated MariaDB instances.
-  # - a key named 'tomcat.env' with the `CATALINA_OPTS` values necessary to load any additional
-  #   props files. (it must at least provide the path to the MariaDB creds.)
-  #
-  # (If both file and configMap are specified, the existing 'configMap' will be used
-  #  and no new ConfigMap will be created.)
-  # configMap: my-codedx-config-map
-
-  # Specify annotations to attach to a generated ConfigMap
-  annotations: {}
-  #   abc: "123"
-  #   def: "456"
-
-  # Code Dx will mount a secret as a file, containing MariaDB connection info. Use codedxProps.dbconnection
-  # to control how this secret is used.
-  #
-  # The MariaDB secret should have a `codedx.mariadb.props` key containing the text of a "props"-formatted
-  # file that assigns `swa.db.user` and `swa.db.password`, ie:
-  #
-  # swa.db.user = root
-  # swa.db.password = my-mariadb-password
-  #
-  # (Note that the URL for the MariaDB instance is assigned via the `codedxProps` configmap, not this secret.)
-  #
   dbconnection:
 
     # Use externalDbUrl to specify the database URL of an external MariaDB instance. This value is ignored
@@ -526,7 +483,7 @@ priorityClassValue: 10100
 # Code Dx-specific MariaDB configuration. This should usually be left untouched, unless changing database passwords or
 # opting to use an external MariaDB instance by setting mariadb.enabled to false. When using an external MariaDB instance,
 # you must specify a value for codedxProps.dbconnection.externalDbUrl and create your own k8s secret containing a MariaDB 
-# credential (refer to the codedxProps.dbconnection section for details).
+# credential (refer to the codedxProps.dbconnection.externalDbUrl section for details).
 #
 mariadb:
   # Enable installation of the MariaDB chart to create a Code Dx database host. Set to false when using Code Dx 

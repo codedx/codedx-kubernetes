@@ -109,11 +109,7 @@ Determine the name of the configmap to create and/or use for holding the regular
 `logback.xml` file, and `setenv.sh` file.
 */}}
 {{- define "codedx.props.configMapName" -}}
-{{- if .Values.codedxProps.configMap -}}
-{{- .Values.codedxProps.configMap -}}
-{{- else -}}
 {{- include "sanitize" (printf "%s-configmap" (include "codedx.fullname" .)) -}}
-{{- end -}}
 {{- end -}}
 
 {{/*

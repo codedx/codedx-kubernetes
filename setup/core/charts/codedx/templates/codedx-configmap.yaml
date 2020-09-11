@@ -1,12 +1,9 @@
-{{- if and .Values.codedxProps.file (not .Values.codedxProps.configMap) -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ include "codedx.props.configMapName" . | quote }}
   labels:
     {{- include "codedx.commonLabels" . | nindent 4 }}
-  annotations:
-{{ toYaml .Values.codedxProps.annotations | trim | indent 4 }}
 data:
   {{- /* We use `replace` here instead of usual file templating. A `codedx.props` file can contain documenting */ -}}
   {{- /* comments with sample parameters named ie "{{project.name}}". Rather than try to trim comments from the output */ -}}
@@ -23,13 +20,11 @@ data:
   {{- end -}}  
 
   {{- $sessionVariables := "sessionVariables=sql_mode='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'" -}}
-  {{- $dbUrl = (printf "%s%s" $dbUrl $sessionVariables) -}}
-
-  {{- $propsContents := (required "codedx.props cannot be an empty file!" (.Files.Get .Values.codedxProps.file)) -}}
-
-  {{- $propsContents := ($propsContents | replace "TPL_K8S_DB_URL" $dbUrl) }}
+  {{- $dbUrl = (printf "%s%s" $dbUrl $sessionVariables) }}
+  
   codedx.props: |-
-    {{- $propsContents | nindent 4 }}
+    swa.db.url = {{ $dbUrl }}
+    swa.db.driver = com.mysql.jdbc.Driver
 
   tomcat.env: |-
     CATALINA_OPTS='{{ include "codedx.props.params.combined" . }}'
@@ -71,4 +66,3 @@ data:
     auth.hostBasePath = {{ .Values.authentication.hostBasePath | quote }}
     auth.saml2.entityId = {{ .Values.authentication.saml.appName | quote }}
   {{- end -}}
-{{- end -}}

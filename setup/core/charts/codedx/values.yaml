@@ -42,17 +42,17 @@ existingSecret:
 #
 codedxAdminPassword: ""
 
-# cacertsFile can be used to provide a set of custom Java certificates for Code Dx to use. This is
-# necessary for LDAPS and integration with some external tools. This value is the path to a local
-# file that will be mounted in the Code Dx container at `/usr/local/openjdk-8/jre/lib/security/cacerts`. 
-# If undefined (or empty), the default `cacerts` file will be used.
+# cacertsSecret lets you use an existing secret with field cacerts to specify a custom cacerts file that 
+# can be used to provide a set of custom Java certificates for Code Dx to use. This is necessary for LDAPS 
+# and integration with some external tools. If undefined (or empty), the default `cacerts` file will be used. 
 #
-# _Note: This is a Local File Value and will only work if installing this chart from source.
+# You can create a resource named cacerts using this command:
+# kubectl -n <namespace> create secret generic cacerts --from-file=cacerts=/path/to/your/cacerts/file
 #
-cacertsFile: ""
+cacertsSecret:
 
 # cacertsFilePwd is used when existingSecret is not set. cacertsFilePwd provides the 
-# password for the cacertsFile specified. Set to 'changeit' when the cacertsFile value is 
+# password for the cacertsSecret data specified. Set to 'changeit' when the cacertsSecret value is 
 # unset/empty so that Code Dx can access the default Java cacerts file.
 #
 cacertsFilePwd: 'changeit'
@@ -359,7 +359,10 @@ codedxProps:
 
 
 # licenseSecret lets you use an existing secret with field license.lic to specify a Code Dx license so that
-# one does not need to be entered on initial startup
+# one does not need to be entered on initial startup. 
+#
+# You can create a resource named codedx-license using this command:
+# kubectl -n <namespace> create secret generic codedx-license --from-file=license.lic=/path/to/your/license/file
 #
 licenseSecret:
 

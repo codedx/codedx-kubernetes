@@ -111,9 +111,9 @@ function Read-HostSecureText([string] $prompt, [int] $minimumLength, [int] $maxi
 	Read-HostText $prompt $minimumLength $maximumLength $blacklist $true -allowBlankEntry:$allowBlankEntry
 }
 
-function Invoke-GitClone([string] $url, [string] $branch) {
+function Invoke-GitClone([string] $url, [string] $branch, [string] $directory) {
 
-	git clone $url -b $branch
+	git clone -b $branch $url $directory
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to run git clone with $url and branch $branch, git exited with code $LASTEXITCODE."
 	}

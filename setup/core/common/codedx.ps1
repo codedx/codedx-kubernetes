@@ -54,7 +54,7 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[hashtable]$serviceAnnotationsCodeDx,
 	[string]   $ingressControllerNamespace,
 	[hashtable]$ingressAnnotations,
-	[string]   $caCertsFilename,
+	[string]   $caCertsSecretName,
 	[string]   $externalDbUrl,
 	[string]   $samlAppName,
 	[string]   $samlIdentityProviderMetadataPath,
@@ -130,7 +130,7 @@ codedxTomcatImagePullSecrets:
 
 	$defaultKeyStorePwd = 'changeit'
 
-	$chartFolder = (join-path $workDir codedx-kubernetes/setup/core/charts/codedx)
+	$chartFolder = (join-path $workDir .repo/setup/core/charts/codedx)
 
 	$hostBasePath = ''
 	$samlIdpXmlFile = ''
@@ -213,7 +213,7 @@ mariadb:
     nodeSelector: {34}
     tolerations: {37}
 {22}
-cacertsFile: '{30}'
+cacertsSecret: '{30}'
 cacertsFilePwd: '{21}'
 codedxProps:
   internalExtra:
@@ -244,7 +244,7 @@ $defaultKeyStorePwd,
 $codeDxTomcatPortNumber, $codeDxTlsTomcatPortNumber,
 $serviceTypeCodeDx, (ConvertTo-YamlMap $serviceAnnotationsCodeDx),
 $enableDb, $ingressNginxAssumption,
-$externalDb, $caCertsFilename, $offlineMode.ToString().ToLower(),
+$externalDb, $caCertsSecretName, $offlineMode.ToString().ToLower(),
 (Format-NodeSelector $codeDxNodeSelector), (Format-NodeSelector $masterDatabaseNodeSelector), (Format-NodeSelector $subordinateDatabaseNodeSelector),
 (Format-PodTolerationNoScheduleNoExecute $codeDxNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $masterDatabaseNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $subordinateDatabaseNoScheduleExecuteToleration),
 $hostBasePath, $useSaml.tostring().tolower(), $samlAppName, $samlIdpXmlFile
@@ -467,7 +467,7 @@ $minioCertConfigMap,
 	$valuesFile = 'toolsvc-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
 
-	$chartFolder = (join-path $workDir codedx-kubernetes/setup/core/charts/codedx-tool-orchestration)
+	$chartFolder = (join-path $workDir .repo/setup/core/charts/codedx-tool-orchestration)
 	
 	Invoke-HelmSingleDeployment 'Tool Orchestration' $waitSeconds $namespace $toolServiceReleaseName $chartFolder $valuesFile $toolOrchestrationFullName $numReplicas $extraValuesPaths
 }
@@ -496,20 +496,21 @@ function Set-TrustedCerts([string] $workDir,
 	[string]   $waitSeconds,
 	[string]   $codedxNamespace,
 	[string]   $codedxReleaseName,
+	[string]   $caCertsSecretName,
 	[string[]] $extraValuesPaths,
 	[switch]   $offlineMode) {
 
-	$chartFolder = (join-path $workDir codedx-kubernetes/setup/core/charts/codedx)
+	$chartFolder = (join-path $workDir .repo/setup/core/charts/codedx)
 	
 	$values = @'
-cacertsFile: cacerts
+cacertsSecret: {1}
 codedxProps:
   internalExtra:
   - type: values
     key: codedx-offline-props
     values:
     - "codedx.offline-mode = {0}"
-'@ -f $offlineMode.ToString().ToLower()
+'@ -f $offlineMode.ToString().ToLower(),$caCertsSecretName
 
 	$valuesFile = 'codedx-cacert-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
@@ -563,7 +564,7 @@ networkPolicy:
 	$valuesFile = 'codedx-orchestration-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
 
-	$chartFolder = (join-path $workDir codedx-kubernetes/setup/core/charts/codedx)
+	$chartFolder = (join-path $workDir .repo/setup/core/charts/codedx)
 	$deploymentName = Get-CodeDxChartFullName $codedxReleaseName
 
 	Invoke-HelmSingleDeployment 'Code Dx (Configure Tool Orchestration)' $waitSeconds $codedxNamespace $codedxReleaseName $chartFolder $valuesFile $deploymentName 1 $extraValuesPaths
@@ -789,8 +790,7 @@ function Get-TrustedCaCertsFilePwd([string] $cacertsFilePath, [string] $currentP
 
 function New-TrustedCaCertsFile([string] $basePath,
 	[string]   $currentPwd, [string] $newPwd,
-	[string[]] $certPathsToImport,
-	[string]   $destinationDirectory) {
+	[string[]] $certPathsToImport) {
 
 	$filePath = "./cacerts"
 	if (Test-Path $filePath) {
@@ -806,5 +806,4 @@ function New-TrustedCaCertsFile([string] $basePath,
 	}
 
 	Import-TrustedCaCerts $filePath $keystorePwd $certPathsToImport
-	Copy-Item -LiteralPath $filePath -Destination $destinationDirectory -Force
 }

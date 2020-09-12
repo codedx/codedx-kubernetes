@@ -268,7 +268,7 @@ function Remove-Secret([string] $namespace, [string] $name) {
 	}
 }
 
-function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $keyValues) {
+function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $keyValues = @{}, [hashtable] $fileKeyValues = @{}) {
 	
 	if (Test-Secret $namespace $name) {
 		Remove-Secret $namespace $name
@@ -277,6 +277,12 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 	$pairs = @()
 	$keyValues.Keys | ForEach-Object {
 		$pairs += "--from-literal=$_=$($keyValues[$_])"
+	}
+	$fileKeyValues.Keys | ForEach-Object {
+		$pairs += "--from-file=$_=$($fileKeyValues[$_])"
+	}
+	if ($pairs.Length -eq 0) {
+		throw "Unable to create secret named $name with no data."
 	}
 
 	kubectl -n $namespace create secret generic $name $pairs

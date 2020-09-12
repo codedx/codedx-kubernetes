@@ -415,14 +415,15 @@ New-CodeDxPdSecret $namespaceCodeDx $releaseNameCodeDx `
 	$samlPrivateKeyPwd
 
 Write-Verbose 'Fetching Code Dx Helm charts...'
-Remove-Item .\codedx-kubernetes -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
-Invoke-GitClone $codedxGitRepo $codedxGitRepoBranch
+$repoDirectory = './.repo'
+Remove-Item $repoDirectory -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
+Invoke-GitClone $codedxGitRepo $codedxGitRepoBranch $repoDirectory
 if ($pauseAfterGitClone) {
 	Read-Host -Prompt 'git clone complete, press Enter to continue...' | Out-Null
 }
 
 if ($extraCodeDxChartFilesPaths.Count -gt 0) {
-	$codeDxChartsDirectory = './codedx-kubernetes/setup/core/charts/codedx'
+	$codeDxChartsDirectory = './.repo/setup/core/charts/codedx'
 	Write-Verbose "Copying the following extra files to '$codeDxChartsDirectory':`n$extraCodeDxChartFilesPaths"
 	Copy-Item -LiteralPath $extraCodeDxChartFilesPaths -Destination $codeDxChartsDirectory
 }
@@ -436,15 +437,17 @@ if ((-not $skipTLS) -and -not $skipToolOrchestration) {
 	$caCertPaths += $clusterCertificateAuthorityCertPath
 }
 
-$codeDxChartsFolder = join-path $workDir 'codedx-kubernetes/setup/core/charts/codedx'
-
-$caCertsFilename = ''
+$caCertsSecretName = ''
 $certificateWorkRemains = $true
 if ($caCertsFilePath -ne '') {
-	Write-Verbose 'Configuring cacerts file...'
-	New-TrustedCaCertsFile $caCertsFilePath $caCertsFilePwd $caCertsFileNewPwd $caCertPaths $codeDxChartsFolder
+	Write-Verbose "Creating new cacerts file based on $caCertsFilePath..."
+	New-TrustedCaCertsFile $caCertsFilePath $caCertsFilePwd $caCertsFileNewPwd $caCertPaths
 
+	Write-Verbose 'Creating cacerts secret...'
 	$caCertsFilename = 'cacerts'
+	$caCertsSecretName = $caCertsFilename
+	New-GenericSecret $namespaceCodeDx $caCertsSecretName @{} @{$caCertsFilename=(join-path $workDir $caCertsFilename)}
+
 	$certificateWorkRemains = $false
 }
 
@@ -468,7 +471,7 @@ New-CodeDxDeployment $codeDxDnsName $codeDxServicePortNumber $codeDxTlsServicePo
 	$serviceTypeCodeDx $serviceAnnotationsCodeDx `
 	$nginxIngressControllerNamespace `
 	$ingressAnnotationsCodeDx `
-	$caCertsFilename `
+	$caCertsSecretName `
 	$externalDatabaseUrl `
 	$samlAppName $samlIdentityProviderMetadataPath `
 	$codeDxNodeSelector $masterDatabaseNodeSelector $subordinateDatabaseNodeSelector `
@@ -478,20 +481,26 @@ New-CodeDxDeployment $codeDxDnsName $codeDxServicePortNumber $codeDxTlsServicePo
 	-enablePSPs:(-not $skipPSPs) -enableNetworkPolicies:$useNetworkPolicies -configureTls:(-not $skipTLS) -skipDatabase:$skipDatabase `
 	-offlineMode:($certificateWorkRemains -or $installToolOrchestration)
 
-if ($caCertsFilePath -eq '') {
-	$caCertsFilePath = './cacerts.pod'
-	Get-RunningCodeDxKeystore $namespaceCodeDx $caCertsFilePath
-}
-
 if ($certificateWorkRemains) {
 
-	Write-Verbose 'Configuring cacerts file...'
-	New-TrustedCaCertsFile $caCertsFilePath $caCertsFilePwd $caCertsFileNewPwd $caCertPaths $codeDxChartsFolder
+	Write-Verbose 'Copying cacerts file from running pod...'
+	$caCertsFromPodFilePath = './cacerts.pod'
+	Get-RunningCodeDxKeystore $namespaceCodeDx $caCertsFromPodFilePath
 
+	Write-Verbose "Creating new cacerts file based on $caCertsFromPodFilePath..."
+	New-TrustedCaCertsFile $caCertsFromPodFilePath $caCertsFilePwd $caCertsFileNewPwd $caCertPaths
+
+	Write-Verbose 'Creating cacerts secret...'
+	$caCertsFilename = 'cacerts'
+	$caCertsSecretName = $caCertsFilename
+	New-GenericSecret $namespaceCodeDx $caCertsSecretName @{} @{$caCertsFilename=$caCertsFilename}
+
+	Write-Verbose 'Configuring trusted certs...'
 	Set-TrustedCerts $workDir `
 		$waitTimeSeconds `
 		$namespaceCodeDx `
 		$releaseNameCodeDx `
+		$caCertsSecretName `
 		$extraCodeDxValuesPaths `
 		-offlineMode:$installToolOrchestration
 }

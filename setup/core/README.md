@@ -94,6 +94,7 @@ This section describes the setup.ps1 script parameters, which you can specify by
 | `mariadbRootPwd`                                   | password for the MariaDB root account                      | `ZjQLEg07BMNEf!` (example)                        |
 | `mariadbReplicatorPwd`                             | password for the MariaDB replicator account                | `760nP8i6ZFzVS!` (example)                        |
 |                                                    |                                                            |                                                   |
+| `caCertsFilePath`                                  | file path for the Code Dx cacerts file                     | `./my-cacerts-file` (example)                     |
 | `caCertsFilePwd`                                   | current password for the Code Dx cacerts file              | `changeit`                                        |
 | `caCertsFileNewPwd`                                | new password to protect the Code Dx cacerts file           | `jcqBYa68G1usO!` (example)                        |
 |                                                    |                                                            |                                                   |

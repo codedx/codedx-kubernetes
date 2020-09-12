@@ -119,7 +119,7 @@ spec:
           name: codedx-license
           subPath: license.lic
         {{- end }}
-        {{ if .Values.cacertsFile -}}
+        {{ if .Values.cacertsSecret -}}
         - mountPath: /usr/local/openjdk-8/jre/lib/security/cacerts
           name: codedx-cacerts
           subPath: cacerts
@@ -232,10 +232,10 @@ spec:
           - key: license.lic
             path: license.lic
       {{- end }}
-      {{ if .Values.cacertsFile -}}
+      {{ if .Values.cacertsSecret -}}
       - name: codedx-cacerts
         secret:
-          secretName: {{ include "codedx.cacerts.secretName" . | quote }}
+          secretName: {{ .Values.cacertsSecret | quote }}
           items:
           - key: cacerts
             path: cacerts

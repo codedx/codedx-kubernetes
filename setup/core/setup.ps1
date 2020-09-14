@@ -245,6 +245,10 @@ if ($caCertsFilePwd -eq '') {
 
 if ($caCertsFileNewPwd -eq '') {
 	$caCertsFileNewPwd = Get-CacertsNewPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+
+	if ($caCertsFileNewPwd -eq '') {
+		$caCertsFileNewPwd = $cacertsFilePwd
+	}
 }
 
 if ($caCertsFileNewPwd -ne '' -and $caCertsFileNewPwd.length -lt 6) { 

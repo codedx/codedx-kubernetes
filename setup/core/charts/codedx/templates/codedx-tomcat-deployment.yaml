@@ -48,13 +48,13 @@ spec:
         - name: SUPERUSER_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ include "codedx.adminSecretName" . | quote }}
+              name: {{ .Values.existingSecret | quote }}
               key: admin-password
         - name: KEYSTORE_KEY
           valueFrom:
             secretKeyRef:
-              name: {{ include "codedx.cacerts.pwd.secretName" . | quote }}
-              key: {{ include "codedx.cacerts.pwd.secretKeyName" . | quote }}
+              name: {{ .Values.existingSecret | quote }}
+              key: 'cacerts-new-password'
         image: {{ required "A tomcat image must be provided! Assign codedxTomcatImage!" .Values.codedxTomcatImage | quote }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.codedxTomcatImagePullPolicy | quote }}
         name: "{{ include "codedx.name" . }}"

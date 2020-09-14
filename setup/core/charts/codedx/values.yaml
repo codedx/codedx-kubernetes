@@ -29,18 +29,13 @@ codedxTlsTomcatPort: 9443
 #
 codedxJavaOpts: "-XX:MaxRAMPercentage=90.0"
 
-# existingSecret lets you use an existing secret with fields admin-password (as an alternative to 
-# codedxAdminPassword), cacerts-password (as an alternative to cacertsFilePwd), cacerts-new-password (to 
-# change the cacerts file password), saml-keystore-password (to configure the password for the separate 
-# Java keystore used to connect to your SAML IdP), and saml-private-key-password (to configure the password
-# for the private key of the public-private key pair used to connect to your SAML IdP).
+# existingSecret lets you use an existing secret with fields admin-password (Code Dx admin password), 
+# cacerts-password (cacerts keystore password), cacerts-new-password (new cacerts keystore password), 
+# saml-keystore-password (to configure the password for the separate Java keystore used to connect 
+# to your SAML IdP), and saml-private-key-password (to configure the password for the private key of 
+# the public-private key pair used to connect to your SAML IdP).
 #
 existingSecret:
-
-# codedxAdminPassword is used when when existingSecret is not set. After installation, you can sign in 
-# with "admin" and the value assigned here.
-#
-codedxAdminPassword: ""
 
 # cacertsSecret lets you use an existing secret with field cacerts to specify a custom cacerts file that 
 # can be used to provide a set of custom Java certificates for Code Dx to use. This is necessary for LDAPS 
@@ -50,12 +45,6 @@ codedxAdminPassword: ""
 # kubectl -n <namespace> create secret generic cacerts --from-file=cacerts=/path/to/your/cacerts/file
 #
 cacertsSecret:
-
-# cacertsFilePwd is used when existingSecret is not set. cacertsFilePwd provides the 
-# password for the cacertsSecret data specified. Set to 'changeit' when the cacertsSecret value is 
-# unset/empty so that Code Dx can access the default Java cacerts file.
-#
-cacertsFilePwd: 'changeit'
 
 # serviceAccount options for Code Dx.
 # Determine the name of the service account to run Code Dx with, and whether to create the ServiceAccount.

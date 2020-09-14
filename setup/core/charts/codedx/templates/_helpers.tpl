@@ -267,38 +267,6 @@ Determine the name to use to create and/or bind MariaDB's PodSecurityPolicy.
 {{- include "sanitize" $fullName -}}
 {{- end -}}
 
-{{- define "codedx.cacerts.pwd.secretName" -}}
-{{- if .Values.existingSecret -}}
-{{- .Values.existingSecret -}}
-{{- else -}}
-{{- $fullName := printf "%s-cacerts-pwd-secret" (include "codedx.fullname" .) -}}
-{{- include "sanitize" $fullName -}}
-{{- end -}}
-{{- end -}}
-
-{{- define "codedx.cacerts.pwd.secretKeyName" -}}
-    {{- $keyName := "cacerts-password" }}
-    {{- $existingSecret := .Values.existingSecret -}}
-    {{- if $existingSecret -}}
-        {{- /* Note: lookup function does not support --dry-run */ -}}
-        {{- $data := (lookup "v1" "Secret" .Release.Namespace $existingSecret).data -}}
-        {{- $val := index $data "cacerts-new-password" -}}
-        {{- if $val -}}
-            {{- $keyName = "cacerts-new-password" -}}
-        {{- end -}}
-    {{- end -}}
-    {{- $keyName -}}
-{{- end -}}
-
-{{- define "codedx.adminSecretName" -}}
-{{- if .Values.existingSecret -}}
-{{- .Values.existingSecret -}}
-{{- else -}}
-{{- $fullName := printf "%s-admin-secret" (include "codedx.fullname" .) -}}
-{{- include "sanitize" $fullName -}}
-{{- end -}}
-{{- end -}}
-
 {{- define "codedx.serverXmlName" -}}
 {{- $fullName := printf "%s-server-xml" (include "codedx.fullname" .) -}}
 {{- include "sanitize" $fullName -}}

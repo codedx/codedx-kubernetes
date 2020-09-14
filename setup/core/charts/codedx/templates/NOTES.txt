@@ -18,7 +18,7 @@ Code Dx will be available on port {{ $port }}. Run this command to check the IP 
 
 You can get the Code Dx admin credentials with:
     echo username: admin
-    echo password: $(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "codedx.adminSecretName" . }} -o jsonpath="{.data.admin-password}" | base64 --decode)
+    echo password: $(kubectl get secret --namespace {{ .Release.Namespace }} {{ .Values.existingSecret }} -o jsonpath="{.data.admin-password}" | base64 --decode)
 
 {{ if .Values.mariadb.enabled }}
 You can get the MariaDB credentials with:

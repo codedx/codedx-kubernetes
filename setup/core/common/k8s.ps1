@@ -452,7 +452,7 @@ function Wait-ReplicasReady([string] $message, [int] $waitSeconds, [string] $nam
 
 		if ($resourceExists) {
 
-			Write-Verbose "Fetching status of $resourceType named $resourceName..."
+			Write-Verbose "Fetching status of $resourceType named $resourceName in namespace $namespace..."
 			$readyReplicas = kubectl -n $namespace get $resourceType $resourceName -o jsonpath='{.status.readyReplicas}'
 			if ($LASTEXITCODE -ne 0) {
 				throw "Unable to wait for $resourceType $resourceName, kubectl exited with code $LASTEXITCODE."

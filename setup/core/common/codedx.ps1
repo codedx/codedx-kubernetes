@@ -744,8 +744,9 @@ podSecurityPolicy:
   enabled: {2}
 '@ -f $priorityClassName,(Format-ResourceLimitRequest -limitMemory $memoryLimit -limitCPU $cpuLimit -limitEphemeralStorage $ephemeralStorageLimit -indent 2),$usePSP | out-file $priorityValuesFile -Encoding ascii -Force
 	
+	Add-HelmRepo 'ingress-nginx' 'https://kubernetes.github.io/ingress-nginx'	
 	Add-HelmRepo 'stable' 'https://kubernetes-charts.storage.googleapis.com'
-	Invoke-HelmSingleDeployment 'nginx-ingress' $waitTimeSeconds $namespace 'nginx' 'stable/nginx-ingress' $valuesFile 'nginx-nginx-ingress-controller' 1 $priorityValuesFile
+	Invoke-HelmSingleDeployment 'ingress-nginx' $waitTimeSeconds $namespace 'nginx' 'ingress-nginx/ingress-nginx' $valuesFile 'nginx-ingress-nginx-controller' 1 $priorityValuesFile
 }
 
 function Get-CodeDxChartFullName([string] $releaseName) {

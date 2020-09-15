@@ -11,8 +11,6 @@ Run the guided-setup.ps1 PowerShell Core script (in the root directory of this r
 
 The following table lists the configurable parameters of the Code Dx chart and their default values.
 
-Any values that require locally cloning the chart will be labeled with _"LFV"_ ("Local File Value") in their description.
-
 | Parameter                               | Description                                                                                                                                                                                        | Default                              |
 |-----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------|
 | `codedxTomcatImage`                     | Code Dx Tomcat image full name                                                                                                                                                                     | `codedx/codedx-tomcat:v5.1.0`        |

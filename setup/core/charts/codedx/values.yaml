@@ -262,21 +262,9 @@ ingress:
   #   #
   #   key:
 
-  #   # ingress.secrets[].keyFile specifies the location of a file containing the TLS key, which will be base64-encoded.
-  #   # This value is ignored if `key` is defined.
-  #   # _Note: This is a Local File Value and will only work if installing this chart from source._
-  #   #
-  #   keyFile:
-
   #   # ingress.secrets[].certificate specifies the base64-encoded TLS certificate for the secret.
   #   #
   #   certificate:
-
-  #   # ingress.secrets[].certificateFile specifies the location of a file containing the TLS certificate, which will
-  #   # be base64-encoded. This value is ignored if `certificate` is defined.
-  #   # _Note: This is a Local File Value and will only work if installing this chart from source._
-  #   #
-  #   certificateFile:
 
 # Use the `service` object and its properties to configure how the Service is generated
 # for the new Code Dx service.

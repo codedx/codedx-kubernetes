@@ -352,13 +352,13 @@ codedxProps:
 #
 licenseSecret:
 
-# Use `loggingConfigFile` to specify a local "logback.xml" file to be inserted into the Code Dx configmap and used,
-# allowing you to customize how Code Dx filters its logs. The logback.xml file provided with this chart logs to both
-# stdout and to a rolling log file. This file mounts to `/opt/codedx/logback.xml`.
-# _Note: This is a Local File Value and will only work if installing this chart from source._
-# ref: https://logback.qos.ch/manual/configuration.html
+# loggingConfigMap lets you use an existing configmap with field logback.xml to specify a logging configuration 
+# file. See https://logback.qos.ch/manual/configuration.html for more details.
 #
-loggingConfigFile: logback.xml
+# You can create a configmap resource named logging-config using this command:
+# kubectl -n <namespace> create configmap logging-config --from-file=logback.xml=/path/to/your/logging.xml
+#
+loggingConfigMap:
 
 authentication:
   # Use `hostBasePath` to configure the base portion of authentication callbacks such as the 

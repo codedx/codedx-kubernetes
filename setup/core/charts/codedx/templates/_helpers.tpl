@@ -105,11 +105,21 @@ Determine the URL of the Code Dx service.
 {{- end -}}
 
 {{/*
-Determine the name of the configmap to create and/or use for holding the regular `codedx.props` file,
-`logback.xml` file, and `setenv.sh` file.
+Determine the name of the configmap to create and/or use for holding the regular `codedx.props` and `setenv.sh` file.
 */}}
 {{- define "codedx.props.configMapName" -}}
 {{- include "sanitize" (printf "%s-configmap" (include "codedx.fullname" .)) -}}
+{{- end -}}
+
+{{/*
+Determine the name of the configmap to use for the `logback.xml` file.
+*/}}
+{{- define "codedx.props.loggingConfigMapName" -}}
+    {{- if .Values.loggingConfigMap -}}
+        {{- .Values.loggingConfigMap -}}
+    {{- else -}}
+        {{- include "codedx.props.configMapName" . -}}
+    {{- end -}}
 {{- end -}}
 
 {{/*

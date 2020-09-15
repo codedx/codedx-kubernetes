@@ -124,11 +124,9 @@ spec:
           name: codedx-cacerts
           subPath: cacerts
         {{- end }}
-        {{ if .Values.loggingConfigFile -}}
         - mountPath: /opt/codedx/logback.xml
           name: codedx-logback
           subPath: logback.xml
-        {{- end }}
         {{ if and .Values.authentication.saml.samlIdpXmlFileConfigMap .Values.authentication.saml.samlSecret -}}
         - mountPath: /opt/codedx/saml-idp.xml
           name: codedx-saml-idp
@@ -240,14 +238,12 @@ spec:
           - key: cacerts
             path: cacerts
       {{- end }}
-      {{ if .Values.loggingConfigFile -}}
       - name: codedx-logback
         configMap:
-          name: {{ include "codedx.props.configMapName" . | quote }}
+          name: {{ include "codedx.props.loggingConfigMapName" . | quote }}
           items:
           - key: logback.xml
             path: logback.xml
-      {{- end }}
       {{ if and .Values.authentication.saml.samlIdpXmlFileConfigMap .Values.authentication.saml.samlSecret -}}
       - name: codedx-saml-idp
         configMap:

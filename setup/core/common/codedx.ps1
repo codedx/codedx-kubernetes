@@ -57,7 +57,8 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[string]   $caCertsSecretName,
 	[string]   $externalDbUrl,
 	[string]   $samlAppName,
-	[string]   $samlIdentityProviderMetadataPath,
+	[string]   $samlIdpXmlFileConfigMapName,
+	[string]   $samlSecretName,
 	[Tuple`2[string,string]] $codeDxNodeSelector,
 	[Tuple`2[string,string]] $masterDatabaseNodeSelector,
 	[Tuple`2[string,string]] $subordinateDatabaseNodeSelector,
@@ -133,12 +134,7 @@ codedxTomcatImagePullSecrets:
 	$chartFolder = (join-path $workDir .repo/setup/core/charts/codedx)
 
 	$hostBasePath = ''
-	$samlIdpXmlFile = ''
 	if ($useSaml) {
-
-		$samlIdPFilename = 'saml-idp-metadata.xml'
-		Copy-Item -LiteralPath $samlIdentityProviderMetadataPath -Destination (join-path $chartFolder $samlIdPFilename)
-		$samlIdpXmlFile = $samlIdPFilename
 
 		$protocol = 'https'
 		if (-not $tlsEnabled) {
@@ -229,7 +225,8 @@ authentication:
   saml:
     enabled: {39}
     appName: '{40}'
-    samlIdpXmlFile: '{41}'
+    samlIdpXmlFileConfigMap: '{41}'
+    samlSecret: '{42}'
 '@ -f (Get-CodeDxPdSecretName $releaseName), $tomcatImage, $imagePullSecretYaml,
 $psp, $networkPolicy,
 $tlsEnabled, $tlsSecretName, 'tls.crt', 'tls.key',
@@ -247,7 +244,7 @@ $enableDb, $ingressNginxAssumption,
 $externalDb, $caCertsSecretName, $offlineMode.ToString().ToLower(),
 (Format-NodeSelector $codeDxNodeSelector), (Format-NodeSelector $masterDatabaseNodeSelector), (Format-NodeSelector $subordinateDatabaseNodeSelector),
 (Format-PodTolerationNoScheduleNoExecute $codeDxNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $masterDatabaseNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $subordinateDatabaseNoScheduleExecuteToleration),
-$hostBasePath, $useSaml.tostring().tolower(), $samlAppName, $samlIdpXmlFile
+$hostBasePath, $useSaml.tostring().tolower(), $samlAppName, $samlIdpXmlFileConfigMapName, $samlSecretName
 
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
@@ -712,7 +709,7 @@ controller:
 	Add-NginxIngress $namespace $waitSeconds $nginxFile $priorityValuesFile $releaseName $cpuLimit $memoryLimit $ephemeralStorageLimit -enablePSPs:$enablePSPs
 }
 
-function Add-NginxIngress([string] [string] $namespace,
+function Add-NginxIngress([string] $namespace,
 	[int] $waitSeconds,
 	[string] $valuesFile,
 	[string] $priorityValuesFile,
@@ -806,4 +803,22 @@ function New-TrustedCaCertsFile([string] $basePath,
 	}
 
 	Import-TrustedCaCerts $filePath $keystorePwd $certPathsToImport
+}
+
+function New-SamlConfig([string] $namespace,
+	[string] $samlIdpXmlFileConfigMapName,
+	[string] $samlIdentityProviderMetadataPath,
+	[string] $samlSecretName,
+	[string] $samlKeystorePwd,
+	[string] $samlPrivateKeyPwd) {
+
+	New-ConfigMap $namespace $samlIdpXmlFileConfigMapName @{} @{'saml-idp.xml' = $samlIdentityProviderMetadataPath}
+	
+	$samlPropsFile = './codedx-saml-keystore.props'
+	@"
+auth.saml2.keystorePassword = $samlKeystorePwd
+auth.saml2.privateKeyPassword = $samlPrivateKeyPwd
+"@ | out-file $samlPropsFile -Encoding ascii -Force
+
+	New-GenericSecret $namespace $samlSecretName @{} @{'codedx-saml-keystore.props' = $samlPropsFile}
 }

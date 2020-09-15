@@ -58,9 +58,6 @@ data:
   {{- end }}
 
   {{ if .Values.authentication.saml.enabled -}}
-  saml-idp.xml: |-
-    {{- (required "authentication.saml.samlIdpXmlFile cannot be an empty file!" (.Files.Get .Values.authentication.saml.samlIdpXmlFile)) | nindent 4 }}
-
   codedx-saml.props: |-
     auth.saml2.identityProviderMetadataPath = /opt/codedx/saml-idp.xml
     auth.hostBasePath = {{ .Values.authentication.hostBasePath | quote }}

@@ -330,12 +330,27 @@ function Remove-ConfigMap([string] $namespace, [string] $name) {
 }
 
 function New-CertificateConfigMap([string] $namespace, [string] $name, [string] $certFile) {
+	New-ConfigMap $namespace $name @{} @{(split-path $certFile -Leaf) = $certFile}
+}
 
+function New-ConfigMap([string] $namespace, [string] $name, [hashtable] $keyValues = @{}, [hashtable] $fileKeyValues = @{}) {
+	
 	if (Test-ConfigMap $namespace $name) {
 		Remove-ConfigMap $namespace $name
 	}
 
-	kubectl -n $namespace create configmap $name --from-file`=$certFile
+	$pairs = @()
+	$keyValues.Keys | ForEach-Object {
+		$pairs += "--from-literal=$_=$($keyValues[$_])"
+	}
+	$fileKeyValues.Keys | ForEach-Object {
+		$pairs += "--from-file=$_=$($fileKeyValues[$_])"
+	}
+	if ($pairs.Length -eq 0) {
+		throw "Unable to create configmap named $name with no data."
+	}
+
+	kubectl -n $namespace create configmap $name $pairs
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create configmap named $name, kubectl exited with code $LASTEXITCODE."
 	}

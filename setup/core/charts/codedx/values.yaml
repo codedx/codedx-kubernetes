@@ -30,10 +30,7 @@ codedxTlsTomcatPort: 9443
 codedxJavaOpts: "-XX:MaxRAMPercentage=90.0"
 
 # existingSecret lets you use an existing secret with fields admin-password (Code Dx admin password), 
-# cacerts-password (cacerts keystore password), cacerts-new-password (new cacerts keystore password), 
-# saml-keystore-password (to configure the password for the separate Java keystore used to connect 
-# to your SAML IdP), and saml-private-key-password (to configure the password for the private key of 
-# the public-private key pair used to connect to your SAML IdP).
+# cacerts-password (cacerts keystore password) and cacerts-new-password (new cacerts keystore password).
 #
 existingSecret:
 
@@ -371,8 +368,8 @@ authentication:
   hostBasePath:
 
   saml:
-    # Set saml.enabled to "true" to configure a SAML identity provider. Use saml-keystore-password and 
-    # saml-private-key-password fields of `existingSecret` to 
+    # Set saml.enabled to "true" to configure a SAML identity provider and specify samlIdpXmlFileConfigMap, 
+    # samlSecret, and appName.
     #
     enabled: false
 
@@ -381,12 +378,31 @@ authentication:
     #
     appName:
 
-    # Use saml.samlIdpXmlFile to provide an XML file for your Identity Provider when using SAML. The contents
-    # of this file will be mounted at `/opt/codedx/saml-idp.xml`.
-    # _Note: This is a Local File Value and will only work if installing this chart from source._
+    # samlIdpXmlFileConfigMap lets you use an existing configmap with field saml-idp.xml to specify an XML file for your 
+    # Identity Provider when using SAML.
     #
-    samlIdpXmlFile:
+    # You can create a resource named saml-idp using this command:
+    # kubectl -n <namespace> create configmap saml-idp --from-file=saml-idp.xml=/path/to/your/saml-idp.xml
+    #
+    samlIdpXmlFileConfigMap:
 
+    # samlSecret lets you use an existing secret with field codedx-saml-keystore.props to specify the SAML keystore password 
+    # and the private key password.
+    #
+    # The keystore password configures the password for the separate Java keystore used to connect to your SAML IdP.
+    # The private key password configures the password for the private key of the public-private key pair used to connect.
+    #
+    # Specify these values in a codedx-saml-keystore.props file:
+    #
+    # auth.saml2.keystorePassword = ************
+    # auth.saml2.privateKeyPassword = ************
+    #
+    # and then use a command like this to create a k8s secret named codedx-saml-keystore-props:
+    #
+    # kubectl -n <namespace> create secret generic codedx-saml-keystore-props --from-file=codedx-saml-keystore.props=/path/to/your/codedx-saml-keystore.props
+    #
+    samlSecret:
+    
 # Use 'extraMounts' to mount any additional, pre-existing data that may be necessary for your Code Dx
 # installation via config-maps, secrets, PVs, etc. Uses original Volume mounting syntax; see
 # 'ref' below.

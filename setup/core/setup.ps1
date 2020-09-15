@@ -418,6 +418,15 @@ New-CodeDxPdSecret $namespaceCodeDx $releaseNameCodeDx `
 	$samlKeystorePwd `
 	$samlPrivateKeyPwd
 
+$samlIdpXmlFileConfigMapName = ''
+$samlSecretName = ''
+
+if ($useSaml) {
+	$samlIdpXmlFileConfigMapName = 'saml-idp'
+	$samlSecretName = 'codedx-saml-keystore-props'
+	New-SamlConfig $namespaceCodeDx $samlIdpXmlFileConfigMapName $samlIdentityProviderMetadataPath $samlSecretName $samlKeystorePwd $samlPrivateKeyPwd
+}
+
 Write-Verbose 'Fetching Code Dx Helm charts...'
 $repoDirectory = './.repo'
 Remove-Item $repoDirectory -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
@@ -477,7 +486,7 @@ New-CodeDxDeployment $codeDxDnsName $codeDxServicePortNumber $codeDxTlsServicePo
 	$ingressAnnotationsCodeDx `
 	$caCertsSecretName `
 	$externalDatabaseUrl `
-	$samlAppName $samlIdentityProviderMetadataPath `
+	$samlAppName $samlIdpXmlFileConfigMapName $samlSecretName `
 	$codeDxNodeSelector $masterDatabaseNodeSelector $subordinateDatabaseNodeSelector `
 	$codeDxNoScheduleExecuteToleration $masterDatabaseNoScheduleExecuteToleration $subordinateDatabaseNoScheduleExecuteToleration `
 	-useSaml:$useSaml `

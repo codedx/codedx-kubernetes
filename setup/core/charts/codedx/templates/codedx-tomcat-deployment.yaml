@@ -129,7 +129,7 @@ spec:
           name: codedx-logback
           subPath: logback.xml
         {{- end }}
-        {{ if .Values.authentication.saml.samlIdpXmlFile -}}
+        {{ if and .Values.authentication.saml.samlIdpXmlFileConfigMap .Values.authentication.saml.samlSecret -}}
         - mountPath: /opt/codedx/saml-idp.xml
           name: codedx-saml-idp
           subPath: saml-idp.xml
@@ -248,10 +248,10 @@ spec:
           - key: logback.xml
             path: logback.xml
       {{- end }}
-      {{ if .Values.authentication.saml.samlIdpXmlFile -}}
+      {{ if and .Values.authentication.saml.samlIdpXmlFileConfigMap .Values.authentication.saml.samlSecret -}}
       - name: codedx-saml-idp
         configMap:
-          name: {{ include "codedx.props.configMapName" . | quote }}
+          name: {{ .Values.authentication.saml.samlIdpXmlFileConfigMap | quote }}
           items:
           - key: saml-idp.xml
             path: saml-idp.xml
@@ -263,7 +263,7 @@ spec:
             path: codedx-saml.props
       - name: codedx-saml-keystore-props
         secret:
-          secretName: {{ include "codedx.props.samlKeystoreSecretName" . | quote }}
+          secretName: {{ .Values.authentication.saml.samlSecret | quote }}
           items:
           - key: codedx-saml-keystore.props
             path: codedx-saml-keystore.props

@@ -113,13 +113,6 @@ Determine the name of the configmap to create and/or use for holding the regular
 {{- end -}}
 
 {{/*
-Determine the name of the secret to create and/or use for holding the regular `codedx-saml-keystore.props` file.
-*/}}
-{{- define "codedx.props.samlKeystoreSecretName" -}}
-{{- include "sanitize" (printf "%s-saml-keystore" (include "codedx.fullname" .)) -}}
-{{- end -}}
-
-{{/*
 Create the name of the service account to use for Code Dx.
 */}}
 {{- define "codedx.serviceAccountName" -}}
@@ -178,25 +171,11 @@ credentials, which will be mounted for Code Dx.
 {{- end -}}
 
 {{- define "codedx.props.saml.params" -}}
-{{- if .Values.authentication.saml.samlIdpXmlFile -}}
+{{- if and .Values.authentication.saml.samlIdpXmlFileConfigMap .Values.authentication.saml.samlSecret -}}
 {{- printf " -Dcodedx.additional-props-saml=\"/opt/codedx/codedx-saml.props\" -Dcodedx.additional-props-saml-keystore=\"/opt/codedx/codedx-saml-keystore.props\"" -}}
 {{- else -}}
 {{ printf "" }}
 {{- end -}}
-{{- end -}}
-
-{{- define "codedx.saml.keystore.pwd" -}}
-    {{- $existingSecret := required "you must use .Values.existingSecret to specify the keystore password" .Values.existingSecret }}
-    {{- /* Note: lookup function does not support --dry-run */ -}}
-    {{- $data := (lookup "v1" "Secret" .Release.Namespace $existingSecret).data -}}
-    {{- index $data "saml-keystore-password" | b64dec -}}
-{{- end -}}
-
-{{- define "codedx.saml.private.key.pwd" -}}
-    {{- $existingSecret := required "you must use .Values.existingSecret to specify the private key password" .Values.existingSecret }}
-    {{- /* Note: lookup function does not support --dry-run */ -}}
-    {{- $data := (lookup "v1" "Secret" .Release.Namespace $existingSecret).data -}}
-    {{- index $data "saml-private-key-password" | b64dec -}}
 {{- end -}}
 
 {{/*
@@ -337,13 +316,6 @@ swa.db.password =
 {{- else -}}
 {{- include "codedx.mariadb.root.pwd" . | quote -}}
 {{- end }}
-{{- end -}}
-
-{{- define "codedx.saml-keystore.propsTemplate" -}}
-auth.saml2.keystorePassword = 
-{{- include "codedx.saml.keystore.pwd" . | quote }}
-auth.saml2.privateKeyPassword = 
-{{- include "codedx.saml.private.key.pwd" . | quote }}
 {{- end -}}
 
 {{/*

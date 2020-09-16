@@ -167,15 +167,6 @@ Create the full path to where the MariaDB `props` file will be mounted to within
 /opt/codedx/{{ include "codedx.mariadb.props.name" . }}
 {{- end -}}
 
-{{/*
-Determine the name of the secret to create and/or use for storing the `props` file containing MariaDB
-credentials, which will be mounted for Code Dx.
-*/}}
-{{- define "codedx.mariadb.secretName" -}}
-{{- $fullName := printf "%s-%s" .Release.Name "mariadb-secret" -}}
-{{- include "sanitize" $fullName -}}
-{{- end -}}
-
 {{- define "codedx.props.ml.params" -}}
 {{- printf " -Dcodedx.additional-props-ml=/opt/codedx/codedx-ml.props" -}}
 {{- end -}}
@@ -266,67 +257,7 @@ Determine the name to use to create and/or bind MariaDB's PodSecurityPolicy.
 {{- include "sanitize" $fullName -}}
 {{- end -}}
 
-{{- define "codedx.mariadb.user" -}}
-    {{- $existingSecret := .Values.existingSecret }}
-    {{- if $existingSecret -}}
-        {{- /* Note: lookup function does not support --dry-run */ -}}
-        {{- $data := (lookup "v1" "Secret" .Release.Namespace $existingSecret).data -}}
-        {{- $val := index $data "mariadb-codedx-username" -}}
-        {{- if $val -}}
-            {{- $val | b64dec -}}
-        {{- end -}}
-    {{- end -}}
-{{- end -}}
 
-{{- define "codedx.mariadb.pwd" -}}
-    {{- $existingSecret := .Values.existingSecret }}
-    {{- if $existingSecret -}}
-        {{- /* Note: lookup function does not support --dry-run */ -}}
-        {{- $data := (lookup "v1" "Secret" .Release.Namespace $existingSecret).data -}}
-        {{- $val := index $data "mariadb-codedx-password" -}}
-        {{- if $val -}}
-            {{- $val | b64dec -}}
-        {{- end -}}
-    {{- end -}}
-{{- end -}}
-
-{{- define "codedx.mariadb.root.pwd" -}}
-{{- $existingSecret := .Values.mariadb.existingSecret }}
-{{- if $existingSecret -}}
-{{- /* Note: lookup function does not support --dry-run */ -}}
-{{- index (lookup "v1" "Secret" .Release.Namespace $existingSecret).data "mariadb-root-password" | b64dec -}}
-{{- else -}}
-{{- required "existing secret not found, so expected to find value for mariadb.rootUser.password" .Values.mariadb.rootUser.password -}}
-{{- end -}}
-{{- end -}}
-
-{{- define "codedx.mariadb.replication.pwd" -}}
-{{- $existingSecret := .Values.mariadb.existingSecret }}
-{{- if $existingSecret -}}
-{{- /* Note: lookup function does not support --dry-run */ -}}
-{{- index (lookup "v1" "Secret" .Release.Namespace $existingSecret).data "mariadb-replication-password" | b64dec -}}
-{{- else -}}
-{{- required "existing secret not found, so expected to find value for mariadb.replication.password" .Values.mariadb.replication.password -}}
-{{- end -}}
-{{- end -}}
-
-{{- define "codedx.mariadb.propsTemplate" -}}
-# MariaDB creds stored in a secret
-swa.db.user = 
-{{- $user := include "codedx.mariadb.user" . -}}
-{{- if $user -}}
-{{- $user | quote -}}
-{{- else -}}
-{{- "root" | quote -}}
-{{- end }}
-swa.db.password =
-{{- $pwd := include "codedx.mariadb.pwd" . -}}
-{{- if $pwd -}}
-{{- $pwd | quote -}}
-{{- else -}}
-{{- include "codedx.mariadb.root.pwd" . | quote -}}
-{{- end }}
-{{- end -}}
 
 {{/*
 Duplicates of MariaDB template helpers so we can reference service/serviceAccount names

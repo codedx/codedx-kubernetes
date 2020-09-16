@@ -427,6 +427,12 @@ if ($useSaml) {
 	New-SamlConfig $namespaceCodeDx $samlIdpXmlFileConfigMapName $samlIdentityProviderMetadataPath $samlSecretName $samlKeystorePwd $samlPrivateKeyPwd
 }
 
+$dbConnectionSecret = 'codedx-mariadb-props'
+New-DatabaseConfig $namespaceCodeDx `
+	$dbConnectionSecret `
+	($externalDatabaseUser -eq '' ? 'root' : $externalDatabaseUser) `
+	($externalDatabasePwd -eq '' ? $mariadbRootPwd : $externalDatabasePwd)
+
 Write-Verbose 'Fetching Code Dx Helm charts...'
 $repoDirectory = './.repo'
 Remove-Item $repoDirectory -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
@@ -472,6 +478,7 @@ New-CodeDxDeployment $codeDxDnsName $codeDxServicePortNumber $codeDxTlsServicePo
 	$namespaceCodeDx $releaseNameCodeDx $imageCodeDxTomcat `
 	$dockerImagePullSecretName `
 	$dockerRegistry $dockerRegistryUser $dockerRegistryPwd `
+	$dbConnectionSecret `
 	$mariadbRootPwd $mariadbReplicatorPwd `
 	$dbVolumeSizeGiB `
 	$dbSlaveReplicaCount $dbSlaveVolumeSizeGiB `

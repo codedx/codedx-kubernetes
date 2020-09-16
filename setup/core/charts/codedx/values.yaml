@@ -43,6 +43,20 @@ existingSecret:
 #
 cacertsSecret:
 
+# databaseConnectionSecret lets you use an existing secret with field codedx.mariadb.props to specify the database 
+# username and password.
+#
+# Specify these values in a codedx.mariadb.props file:
+#
+# swa.db.user = ************
+# swa.db.password = ************
+#
+# and then use a command like this to create a k8s secret named codedx-mariadb-props:
+#
+# kubectl -n <namespace> create secret generic codedx-mariadb-props --from-file=codedx.mariadb.props=/path/to/your/codedx.mariadb.props
+#
+databaseConnectionSecret:
+
 # serviceAccount options for Code Dx.
 # Determine the name of the service account to run Code Dx with, and whether to create the ServiceAccount.
 # - If create=true but name=undefined - Will create and use an auto-named service account

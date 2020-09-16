@@ -33,6 +33,7 @@ function New-CodeDxDeployment([string] $codeDxDnsName,
 	[string]   $dockerRegistry,
 	[string]   $dockerRegistryUser,
 	[string]   $dockerRegistryPwd,
+	[string]   $dbConnectionSecret,
 	[string]   $mariadbRootPwd,
 	[string]   $mariadbReplicatorPwd,
 	[int]      $dbVolumeSizeGiB,
@@ -227,6 +228,7 @@ authentication:
     appName: '{40}'
     samlIdpXmlFileConfigMap: '{41}'
     samlSecret: '{42}'
+databaseConnectionSecret: '{43}'
 '@ -f (Get-CodeDxPdSecretName $releaseName), $tomcatImage, $imagePullSecretYaml,
 $psp, $networkPolicy,
 $tlsEnabled, $tlsSecretName, 'tls.crt', 'tls.key',
@@ -244,7 +246,8 @@ $enableDb, $ingressNginxAssumption,
 $externalDb, $caCertsSecretName, $offlineMode.ToString().ToLower(),
 (Format-NodeSelector $codeDxNodeSelector), (Format-NodeSelector $masterDatabaseNodeSelector), (Format-NodeSelector $subordinateDatabaseNodeSelector),
 (Format-PodTolerationNoScheduleNoExecute $codeDxNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $masterDatabaseNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $subordinateDatabaseNoScheduleExecuteToleration),
-$hostBasePath, $useSaml.tostring().tolower(), $samlAppName, $samlIdpXmlFileConfigMapName, $samlSecretName
+$hostBasePath, $useSaml.tostring().tolower(), $samlAppName, $samlIdpXmlFileConfigMapName, $samlSecretName,
+$dbConnectionSecret
 
 	$valuesFile = 'codedx-values.yaml'
 	$values | out-file $valuesFile -Encoding ascii -Force
@@ -822,4 +825,18 @@ auth.saml2.privateKeyPassword = $samlPrivateKeyPwd
 "@ | out-file $samlPropsFile -Encoding ascii -Force
 
 	New-GenericSecret $namespace $samlSecretName @{} @{'codedx-saml-keystore.props' = $samlPropsFile}
+}
+
+function New-DatabaseConfig([string] $namespace,
+	[string] $databaseConnectionSecretName,
+	[string] $databaseUsername,
+	[string] $databasePwd) {
+
+	$dbConnectionFile = './codedx.mariadb.props'
+	@"
+swa.db.user = $databaseUsername
+swa.db.password = $databasePwd
+"@ | out-file $dbConnectionFile -Encoding ascii -Force
+
+	New-GenericSecret $namespace $databaseConnectionSecretName @{} @{'codedx.mariadb.props' = $dbConnectionFile}
 }

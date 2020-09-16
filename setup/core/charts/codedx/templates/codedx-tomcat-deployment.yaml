@@ -186,7 +186,7 @@ spec:
             path: setenv.sh
       - name: codedx-mariadb-props
         secret:
-          secretName: {{ include "codedx.mariadb.secretName" . | quote }}
+          secretName: {{ .Values.databaseConnectionSecret | quote }}
           items:
           - key: codedx.mariadb.props
             path: {{ include "codedx.mariadb.props.name" . | quote }}

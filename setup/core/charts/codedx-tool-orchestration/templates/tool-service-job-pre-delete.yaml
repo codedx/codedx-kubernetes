@@ -45,9 +45,14 @@ spec:
           {{ end -}}
           "-workDir", "/opt/codedx/cleanup/work"]
         volumeMounts:
-        - name: tool-service-secret-volume
-          mountPath: "/opt/codedx/cleanup/secrets"
+        - name: minio-secret-volume
+          mountPath: "/opt/codedx/cleanup/secrets/minioAdminUsername"
           readOnly: true
+          subPath: minioAdminUsername
+        - name: minio-secret-volume
+          mountPath: "/opt/codedx/cleanup/secrets/minioAdminPassword"
+          readOnly: true
+          subPath: minioAdminPassword
         {{- if and .Values.minio.tls.enabled .Values.minioTlsTrust.configMapName }}
         - name: minio-cert-volume
           mountPath: /etc/ssl/certs/cdx-minio.pem
@@ -59,9 +64,14 @@ spec:
           mountPath: "/opt/codedx/cleanup/tls"
         {{- end }}
       volumes:
-      - name: tool-service-secret-volume
+      - name: minio-secret-volume
         secret:
-          secretName: {{ include "codedx-tool-orchestration.secretName" . | quote }}
+          secretName: {{ .Values.minio.global.minio.existingSecret | quote }}
+          items:
+          - key: access-key
+            path: minioAdminUsername
+          - key: secret-key
+            path: minioAdminPassword
       {{- if and .Values.minio.tls.enabled .Values.minioTlsTrust.configMapName }}
       - name: minio-cert-volume
         configMap:

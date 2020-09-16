@@ -99,8 +99,17 @@ spec:
           timeoutSeconds: 30
         volumeMounts:
         - name: tool-service-secret-volume
-          mountPath: "/opt/codedx/service/secrets"
+          mountPath: "/opt/codedx/service/secrets/adminApiKey"
           readOnly: true
+          subPath: adminApiKey
+        - name: minio-secret-volume
+          mountPath: "/opt/codedx/service/secrets/minioAdminUsername"
+          readOnly: true
+          subPath: minioAdminUsername
+        - name: minio-secret-volume
+          mountPath: "/opt/codedx/service/secrets/minioAdminPassword"
+          readOnly: true
+          subPath: minioAdminPassword
         {{ if and .Values.minio.tls.enabled .Values.minioTlsTrust.configMapName -}}
         - name: minio-cert-volume
           mountPath: /etc/ssl/certs/cdx-minio.pem
@@ -118,7 +127,18 @@ spec:
       volumes:
       - name: tool-service-secret-volume
         secret:
-          secretName: {{ include "codedx-tool-orchestration.secretName" . | quote }}
+          secretName: {{ .Values.existingSecret | quote }}
+          items:
+          - key: api-key
+            path: adminApiKey
+      - name: minio-secret-volume
+        secret:
+          secretName: {{ .Values.minio.global.minio.existingSecret | quote }}
+          items:
+          - key: access-key
+            path: minioAdminUsername
+          - key: secret-key
+            path: minioAdminPassword
       {{ if and .Values.minio.tls.enabled .Values.minioTlsTrust.configMapName -}}
       - name: minio-cert-volume
         configMap:

@@ -82,10 +82,6 @@ If release name contains chart name it will be used as a full name.
 {{- (printf "%s-%s" (include "codedx-tool-orchestration.name" .) "workflow-role") -}}
 {{- end -}}
 
-{{- define "codedx-tool-orchestration.secretName" -}}
-{{- include "sanitize" (printf "%s-tool-service-secret" (include "codedx-tool-orchestration.fullname" .)) -}}
-{{- end -}}
-
 {{- define "codedx-tool-orchestration.pre-delete-job" -}}
 {{- include "sanitize" (printf "%s-pre-delete-job" (include "codedx-tool-orchestration.fullname" .)) -}}
 {{- end -}}
@@ -96,36 +92,6 @@ If release name contains chart name it will be used as a full name.
 
 {{- define "codedx-tool-orchestration.service.priorityClassName" -}}
 {{- include "sanitize" (printf "%s-svc-pc" (include "codedx-tool-orchestration.fullname" .)) -}}
-{{- end -}}
-
-{{- define "codedx.toolsvc.apiKey" -}}
-{{- $existingSecret := .Values.existingSecret }}
-{{- if $existingSecret -}}
-{{- /* Note: lookup function does not support --dry-run */ -}}
-{{- index (lookup "v1" "Secret" .Release.Namespace $existingSecret).data "api-key" | b64dec -}}
-{{- else -}}
-{{- required "existing secret not found, so expected to find value for .Values.toolServiceApiKey" .Values.toolServiceApiKey -}}
-{{- end -}}
-{{- end -}}
-
-{{- define "codedx.minio.accessKey" -}}
-{{- $existingSecret := .Values.minio.global.minio.existingSecret }}
-{{- if $existingSecret -}}
-{{- /* Note: lookup function does not support --dry-run */ -}}
-{{- index (lookup "v1" "Secret" .Release.Namespace $existingSecret).data "access-key" | b64dec -}}
-{{- else -}}
-{{- required "existing secret not found, so expected to find value for minio.global.minio.accessKeyGlobal" .Values.minio.global.minio.accessKeyGlobal -}}
-{{- end -}}
-{{- end -}}
-
-{{- define "codedx.minio.secretKey" -}}
-{{- $existingSecret := .Values.minio.global.minio.existingSecret }}
-{{- if $existingSecret -}}
-{{- /* Note: lookup function does not support --dry-run */ -}}
-{{- index (lookup "v1" "Secret" .Release.Namespace $existingSecret).data "secret-key" | b64dec -}}
-{{- else -}}
-{{- required "existing secret not found, so expected to find value for minio.global.minio.secretKeyGlobal" .Values.minio.global.minio.secretKeyGlobal -}}
-{{- end -}}
 {{- end -}}
 
 {{/*

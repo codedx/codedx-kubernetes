@@ -1,7 +1,7 @@
 apiVersion: v2
 name: codedx
-version: 1.4.1
-appVersion: "5.2.1"
+version: 1.4.2
+appVersion: "5.2.2"
 description: A Helm chart for Code Dx
 icon: https://codedx.com/wp-content/uploads/2017/03/CodeDx-logo.png
 home: https://github.com/codedx/codedx-kubernetes

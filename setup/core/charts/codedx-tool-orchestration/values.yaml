@@ -13,7 +13,7 @@ imageNameSendErrorResults: "codedx/codedx-error-results:v1.0.0"
 imageNameHelmPreDelete: "codedx/codedx-cleanup:v1.0.0"
 imagePullSecretKey: ""
 
-toolServiceImageName: codedx/codedx-tool-service:v1.1.0
+toolServiceImageName: codedx/codedx-tool-service:v1.1.1
 toolServiceImagePullSecrets: []
 toolServicePort: 3333
 

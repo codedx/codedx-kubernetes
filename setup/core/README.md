@@ -98,7 +98,6 @@ This section describes the setup.ps1 script parameters, which you can specify by
 | `caCertsFilePwd`                                   | current password for the Code Dx cacerts file              | `changeit`                                        |
 | `caCertsFileNewPwd`                                | new password to protect the Code Dx cacerts file           | `jcqBYa68G1usO!` (example)                        |
 |                                                    |                                                            |                                                   |
-| `extraCodeDxChartFilesPaths`                       | files to copy to the Code Dx chart folder at install time  | `@('/cacerts')`  (example)                        |
 | `extraCodeDxTrustedCaCertPaths`                    | trusted cert files to add to the Code Dx cacerts file      | `@('/cert.pem')` (example)                        |
 |                                                    |                                                            |                                                   |
 | `dockerImagePullSecretName`                        | k8s image pull secret name for a private Docker registry   | `my-registry`    (example)                        |

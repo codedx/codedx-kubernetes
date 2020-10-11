@@ -12,128 +12,127 @@ parameters for this script.
 #>
 
 param (
-	[string]   $workDir = "$HOME/.k8s-codedx",
-	[string]   $kubeContextName,
+	[string]                 $workDir = "$HOME/.k8s-codedx",
+	[string]                 $kubeContextName,
 
-	[string]   $clusterCertificateAuthorityCertPath,
-	[string]   $codeDxDnsName,
-	[int]      $codeDxServicePortNumber = 9090,
-	[int]      $codeDxTlsServicePortNumber = 9443,
-	[int]      $waitTimeSeconds = 900,
+	[string]                 $clusterCertificateAuthorityCertPath,
+	[string]                 $codeDxDnsName,
+	[int]                    $codeDxServicePortNumber = 9090,
+	[int]                    $codeDxTlsServicePortNumber = 9443,
+	[int]                    $waitTimeSeconds = 900,
 
-	[int]      $dbVolumeSizeGiB = 32,
-	[int]      $dbSlaveReplicaCount = 1,
-	[int]      $dbSlaveVolumeSizeGiB = 32,
-	[int]      $minioVolumeSizeGiB = 32,
-	[int]      $codeDxVolumeSizeGiB = 32,
-	[string]   $storageClassName,
+	[int]                    $dbVolumeSizeGiB = 32,
+	[int]                    $dbSlaveReplicaCount = 1,
+	[int]                    $dbSlaveVolumeSizeGiB = 32,
+	[int]                    $minioVolumeSizeGiB = 32,
+	[int]                    $codeDxVolumeSizeGiB = 32,
+	[string]                 $storageClassName,
 
-	[string]   $codeDxMemoryReservation,
-	[string]   $dbMasterMemoryReservation,
-	[string]   $dbSlaveMemoryReservation,
-	[string]   $toolServiceMemoryReservation,
-	[string]   $minioMemoryReservation,
-	[string]   $workflowMemoryReservation,
-	[string]   $nginxMemoryReservation,
+	[string]                 $codeDxMemoryReservation,
+	[string]                 $dbMasterMemoryReservation,
+	[string]                 $dbSlaveMemoryReservation,
+	[string]                 $toolServiceMemoryReservation,
+	[string]                 $minioMemoryReservation,
+	[string]                 $workflowMemoryReservation,
+	[string]                 $nginxMemoryReservation,
 
-	[string]   $codeDxCPUReservation,
-	[string]   $dbMasterCPUReservation,
-	[string]   $dbSlaveCPUReservation,
-	[string]   $toolServiceCPUReservation,
-	[string]   $minioCPUReservation,
-	[string]   $workflowCPUReservation,
-	[string]   $nginxCPUReservation,
+	[string]                 $codeDxCPUReservation,
+	[string]                 $dbMasterCPUReservation,
+	[string]                 $dbSlaveCPUReservation,
+	[string]                 $toolServiceCPUReservation,
+	[string]                 $minioCPUReservation,
+	[string]                 $workflowCPUReservation,
+	[string]                 $nginxCPUReservation,
 
-	[string]   $codeDxEphemeralStorageReservation = '2Gi',
-	[string]   $dbMasterEphemeralStorageReservation,
-	[string]   $dbSlaveEphemeralStorageReservation,
-	[string]   $toolServiceEphemeralStorageReservation,
-	[string]   $minioEphemeralStorageReservation,
-	[string]   $workflowEphemeralStorageReservation,
-	[string]   $nginxEphemeralStorageReservation,
+	[string]                 $codeDxEphemeralStorageReservation = '2Gi',
+	[string]                 $dbMasterEphemeralStorageReservation,
+	[string]                 $dbSlaveEphemeralStorageReservation,
+	[string]                 $toolServiceEphemeralStorageReservation,
+	[string]                 $minioEphemeralStorageReservation,
+	[string]                 $workflowEphemeralStorageReservation,
+	[string]                 $nginxEphemeralStorageReservation,
 
-	[string]   $imageCodeDxTomcat = 'codedx/codedx-tomcat:v5.1.3',
-	[string]   $imageCodeDxTools = 'codedx/codedx-tools:v1.0.6',
-	[string]   $imageCodeDxToolsMono = 'codedx/codedx-toolsmono:v1.0.6',
-	[string]   $imageNewAnalysis = 'codedx/codedx-newanalysis:v1.0.0',
-	[string]   $imageSendResults = 'codedx/codedx-results:v1.0.0',
-	[string]   $imageSendErrorResults = 'codedx/codedx-error-results:v1.0.0',
-	[string]   $imageToolService = 'codedx/codedx-tool-service:v1.0.6',
-	[string]   $imagePreDelete = 'codedx/codedx-cleanup:v1.0.0',
+	[string]                 $imageCodeDxTomcat = 'codedx/codedx-tomcat:v5.1.3',
+	[string]                 $imageCodeDxTools = 'codedx/codedx-tools:v1.0.6',
+	[string]                 $imageCodeDxToolsMono = 'codedx/codedx-toolsmono:v1.0.6',
+	[string]                 $imageNewAnalysis = 'codedx/codedx-newanalysis:v1.0.0',
+	[string]                 $imageSendResults = 'codedx/codedx-results:v1.0.0',
+	[string]                 $imageSendErrorResults = 'codedx/codedx-error-results:v1.0.0',
+	[string]                 $imageToolService = 'codedx/codedx-tool-service:v1.0.6',
+	[string]                 $imagePreDelete = 'codedx/codedx-cleanup:v1.0.0',
 
-	[int]      $toolServiceReplicas = 3,
+	[int]                    $toolServiceReplicas = 3,
 
-	[switch]   $skipTLS,
-	[switch]   $skipPSPs,
-	[switch]   $skipNetworkPolicies,
+	[switch]                 $skipTLS,
+	[switch]                 $skipPSPs,
+	[switch]                 $skipNetworkPolicies,
 
-	[switch]   $skipNginxIngressControllerInstall,
-	[string]   $nginxIngressControllerLoadBalancerIP,
-	[string]   $nginxIngressControllerNamespace = 'nginx',
+	[switch]                 $skipNginxIngressControllerInstall,
+	[string]                 $nginxIngressControllerLoadBalancerIP,
+	[string]                 $nginxIngressControllerNamespace = 'nginx',
 
-	[switch]   $skipLetsEncryptCertManagerInstall,
-	[string]   $letsEncryptCertManagerRegistrationEmailAddress,
-	[string]   $letsEncryptCertManagerClusterIssuer = 'letsencrypt-staging',
-	[string]   $letsEncryptCertManagerNamespace = 'cert-manager',
+	[switch]                 $skipLetsEncryptCertManagerInstall,
+	[string]                 $letsEncryptCertManagerRegistrationEmailAddress,
+	[string]                 $letsEncryptCertManagerClusterIssuer = 'letsencrypt-staging',
+	[string]                 $letsEncryptCertManagerNamespace = 'cert-manager',
 
-	[string]   $serviceTypeCodeDx,
-	[hashtable]$serviceAnnotationsCodeDx = @{},
+	[string]                 $serviceTypeCodeDx,
+	[hashtable]              $serviceAnnotationsCodeDx = @{},
 
-	[switch]   $skipIngressEnabled,
-	[switch]   $skipIngressAssumesNginx,
-	[hashtable]$ingressAnnotationsCodeDx = @{},
+	[switch]                 $skipIngressEnabled,
+	[switch]                 $skipIngressAssumesNginx,
+	[hashtable]              $ingressAnnotationsCodeDx = @{},
 
-	[string]   $namespaceToolOrchestration = 'cdx-svc',
-	[string]   $namespaceCodeDx = 'cdx-app',
-	[string]   $releaseNameCodeDx = 'codedx',
-	[string]   $releaseNameToolOrchestration = 'codedx-tool-orchestration',
+	[string]                 $namespaceToolOrchestration = 'cdx-svc',
+	[string]                 $namespaceCodeDx = 'cdx-app',
+	[string]                 $releaseNameCodeDx = 'codedx',
+	[string]                 $releaseNameToolOrchestration = 'codedx-tool-orchestration',
 
-	[string]   $toolServiceApiKey,
+	[string]                 $toolServiceApiKey,
 
-	[string]   $codedxAdminPwd,
-	[string]   $minioAdminUsername = 'admin',
-	[string]   $minioAdminPwd,
-	[string]   $mariadbRootPwd,
-	[string]   $mariadbReplicatorPwd,
+	[string]                 $codedxAdminPwd,
+	[string]                 $minioAdminUsername = 'admin',
+	[string]                 $minioAdminPwd,
+	[string]                 $mariadbRootPwd,
+	[string]                 $mariadbReplicatorPwd,
 
-	[string]   $caCertsFilePath,
-	[string]   $caCertsFilePwd,
-	[string]   $caCertsFileNewPwd,
+	[string]                 $caCertsFilePath,
+	[string]                 $caCertsFilePwd,
+	[string]                 $caCertsFileNewPwd,
 	
-	[string[]] $extraCodeDxChartFilesPaths = @(),
-	[string[]] $extraCodeDxTrustedCaCertPaths = @(),
+	[string[]]               $extraCodeDxTrustedCaCertPaths = @(),
 
-	[string]   $dockerImagePullSecretName,
-	[string]   $dockerRegistry,
-	[string]   $dockerRegistryUser,
-	[string]   $dockerRegistryPwd,
+	[string]                 $dockerImagePullSecretName,
+	[string]                 $dockerRegistry,
+	[string]                 $dockerRegistryUser,
+	[string]                 $dockerRegistryPwd,
 
-	[string]   $codedxHelmRepo = 'https://codedx.github.io/codedx-kubernetes',
+	[string]                 $codedxHelmRepo = 'https://codedx.github.io/codedx-kubernetes',
 	
-	[string]   $codedxGitRepo = 'https://github.com/codedx/codedx-kubernetes.git',
-	[string]   $codedxGitRepoBranch = 'v1.3.6',
+	[string]                 $codedxGitRepo = 'https://github.com/codedx/codedx-kubernetes.git',
+	[string]                 $codedxGitRepoBranch = 'v1.3.6',
 
-	[int]      $kubeApiTargetPort = 443,
+	[int]                    $kubeApiTargetPort = 443,
 
-	[string[]] $extraCodeDxValuesPaths = @(),
-	[string[]] $extraToolOrchestrationValuesPath = @(),
+	[string[]]               $extraCodeDxValuesPaths = @(),
+	[string[]]               $extraToolOrchestrationValuesPath = @(),
 
-	[switch]   $skipDatabase,
-	[string]   $externalDatabaseHost,
-	[int]      $externalDatabasePort = 3306,
-	[string]   $externalDatabaseName,
-	[string]   $externalDatabaseUser,
-	[string]   $externalDatabasePwd,
-	[string]   $externalDatabaseServerCert,
-	[switch]   $externalDatabaseSkipTls,
+	[switch]                 $skipDatabase,
+	[string]                 $externalDatabaseHost,
+	[int]                    $externalDatabasePort = 3306,
+	[string]                 $externalDatabaseName,
+	[string]                 $externalDatabaseUser,
+	[string]                 $externalDatabasePwd,
+	[string]                 $externalDatabaseServerCert,
+	[switch]                 $externalDatabaseSkipTls,
 
-	[switch]   $skipToolOrchestration,
+	[switch]                 $skipToolOrchestration,
 
-	[switch]   $useSaml,
-	[string]   $samlAppName,
-	[string]   $samlIdentityProviderMetadataPath,
-	[string]   $samlKeystorePwd,
-	[string]   $samlPrivateKeyPwd,
+	[switch]                 $useSaml,
+	[string]                 $samlAppName,
+	[string]                 $samlIdentityProviderMetadataPath,
+	[string]                 $samlKeystorePwd,
+	[string]                 $samlPrivateKeyPwd,
 
 	[Tuple`2[string,string]] $codeDxNodeSelector,
 	[Tuple`2[string,string]] $masterDatabaseNodeSelector,
@@ -151,10 +150,13 @@ param (
 	[Tuple`2[string,string]] $workflowControllerNoScheduleExecuteToleration,
 	[Tuple`2[string,string]] $toolNoScheduleExecuteToleration,
 
-	[switch] $pauseAfterGitClone,
+	[switch]                 $pauseAfterGitClone,
 
-	[management.automation.scriptBlock] $provisionNetworkPolicy,
-	[management.automation.scriptBlock] $provisionIngressController
+	[switch]                 $useHelmOperator,
+	[switch]                 $skipSealedSecrets,
+	[string]                 $sealedSecretsNamespace,
+	[string]                 $sealedSecretsControllerName,
+	[string]                 $sealedSecretsPublicKeyPath
 )
 
 $ErrorActionPreference = 'Stop'
@@ -162,30 +164,38 @@ $VerbosePreference = 'Continue'
 
 Set-PSDebug -Strict
 
-'./common/helm.ps1','./common/codedx.ps1','./common/prereqs.ps1','./common/mariadb.ps1','./common/keytool.ps1' | ForEach-Object {
+'./common/helm.ps1','./common/codedx.ps1','./common/prereqs.ps1','./common/mariadb.ps1','./common/keytool.ps1','./common/resource.ps1' | ForEach-Object {
 	$path = join-path $PSScriptRoot $_
 	if (-not (Test-Path $path)) {
-		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
+		Write-ErrorMessageAndExit "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
 	}
 	. $path
 }
 
-function Write-ImportantNote([string] $message) {
-	Write-Host ('NOTE: {0}' -f $message) -ForegroundColor Black -BackgroundColor White
-}
+$useTLS = -not $skipTLS
+$usePSPs = -not $skipPSPs
+$useToolOrchestration = -not $skipToolOrchestration
+$useNetworkPolicies = -not $skipNetworkPolicies
+$useIngress = -not $skipIngressEnabled
+$useIngressAssumesNginx = -not $skipIngressAssumesNginx
+$useLetsEncryptCertManager = -not $skipLetsEncryptCertManagerInstall
+$useNginxIngressController = -not $skipNginxIngressControllerInstall
+$useLocalDatabase = -not $skipDatabase
+$useSealedSecrets = -not $skipSealedSecrets
 
+$useGitOps = $useHelmOperator
+
+
+### Check Prerequisites
+Write-Verbose 'Checking prerequisites...'
 $prereqMessages = @()
-if (-not (Test-SetupPreqs ([ref]$prereqMessages))) {
-	write-error ([string]::join("`n", $prereqMessages))
+if (-not (Test-SetupPreqs ([ref]$prereqMessages) -useSealedSecrets:$useSealedSecrets)) {
+	Write-ErrorMessageAndExit ([string]::join("`n", $prereqMessages))
 }
 
-if ($kubeContextName -ne '') {
-	Set-KubectlContext $kubeContextName
-	Write-Verbose "Using kubeconfig context entry named $(Get-KubectlContext)"
-}
-
+### Validate Parameters
 $dns1123SubdomainExpr = '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
-if (-not $skipIngressEnabled -and -not (Test-IsValidParameterValue $codeDxDnsName $dns1123SubdomainExpr)) { 
+if ($useIngress -and -not (Test-IsValidParameterValue $codeDxDnsName $dns1123SubdomainExpr)) { 
 	$codeDxDnsName = Read-HostText 'Enter Code Dx domain name (e.g., www.codedx.io)' -validationExpr $dns1123SubdomainExpr 
 }
 
@@ -197,7 +207,7 @@ if (-not (Test-IsValidParameterValue $releaseNameCodeDx $dns1123SubdomainExpr)) 
 	$releaseNameCodeDx = Read-HostText 'Enter the Code Dx release name' -validationExpr $dns1123SubdomainExpr 
 }
 
-if (-not $skipToolOrchestration) {
+if ($useToolOrchestration) {
 	if (-not (Test-IsValidParameterValue $namespaceToolOrchestration $dns1123SubdomainExpr)) {
 		$namespaceToolOrchestration = Read-HostText 'Enter the Code Dx Tool Orchestration namespace' -validationExpr $dns1123SubdomainExpr 
 	}
@@ -207,44 +217,54 @@ if (-not $skipToolOrchestration) {
 	}
 }
 
-if (-not $skipTLS -and $clusterCertificateAuthorityCertPath -eq '') { 
+if ($useTLS -and $clusterCertificateAuthorityCertPath -eq '') { 
 	$clusterCertificateAuthorityCertPath = Read-Host -Prompt 'Enter path to cluster CA certificate' 
 }
 
-if (-not $skipToolOrchestration -and $minioAdminUsername -eq '') { 
+if ($useToolOrchestration -and $minioAdminUsername -eq '') { 
 	$minioAdminUsername = Read-HostSecureText 'Enter a username for the MinIO admin account' 5 
 }
 
-if (-not $skipToolOrchestration -and $minioAdminPwd -eq '') { 
-	$minioAdminPwd = Get-MinioPasswordFromPd $namespaceToolOrchestration $releaseNameToolOrchestration
+if ($useToolOrchestration -and $minioAdminPwd -eq '') { 
+	if (-not $useGitOps) {
+		$minioAdminPwd = Get-MinioPasswordFromPd $namespaceToolOrchestration $releaseNameToolOrchestration
+	}
 	if ('' -eq $minioAdminPwd) {
 		$minioAdminPwd = Read-HostSecureText 'Enter a password for the MinIO admin account' 8 
 	}
 }
 
 if ($codedxAdminPwd -eq '') { 
-	$codeDxAdminPwd = Get-CodeDxAdminPwdFromPd $namespaceCodeDx $releaseNameCodeDx
+	if (-not $useGitOps) {
+		$codeDxAdminPwd = Get-CodeDxAdminPwdFromPd $namespaceCodeDx $releaseNameCodeDx
+	}
 	if ('' -eq $codeDxAdminPwd) {
 		$codedxAdminPwd = Read-HostSecureText 'Enter a password for the Code Dx admin account' 8 
 	}
 }
 
-if (-not $skipToolOrchestration -and $toolServiceApiKey -eq '') { 
-	$toolServiceApiKey = Get-ToolServiceApiKeyFromPd $namespaceToolOrchestration $releaseNameToolOrchestration
+if ($useToolOrchestration -and $toolServiceApiKey -eq '') { 
+	if (-not $useGitOps) {
+		$toolServiceApiKey = Get-ToolServiceApiKeyFromPd $namespaceToolOrchestration $releaseNameToolOrchestration
+	}
 	if ('' -eq $toolServiceApiKey) {
 		$toolServiceApiKey = Read-HostSecureText 'Enter an API key for the Code Dx Tool Orchestration service' 8 
 	}
 }
 
 if ($caCertsFilePwd -eq '') {
-	$caCertsFilePwd = Get-CacertsPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+	if (-not $useGitOps) {
+		$caCertsFilePwd = Get-CacertsPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+	}
 	if ($caCertsFilePwd -eq '') {
 		$caCertsFilePwd = 'changeit'
 	}
 }
 
 if ($caCertsFileNewPwd -eq '') {
-	$caCertsFileNewPwd = Get-CacertsNewPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+	if (-not $useGitOps) {
+		$caCertsFileNewPwd = Get-CacertsNewPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+	}
 
 	if ($caCertsFileNewPwd -eq '') {
 		$caCertsFileNewPwd = $cacertsFilePwd
@@ -256,11 +276,15 @@ if ($caCertsFileNewPwd -ne '' -and $caCertsFileNewPwd.length -lt 6) {
 }
 
 if ($samlKeystorePwd -eq '') {
-	$samlKeystorePwd = Get-SamlKeystorePasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+	if (-not $useGitOps) {
+		$samlKeystorePwd = Get-SamlKeystorePasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+	}
 }
 
 if ($samlPrivateKeyPwd -eq '') {
-	$samlPrivateKeyPwd = Get-SamlPrivateKeyPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+	if (-not $useGitOps) {
+		$samlPrivateKeyPwd = Get-SamlPrivateKeyPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+	}
 }
 
 $externalDatabaseUrl = ''
@@ -270,14 +294,18 @@ if ($skipDatabase) {
 	if ($externalDatabaseName -eq '') { $externalDatabaseName = Read-HostText 'Enter your external, preexisting Code Dx database name' }
 
 	if ($externalDatabaseUser -eq '') { 
-		$externalDatabaseUser = Get-ExternalDatabaseUserFromPd $namespaceCodeDx $releaseNameCodeDx
+		if (-not $useGitOps) {
+			$externalDatabaseUser = Get-ExternalDatabaseUserFromPd $namespaceCodeDx $releaseNameCodeDx
+		}
 		if ('' -eq $externalDatabaseUser) {
 			$externalDatabaseUser = Read-HostText 'Enter a username for your external Code Dx database' 
 		}
 	}
 
 	if ($externalDatabasePwd -eq '')  {
-		$externalDatabasePwd  = Get-ExternalDatabasePasswordFromPd $namespaceCodeDx $releaseNameCodeDx 
+		if (-not $useGitOps) {
+			$externalDatabasePwd  = Get-ExternalDatabasePasswordFromPd $namespaceCodeDx $releaseNameCodeDx 
+		}
 		if ('' -eq $externalDatabasePwd) {
 			$externalDatabasePwd  = Read-HostSecureText 'Enter a password for your external Code Dx database' 
 		}
@@ -297,20 +325,24 @@ if ($skipDatabase) {
 else {
 
 	if ($mariadbRootPwd -eq '') { 
-		$mariadbRootPwd = Get-DatabaseRootPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+		if (-not $useGitOps) {
+			$mariadbRootPwd = Get-DatabaseRootPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+		}
 		if ('' -eq $mariadbRootPwd) {
 			$mariadbRootPwd = Read-HostSecureText 'Enter a password for the MariaDB root user' 
 		}
 	}
 	if ($mariadbReplicatorPwd -eq '') { 
-		$mariadbReplicatorPwd = Get-DatabaseReplicationPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+		if (-not $useGitOps) {
+			$mariadbReplicatorPwd = Get-DatabaseReplicationPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+		}
 		if ('' -eq $mariadbReplicatorPwd) {
 			$mariadbReplicatorPwd = Read-HostSecureText 'Enter a password for the MariaDB replicator user' 
 		}
 	}
 }
 
-if (-not $skipLetsEncryptCertManagerInstall){
+if ($useLetsEncryptCertManager){
 
 	if ($letsEncryptCertManagerRegistrationEmailAddress -eq '') { 
 		$letsEncryptCertManagerRegistrationEmailAddress = Read-HostText 'Enter an email address for the Let''s Encrypt registration' 
@@ -329,110 +361,231 @@ if ($dockerImagePullSecretName -ne '') {
 		$dockerRegistryUser = Read-HostText "Enter a docker username for $dockerRegistry"
 	}
 	if ($dockerRegistryPwd -eq '') {
-		$dockerRegistryPwd = Get-DockerRegistryPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+		if (-not $useGitOps) {
+			$dockerRegistryPwd = Get-DockerRegistryPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+		}
 		if ('' -eq $dockerRegistryPwd) {
 			$dockerRegistryPwd = Read-HostSecureText "Enter a docker password for $dockerRegistry"
 		}
 	}
 }
 
-if (-not $skipTls -and -not (test-path $clusterCertificateAuthorityCertPath -PathType Leaf)) {
-	write-error "Unable to continue because path '$clusterCertificateAuthorityCertPath' cannot be found."
+if ($useTLS -and -not (test-path $clusterCertificateAuthorityCertPath -PathType Leaf)) {
+	Write-ErrorMessageAndExit "Unable to continue because path '$clusterCertificateAuthorityCertPath' cannot be found."
 }
 
-if (-not $skipDatabase -and $dbSlaveReplicaCount -eq 0) {
+if ($useLocalDatabase -and $dbSlaveReplicaCount -eq 0) {
 	Write-ImportantNote 'Skipping slave database instances and the database backup process they provide.'
 }
 
+if ($useSealedSecrets -and $sealedSecretsNamespace -eq '') { 
+	$sealedSecretsNamespace = Read-Host -Prompt 'Enter the namespace containing the Sealed Secrets software (e.g., adm)'
+}
+
+if ($useSealedSecrets -and $sealedSecretsControllerName -eq '') { 
+	$sealedSecretsControllerName = Read-Host -Prompt 'Enter the name of the Sealed Secrets controller (e.g., sealed-secrets)'
+}
+
+if ($useSealedSecrets -and $sealedSecretsPublicKeyPath -eq '') { 
+	$sealedSecretsPublicKeyPath = Read-Host -Prompt 'Enter the path of the public key generated by the Sealed Secrets software'
+}
+
+if ($skipNginxIngressControllerInstall) {
+	$nginxIngressControllerNamespace = ''
+}
+
+$codeDxMustTrustCerts = -not (0 -eq $extraCodeDxTrustedCaCertPaths.Length -and '' -eq $clusterCertificateAuthorityCertPath)
+
+if ('' -eq $caCertsFilePath -and $useGitOps -and $codeDxMustTrustCerts) {
+	$caCertsFilePath = Read-HostText 'Enter a path to a cacerts file where your extra certificates or cluster CA cert will be stored'
+}
+
+if ($kubeContextName -eq '' -and $useGitOps) {
+	$kubeContextName = Read-HostText 'Enter a kube context name (required for helm-operator)'
+}
+
+### Select Kube Context
+if ($kubeContextName -ne '') {
+	Write-Verbose "Selecting kubectl context named $kubeContextName..."
+	Set-KubectlContext $kubeContextName
+	Write-Verbose "Using kubeconfig context entry named $(Get-KubectlContext)"
+}
+
+### Create Work Directory
 $workDir = join-path $workDir "$releaseNameCodeDx-$releaseNameToolOrchestration"
 Write-Verbose "Creating directory $workDir..."
 New-Item -Type Directory $workDir -Force
 
+### Switch to Work Directory
 Write-Verbose "Switching to directory $workDir..."
 Push-Location $workDir
 
-$useNetworkPolicies = -not $skipNetworkPolicies
-if ($useNetworkPolicies -and $null -ne $provisionNetworkPolicy) {
-	Write-Verbose "Adding network policy provider..."
-	& $provisionNetworkPolicy $waitTimeSeconds
+if ('' -eq $caCertsFilePath -and $codeDxMustTrustCerts) {
+	Write-Verbose "Starting $imageCodeDxTomcat pod in namespace $namespaceCodeDx to fetch cacerts file..."
+	$caCertsFilePath = (Get-CodeDxKeystore $namespaceCodeDx $imageCodeDxTomcat $waitTimeSeconds './cacerts').FullName
 }
 
-Write-Verbose 'Waiting for running pods...'
-$namespaceCodeDx,$nginxIngressControllerNamespace,$letsEncryptCertManagerNamespace | ForEach-Object {
-	if (Test-Namespace $_) {
-		Wait-AllRunningPods "Cluster Ready (namespace $_)" $waitTimeSeconds $_	
+### Wait for Cluster Ready
+if (-not $useGitOps) {
+
+	Write-Verbose 'Waiting for running pods...'
+	$namespaceCodeDx,$nginxIngressControllerNamespace,$letsEncryptCertManagerNamespace | ForEach-Object {
+		if (Test-Namespace $_) {
+			Wait-AllRunningPods "Cluster Ready (namespace $_)" $waitTimeSeconds $_	
+		}
+	}
+
+	if ($useToolOrchestration) {
+		if (Test-Namespace $namespaceToolOrchestration) {
+			Wait-AllRunningPods "Cluster Ready (namespace $namespaceToolOrchestration)" $waitTimeSeconds $namespaceToolOrchestration
+		}
 	}
 }
 
-if (-not $skipToolOrchestration) {
-	if (Test-Namespace $namespaceToolOrchestration) {
-		Wait-AllRunningPods "Cluster Ready (namespace $namespaceToolOrchestration)" $waitTimeSeconds $namespaceToolOrchestration
-	}
-}
+### Optionally Deploy NGINX
+$nginxValuesFile = ''
+$nginxLoadBalancerValuesFile = ''
+$nginxHelmChartVersion = '3.6.0'
+if ($useNginxIngressController) {
 
-Write-Verbose 'Adding Helm repository...'
-Add-HelmRepo 'codedx' $codedxHelmRepo
-
-
-if ($null -ne $provisionIngressController) {
-	& $provisionIngressController
-}
-
-if (-not $skipNginxIngressControllerInstall) {
+	$nginxReleaseName = 'nginx'
 
 	Write-Verbose 'Adding nginx Ingress...'
-	$priorityValuesFile = 'nginx-ingress-priority.yaml'
-
 	if ($nginxIngressControllerLoadBalancerIP -ne '') {
-		Add-NginxIngressLoadBalancerIP $nginxIngressControllerLoadBalancerIP $nginxIngressControllerNamespace $waitTimeSeconds 'nginx-ingress.yaml' $priorityValuesFile $releaseNameCodeDx $nginxCPUReservation $nginxMemoryReservation $nginxEphemeralStorageReservation -enablePSPs:(-not $skipPSPs)
-	} else {
-		Add-NginxIngress $nginxIngressControllerNamespace $waitTimeSeconds '' $priorityValuesFile $releaseNameCodeDx $nginxCPUReservation $nginxMemoryReservation $nginxEphemeralStorageReservation
+		$nginxLoadBalancerValuesFile = (New-NginxIngressLoadBalancerIPValuesFile $nginxIngressControllerLoadBalancerIP 'nginx-load-balancer-values.yaml').FullName
 	}
 
+	Write-Verbose "Creating namespace $nginxIngressControllerNamespace..."
+	New-NamespaceResource $nginxIngressControllerNamespace ([Tuple]::Create('name', $nginxIngressControllerNamespace)) -useGitOps:$useGitOps
+
+	$priorityClassName = Get-CommonName "$nginxReleaseName-nginx-pc"
+	New-PriorityClassResource $priorityClassName 20000 -useGitOps:$useGitOps
+
+	$nginxValuesFile = (New-NginxIngressValuesFile $nginxCPUReservation $nginxMemoryReservation $nginxEphemeralStorageReservation 'nginx-values.yaml' -enablePSPs:$usePSPs).FullName
+
+	Add-HelmRepo 'ingress-nginx' 'https://kubernetes.github.io/ingress-nginx'	
+	Add-HelmRepo 'stable' 'https://kubernetes-charts.storage.googleapis.com'
+	Invoke-HelmSingleDeployment 'ingress-nginx' `
+		$waitTimeSeconds $nginxIngressControllerNamespace `
+		$nginxReleaseName `
+		'ingress-nginx/ingress-nginx' `
+		$nginxLoadBalancerValuesFile `
+		'nginx-ingress-nginx-controller' `
+		1 `
+		$nginxValuesFile `
+		$nginxHelmChartVersion `
+		-dryRun:$useGitOps
+	
 	$ingressAnnotationsCodeDx['nginx.ingress.kubernetes.io/proxy-read-timeout'] = '3600'
 	$ingressAnnotationsCodeDx['nginx.ingress.kubernetes.io/proxy-body-size'] = '0'
 }
 
-if (-not $skipLetsEncryptCertManagerInstall) {
+### Optionally Deploy Let's Encrypt Cert Manager
+$letsEncryptSetupValuesFile = ''
+$letsEncryptHelmChartVersion = 'v0.13.0'
+if ($useLetsEncryptCertManager) {
 
 	Write-Verbose 'Adding Let''s Encrypt Cert Manager...'
-	Add-LetsEncryptCertManager $letsEncryptCertManagerNamespace $namespaceCodeDx `
-		$letsEncryptCertManagerRegistrationEmailAddress 'staging-cluster-issuer.yaml' 'production-cluster-issuer.yaml' `
-		'cert-manager-role.yaml' 'cert-manager-role-binding.yaml' 'cert-manager-http-solver-role-binding.yaml' `
-		$waitTimeSeconds -enablePSPs:(-not $skipPSPs)
+	$letsEncryptReleaseName = 'cert-manager'
+
+	$letsEncryptCRDs = Add-LetsEncryptCertManagerCRDs -dryRun:$useGitOps
+	if ($useGitOps) {
+		New-ResourceFile 'CRD' $letsEncryptCertManagerNamespace 'letsencryptcrds' $letsEncryptCRDs
+	}
+
+	Write-Verbose "Creating namespace $letsEncryptCertManagerNamespace..."
+	New-NamespaceResource $letsEncryptCertManagerNamespace ([Tuple]::Create('name', $letsEncryptCertManagerNamespace)) -useGitOps:$useGitOps
+
+	$letsEncryptSetupValuesFile = (New-LetsEncryptValuesFile -podSecurityPolicyEnabled:$usePSPs 'letsencrypt-values.yaml').FullName
+
+	Add-HelmRepo jetstack https://charts.jetstack.io
+	Invoke-HelmSingleDeployment 'cert-manager' `
+		$waitTimeSeconds $letsEncryptCertManagerNamespace `
+		$letsEncryptReleaseName `
+		jetstack/cert-manager `
+		$letsEncryptSetupValuesFile `
+		'cert-manager' `
+		1 `
+		@() `
+		$letsEncryptHelmChartVersion `
+		-dryRun:$useGitOps
+
+	if (-not $useGitOps) {
+		Wait-Deployment 'Add cert-manager' $waitSeconds $letsEncryptCertManagerNamespace 'cert-manager' 1
+		Wait-Deployment 'Add cert-manager (cert-manager-cainjector)' $waitSeconds $letsEncryptCertManagerNamespace 'cert-manager-cainjector' 1
+		Wait-Deployment 'Add cert-manager (cert-manager-webhook)' $waitSeconds $letsEncryptCertManagerNamespace 'cert-manager-webhook' 1
+	}
+	
+	$stagingClusterIssuerFile = New-LetsEncryptCertManagerClusterIssuerFiles 'letsencrypt-staging' $letsEncryptCertManagerRegistrationEmailAddress 'staging-cluster-issuer.yaml' -useStaging
+	$prodClusterIssuerFile = New-LetsEncryptCertManagerClusterIssuerFiles 'letsencrypt-prod' $letsEncryptCertManagerRegistrationEmailAddress 'production-cluster-issuer.yaml'
+	
+	$stagingClusterIssuerFile,$prodClusterIssuerFile | ForEach-Object {
+		if ($useGitOps) {
+			New-ResourceFile 'ClusterIssuer' $letsEncryptCertManagerNamespace $_.BaseName (Get-Content $_)
+		}
+	}
 
 	$ingressAnnotationsCodeDx['kubernetes.io/tls-acme'] = 'true'
 	$ingressAnnotationsCodeDx['cert-manager.io/cluster-issuer'] = $letsEncryptCertManagerClusterIssuer
 }
 
-if (-not (Test-Namespace $namespaceCodeDx)) {
-	New-Namespace $namespaceCodeDx
+### Create Code Dx Namespace
+Write-Verbose "Creating namespace $namespaceCodeDx..."
+New-NamespaceResource $namespaceCodeDx ([Tuple]::Create('name', $namespaceCodeDx)) -useGitOps:$useGitOps
+
+### Optionally Create Code Dx Tool Orchestration Namespace
+if ($useToolOrchestration) {
+	Write-Verbose "Creating namespace $namespaceToolOrchestration..."
+	New-NamespaceResource $namespaceToolOrchestration ([Tuple]::Create('name', $namespaceToolOrchestration)) -useGitOps:$useGitOps
 }
 
-New-CodeDxPdSecret $namespaceCodeDx $releaseNameCodeDx `
-	$codedxAdminPwd `
-	$caCertsFilePwd `
-	$externalDatabaseUser $externalDatabasePwd `
-	$dockerRegistryPwd `
-	$caCertsFileNewPwd `
-	$samlKeystorePwd `
-	$samlPrivateKeyPwd
+### Optionally Configure Code Dx TLS
+$tlsSecretNameCodeDx = ''
+$codeDxChartFullName = Get-CodeDxChartFullName $releaseNameCodeDx
+if ($useTLS) {
 
-$samlIdpXmlFileConfigMapName = ''
-$samlSecretName = ''
+	$tlsCertFile = "$codeDxChartFullName.pem"
+	$tlsKeyFile = "$codeDxChartFullName.key"
 
-if ($useSaml) {
-	$samlIdpXmlFileConfigMapName = 'saml-idp'
-	$samlSecretName = 'codedx-saml-keystore-props'
-	New-SamlConfig $namespaceCodeDx $samlIdpXmlFileConfigMapName $samlIdentityProviderMetadataPath $samlSecretName $samlKeystorePwd $samlPrivateKeyPwd
+	# NOTE: New-Certificate uses kubectl to create and approve a CertificateSigningRequest, so this next line requires cluster access
+	New-Certificate $clusterCertificateAuthorityCertPath $codeDxChartFullName $codeDxChartFullName $tlsCertFile $tlsKeyFile $namespaceCodeDx @()
+
+	$tlsSecretNameCodeDx = "$codeDxChartFullName-tls"
+	New-CertificateSecretResource $namespaceCodeDx $tlsSecretNameCodeDx $tlsCertFile $tlsKeyFile -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
 }
 
-$dbConnectionSecret = 'codedx-mariadb-props'
-New-DatabaseConfig $namespaceCodeDx `
-	$dbConnectionSecret `
-	($externalDatabaseUser -eq '' ? 'root' : $externalDatabaseUser) `
-	($externalDatabasePwd -eq '' ? $mariadbRootPwd : $externalDatabasePwd)
+### Optionally Configure Code Dx Orchestration TLS
+$tlsToolServiceCertSecretName = ''
+$codedxCaConfigMapName = ''
+$tlsMinioCertSecretName = ''
+$minioCertConfigMapName = ''
+if ($useTLS -and $useToolOrchestration) {
 
+	$minioFullName = '{0}-minio' -f $releaseNameToolOrchestration
+	$toolOrchestrationFullName = Get-CodeDxToolOrchestrationChartFullName $releaseNameToolOrchestration
+	
+	# NOTE: New-Certificate uses kubectl to create and approve a CertificateSigningRequest, so it requires cluster access
+	$minioPublicKeyFile = 'minio.pem'; $minioPrivateKeyFile = 'minio.key'
+	New-Certificate $clusterCertificateAuthorityCertPath $minioFullName $minioFullName $minioPublicKeyFile $minioPrivateKeyFile $namespaceToolOrchestration @()
+
+	$tlsMinioCertSecretName = '{0}-minio-tls' -f $toolOrchestrationFullName
+	New-CertificateSecretResource $namespaceToolOrchestration $tlsMinioCertSecretName $minioPublicKeyFile $minioPrivateKeyFile -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+
+	$minioCertConfigMapName = '{0}-minio-cert' -f $toolOrchestrationFullName
+	New-CertificateConfigMapResource $namespaceToolOrchestration $minioCertConfigMapName $minioPublicKeyFile -useGitOps:$useGitOps
+
+	# NOTE: New-Certificate uses kubectl to create and approve a CertificateSigningRequest, so it requires cluster access
+	$toolServicePublicKeyFile = 'toolsvc.pem'; $toolServicePrivateKeyFile = 'toolsvc.key'
+	New-Certificate $clusterCertificateAuthorityCertPath $toolOrchestrationFullName $toolOrchestrationFullName $toolServicePublicKeyFile $toolServicePrivateKeyFile $namespaceToolOrchestration @()
+
+	$tlsToolServiceCertSecretName = '{0}-tls' -f $toolOrchestrationFullName
+	New-CertificateSecretResource $namespaceToolOrchestration $tlsToolServiceCertSecretName $toolServicePublicKeyFile $toolServicePrivateKeyFile -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+
+	$codedxCaConfigMapName = '{0}-ca-cert' -f $codeDxChartFullName
+	New-CertificateConfigMapResource $namespaceToolOrchestration $codedxCaConfigMapName $clusterCertificateAuthorityCertPath -useGitOps:$useGitOps
+}
+
+### Fetch Code Dx Charts
 Write-Verbose 'Fetching Code Dx Helm charts...'
 $repoDirectory = './.repo'
 Remove-Item $repoDirectory -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
@@ -441,45 +594,116 @@ if ($pauseAfterGitClone) {
 	Read-Host -Prompt 'git clone complete, press Enter to continue...' | Out-Null
 }
 
-if ($extraCodeDxChartFilesPaths.Count -gt 0) {
-	$codeDxChartsDirectory = './.repo/setup/core/charts/codedx'
-	Write-Verbose "Copying the following extra files to '$codeDxChartsDirectory':`n$extraCodeDxChartFilesPaths"
-	Copy-Item -LiteralPath $extraCodeDxChartFilesPaths -Destination $codeDxChartsDirectory
+Write-Verbose 'Adding Helm repository...'
+Add-HelmRepo 'codedx' $codedxHelmRepo
+
+### Optionally Deploy Code Dx Orchestration
+if ($useToolOrchestration) {
+
+	New-ToolServicePdSecret $namespaceToolOrchestration $releaseNameToolOrchestration $toolServiceApiKey -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+	New-MinioPdSecret $namespaceToolOrchestration $releaseNameToolOrchestration $minioAdminUsername $minioAdminPwd -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+
+	if ('' -ne $dockerImagePullSecretName) {
+		New-DockerImagePullSecretResource $namespaceToolOrchestration $dockerImagePullSecretName $dockerRegistry $dockerRegistryUser $dockerRegistryPwd  -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+	}
+
+	Write-Verbose 'Creating Tool Orchestration values file...'
+	$toolOrchestrationValuesFile = New-ToolOrchestrationValuesFile `
+		$namespaceCodeDx `
+		$releaseNameCodeDx `
+		$codeDxServicePortNumber $codeDxTlsServicePortNumber `
+		$toolServiceReplicas `
+		$imageCodeDxTools $imageCodeDxToolsMono `
+		$imageNewAnalysis $imageSendResults $imageSendErrorResults $imageToolService $imagePreDelete `
+		$dockerImagePullSecretName `
+		$minioVolumeSizeGiB $storageClassName `
+		$toolServiceMemoryReservation $minioMemoryReservation $workflowMemoryReservation `
+		$toolServiceCPUReservation $minioCPUReservation $workflowCPUReservation `
+		$toolServiceEphemeralStorageReservation $minioEphemeralStorageReservation $workflowEphemeralStorageReservation `
+		$kubeApiTargetPort `
+		(Get-ToolServicePdSecretName $releaseNameToolOrchestration) `
+		(Get-MinioPdSecretName $releaseNameToolOrchestration) `
+		$tlsToolServiceCertSecretName $codedxCaConfigMapName `
+		$tlsMinioCertSecretName $minioCertConfigMapName `
+		$toolServiceNodeSelector $minioNodeSelector $workflowControllerNodeSelector $toolNodeSelector `
+		$toolServiceNoScheduleExecuteToleration $minioNoScheduleExecuteToleration $workflowControllerNoScheduleExecuteToleration $toolNoScheduleExecuteToleration `
+		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS `
+		'./toolsvc-values.yaml'
+
+	Write-Verbose 'Deploying Tool Orchestration...'
+	$chartFolder = join-path $workDir .repo/setup/core/charts/codedx-tool-orchestration
+	Invoke-HelmSingleDeployment 'Tool Orchestration' `
+		$waitTimeSeconds $namespaceToolOrchestration `
+		$releaseNameToolOrchestration `
+		$chartFolder `
+		$toolOrchestrationValuesFile.FullName `
+		$toolOrchestrationFullName `
+		$toolServiceReplicas `
+		$extraToolOrchestrationValuesPath `
+		-dryRun:$useGitOps
 }
 
-if ($skipNginxIngressControllerInstall -and $null -eq $provisionIngressController) {
-	$nginxIngressControllerNamespace = ''
+New-CodeDxPdSecret $namespaceCodeDx $releaseNameCodeDx $codedxAdminPwd $caCertsFilePwd $externalDatabaseUser $externalDatabasePwd $dockerRegistryPwd $caCertsFileNewPwd $samlKeystorePwd $samlPrivateKeyPwd -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+New-DatabasePdSecret $namespaceCodeDx $releaseNameCodeDx $mariadbRootPwd $mariadbReplicatorPwd -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+
+$dbConnectionSecret = 'codedx-mariadb-props'; $dbConnectionFile = './codedx.mariadb.props'
+New-DatabaseConfigPropsFile $namespaceCodeDx $dbConnectionSecret ($externalDatabaseUser -eq '' ? 'root' : $externalDatabaseUser) ($externalDatabasePwd -eq '' ? $mariadbRootPwd : $externalDatabasePwd) $dbConnectionFile
+New-GenericSecretResource $namespaceCodeDx $dbConnectionSecret @{} @{'codedx.mariadb.props' = $dbConnectionFile} -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+
+### Optionally Add CA Certificate for Tool Service
+if ($useTLS -and $useToolOrchestration) {
+	$extraCodeDxTrustedCaCertPaths += $clusterCertificateAuthorityCertPath
 }
 
-$caCertPaths = $extraCodeDxTrustedCaCertPaths
-if ((-not $skipTLS) -and -not $skipToolOrchestration) {
-	$caCertPaths += $clusterCertificateAuthorityCertPath
-}
-
+### Optionally Configure Keystore File and Secret
 $caCertsSecretName = ''
-$certificateWorkRemains = $true
 if ($caCertsFilePath -ne '') {
 	Write-Verbose "Creating new cacerts file based on $caCertsFilePath..."
-	New-TrustedCaCertsFile $caCertsFilePath $caCertsFilePwd $caCertsFileNewPwd $caCertPaths
+	New-TrustedCaCertsFile $caCertsFilePath $caCertsFilePwd $caCertsFileNewPwd $extraCodeDxTrustedCaCertPaths
 
 	Write-Verbose 'Creating cacerts secret...'
-	$caCertsFilename = 'cacerts'
-	$caCertsSecretName = $caCertsFilename
-	New-GenericSecret $namespaceCodeDx $caCertsSecretName @{} @{$caCertsFilename=(join-path $workDir $caCertsFilename)}
-
-	$certificateWorkRemains = $false
+	$caCertsFilename = 'cacerts'; $caCertsSecretName = $caCertsFilename
+	New-GenericSecretResource $namespaceCodeDx $caCertsSecretName @{} @{$caCertsFilename=(join-path $workDir $caCertsFilename)} -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
 }
 
-$installToolOrchestration = -not $skipToolOrchestration
+### Optionally Configure Docker Image Pull Secret
+if ('' -ne $dockerImagePullSecretName) {
+	New-DockerImagePullSecretResource $namespaceCodeDx $dockerImagePullSecretName $dockerRegistry $dockerRegistryUser $dockerRegistryPwd -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+}
 
+### Optionally Configure SAML
+$samlSecretName = ''
+$samlIdpXmlFileConfigMapName = ''
+if ($useSaml) {
+	$samlIdpXmlFileConfigMapName = 'saml-idp'
+	New-ConfigMapResource $namespaceCodeDx $samlIdpXmlFileConfigMapName @{} @{'saml-idp.xml' = $samlIdentityProviderMetadataPath} -useGitOps:$useGitOps
+
+	$samlSecretName = 'codedx-saml-keystore-props'; $samlPropsFile = './codedx-saml-keystore.props'
+	New-SamlConfigPropsFile $samlKeystorePwd $samlPrivateKeyPwd $samlPropsFile
+	New-GenericSecretResource $namespaceCodeDx $samlSecretName @{} @{'codedx-saml-keystore.props' = $samlPropsFile} -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+}
+
+### Optionally Configure Tool Service Connection
+$toolServiceUrl = ''
+$toolServiceApiKeySecretName = ''
+if ($useToolOrchestration) {
+	
+	$toolServiceApiKeySecretName = 'codedx-orchestration-key-props'
+	New-GenericSecretResource $namespaceCodeDx $toolServiceApiKeySecretName @{$toolServiceApiKeySecretName = "tws.api-key = ""$toolServiceApiKey"""} @{} -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+
+	$protocol = 'http'
+	if ($useTLS) {
+		$protocol = 'https'
+	}
+	$toolServiceUrl = "$protocol`://$(Get-CodeDxToolOrchestrationChartFullName $releaseNameToolOrchestration).$namespaceToolOrchestration.svc.cluster.local:3333"
+}
+
+### Create Code Dx Values File
 Write-Verbose 'Deploying Code Dx with Tool Orchestration disabled...'
-New-CodeDxDeployment $codeDxDnsName $codeDxServicePortNumber $codeDxTlsServicePortNumber $workDir $waitTimeSeconds `
-	$clusterCertificateAuthorityCertPath `
-	$namespaceCodeDx $releaseNameCodeDx $imageCodeDxTomcat `
+$codeDxDeploymentValuesFile = New-CodeDxDeploymentValuesFile $codeDxDnsName $codeDxServicePortNumber $codeDxTlsServicePortNumber `
+	$releaseNameCodeDx $imageCodeDxTomcat `
 	$dockerImagePullSecretName `
-	$dockerRegistry $dockerRegistryUser $dockerRegistryPwd `
 	$dbConnectionSecret `
-	$mariadbRootPwd $mariadbReplicatorPwd `
 	$dbVolumeSizeGiB `
 	$dbSlaveReplicaCount $dbSlaveVolumeSizeGiB `
 	$codeDxVolumeSizeGiB `
@@ -487,83 +711,130 @@ New-CodeDxDeployment $codeDxDnsName $codeDxServicePortNumber $codeDxTlsServicePo
 	$codeDxMemoryReservation $dbMasterMemoryReservation $dbSlaveMemoryReservation `
 	$codeDxCPUReservation $dbMasterCPUReservation $dbSlaveCPUReservation `
 	$codeDxEphemeralStorageReservation $dbMasterEphemeralStorageReservation $dbSlaveEphemeralStorageReservation `
-	$extraCodeDxValuesPaths `
 	$serviceTypeCodeDx $serviceAnnotationsCodeDx `
 	$nginxIngressControllerNamespace `
 	$ingressAnnotationsCodeDx `
 	$caCertsSecretName `
 	$externalDatabaseUrl `
 	$samlAppName $samlIdpXmlFileConfigMapName $samlSecretName `
+	$tlsSecretNameCodeDx `
 	$codeDxNodeSelector $masterDatabaseNodeSelector $subordinateDatabaseNodeSelector `
 	$codeDxNoScheduleExecuteToleration $masterDatabaseNoScheduleExecuteToleration $subordinateDatabaseNoScheduleExecuteToleration `
 	-useSaml:$useSaml `
-	-ingressEnabled:(-not $skipIngressEnabled) -ingressAssumesNginx:(-not $skipIngressAssumesNginx) `
-	-enablePSPs:(-not $skipPSPs) -enableNetworkPolicies:$useNetworkPolicies -configureTls:(-not $skipTLS) -skipDatabase:$skipDatabase `
-	-offlineMode:($certificateWorkRemains -or $installToolOrchestration)
+	-ingressEnabled:$useIngress -ingressAssumesNginx:$useIngressAssumesNginx `
+	-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -skipDatabase:$skipDatabase `
+	-skipToolOrchestration:$skipToolOrchestration `
+	$namespaceToolOrchestration `
+	$toolServiceUrl `
+	$toolServiceApiKeySecretName `
+	-offlineMode:$false `
+	'./codedx-values.yaml'
 
-if ($certificateWorkRemains) {
+### Deploy Code Dx
+$codeDxChartFolder = join-path $workDir .repo/setup/core/charts/codedx
+Invoke-HelmSingleDeployment 'Code Dx' `
+	$waitTimeSeconds $namespaceCodeDx `
+	$releaseNameCodeDx `
+	$codeDxChartFolder `
+	$codeDxDeploymentValuesFile.FullName `
+	$codeDxChartFullName `
+	1 `
+	$extraCodeDxValuesPaths `
+	-dryRun:$useGitOps
 
-	Write-Verbose 'Copying cacerts file from running pod...'
-	$caCertsFromPodFilePath = './cacerts.pod'
-	Get-RunningCodeDxKeystore $namespaceCodeDx $caCertsFromPodFilePath
+if ($useGitOps) {
 
-	Write-Verbose "Creating new cacerts file based on $caCertsFromPodFilePath..."
-	New-TrustedCaCertsFile $caCertsFromPodFilePath $caCertsFilePwd $caCertsFileNewPwd $caCertPaths
+	### Optionally Create NGINX HelmRelease
+	if ($useNginxIngressController) {
 
-	Write-Verbose 'Creating cacerts secret...'
-	$caCertsFilename = 'cacerts'
-	$caCertsSecretName = $caCertsFilename
-	New-GenericSecret $namespaceCodeDx $caCertsSecretName @{} @{$caCertsFilename=$caCertsFilename}
+		$nginxHelmReleaseName = 'nginx'
+		
+		$nginxSetupValueNames = @()
+		if ('' -ne $nginxLoadBalancerValuesFile) {
+			$nginxLoadBalancerSetupValuesName = 'nginx-loadbalancer-setup-values'
+			New-ConfigMapResource $nginxIngressControllerNamespace $nginxLoadBalancerSetupValuesName @{} @{'values.yaml' = $nginxLoadBalancerValuesFile} -useGitOps
+			$nginxSetupValueNames += $nginxLoadBalancerSetupValuesName
+		}
 
-	Write-Verbose 'Configuring trusted certs...'
-	Set-TrustedCerts $workDir `
-		$waitTimeSeconds `
-		$namespaceCodeDx `
-		$releaseNameCodeDx `
-		$caCertsSecretName `
-		$extraCodeDxValuesPaths `
-		-offlineMode:$installToolOrchestration
-}
+		$nginxSetupValuesName = 'nginx-setup-values'
+		New-ConfigMapResource $nginxIngressControllerNamespace $nginxSetupValuesName @{} @{'values.yaml' = $nginxValuesFile} -useGitOps
+		$nginxSetupValueNames += $nginxSetupValuesName
 
-if ($installToolOrchestration) {
-
-	Write-Verbose 'Deploying Tool Orchestration...'
-	New-ToolOrchestrationDeployment $workDir $waitTimeSeconds `
-		$clusterCertificateAuthorityCertPath `
-		$namespaceToolOrchestration $namespaceCodeDx `
-		$releaseNameToolOrchestration $releaseNameCodeDx `
-		$codeDxServicePortNumber $codeDxTlsServicePortNumber `
-		$toolServiceReplicas `
-		$minioAdminUsername $minioAdminPwd $toolServiceApiKey `
-		$imageCodeDxTools $imageCodeDxToolsMono `
-		$imageNewAnalysis $imageSendResults $imageSendErrorResults $imageToolService $imagePreDelete `
-		$dockerImagePullSecretName `
-		$dockerRegistry $dockerRegistryUser $dockerRegistryPwd `
-		$minioVolumeSizeGiB $storageClassName `
-		$toolServiceMemoryReservation $minioMemoryReservation $workflowMemoryReservation `
-		$toolServiceCPUReservation $minioCPUReservation $workflowCPUReservation `
-		$toolServiceEphemeralStorageReservation $minioEphemeralStorageReservation $workflowEphemeralStorageReservation `
-		$kubeApiTargetPort `
-		$extraToolOrchestrationValuesPath `
-		$toolServiceNodeSelector $minioNodeSelector $workflowControllerNodeSelector $toolNodeSelector `
-		$toolServiceNoScheduleExecuteToleration $minioNoScheduleExecuteToleration $workflowControllerNoScheduleExecuteToleration $toolNoScheduleExecuteToleration `
-		-enablePSPs:(-not $skipPSPs) -enableNetworkPolicies:$useNetworkPolicies -configureTls:(-not $skipTLS)
-
-	Write-Verbose 'Updating Code Dx deployment by enabling Tool Orchestration...'
-	$protocol = 'http'
-	if (-not $skipTLS) {
-		$protocol = 'https'
+		New-HelmRelease $nginxHelmReleaseName `
+			$nginxIngressControllerNamespace `
+			$nginxReleaseName `
+			-chartRepository 'https://kubernetes.github.io/ingress-nginx' `
+			-chartName 'ingress-nginx' `
+			-chartVersion $nginxHelmChartVersion `
+			-valuesConfigMapNames $nginxSetupValueNames
 	}
 
-	$toolOrchestrationFullName = Get-CodeDxToolOrchestrationChartFullName $releaseNameToolOrchestration
-	Set-UseToolOrchestration $workDir `
-		$waitTimeSeconds `
-		$clusterCertificateAuthorityCertPath `
-		$namespaceToolOrchestration $namespaceCodeDx `
-		"$protocol`://$toolOrchestrationFullName.$namespaceToolOrchestration.svc.cluster.local:3333" $toolServiceApiKey `
+	### Optionally Create Let's Encrypt HelmRelease
+	if ($useLetsEncryptCertManager) {
+		$letsEncryptHelmReleaseName = 'letsencrypt'
+		$letsEncryptSetupValuesName = 'letsencrypt-setup-values'
+
+		New-ConfigMapResource $letsEncryptCertManagerNamespace $letsEncryptSetupValuesName @{} @{'values.yaml' = $letsEncryptSetupValuesFile} -useGitOps
+
+		New-HelmRelease $letsEncryptHelmReleaseName `
+			$letsEncryptCertManagerNamespace `
+			$letsEncryptReleaseName `
+			-chartRepository 'https://charts.jetstack.io' `
+			-chartName 'cert-manager' `
+			-chartVersion $letsEncryptHelmChartVersion `
+			-valuesConfigMapNames $letsEncryptSetupValuesName
+	}
+
+	### Create Code Dx HelmRelease
+	$codeDxValuesConfigMapNames = @()
+
+	$codeDxSetupValuesName = 'codedx-setup-values'
+	New-ConfigMapResource $namespaceCodeDx $codeDxSetupValuesName @{} @{'values.yaml' = $codeDxDeploymentValuesFile.FullName} -useGitOps
+	$codeDxValuesConfigMapNames += $codeDxSetupValuesName
+
+	$codeDxFileNumber = 0
+	$codeDxUserValuesNameTemplate = 'codedx-user-values-{0}'
+	$extraCodeDxValuesPaths | ForEach-Object {
+		$codeDxUserValuesName = $codeDxUserValuesNameTemplate -f $codeDxFileNumber
+		New-ConfigMapResource $namespaceCodeDx $codeDxUserValuesName @{} @{'values.yaml' = $_} -useGitOps
+		$codeDxValuesConfigMapNames += $codeDxUserValuesName
+	}
+
+	$codeDxHelmReleaseName = 'codedx'
+	New-HelmRelease $codeDxHelmReleaseName `
+		$namespaceCodeDx `
 		$releaseNameCodeDx `
-		$extraCodeDxValuesPaths `
-		-enableNetworkPolicies:$useNetworkPolicies
+		-chartGit 'git@github.com:codedx/codedx-kubernetes' `
+		-chartRef $codedxGitRepoBranch `
+		-chartPath 'setup/core/charts/codedx' `
+		-valuesConfigMapNames $codeDxValuesConfigMapNames
+
+	### Optionally Create Tool Orchestration HelmRelease
+	if ($useToolOrchestration) {
+		
+		$toolOrchestrationValuesConfigMapNames = @()
+
+		$toolOrchestrationSetupValuesName = 'codedx-tool-orchestration-setup-values'
+		New-ConfigMapResource $namespaceToolOrchestration $toolOrchestrationSetupValuesName @{} @{'values.yaml' = $toolOrchestrationValuesFile.FullName} -useGitOps
+		$toolOrchestrationValuesConfigMapNames += $toolOrchestrationSetupValuesName
+	
+		$toolOrchestrationFileNumber = 0
+		$toolOrchestrationUserValuesNameTemplate = 'codedx-tool-orchestration--user-values-{0}'
+		$extraToolOrchestrationValuesPath | ForEach-Object {
+			$toolOrchestrationUserValuesName = $toolOrchestrationUserValuesNameTemplate -f $toolOrchestrationFileNumber
+			New-ConfigMapResource $namespaceToolOrchestration $toolOrchestrationUserValuesName @{} @{'values.yaml' = $_} -useGitOps
+			$toolOrchestrationValuesConfigMapNames += $toolOrchestrationUserValuesName
+		}
+	
+		$toolOrchestrationHelmReleaseName = 'codedx-tool-orchestration'
+		New-HelmRelease $toolOrchestrationHelmReleaseName `
+			$namespaceToolOrchestration `
+			$releaseNameToolOrchestration `
+			-chartGit 'git@github.com:codedx/codedx-kubernetes' `
+			-chartRef $codedxGitRepoBranch `
+			-chartPath 'setup/core/charts/codedx-tool-orchestration' `
+			-valuesConfigMapNames $toolOrchestrationValuesConfigMapNames
+	}
 }
 
 Write-Verbose 'Done'

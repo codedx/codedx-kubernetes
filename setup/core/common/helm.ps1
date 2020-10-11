@@ -41,7 +41,7 @@ function Add-HelmRepo([string] $name, [string] $url) {
 
 function Test-HelmRelease([string] $namespace, [string] $releaseName) {
 
-	helm -n $namespace status $releaseName | Out-Null
+	helm -n $namespace status $releaseName *>&1 | Out-Null
 	$LASTEXITCODE -eq 0
 }
 
@@ -54,10 +54,22 @@ function Get-HelmValues([string] $namespace, [string] $releaseName) {
 	ConvertFrom-Json $values
 }
 
-function Invoke-HelmSingleDeployment([string] $message, [int] $waitSeconds, [string] $namespace, [string] $releaseName, [string] $chartReference, [string] $valuesFile, [string] $deploymentName, [int] $totalReplicas, [string[]] $extraValuesPaths) {
+function Invoke-HelmSingleDeployment([string] $message, 
+	[int]      $waitSeconds, 
+	[string]   $namespace, 
+	[string]   $releaseName, 
+	[string]   $chartReference, 
+	[string]   $valuesFile, 
+	[string]   $deploymentName, 
+	[int]      $totalReplicas, 
+	[string[]] $extraValuesPaths, 
+	[string]   $version, 
+	[switch]   $dryRun) {
 
-	if (-not (Test-Namespace $namespace)) {
-		New-Namespace  $namespace
+	if (-not $dryRun) {
+		if (-not (Test-Namespace $namespace)) {
+			New-Namespace  $namespace
+		}
 	}
 
 	if (test-path $chartReference -pathtype container) {
@@ -67,8 +79,10 @@ function Invoke-HelmSingleDeployment([string] $message, [int] $waitSeconds, [str
 		}
 	}
 
-	Wait-AllRunningPods "Pre-Helm Install: $message" $waitSeconds $namespace
-
+	if (-not $dryRun) {
+		Wait-AllRunningPods "Pre-Helm Install: $message" $waitSeconds $namespace
+	}
+	
 	# NOTE: Latter values files take precedence over former ones
 	$valuesPaths = $extraValuesPaths
 	if ($valuesFile -ne '') {
@@ -81,9 +95,23 @@ function Invoke-HelmSingleDeployment([string] $message, [int] $waitSeconds, [str
 		$values = $values + ('"{0}"' -f $_)
 	}
 
-	helm upgrade --namespace $namespace --install --reuse-values $releaseName @($values) $chartReference
+	$versionParam = @()
+	if ('' -ne $version) {
+		$versionParam = $versionParam + "--version"
+		$versionParam = $versionParam + "$version"
+	}
+	
+	Write-Verbose "Running Helm Upgrade: $message..."
+
+	$dryRunParam = $dryRun ? '--dry-run' : ''
+	$debugParam = $dryRun ? '--debug' : ''
+
+	helm upgrade --namespace $namespace --install --reuse-values $releaseName @($values) $chartReference @($versionParam) $dryRunParam $debugParam
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to run helm upgrade/install, helm exited with code $LASTEXITCODE."
 	}
-	Wait-Deployment "Helm Upgrade/Install: $message" $waitSeconds $namespace $deploymentName $totalReplicas
+
+	if (-not $dryRun) {
+		Wait-Deployment "Helm Upgrade/Install: $message" $waitSeconds $namespace $deploymentName $totalReplicas
+	}
 }

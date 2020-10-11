@@ -204,3 +204,12 @@ function ConvertTo-PsonStringArray([string[]] $items) {
 function Format-KeyValueAssignment([string] $key, [string] $value, [string] $assignment) {
 	"'{0}'{1}'{2}'" -f ($key.Replace("'", "''")),$assignment,($value.Replace("'", "''"))
 }
+
+function Write-ImportantNote([string] $message) {
+	Write-Host ('NOTE: {0}' -f $message) -ForegroundColor Black -BackgroundColor White
+}
+
+function Write-ErrorMessageAndExit([string] $message) {
+	$local:ErrorActionPreference = 'Stop'
+	Write-Error $message
+}

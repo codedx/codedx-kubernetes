@@ -509,9 +509,9 @@ mariadb:
   # an alternative to rootUser.password and replication.password
   existingSecret:
   rootUser:
-    password: 5jqJL2b8hqn3
+    password:
   replication:
-    password: 11uAQKLgv4JM
+    password:
   
   serviceAccount:
     # Enable the creation of a MariaDB ServiceAccount for use in PodSecurityPolicies. Note that this version

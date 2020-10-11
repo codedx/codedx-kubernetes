@@ -17,12 +17,42 @@ This script includes functions for Kubernetes-related tasks.
 	. $path
 }
 
-function New-Namespace([string] $namespace) {
+function New-Namespace([string] $namespace, [Tuple`2[string,string]] $label, [switch] $dryRun) {
 
-	kubectl create namespace $namespace
+	if (-not $dryRun) {
+		if (Test-Namespace $namespace) {
+			Set-NamespaceLabel $namespace $label.Item1 $label.Item2
+			return [string]::Empty
+		}
+	}
+
+	$output = $dryRun ? 'yaml' : 'name'
+	$dryRunParam = $dryRun ? (Get-KubectlDryRunParam) : ''
+
+	$newNamespace = kubectl create namespace $namespace -o $output $dryRunParam
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create namespace $namespace, kubectl exited with code $LASTEXITCODE."
 	}
+
+	if ($null -eq $label) {
+		return $newNamespace
+	}
+
+	if (-not $dryRun) {
+		Set-NamespaceLabel $namespace $label.Item1 $label.Item2
+		return $newNamespace
+	}
+
+	# create namespace doesn't currently have a label parameter, so add label to YAML
+	$newNamespaceWithLabel = @()
+	$newNamespace | ForEach-Object {
+		$newNamespaceWithLabel += $_
+		if ($_ -eq 'metadata:') {
+			$newNamespaceWithLabel += '  labels:'
+			$newNamespaceWithLabel += "    $($label.Item1): $($label.Item2)"
+		}
+	}
+	$newNamespaceWithLabel
 }
 
 function Test-Namespace([string] $namespace) {
@@ -31,7 +61,8 @@ function Test-Namespace([string] $namespace) {
 		return $false
 	}
 	
-	kubectl get namespace $namespace | out-null
+	$Local:ErrorActionPreference = 'SilentlyContinue'
+	kubectl get namespace $namespace *>&1 | out-null
 	0 -eq $LASTEXITCODE
 }
 
@@ -80,9 +111,18 @@ function Set-KubectlContext([string] $contextName) {
 	}
 }
 
+function Test-CurrentKubeContext() {
+
+	# Test-CurrentKubeContext will return false if the caller has no current context (e.g., kubectl config unset current-context)
+	$Local:ErrorActionPreference = 'SilentlyContinue'
+	kubectl config current-context *>&1 | out-null
+	0 -eq $LASTEXITCODE
+}
+
 function Test-ClusterInfo([string] $profileName) {
 
-	kubectl cluster-info | out-null
+	$Local:ErrorActionPreference = 'SilentlyContinue'
+	kubectl cluster-info *>&1 | out-null
 	0 -eq $LASTEXITCODE
 }
 
@@ -133,7 +173,7 @@ $subjectAlternativeNames | ForEach-Object {
 
 	$request | out-file $requestFile -Encoding ascii -Force
 
-	# Note: When using EKS, this requires k8s v1.16 or newer. Older EKS releases do not support subect alternative names.
+	# Note: When using EKS, this requires k8s v1.16 or newer. Older EKS releases do not support subject alternative names.
 	openssl req -new -config $requestFile -out $csrFile -keyout $keyFile
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create CSR, openssl exited with code $LASTEXITCODE."
@@ -141,18 +181,23 @@ $subjectAlternativeNames | ForEach-Object {
 }
 
 function Test-Deployment([string] $namespace, [string] $deploymentName) {
-	kubectl -n $namespace get deployment $deploymentName | out-null
+
+	$Local:ErrorActionPreference = 'SilentlyContinue'
+	kubectl -n $namespace get deployment $deploymentName *>&1 | out-null
 	$LASTEXITCODE -eq 0
 }
 
 function Test-StatefulSet([string] $namespace, [string] $statefulSetName) {
-	kubectl -n $namespace get statefulset $statefulSetName | out-null
+
+	$Local:ErrorActionPreference = 'SilentlyContinue'
+	kubectl -n $namespace get statefulset $statefulSetName *>&1 | out-null
 	$LASTEXITCODE -eq 0
 }
 
 function Test-CsrResource([string] $resourceName) {
 
-	kubectl get csr $resourceName | out-null
+	$Local:ErrorActionPreference = 'SilentlyContinue'
+	kubectl get csr $resourceName *>&1 | out-null
 	$LASTEXITCODE -eq 0
 }
 
@@ -238,13 +283,15 @@ function Set-NamespaceLabel([string] $namespace, [string] $labelName, [string] $
 
 function Test-Service([string] $namespace, [string] $name) {
 
-	kubectl -n $namespace get svc $name | out-null
+	$Local:ErrorActionPreference = 'SilentlyContinue'
+	kubectl -n $namespace get svc $name *>&1 | out-null
 	0 -eq $LASTEXITCODE
 }
 
 function Test-Secret([string] $namespace, [string] $name) {
 
-	kubectl -n $namespace get secret $name | out-null
+	$Local:ErrorActionPreference = 'SilentlyContinue'
+	kubectl -n $namespace get secret $name *>&1 | out-null
 	0 -eq $LASTEXITCODE
 }
 
@@ -262,16 +309,19 @@ function Get-SecretFieldValue([string] $namespace, [string] $name, [string] $fie
 
 function Remove-Secret([string] $namespace, [string] $name) {
 
-	kubectl -n $namespace delete secret $name | out-null
+	$Local:ErrorActionPreference = 'SilentlyContinue'
+	kubectl -n $namespace delete secret $name *>&1 | out-null
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to delete secret named $name, kubectl exited with code $LASTEXITCODE."
 	}
 }
 
-function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $keyValues = @{}, [hashtable] $fileKeyValues = @{}) {
+function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $keyValues = @{}, [hashtable] $fileKeyValues = @{}, [switch] $dryRun) {
 	
-	if (Test-Secret $namespace $name) {
-		Remove-Secret $namespace $name
+	if (-not $dryRun) {
+		if (Test-Secret $namespace $name) {
+			Remove-Secret $namespace $name
+		}
 	}
 
 	$pairs = @()
@@ -285,31 +335,26 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 		throw "Unable to create secret named $name with no data."
 	}
 
-	kubectl -n $namespace create secret generic $name $pairs
+	$output = $dryRun ? 'yaml' : 'name'
+	$dryRunParam = $dryRun ? (Get-KubectlDryRunParam) : ''
+	kubectl -n $namespace create secret generic $name $pairs -o $output $dryRunParam
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create secret named $name, kubectl exited with code $LASTEXITCODE."
 	}
 }
 
-function New-CertificateSecret([string] $namespace, [string] $name, [string] $certFile, [string] $keyFile) {
+function New-CertificateSecret([string] $namespace, [string] $name, [string] $certFile, [string] $keyFile, [switch] $dryRun) {
 
-	if (Test-Secret $namespace $name) {
-		Remove-Secret $namespace $name
+	if (-not $dryRun) {
+		if (Test-Secret $namespace $name) {
+			Remove-Secret $namespace $name
+		}
 	}
 
-	kubectl -n $namespace create secret tls $name --cert`=$certFile --key`=$keyFile
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to create secret named $name, kubectl exited with code $LASTEXITCODE."
-	}
-}
+	$output = $dryRun ? 'yaml' : 'name'
+	$dryRunParam = $dryRun ? (Get-KubectlDryRunParam) : ''
 
-function New-FileSecret([string] $namespace, [string] $name, [string] $file) {
-
-	if (Test-Secret $namespace $name) {
-		Remove-Secret $namespace $name
-	}
-
-	kubectl -n $namespace create secret generic $name --from-file`=$file
+	kubectl -n $namespace create secret tls $name --cert`=$certFile --key`=$keyFile -o $output $dryRunParam
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create secret named $name, kubectl exited with code $LASTEXITCODE."
 	}
@@ -317,26 +362,30 @@ function New-FileSecret([string] $namespace, [string] $name, [string] $file) {
 
 function Test-ConfigMap([string] $namespace, [string] $name) {
 
-	kubectl -n $namespace get configmap $name | out-null
+	$Local:ErrorActionPreference = 'SilentlyContinue'
+	kubectl -n $namespace get configmap $name *>&1 | out-null
 	0 -eq $LASTEXITCODE
 }
 
 function Remove-ConfigMap([string] $namespace, [string] $name) {
 
-	kubectl -n $namespace delete configmap $name | out-null
+	$Local:ErrorActionPreference = 'SilentlyContinue'
+	kubectl -n $namespace delete configmap $name *>&1 | out-null
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to delete configmap named $name, kubectl exited with code $LASTEXITCODE."
 	}
 }
 
-function New-CertificateConfigMap([string] $namespace, [string] $name, [string] $certFile) {
-	New-ConfigMap $namespace $name @{} @{(split-path $certFile -Leaf) = $certFile}
+function New-CertificateConfigMap([string] $namespace, [string] $name, [string] $certFile, [switch] $dryRun) {
+	New-ConfigMap $namespace $name @{} @{(split-path $certFile -Leaf) = $certFile} -dryRun:$dryRun
 }
 
-function New-ConfigMap([string] $namespace, [string] $name, [hashtable] $keyValues = @{}, [hashtable] $fileKeyValues = @{}) {
+function New-ConfigMap([string] $namespace, [string] $name, [hashtable] $keyValues = @{}, [hashtable] $fileKeyValues = @{}, [switch] $dryRun) {
 	
-	if (Test-ConfigMap $namespace $name) {
-		Remove-ConfigMap $namespace $name
+	if (-not $dryRun) {
+		if (Test-ConfigMap $namespace $name) {
+			Remove-ConfigMap $namespace $name
+		}
 	}
 
 	$pairs = @()
@@ -350,23 +399,31 @@ function New-ConfigMap([string] $namespace, [string] $name, [hashtable] $keyValu
 		throw "Unable to create configmap named $name with no data."
 	}
 
-	kubectl -n $namespace create configmap $name $pairs
+	$output = $dryRun ? 'yaml' : 'name'
+	$dryRunParam = $dryRun ? (Get-KubectlDryRunParam) : ''
+	kubectl -n $namespace create configmap $name $pairs -o $output $dryRunParam
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create configmap named $name, kubectl exited with code $LASTEXITCODE."
 	}
 }
 
-function New-ImagePullSecret([string] $namespace, `
-	[string] $name, `
+function New-ImagePullSecret([string] $namespace, 
+	[string] $name, 
 	[string] $dockerRegistry,
 	[string] $dockerRegistryUser,
-	[string] $dockerRegistryPwd) {
+	[string] $dockerRegistryPwd,
+	[switch] $dryRun) {
 
-	if (Test-Secret $namespace $name) {
-		Remove-Secret $namespace $name
+	if (-not $dryRun) {
+		if (Test-Secret $namespace $name) {
+			Remove-Secret $namespace $name
+		}
 	}
 
-	kubectl -n $namespace create secret docker-registry $name --docker-server=$dockerRegistry --docker-username=$dockerRegistryUser --docker-password=$dockerRegistryPwd
+	$output = $dryRun ? 'yaml' : 'name'
+	$dryRunParam = $dryRun ? (Get-KubectlDryRunParam) : ''
+
+	kubectl -n $namespace create secret docker-registry $name --docker-server=$dockerRegistry --docker-username=$dockerRegistryUser --docker-password=$dockerRegistryPwd -o $output $dryRunParam
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create image pull secret named $name, kubectl exited with code $LASTEXITCODE."
 	}
@@ -402,6 +459,27 @@ function Wait-AllRunningPods([string] $message, [int] $waitSeconds, [string] $na
 			throw "Unable to continue because a timeout occurred while waiting for all pods to be in a ready status. One or more pods have a status other than Running, Succeeded, or Failed. ($message)."
 		}
 		Write-Verbose "Some pods are not running. Another check will occur in $sleepSeconds seconds ($message)."
+		start-sleep -seconds $sleepSeconds
+	}
+}
+
+function Wait-RunningPod([string] $message, [int] $waitSeconds, [string] $namespace, [string] $podName) {
+
+	$sleepSeconds = [math]::min(60, ($waitSeconds * .05))
+	$timeoutTime = [datetime]::Now.AddSeconds($waitSeconds)
+	while ($true) {
+
+		$result = kubectl -n $namespace get pod --field-selector=status.phase=Running,metadata.name="$podName"
+		
+		if ($null -ne $result) {
+			Write-Verbose "Wait is over with $($timeoutTime.Subtract([datetime]::Now).TotalSeconds) second(s) remaining before timeout"
+			break
+		}
+
+		if ([datetime]::now -gt $timeoutTime) {
+			throw "Unable to continue because a timeout occurred while waiting for pod $podName to be in a ready status."
+		}
+		Write-Verbose "Pod $podName is not yet running. Another check will occur in $sleepSeconds seconds ($message)."
 		start-sleep -seconds $sleepSeconds
 	}
 }
@@ -488,15 +566,52 @@ function Wait-ReplicasReady([string] $message, [int] $waitSeconds, [string] $nam
 	}
 }
 
+function Test-Pod([string] $namespace, [string] $podName) {
+
+	$local:ErrorActionPreference = 'SilentlyContinue'
+	kubectl -n $namespace get "pod/$podName" *>&1 | Out-Null
+	0 -eq $LASTEXITCODE
+}
+
+function Remove-Pod([string] $namespace, [string] $podName, [switch] $force) {
+
+	if (-not (Test-Pod $namespace $podName)) {
+		return
+	}
+
+	kubectl -n $namespace delete "pod/$podName" ($force ? '--force' : '') ($force ? '--grace-period=0' : '') ($force ? '--wait=false' : '')
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to delete pod/$podName in namespace $namespace, kubectl exited with code $LASTEXITCODE."
+	}
+}
+
 function Test-PriorityClass([string] $name) {
 
-	kubectl get priorityclass $name | out-null
+	$Local:ErrorActionPreference = 'SilentlyContinue'
+	kubectl get priorityclass $name *>&1 | out-null
 	$LASTEXITCODE -eq 0
 }
 
-function New-PriorityClass([string] $name, [int] $value) {
+function Remove-PriorityClass([string] $name) {
 
-	kubectl create priorityclass $name --value=$value
+	$Local:ErrorActionPreference = 'SilentlyContinue'
+	kubectl delete priorityclass $name *>&1 | out-null
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to delete priority class named $name, kubectl exited with code $LASTEXITCODE."
+	}
+}
+
+function New-PriorityClass([string] $name, [int] $value, [switch] $dryRun) {
+
+	if (-not $dryRun) {
+		if (Test-PriorityClass $name) {
+			Remove-PriorityClass $name
+		}
+	}
+
+	$output = $dryRun ? 'yaml' : 'name'
+	$dryRunParam = $dryRun ? (Get-KubectlDryRunParam) : ''
+	kubectl create priorityclass $name --value=$value -o $output $dryRunParam
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create PriorityClass, kubectl exited with code $LASTEXITCODE."
 	}
@@ -607,7 +722,8 @@ function Set-StatefulSetReplicas([string] $namespace,
 function Test-KubernetesJob([string] $namespace,
 	[string] $resourceName) {
 
-	kubectl -n $namespace get job $resourceName | out-null
+	$Local:ErrorActionPreference = 'SilentlyContinue'
+	kubectl -n $namespace get job $resourceName *>&1 | out-null
 	$LASTEXITCODE -eq 0
 }
 
@@ -673,4 +789,12 @@ function Copy-K8sItem([string] $namespace,
 	if (0 -ne $LASTEXITCODE) {
 		Write-Error "Unable to copy to pod, kubectl exited with exit code $LASTEXITCODE."
 	}
+}
+
+function Test-KubectlUsesDryRunBool { 
+	$null -ne (kubectl apply --help | select-string '--dry-run=false' -SimpleMatch) 
+}
+
+function Get-KubectlDryRunParam {
+	(Test-KubectlUsesDryRunBool) ? '--dry-run=true' : '--dry-run=client'
 }

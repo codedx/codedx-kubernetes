@@ -21,7 +21,7 @@ it will interfere with the PowerShell Core v7 prereq check.
 	. $path
 }
 
-function Test-SetupPreqs([ref] $messages) {
+function Test-SetupPreqs([ref] $messages, [switch] $useSealedSecrets) {
 
 	$messages.Value = @()
 	$isCore = Test-IsCore
@@ -33,7 +33,12 @@ function Test-SetupPreqs([ref] $messages) {
 		$messages.Value += 'Unable to continue because you must run this script with PowerShell Core 7 or later'
 	}
 	
-	'helm','kubectl','openssl','git','keytool' | foreach-object {
+	$apps = 'helm','kubectl','openssl','git','keytool'
+	if ($useSealedSecrets) {
+		$apps += 'kubeseal'
+	}
+
+	$apps | foreach-object {
 		$found = $null -ne (Get-AppCommandPath $_)
 		if (-not $found) {
 			$messages.Value += "Unable to continue because $_ cannot be found. Is $_ installed and included in your PATH?"

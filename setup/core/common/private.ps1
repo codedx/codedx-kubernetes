@@ -29,7 +29,9 @@ function New-CodeDxPdSecret([string] $namespace, [string] $releaseName,
 	[string] $dockerRegistryPwd,
 	[string] $caCertsFileNewPwd,
 	[string] $samlKeystorePwd,
-	[string] $samlPrivateKeyPwd) {
+	[string] $samlPrivateKeyPwd,
+	[switch] $useGitOps,
+	[switch] $useSealedSecrets,	[string] $sealedSecretsNamespace, [string] $sealedSecretsControllerName, [string] $sealedSecretsPublicKeyPath) {
 
 	$data = @{"admin-password"=$adminPwd;"cacerts-password"=$caCertsFilePwd}
 	
@@ -52,7 +54,9 @@ function New-CodeDxPdSecret([string] $namespace, [string] $releaseName,
 		$data['saml-private-key-password'] = $samlPrivateKeyPwd
 	}
 
-	New-GenericSecret $namespace (Get-CodeDxPdSecretName $releaseName) $data
+	New-GenericSecretResource $namespace (Get-CodeDxPdSecretName $releaseName) $data @{} `
+		-useGitOps:$useGitOps `
+		-useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
 }
 
 function Get-CodeDxAdminPwdFromPd([string] $namespace, [string] $releaseName) {
@@ -92,10 +96,14 @@ function Get-DatabasePdSecretName([string] $releaseName) {
 }
 
 function New-DatabasePdSecret([string] $namespace, [string] $releaseName, 
-	[string] $mariadbRootPwd, [string] $mariadbReplicatorPwd) {
+	[string] $mariadbRootPwd, [string] $mariadbReplicatorPwd,
+	[switch] $useGitOps,
+	[switch] $useSealedSecrets,	[string] $sealedSecretsNamespace, [string] $sealedSecretsControllerName, [string] $sealedSecretsPublicKeyPath) {
 
 	# excluding "mariadb-password" from MariaDb credential secret because db.user is unspecfied
-	New-GenericSecret $namespace (Get-DatabasePdSecretName $releaseName) @{"mariadb-root-password"=$mariadbRootPwd;"mariadb-replication-password"=$mariadbReplicatorPwd}
+	New-GenericSecretResource $namespace (Get-DatabasePdSecretName $releaseName) @{"mariadb-root-password"=$mariadbRootPwd;"mariadb-replication-password"=$mariadbReplicatorPwd}  @{} `
+		-useGitOps:$useGitOps `
+		-useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
 }
 
 function Get-DatabaseRootPasswordFromPd([string] $namespace, [string] $releaseName) {
@@ -110,8 +118,13 @@ function Get-ToolServicePdSecretName([string] $releaseName) {
 	"$releaseName-tool-service-pd"
 }
 
-function New-ToolServicePdSecret([string] $namespace, [string] $releaseName, [string] $apiKey) {
-	New-GenericSecret $namespace (Get-ToolServicePdSecretName $releaseName) @{"api-key"=$apiKey}
+function New-ToolServicePdSecret([string] $namespace, [string] $releaseName, [string] $apiKey,
+	[switch] $useGitOps,
+	[switch] $useSealedSecrets,	[string] $sealedSecretsNamespace, [string] $sealedSecretsControllerName, [string] $sealedSecretsPublicKeyPath) {
+	
+	New-GenericSecretResource $namespace (Get-ToolServicePdSecretName $releaseName) @{"api-key"=$apiKey} @{} `
+		-useGitOps:$useGitOps `
+		-useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
 }
 
 function Get-ToolServiceApiKeyFromPd([string] $namespace, [string] $releaseName) {
@@ -122,8 +135,10 @@ function Get-MinioPdSecretName([string] $releaseName) {
 	"$releaseName-minio-pd"
 }
 
-function New-MinioPdSecret([string] $namespace, [string] $releaseName, [string] $minioUsername, [string] $minioPwd) {
-	New-GenericSecret $namespace (Get-MinioPdSecretName $releaseName) @{"access-key"=$minioUsername;"secret-key"=$minioPwd}
+function New-MinioPdSecret([string] $namespace, [string] $releaseName, [string] $minioUsername, [string] $minioPwd, [switch] $useGitOps) {
+	New-GenericSecretResource $namespace (Get-MinioPdSecretName $releaseName) @{"access-key"=$minioUsername;"secret-key"=$minioPwd} @{} `
+		-useGitOps:$useGitOps `
+		-useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
 }
 
 function Get-MinioUsernameFromPd([string] $namespace, [string] $releaseName) {

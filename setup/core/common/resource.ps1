@@ -64,7 +64,7 @@ function New-CertificateSecretResource([string] $namespace, [string] $name, [str
 	[switch] $useGitOps,
 	[switch] $useSealedSecrets,	[string] $sealedSecretsNamespace, [string] $sealedSecretsControllerName, [string] $sealedSecretsPublicKeyPath) {
 
-	$cs = New-CertificateSecret $namespace $name $tlsCertFile $tlsKeyFile -dryRun:$useGitOps
+	$cs = New-CertificateSecret $namespace $name $certFile $keyFile -dryRun:$useGitOps
 	if (-not $useGitOps) {
 		return $cs
 	}

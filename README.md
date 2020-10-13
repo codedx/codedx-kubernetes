@@ -19,6 +19,23 @@ You must run guided-setup.ps1 from a system with administrative access to your c
 
 >Note: On Windows, make sure that you can run PowerShell Core scripts by switching your [PowerShell Execution Policy](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies) to RemoteSigned (recommended) or Unrestricted. You must run the `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned` command from an elevated/administrator Command Prompt.
 
+## Pod Resources
+
+Below are the default CPU, memory, ephemeral storage, and volume requirements you'll see when running guided-setup.ps1. Your deployment may not include every pod type listed, but make sure your cluster has sufficient capacity for your specific resource requirements.
+
+| Pod              | CPU   | Memory | Ephemeral Storage | Volume Size |
+| :---             | :---: | :---:  | :---:             | :---:       |
+| Web              | 2000m | 8192Mi | 2048Mi            | 64Gi        |
+| DB (master)      | 2000m | 8192Mi | -                 | 64Gi        |
+| DB (subordinate) | 1000m | 8192Mi | -                 | 64Gi        |
+| Nginx            | -     | 500Mi  | -                 | -           |
+| Tool Service     | -     | 500Mi  | -                 | -           |
+| MinIO            | 2000m | 500Mi  | -                 | 64Gi        |
+| Workflow         | -     | 500Mi  | -                 | -           |
+| Tools            | 500m  | 500Mi  | -                 | -           |
+
+>Note: You may have more than one Tool Service pod, and orchestrated analyses can run multiple tools concurrently.
+
 ## Download Guided Setup
 
 With prerequisites installed, open a Command Prompt/Terminal window and clone this repository on your system by running the following command from the directory where you want to store the codedx-kubernetes files:

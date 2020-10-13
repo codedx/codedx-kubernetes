@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.3.1
+.VERSION 1.5.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -110,7 +110,7 @@ param (
 	[string]                 $codedxHelmRepo = 'https://codedx.github.io/codedx-kubernetes',
 	
 	[string]                 $codedxGitRepo = 'https://github.com/codedx/codedx-kubernetes.git',
-	[string]                 $codedxGitRepoBranch = 'v1.3.6',
+	[string]                 $codedxGitRepoBranch = 'v1.4.3',
 
 	[int]                    $kubeApiTargetPort = 443,
 

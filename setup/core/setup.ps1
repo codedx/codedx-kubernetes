@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.3.2
+.VERSION 1.4.3
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -52,13 +52,13 @@ param (
 	[string]   $workflowEphemeralStorageReservation,
 	[string]   $nginxEphemeralStorageReservation,
 
-	[string]   $imageCodeDxTomcat = 'codedx/codedx-tomcat:v5.1.4',
-	[string]   $imageCodeDxTools = 'codedx/codedx-tools:v1.0.6',
-	[string]   $imageCodeDxToolsMono = 'codedx/codedx-toolsmono:v1.0.6',
-	[string]   $imageNewAnalysis = 'codedx/codedx-newanalysis:v1.0.0',
+	[string]   $imageCodeDxTomcat = 'codedx/codedx-tomcat:v5.2.3',
+	[string]   $imageCodeDxTools = 'codedx/codedx-tools:v1.1.0',
+	[string]   $imageCodeDxToolsMono = 'codedx/codedx-toolsmono:v1.1.0',
+	[string]   $imageNewAnalysis = 'codedx/codedx-newanalysis:v1.1.0',
 	[string]   $imageSendResults = 'codedx/codedx-results:v1.0.0',
 	[string]   $imageSendErrorResults = 'codedx/codedx-error-results:v1.0.0',
-	[string]   $imageToolService = 'codedx/codedx-tool-service:v1.0.6',
+	[string]   $imageToolService = 'codedx/codedx-tool-service:v1.1.1',
 	[string]   $imagePreDelete = 'codedx/codedx-cleanup:v1.0.0',
 
 	[int]      $toolServiceReplicas = 3,
@@ -111,7 +111,7 @@ param (
 	[string]   $codedxHelmRepo = 'https://codedx.github.io/codedx-kubernetes',
 	
 	[string]   $codedxGitRepo = 'https://github.com/codedx/codedx-kubernetes.git',
-	[string]   $codedxGitRepoBranch = 'v1.3.8',
+	[string]   $codedxGitRepoBranch = 'v1.4.3',
 
 	[int]      $kubeApiTargetPort = 443,
 

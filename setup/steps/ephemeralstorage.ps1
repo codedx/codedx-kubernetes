@@ -163,7 +163,7 @@ class NginxEphemeralStorage : EphemeralStorageStep {
 	}
 
 	[bool]CanRun() {
-		return ([EphemeralStorageStep]$this).CanRun() -and $this.config.ingressType -eq [IngressType]::NginxLetsEncrypt
+		return ([EphemeralStorageStep]$this).CanRun() -and $this.config.HasNginxIngress()
 	}
 }
 

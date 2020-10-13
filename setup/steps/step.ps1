@@ -21,6 +21,7 @@ enum ProviderType {
 enum IngressType {
 	None
 	NginxLetsEncrypt
+	NginxLetsEncryptWithLoadBalancerIP
 	LoadBalancer
 	ExternalIngressController
 	ExternalNginxIngressController
@@ -183,6 +184,12 @@ class ConfigInput {
 	[string] $samlPrivateKeyPwd
 	[bool]   $useLdap
 
+	[bool]   $useHelmOperator
+	[bool]   $skipSealedSecrets
+	[string] $sealedSecretsNamespace
+	[string] $sealedSecretsControllerName
+	[string] $sealedSecretsPublicKeyPath
+
 	[hashtable]  $notes = @{}
 
 	ConfigInput() {
@@ -198,6 +205,10 @@ class ConfigInput {
 
 	[bool]HasContext() {
 		return $this.kubeContextName -ne ''
+	}
+
+	[bool]HasNginxIngress() {
+		return $this.ingressType -eq [IngressType]::NginxLetsEncrypt -or $this.ingressType -eq [IngressType]::NginxLetsEncryptWithLoadBalancerIP
 	}
 }
 

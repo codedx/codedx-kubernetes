@@ -16,6 +16,7 @@ Write-Host 'Loading...' -NoNewline
 './setup/core/common/prereqs.ps1',
 './setup/steps/step.ps1',
 './setup/steps/welcome.ps1',
+'./setup/steps/gitops.ps1',
 './setup/steps/k8s.ps1',
 './setup/steps/ingress.ps1',
 './setup/steps/image.ps1',
@@ -75,7 +76,9 @@ $config = [ConfigInput]::new()
 $graph = New-Object Graph($true)
 
 $s = @{}
-[Welcome],[Prerequisites],[PrequisitesNotMet],[WorkDir],[ChooseEnvironment],
+[Welcome],
+[UseGitOps],[SealedSecretsNamespace],[SealedSecretsControllerName],[SealedSecretsPublicKeyPath],
+[Prerequisites],[PrequisitesNotMet],[WorkDir],[ChooseEnvironment],
 [ChooseContext],[SelectContext],[HandleNoContext],
 [GetKubernetesPort],
 [UseToolOrchestration],[UseExternalDatabase],
@@ -104,11 +107,16 @@ $s = @{}
 	Add-Step $graph $s[$_]
 }
 
-Add-StepTransitions $graph $s[[Welcome]] $s[[Prerequisites]],$s[[PrequisitesNotMet]],$s[[Abort]]
-Add-StepTransitions $graph $s[[Welcome]] $s[[Prerequisites]],$s[[WorkDir]],$s[[ChooseEnvironment]],$s[[ChooseContext]]
+Add-StepTransitions $graph $s[[Welcome]] $s[[UseGitOps]]
+
+Add-StepTransitions $graph $s[[UseGitOps]] $s[[Prerequisites]],$s[[PrequisitesNotMet]],$s[[Abort]]
+Add-StepTransitions $graph $s[[UseGitOps]] $s[[Prerequisites]],$s[[WorkDir]],$s[[ChooseEnvironment]],$s[[ChooseContext]]
 
 Add-StepTransitions $graph $s[[ChooseContext]] $s[[HandleNoContext]],$s[[Abort]]
-Add-StepTransitions $graph $s[[ChooseContext]] $s[[SelectContext]],$s[[GetKubernetesPort]],$s[[UseToolOrchestration]],$s[[UseExternalDatabase]],$s[[UseDefaultOptions]]
+Add-StepTransitions $graph $s[[ChooseContext]] $s[[SelectContext]],$s[[GetKubernetesPort]]
+
+Add-StepTransitions $graph $s[[GetKubernetesPort]] $s[[SealedSecretsNamespace]],$s[[SealedSecretsControllerName]],$s[[SealedSecretsPublicKeyPath]],$s[[UseToolOrchestration]]
+Add-StepTransitions $graph $s[[GetKubernetesPort]] $s[[UseToolOrchestration]],$s[[UseExternalDatabase]],$s[[UseDefaultOptions]]
 
 Add-StepTransitions $graph $s[[UseDefaultOptions]] $s[[UsePodSecurityPolicyOption]],$s[[UseNetworkPolicyOption]],$s[[UseTlsOption]],$s[[CertsCaPath]],$s[[CodeDxNamespace]]
 Add-StepTransitions $graph $s[[UseTlsOption]] $s[[CodeDxNamespace]]

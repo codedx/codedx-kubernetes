@@ -158,7 +158,7 @@ class NginxCPU : CPUStep {
 	}
 
 	[bool]CanRun() {
-		return ([CPUStep]$this).CanRun() -and $this.config.ingressType -eq [IngressType]::NginxLetsEncrypt
+		return ([CPUStep]$this).CanRun() -and $this.config.HasNginxIngress()
 	}
 }
 

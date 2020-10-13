@@ -155,7 +155,7 @@ class NginxMemory : MemoryStep {
 	}
 
 	[bool]CanRun() {
-		return ([MemoryStep]$this).CanRun() -and $this.config.ingressType -eq [IngressType]::NginxLetsEncrypt
+		return ([MemoryStep]$this).CanRun() -and $this.config.HasNginxIngress()
 	}
 
 	[string]GetDefault() {

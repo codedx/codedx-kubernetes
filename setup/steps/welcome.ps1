@@ -47,6 +47,42 @@ class Welcome : Step {
 	}
 }
 
+class UseGitOps : Step {
+
+	static [string] hidden $description = @'
+Code Dx can generate a setup command that you can use to create GitOps 
+outputs for deploying Code Dx on Kubernetes using fluxcd/helm-operator:
+
+https://github.com/fluxcd/helm-operator
+
+'@
+
+	UseGitOps([ConfigInput] $config) : base(
+		[UseGitOps].Name, 
+		$config,
+		'GitOps',
+		[UseGitOps]::description,
+		'Use GitOps?') {}
+
+	[IQuestion]MakeQuestion([string] $prompt) {
+		return new-object YesNoQuestion($prompt, 
+			'Yes, I want to deploy Code Dx using helm-operator', 
+			'No, I don''t want to use GitOps', 1)
+	}
+
+	[bool]HandleResponse([IQuestion] $question) {
+		$useGitOps = ([YesNoQuestion]$question).choice -eq 0
+		$this.config.useHelmOperator = $useGitOps
+		$this.config.skipSealedSecrets = -not $useGitOps
+		return $true
+	}
+
+	[void]Reset() {
+		$this.config.useHelmOperator = $false
+		$this.config.skipSealedSecrets = $true
+	}
+}
+
 class Prerequisites : Step {
 
 	static [string] hidden $description = @'
@@ -59,6 +95,10 @@ Your system must meet these prerequisites to run the Code Dx setup scripts:
 	- git (https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 	- keytool (Java JRE - https://adoptopenjdk.net/)
 '@
+	static [string] hidden $kubesealDescription = @'
+
+	- kubeseal (https://github.com/bitnami-labs/sealed-secrets)
+'@
 
 	Prerequisites([ConfigInput] $config) : base(
 		[Prerequisites].Name, 
@@ -68,12 +108,18 @@ Your system must meet these prerequisites to run the Code Dx setup scripts:
 		'') {}
 
 	[bool]Run() {
-		Write-HostSection 'Prerequisites' ([Prerequisites]::description)
+		$useSealedSecrets = -not $this.config.skipSealedSecrets
+
+		$prereqDescription = [Prerequisites]::description
+		if (-not $this.config.skipSealedSecrets) {
+			$prereqDescription += [Prerequisites]::kubesealDescription
+		}
+		Write-HostSection 'Prerequisites' $prereqDescription
 
 		Write-Host 'Checking prerequisites...' -NoNewline; ([Step]$this).Delay()
 
 		$prereqMessages = @()
-		$this.config.prereqsSatisified = Test-SetupPreqs ([ref]$prereqMessages)
+		$this.config.prereqsSatisified = Test-SetupPreqs ([ref]$prereqMessages) -useSealedSecrets:$useSealedSecrets
 
 		if (-not $this.config.prereqsSatisified) {
 
@@ -85,13 +131,22 @@ Your system must meet these prerequisites to run the Code Dx setup scripts:
 			
 			Write-Host "`nFix the above issue(s) and restart this script`n"
 			Read-HostEnter 'Press Enter to end...'
-		} else {
 
-			Write-Host "Done`n"
-			Read-HostEnter
+			return $true
 		}
+		Write-Host 'Done'
+		
+		return $this.ShouldProceed()
+	}
 
-		return $true
+	[bool]ShouldProceed() {
+
+		$response = Read-HostChoice `
+			"`nYour system meets the prerequisites. Do you want to continue?" `
+			([tuple]::Create('Yes', 'Yes, continue running setup'),[tuple]::Create([question]::previousStepLabel, 'Go back to the previous step'))
+			0
+
+		return $response -eq 0
 	}
 }
 

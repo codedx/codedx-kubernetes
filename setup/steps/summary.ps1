@@ -117,10 +117,17 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 		'What would you like to do next?') {}
 
 	[IQuestion]MakeQuestion([string] $prompt) {
-		return new-object MultipleChoiceQuestion($prompt, @(
-			[tuple]::create('&Run now', 'Run the setup script without saving the script command a file'),
-			[tuple]::create('&Save command', 'Save the setup script using password/key script parameters'),
-			[tuple]::create('Save command with &Kubernetes secret(s)', 'Save the setup script using k8s secret(s) for password/key script parameters')), -1)
+
+		$options = @([tuple]::create('&Run now', 'Run the setup script without saving the script command a file'))
+
+		if ($this.config.useHelmOperator) {
+			$options += [tuple]::create('Save &GitOps command', 'Save a command to generate GitOps outputs using SealedSecrets and helm-operator')
+		} else {
+			$options += [tuple]::create('&Save command', 'Save the setup script using password/key script parameters')
+			$options += [tuple]::create('Save command with &Kubernetes secret(s)', 'Save the setup script using k8s secret(s) for password/key script parameters')
+		}
+
+		return new-object MultipleChoiceQuestion($prompt, $options, -1)
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
@@ -143,7 +150,16 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 		}
 
 		$runNow = ([MultipleChoiceQuestion]$question).choice -eq 0
-		$usePd = ([MultipleChoiceQuestion]$question).choice -ne 1
+		$usePd = -not $this.config.useHelmOperator -and ([MultipleChoiceQuestion]$question).choice -eq 2
+
+		if ($this.config.useHelmOperator) {
+			'useHelmOperator','skipSealedSecrets' | ForEach-Object {
+				$this.AddSwitchParameter($sb, $_)
+			}
+			'sealedSecretsNamespace','sealedSecretsControllerName','sealedSecretsPublicKeyPath' | ForEach-Object {
+				$this.AddParameter($sb, $_)
+			}
+		}
 
 		if (-not $usePd) {
 			'dockerRegistryPwd','codedxAdminPwd','caCertsFilePwd','caCertsFileNewPwd' | ForEach-Object {

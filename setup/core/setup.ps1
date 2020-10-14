@@ -52,7 +52,7 @@ param (
 	[string]                 $workflowEphemeralStorageReservation,
 	[string]                 $nginxEphemeralStorageReservation,
 
-	[string]                 $imageCodeDxTomcat     = 'codedx/codedx-tomcat:v5.2.3',
+	[string]                 $imageCodeDxTomcat     = 'codedx/codedx-tomcat:v5.2.4',
 	[string]                 $imageCodeDxTools      = 'codedx/codedx-tools:v1.1.0',
 	[string]                 $imageCodeDxToolsMono  = 'codedx/codedx-toolsmono:v1.1.0',
 	[string]                 $imageNewAnalysis      = 'codedx/codedx-newanalysis:v1.1.0',

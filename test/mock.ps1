@@ -37,7 +37,7 @@ function New-Mocks() {
 
 	Mock Test-Certificate {
 		$global:caCertCertificateExists
-	} -ParameterFilter { 'ca.crt','db-ca.crt','extra1.pem','extra2.pem','sealed-secrets.pem' -contains $path }
+	} -ParameterFilter { 'ca.crt','db-ca.crt','extra1.pem','extra2.pem' -contains $path }
 
 	Mock Test-Path {
 		$global:caCertFileExists

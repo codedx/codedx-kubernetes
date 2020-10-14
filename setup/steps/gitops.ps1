@@ -89,7 +89,9 @@ kubeseal --controller-name=sealed-secrets --controller-namespace=adm
 		'Enter the file path for your Sealed Secrets public key') {}
 
 	[IQuestion]MakeQuestion([string] $prompt) {
-		return new-object CertificateFileQuestion($prompt, $false)
+		# Note: CertificateFileQuestion requires a cert with a DN, and the SealedSecrets cert
+		# may not include a DN, so only test file existence.
+		return new-object PathQuestion($prompt, [microsoft.powershell.commands.testpathtype]::Leaf, $false)
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {

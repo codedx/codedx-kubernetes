@@ -129,6 +129,7 @@ Add-StepTransitions $graph $s[[CodeDxNamespace]] $s[[CodeDxReleaseName]],$s[[Ext
 Add-StepTransitions $graph $s[[CodeDxNamespace]] $s[[CodeDxReleaseName]],$s[[DatabaseRootPwd]]
 
 Add-StepTransitions $graph $s[[DatabaseRootPwd]] $s[[DatabaseReplicationPwd]],$s[[DatabaseReplicaCount]],$s[[UseDefaultCACerts]]
+Add-StepTransitions $graph $s[[DatabaseReplicaCount]] $s[[CACertsFile]]
 Add-StepTransitions $graph $s[[ExternalDatabaseHost]] $s[[ExternalDatabasePort]],$s[[ExternalDatabaseName]],$s[[ExternalDatabaseUser]],$s[[ExternalDatabasePwd]],$s[[ExternalDatabaseOneWayAuth]]
 
 Add-StepTransitions $graph $s[[ExternalDatabaseOneWayAuth]] $s[[ExternalDatabaseCert]],$s[[CACertsFile]]

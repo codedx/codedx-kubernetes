@@ -422,7 +422,7 @@ Push-Location $workDir
 
 if ('' -eq $caCertsFilePath -and $codeDxMustTrustCerts) {
 	Write-Verbose "Starting $imageCodeDxTomcat pod in namespace $namespaceCodeDx to fetch cacerts file..."
-	$caCertsFilePath = (Get-CodeDxKeystore $namespaceCodeDx $imageCodeDxTomcat $waitTimeSeconds './cacerts').FullName
+	$caCertsFilePath = (Get-CodeDxKeystore $namespaceCodeDx $imageCodeDxTomcat $waitTimeSeconds './cacerts-from-pod').FullName
 }
 
 ### Wait for Cluster Ready

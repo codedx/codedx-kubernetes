@@ -52,8 +52,11 @@ Refer to the following URL for LDAP configuration instructions. Read the
 instructions at this time and remember to add any necessary certificates 
 if you plan to use LDAPS:
 
-https://github.com/codedx/codedx-kubernetes/blob/master/setup/core/docs/auth/use-ldap.md
+
 '@
+
+	static [string] hidden $nonGitOpsUrl = 'https://github.com/codedx/codedx-kubernetes/blob/master/setup/core/docs/auth/use-ldap.md'
+	static [string] hidden $gitOpsUrl = 'https://github.com/codedx/codedx-kubernetes/blob/master/setup/core/docs/auth/use-ldap-gitops.md'
 
 	LdapInstructions([ConfigInput] $config) : base(
 		[LdapInstructions].Name, 
@@ -61,6 +64,17 @@ https://github.com/codedx/codedx-kubernetes/blob/master/setup/core/docs/auth/use
 		'LDAP Authentication',
 		[LdapInstructions]::description,
 		'Do you want to continue?') {}
+
+	[string]GetMessage() {
+
+		$message = [LdapInstructions]::description
+		if ($this.config.useHelmOperator) {
+			$message += [LdapInstructions]::gitOpsUrl
+		} else {
+			$message += [LdapInstructions]::nonGitOpsUrl
+		}
+		return $message
+	}
 
 	[IQuestion]MakeQuestion([string] $prompt) {
 		return new-object MultipleChoiceQuestion($prompt, 

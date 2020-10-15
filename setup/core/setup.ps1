@@ -420,6 +420,12 @@ New-Item -Type Directory $workDir -Force
 Write-Verbose "Switching to directory $workDir..."
 Push-Location $workDir
 
+### Reset GitOps directory
+$gitOpsDir = './GitOps'
+if (Test-Path $gitOpsDir -PathType Container) {
+	Remove-Item './GitOps' -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
+}
+
 if ('' -eq $caCertsFilePath -and $codeDxMustTrustCerts) {
 	Write-Verbose "Starting $imageCodeDxTomcat pod in namespace $namespaceCodeDx to fetch cacerts file..."
 	$caCertsFilePath = (Get-CodeDxKeystore $namespaceCodeDx $imageCodeDxTomcat $waitTimeSeconds './cacerts-from-pod').FullName
@@ -798,6 +804,7 @@ if ($useGitOps) {
 		$codeDxUserValuesName = $codeDxUserValuesNameTemplate -f $codeDxFileNumber
 		New-ConfigMapResource $namespaceCodeDx $codeDxUserValuesName @{} @{'values.yaml' = $_} -useGitOps
 		$codeDxValuesConfigMapNames += $codeDxUserValuesName
+		$codeDxFileNumber++
 	}
 
 	$codeDxHelmReleaseName = 'codedx'
@@ -819,11 +826,12 @@ if ($useGitOps) {
 		$toolOrchestrationValuesConfigMapNames += $toolOrchestrationSetupValuesName
 	
 		$toolOrchestrationFileNumber = 0
-		$toolOrchestrationUserValuesNameTemplate = 'codedx-tool-orchestration--user-values-{0}'
+		$toolOrchestrationUserValuesNameTemplate = 'codedx-tool-orchestration-user-values-{0}'
 		$extraToolOrchestrationValuesPath | ForEach-Object {
 			$toolOrchestrationUserValuesName = $toolOrchestrationUserValuesNameTemplate -f $toolOrchestrationFileNumber
 			New-ConfigMapResource $namespaceToolOrchestration $toolOrchestrationUserValuesName @{} @{'values.yaml' = $_} -useGitOps
 			$toolOrchestrationValuesConfigMapNames += $toolOrchestrationUserValuesName
+			$toolOrchestrationFileNumber++
 		}
 	
 		$toolOrchestrationHelmReleaseName = 'codedx-tool-orchestration'

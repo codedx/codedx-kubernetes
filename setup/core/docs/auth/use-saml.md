@@ -11,7 +11,9 @@ Here are the steps required to specify extra SAML properties:
 
 1) Complete the guided setup to determine the setup command(s) for deploying Code Dx on your Kubernetes cluster. End the guided setup by using one of the options to save your setup command to a file.
 
-2) Create a file named `codedx-extra-props.yaml` and add your SAML properties and values:
+2) Open your `codedx-extra-props.yaml` file and merge your SAML properties and values. If you do not yet have a `codedx-extra-props.yaml` file, create a new one and add your SAML properties and values.
+
+>Note: You can use multiple `codedx-extra-props.yaml` files, but avoid specifying overlapping configuration that could get lost at install-time. For example, do not specify codedxProps.extra sections in multiple files.
 
 ```
 codedxProps:

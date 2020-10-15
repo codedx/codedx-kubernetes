@@ -29,7 +29,9 @@ kubectl create ns cdx-app
 kubectl -n cdx-app create secret generic codedx-ldap --from-file=codedx-ldap-creds-props
 ```
 
-5) Create a file named `codedx-extra-props.yaml` and add the following content after specifying your own userSearchTemplate value:
+5) Open your `codedx-extra-props.yaml` file and merge the following content after specifying your own userSearchTemplate value. If you do not yet have a `codedx-extra-props.yaml` file, create a new one and add the following content after specifying your own userSearchTemplate value.
+
+>Note: You can use multiple `codedx-extra-props.yaml` files, but avoid specifying overlapping configuration that could get lost at install-time. For example, do not specify codedxProps.extra sections in multiple files.
 
 ```
 # set ldap/ldaps to false when not using network policies

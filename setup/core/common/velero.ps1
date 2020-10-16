@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.1
+.VERSION 1.0.2
 .GUID d65a6b13-910d-4220-8cfb-5de8cdd52011
 .AUTHOR Code Dx
 #>
@@ -57,15 +57,25 @@ metadata:
 spec:
   schedule: '{2}'
   template:
-    includedNamespaces: {4}
+    includedNamespaces: {3}
     storageLocation: default
-    ttl: {7}
+    ttl: {4}
     includeClusterResources: true
+'@ -f $scheduleName, `
+	$scheduleNamespace, `
+	$scheduleExpression, `
+	$includedNamespaces, `
+	$backupTimeToLive
+
+	if (-not $skipDatabaseBackup) {
+
+		$hookTemplate = @'
+
     hooks:
       resources:
       - name: database-backup
         includedNamespaces:
-        - '{3}'
+        - '{0}'
         labelSelector:
           matchLabels:
             app: mariadb
@@ -77,14 +87,15 @@ spec:
             command:
             - /bin/bash
             - -c
-            - /bitnami/mariadb/scripts/backup.sh && sleep {5}
-            timeout: '{6}'
-'@ -f $scheduleName, `
-	$scheduleNamespace,$scheduleExpression, `
-	$codeDxNamespace, `
-	$includedNamespaces, `
-	$backupLagTime, $backupTimeout, $backupTimeToLive
-	
+            - /bitnami/mariadb/scripts/backup.sh && sleep {1}
+            timeout: '{2}'
+'@ -f 	$codeDxNamespace, `
+		$backupLagTime, `
+		$backupTimeout
+
+		$scheduleTemplate += $hookTemplate
+	}
+
 	$scheduleTemplate | out-file $scheduleFilePath -Encoding ascii -Force
 
 	kubectl apply -f $scheduleFilePath

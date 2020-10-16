@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.2
+.VERSION 1.0.3
 .GUID 7686d012-1a04-43f0-a56c-8710ab6e11ff
 .AUTHOR Code Dx
 #>
@@ -161,7 +161,7 @@ if ($useVeleroResticIntegration) {
 	$exclusionLabelValue = 'true'
 
 	$pvs = @()
-	$pvcs | Where-Object { $_ -like 'persistentvolumeclaim/data*' } | ForEach-Object {
+	$pvcs | Where-Object { $skipDatabaseBackup -or $_ -like 'persistentvolumeclaim/data*' } | ForEach-Object {
 
 		$pvs += 'pv/{0}' -f (kubectl -n $namespaceCodeDx get $_ -o jsonpath='{.spec.volumeName}')
 		if ($LASTEXITCODE -ne 0) {

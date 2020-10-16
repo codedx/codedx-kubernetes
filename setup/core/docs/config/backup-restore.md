@@ -6,7 +6,7 @@ Here are the steps to configure a Code Dx backup and test a restore so that you 
 
 Code Dx depends on [Velero](https://velero.io) for cluster state and volume data backups. When not using an external Code Dx database, you must deploy Code Dx with at least one MariaDB subordinate database that will get backed up when Velero creates a backup.
 
-> Note: The Code Dx Kubernetes Backup & Restore Procedure has been tested with Velero versions 1.3 and 1.4.
+> Note: The Code Dx Kubernetes Backup & Restore Procedure has been tested with Velero versions 1.3, 1.4, and 1.5.
 
 If you are using an external Code Dx database, your database will not be included in the Velero-based backup. You must create a database backup schedule on your own. To minimize data loss, schedule your database backups for a time that matches your Code Dx backup to help align your Kubernetes volume and external database data after a restore.
 
@@ -124,6 +124,8 @@ Refer to the following table for a description of the set-backup.ps1 script para
 |                                    |                                                |                           |
 | workDirectory                      | Directory for creating working files           | ~                         |
 | namespaceVelero                    | Velero namespace                               | velero                    |
+|                                    |                                                |                           |
+| waitTimeSeconds                    | Time to wait for pod restarts                  | 900                       |
 |                                    |                                                |                           |
 | delete                             | Whether to delete backup config                | $false                    |
 

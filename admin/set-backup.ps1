@@ -29,6 +29,8 @@ param (
 	[string] $workDirectory = '~',
 	[string] $namespaceVelero = 'velero',
 
+	[int]    $waitTimeSeconds = 900,
+
 	[switch] $delete
 )
 
@@ -43,6 +45,10 @@ Set-PSDebug -Strict
 		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
 	}
 	. $path
+}
+
+function Get-SubordinateDatabaseReplicaCount([string] $namespaceCodeDx, [string] $releaseNameCodeDx) {
+	(Get-HelmValues $namespaceCodeDx $releaseNameCodeDx).mariadb.slave.replicas
 }
 
 Write-Verbose "Testing for work directory '$workDirectory'"
@@ -72,7 +78,7 @@ if (-not (Test-Deployment $namespaceCodeDx $deploymentCodeDx)) {
 $applyBackupConfiguration = -not $delete
 
 if (-not $skipDatabaseBackup -and $applyBackupConfiguration) {
-	$statefulSetMariaDBSlaveCount = (Get-HelmValues $namespaceCodeDx $releaseNameCodeDx).mariadb.slave.replicas
+	$statefulSetMariaDBSlaveCount = Get-SubordinateDatabaseReplicaCount $namespaceCodeDx $releaseNameCodeDx
 	if ($statefulSetMariaDBSlaveCount -eq 0) {
 		Write-Error "Unable to apply backup configuration because database backups require at least one MariaDB slave replica."
 	}
@@ -124,14 +130,21 @@ if ($useVeleroResticIntegration) {
 
 	if ($applyBackupConfiguration) {
 
+		# Creating a new backup schedule will start an initial backup, and when using the Restic integration, the backup may 
+		# initially miss required volumes of pods that are not yet ready, so wait for deployments/statefulsets before continuing.
+
 		# Add annotations to include volumes in backup
 		$installPatch = "spec:`n  template:`n    metadata:`n      annotations:`n        backup.velero.io/backup-volumes: '{0}'"
 		Edit-ResourceStrategicPatch $namespaceCodeDx 'deployment' $deploymentCodeDx ($installPatch -f 'codedx-appdata')
+		Wait-Deployment "Wait for $deploymentCodeDx in $namespaceCodeDx" $waitTimeSeconds $namespaceCodeDx $deploymentCodeDx 1
+
 		if (-not $skipDatabaseBackup) {
 			Edit-ResourceStrategicPatch $namespaceCodeDx 'statefulset' $statefulSetMariaDBSlave ($installPatch -f 'backup')
+			Wait-StatefulSet "Wait for $statefulSetMariaDBSlave in $namespaceCodeDx" $waitTimeSeconds $namespaceCodeDx $statefulSetMariaDBSlave (Get-SubordinateDatabaseReplicaCount $namespaceCodeDx $releaseNameCodeDx)
 		}
 		if (-not $skipToolOrchestration) {
 			Edit-ResourceStrategicPatch $namespaceCodeDxToolOrchestration 'deployment' $deploymentMinio ($installPatch -f 'data')
+			Wait-Deployment "Wait for $deploymentMinio in $namespaceCodeDxToolOrchestration" $waitTimeSeconds $namespaceCodeDxToolOrchestration $deploymentMinio 1
 		}
 
 	} else {

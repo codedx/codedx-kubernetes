@@ -426,11 +426,6 @@ if (Test-Path $gitOpsDir -PathType Container) {
 	Remove-Item './GitOps' -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
 }
 
-if ('' -eq $caCertsFilePath -and $codeDxMustTrustCerts) {
-	Write-Verbose "Starting $imageCodeDxTomcat pod in namespace $namespaceCodeDx to fetch cacerts file..."
-	$caCertsFilePath = (Get-CodeDxKeystore $namespaceCodeDx $imageCodeDxTomcat $waitTimeSeconds './cacerts-from-pod').FullName
-}
-
 ### Wait for Cluster Ready
 if (-not $useGitOps) {
 
@@ -538,6 +533,12 @@ if ($useLetsEncryptCertManager) {
 ### Create Code Dx Namespace
 Write-Verbose "Creating namespace $namespaceCodeDx..."
 New-NamespaceResource $namespaceCodeDx ([Tuple]::Create('name', $namespaceCodeDx)) -useGitOps:$useGitOps
+
+### Optionally Fetch cacerts from Pod
+if ('' -eq $caCertsFilePath -and $codeDxMustTrustCerts) {
+	Write-Verbose "Starting $imageCodeDxTomcat pod in namespace $namespaceCodeDx to fetch cacerts file..."
+	$caCertsFilePath = (Get-CodeDxKeystore $namespaceCodeDx $imageCodeDxTomcat $waitTimeSeconds './cacerts-from-pod').FullName
+}
 
 ### Optionally Create Code Dx Tool Orchestration Namespace
 if ($useToolOrchestration) {

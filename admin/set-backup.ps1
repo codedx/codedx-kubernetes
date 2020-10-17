@@ -140,6 +140,7 @@ if ($useVeleroResticIntegration) {
 
 		if (-not $skipDatabaseBackup) {
 			Edit-ResourceStrategicPatch $namespaceCodeDx 'statefulset' $statefulSetMariaDBSlave ($installPatch -f 'backup')
+			Start-Sleep -Seconds 10 # after above patch, resource may briefly show desired ready replica count during pod termination
 			Wait-StatefulSet "Wait for $statefulSetMariaDBSlave in $namespaceCodeDx" $waitTimeSeconds $namespaceCodeDx $statefulSetMariaDBSlave (Get-SubordinateDatabaseReplicaCount $namespaceCodeDx $releaseNameCodeDx)
 		}
 		if (-not $skipToolOrchestration) {

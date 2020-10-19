@@ -16,15 +16,15 @@ Code Dx gets restored with either a two-step or a three-step process depending o
 
 ## About Velero
 
-Velero can back up both k8s state stored in etcd and k8s volume data. Volume data gets backed up using either [storage provider plugins](https://velero.io/docs/v1.4/supported-providers/) or Velero's integration with [Restic](https://restic.net/). Refer to [How Velero Works](https://velero.io/docs/v1.4/how-velero-works/) and [Restic Integration](https://velero.io/docs/v1.4/restic/) for more details.
+Velero can back up both k8s state stored in etcd and k8s volume data. Volume data gets backed up using either [storage provider plugins](https://velero.io/docs/v1.5/supported-providers/) or Velero's integration with [Restic](https://restic.net/). Refer to [How Velero Works](https://velero.io/docs/v1.5/how-velero-works/) and [Restic Integration](https://velero.io/docs/v1.5/restic/) for more details.
 
 > Note: Use Velero's Restic integration when a storage provider plugin is unavailable for your environment.
 
 ## Installing Velero
 
-Install the [Velero CLI](https://velero.io/docs/v1.4/basic-install/#install-the-cli) and then follow the Velero installation documentation for your scenario. You can find links to provider-specific documentation in the Setup Instructions column on the [Providers](https://velero.io/docs/v1.4/supported-providers/) page, which includes  links to the [Azure](https://github.com/vmware-tanzu/velero-plugin-for-microsoft-azure#setup) and [AWS](https://github.com/vmware-tanzu/velero-plugin-for-aws#setup) instructions. If you're not using a storage provider plugin, [enable Velero's Restic integration](https://velero.io/docs/v1.4/customize-installation/#enable-restic-integration) at install time.
+Install the [Velero CLI](https://velero.io/docs/v1.5/basic-install/#install-the-cli) and then follow the Velero installation documentation for your scenario. You can find links to provider-specific documentation in the Setup Instructions column on the [Providers](https://velero.io/docs/v1.5/supported-providers/) page, which includes  links to the [Azure](https://github.com/vmware-tanzu/velero-plugin-for-microsoft-azure#setup) and [AWS](https://github.com/vmware-tanzu/velero-plugin-for-aws#setup) instructions. If you're not using a storage provider plugin, [enable Velero's Restic integration](https://velero.io/docs/v1.5/customize-installation/#enable-restic-integration) at install time.
 
-> Note: If your Velero backup unexpectedly fails, you may need to increase the amount of memory available to the Velero pod. Use the --velero-pod-mem-limit parameter with the velero install command as described [here](https://velero.io/docs/v1.4/customize-installation/#customize-resource-requests-and-limits).
+> Note: If your Velero backup unexpectedly fails, you may need to increase the amount of memory available to the Velero pod. Use the --velero-pod-mem-limit parameter with the velero install command as described [here](https://velero.io/docs/v1.5/customize-installation/#customize-resource-requests-and-limits).
 
 ## Applying Backup Configuration
 
@@ -131,7 +131,7 @@ Refer to the following table for a description of the set-backup.ps1 script para
 
 ## Verify Backup
 
-Once backups start running, use the velero commands that [describe backups and fetch logs](https://velero.io/docs/v1.4/troubleshooting/#general-troubleshooting-information) to confirm that the backups are completing successfully and that they include the following volumes:
+Once backups start running, use the velero commands that [describe backups and fetch logs](https://velero.io/docs/v1.5/troubleshooting/#general-troubleshooting-information) to confirm that the backups are completing successfully and that they include the following volumes:
 
 - codedx-appdata (Code Dx web application)
 - backup (Code Dx MariaDB Slave databases - when not using an external Code Dx database)
@@ -259,4 +259,4 @@ If you need to uninstall the backup capability, do the following:
 
 - Remove the backup configuration you applied to Code Dx k8s resources (see the Removing Backup Configuration section)
 - Remove Velero backup and restore objects with `velero backup delete --all` and `velero restore delete --all`
-- [Uninstall Velero](https://velero.io/docs/v1.4/uninstalling/)
+- [Uninstall Velero](https://velero.io/docs/v1.5/uninstalling/)

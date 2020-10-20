@@ -94,6 +94,9 @@ Specify the Helm release name for the Code Dx Tool Orchestration deployment.
 The name should not conflict with another Helm release in the Kubernetes 
 namespace you chose.
 
+If you plan to install multiple copies of the Code Dx Tool Orchestration Helm 
+chart on a single cluster, specify a unique release name for each instance.
+
 Note: Press Enter to use the example release name.
 '@
 

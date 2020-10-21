@@ -80,7 +80,7 @@ spec:
           matchLabels:
             app: mariadb
             component: slave
-            release: codedx
+            release: {3}
         pre:
         - exec:
             container: mariadb
@@ -91,7 +91,8 @@ spec:
             timeout: '{2}'
 '@ -f 	$codeDxNamespace, `
 		$backupLagTime, `
-		$backupTimeout
+		$backupTimeout, `
+		$codeDxReleaseName
 
 		$scheduleTemplate += $hookTemplate
 	}

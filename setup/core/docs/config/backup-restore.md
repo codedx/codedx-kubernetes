@@ -157,7 +157,7 @@ The backup.log file should have a "completed OK!" message above the log entries 
 
 ## Restoring Code Dx
 
-The steps for restoring a Code Dx instance from a backup appear below. Depending on how you have Velero configured, you will need to accomplish 2-3 steps.
+Below are the steps for a full restore of a Code Dx instance from a backup. When using Velero's Restic integration, you can skip Step 2 and Step 4.
 
 ### Step 1: Restore Cluster State and Volume Data
 
@@ -187,11 +187,9 @@ $ velero restore create --from-backup my-backup
 
 > Note: Running two velero commands works around an issue discovered in Velero v1.3.2 that blocks the restoration of Code Dx pods. If you run only the second command, Code Dx priority classes get restored, but pods depending on those classes do not.
 
-IMPORTANT NOTE: When using Velero with storage provider plugins, when the restore is complete, you should reapply the backup configuration (see the Applying Backup Configuration section) to avoid storing unnecessary volume snapshots for the data volumes of the MariaDB master and slave databases.
-
 ### Step 2: Restart MariaDB
 
-Step 2 is required when using Velero with storage provider plugins. Skip this section if you are using Velero's Restic integration or if you are using an external Code Dx database.
+Skip this section if you are using Velero's Restic integration or if you are using an external Code Dx database. Step 2 is required when using Velero with storage provider plugins.
 
 During Step 2, you will start the process of bringing Code Dx and the MariaDB databases online. Initially, volume data excluded from the backup will cause MariaDB database pods to get stuck in the Pending state. This step will result in new PVCs and PVs for the data volumes.
 
@@ -236,6 +234,12 @@ PS /git/codedx-kubernetes/admin> ./restore-db.ps1 `
 When prompted by the script, enter the name of the database backup you want to restore and the password for the MariaDB database root user. The script will search for the database backup, copy it to a folder in your profile, and use the backup to restore both master and slave database(s). It will then restart database replication, and it will manage the running instances of MariaDB and Code Dx, so when the script is finished, you can start using the restored Code Dx instance.
 
 > Note: The restore-db.ps1 script requires that your work directory (default is your profile directory) not already include a folder named backup-files. The script will stop if it finds that directory, so delete it before starting the script.
+
+### Step 4: Reapply Backup Configuration
+
+Skip this section if you are using Velero's Restic integration or if you are using an external Code Dx database. Step 4 is required when using Velero with storage provider plugins.
+
+Reapply the backup configuration by following the steps in the Applying Backup Configuration section. Running set-backup.ps1 again will reapply volume labels to avoid storing unnecessary volume snapshots for database volumes.
 
 ## Removing Backup Configuration
 

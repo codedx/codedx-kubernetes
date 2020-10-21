@@ -706,7 +706,7 @@ if ($useToolOrchestration) {
 }
 
 ### Create Code Dx Values File
-Write-Verbose 'Deploying Code Dx with Tool Orchestration disabled...'
+Write-Verbose 'Creating Code Dx values file...'
 $codeDxDeploymentValuesFile = New-CodeDxDeploymentValuesFile $codeDxDnsName $codeDxServicePortNumber $codeDxTlsServicePortNumber `
 	$releaseNameCodeDx $imageCodeDxTomcat `
 	$dockerImagePullSecretName `
@@ -738,6 +738,7 @@ $codeDxDeploymentValuesFile = New-CodeDxDeploymentValuesFile $codeDxDnsName $cod
 	'./codedx-values.yaml'
 
 ### Deploy Code Dx
+Write-Verbose 'Deploying Code Dx...'
 $codeDxChartFolder = join-path $workDir .repo/setup/core/charts/codedx
 Invoke-HelmSingleDeployment 'Code Dx' `
 	$waitTimeSeconds $namespaceCodeDx `

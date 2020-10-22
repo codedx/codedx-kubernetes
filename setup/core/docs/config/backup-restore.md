@@ -159,6 +159,8 @@ The backup.log file should have a "completed OK!" message above the log entries 
 
 ## Restoring Code Dx
 
+Velero will skip restoring resources that already exist, so delete those you want to restore from a backup. You can delete the Code Dx namespace(s) to remove all namespaced resources, and you can delete cluster scoped Code Dx resources to remove Code Dx entirely. Since Code Dx depends on multiple PersistentVolume (PV) resources, you will typically want to delete Code Dx PVs when restoring Code Dx to a previous known good state.
+
 Below are the steps for a full restore of a Code Dx instance from a backup. When using Velero's Restic integration, you can skip Step 2 and Step 4.
 
 >Note: When using Velero with Storage Provider Plugins, wait for the volume snapshot process to finish before restoring a backup.

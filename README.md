@@ -73,7 +73,7 @@ Follow the [Code Dx Kubernetes Backup & Restore](./setup/core/docs/config/backup
 
 If you want the option of recovering from a failed upgrade by rolling back to a known good state, start a Code Dx backup and wait for it to finish before beginning an upgrade.
 
-Note: When using Velero Storage Provider Plugins, volume snapshots may complete after your Velero backup reports a completed status, so wait for snapshots to finish before proceeding.
+>Note: When using Velero Storage Provider Plugins, volume snapshots may complete after your Velero backup reports a completed status, so wait for snapshots to finish before proceeding.
 
 You can start a Velero backup using the schedule you created with the set-backup.ps1 script. If you have not yet configured your Code Dx backup, refer to the [Code Dx Kubernetes Backup & Restore](./setup/core/docs/config/backup-restore.md) document for configuration details. For example, if the name of your Velero schedule is `codedx-schedule`, you can start a backup with this command:
 
@@ -81,7 +81,7 @@ You can start a Velero backup using the schedule you created with the set-backup
 velero backup create --from-schedule codedx-schedule
 ```
 
-Note: Remember to wait for both the backup and the volume snapshots to complete (they may finish at different times).
+>Note: Remember to wait for both the backup and the volume snapshots to complete (they may finish at different times).
 
 The codedx-kubernetes repository gets updated with each new Code Dx release, so you can download the latest repository files and re-run the setup commands you previously saved. If your setup.ps1 command references specific Docker image names (e.g., `-imageCodeDxTomcat codedx/codedx-tomcat:v5.0.8`), update those parameters to install the Docker image versions associated with a specific Code Dx release.
 

@@ -137,6 +137,8 @@ Once backups start running, use the velero commands that [describe backups and f
 - backup (Code Dx MariaDB Slave databases - when not using an external Code Dx database)
 - data (MinIO - when using Code Dx Tool Orchestration)
 
+When using Velero with Storage Provider Plugins, the volume snapshots initiated by a plugin may finish after the Backup resource reports a completed status. Wait for the volume snapshot process to finish before attempting to verify a backup by testing a restore.
+
 If applicable, you should also confirm that the database backup script runs correctly and produces database backups with each Velero backup in the /bitnami/mariadb/backup/data directory. Use the following command after replacing placeholder parameters to list recent backups for a MariaDB slave database instance:
 
 ```
@@ -158,6 +160,8 @@ The backup.log file should have a "completed OK!" message above the log entries 
 ## Restoring Code Dx
 
 Below are the steps for a full restore of a Code Dx instance from a backup. When using Velero's Restic integration, you can skip Step 2 and Step 4.
+
+>Note: When using Velero with Storage Provider Plugins, wait for the volume snapshot process to finish before restoring a backup.
 
 ### Step 1: Restore Cluster State and Volume Data
 

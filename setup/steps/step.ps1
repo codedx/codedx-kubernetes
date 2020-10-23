@@ -190,6 +190,8 @@ class ConfigInput {
 	[string] $sealedSecretsControllerName
 	[string] $sealedSecretsPublicKeyPath
 
+	[string] $backupType
+
 	[hashtable]  $notes = @{}
 
 	ConfigInput() {

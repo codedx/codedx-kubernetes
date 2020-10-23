@@ -14,6 +14,7 @@ function Set-DefaultPass([int] $saveOption) {
 	$global:inputs.enqueue(0) # choose default port
 	$global:inputs.enqueue(1) # skip tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(0) # choose default deployment options
 	$global:inputs.enqueue('ca.crt')  # specify cluster cert
 	$global:inputs.enqueue('cdx-app') # specify namespace
@@ -50,6 +51,7 @@ function Set-UseToolOrchestrationAndSubordinateDatabasePass([int] $saveOption) {
 	$global:inputs.enqueue(0) # choose default port
 	$global:inputs.enqueue(0) # choose tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(0) # choose default deployment options
 	$global:inputs.enqueue('ca.crt')  # specify cluster cert
 	$global:inputs.enqueue('cdx-app') # specify namespace
@@ -93,6 +95,7 @@ function Set-ExternalDatabasePass([int] $saveOption) {
 	$global:inputs.enqueue(0) # choose default port
 	$global:inputs.enqueue(1) # skip tool orchestration
 	$global:inputs.enqueue(0) # skip external db
+	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(0) # choose default deployment options
 	$global:inputs.enqueue('ca.crt')  # specify cluster cert
 	$global:inputs.enqueue('cdx-app') # specify namespace
@@ -135,6 +138,7 @@ function Set-ClassicLoadBalancerIngressPass([int] $saveOption) {
 	$global:inputs.enqueue(0) # choose default port
 	$global:inputs.enqueue(1) # skip tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(0) # choose default deployment options
 	$global:inputs.enqueue('ca.crt')  # specify cluster cert
 	$global:inputs.enqueue('cdx-app') # specify namespace
@@ -177,6 +181,7 @@ function Set-ClassicLoadBalancerIngressGitOpsPass([int] $saveOption) {
 	$global:inputs.enqueue('sealed-secrets.pem') # specify sealed-secrets cert
 	$global:inputs.enqueue(1) # skip tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(0) # choose default deployment options
 	$global:inputs.enqueue('ca.crt')  # specify cluster cert
 	$global:inputs.enqueue('cdx-app') # specify namespace
@@ -222,6 +227,7 @@ function Set-ClassicLoadBalancerIngressGitOpsNoTLSPass([int] $saveOption) {
 	$global:inputs.enqueue('sealed-secrets.pem') # specify sealed-secrets cert
 	$global:inputs.enqueue(1) # skip tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(2) # choose other deployment options
 	$global:inputs.enqueue(0) # choose PSPs
 	$global:inputs.enqueue(0) # choose Network Policies
@@ -263,6 +269,7 @@ function Set-NodeSelectorAndPodTolerationsPass([int] $saveOption) {
 	$global:inputs.enqueue(0) # choose default port
 	$global:inputs.enqueue(1) # skip tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(0) # choose default deployment options
 	$global:inputs.enqueue('ca.crt')  # specify cluster cert
 	$global:inputs.enqueue('cdx-app') # specify namespace
@@ -310,6 +317,7 @@ function Set-RecommendedResourcesPass([int] $saveOption) {
 	$global:inputs.enqueue(0) # choose default port
 	$global:inputs.enqueue(1) # skip tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(0) # choose default deployment options
 	$global:inputs.enqueue('ca.crt')  # specify cluster cert
 	$global:inputs.enqueue('cdx-app') # specify namespace
@@ -346,6 +354,7 @@ function Set-AllNodeSelectorAndPodTolerationsPass([int] $saveOption) {
 	$global:inputs.enqueue(0) # choose default port
 	$global:inputs.enqueue(0) # choose tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(0) # choose default deployment options
 	$global:inputs.enqueue('ca.crt')  # specify cluster cert
 	$global:inputs.enqueue('cdx-app') # specify namespace
@@ -420,6 +429,7 @@ function Set-NginxLetsEncryptWithLoadBalancerIpPass([int] $saveOption) {
 	$global:inputs.enqueue(0) # choose default port
 	$global:inputs.enqueue(0) # skip tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(0) # choose default deployment options
 	$global:inputs.enqueue('ca.crt')  # specify cluster cert
 	$global:inputs.enqueue('cdx-app') # specify namespace
@@ -471,6 +481,7 @@ function Set-NginxLetsEncryptWithoutLoadBalancerIpPass([int] $saveOption) {
 	$global:inputs.enqueue(0) # choose default port
 	$global:inputs.enqueue(0) # skip tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(0) # choose default deployment options
 	$global:inputs.enqueue('ca.crt')  # specify cluster cert
 	$global:inputs.enqueue('cdx-app') # specify namespace
@@ -521,6 +532,7 @@ function Set-DockerImageNamesAndPrivateRegistryPass([int] $saveOption) {
 	$global:inputs.enqueue(0) # choose default port
 	$global:inputs.enqueue(0) # choose tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(0) # choose default deployment options
 	$global:inputs.enqueue('ca.crt')  # specify cluster cert
 	$global:inputs.enqueue('cdx-app') # specify namespace
@@ -577,6 +589,7 @@ function Set-ConfigCertsPass([int] $saveOption) {
 	$global:inputs.enqueue(0) # choose default port
 	$global:inputs.enqueue(1) # skip tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(0) # choose default deployment options
 	$global:inputs.enqueue('ca.crt')  # specify cluster cert
 	$global:inputs.enqueue('cdx-app') # specify namespace
@@ -625,6 +638,7 @@ function Set-UseCustomResourcesPass([int] $saveOption) {
 	$global:inputs.enqueue(0) # choose default port
 	$global:inputs.enqueue(0) # choose tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(0) # choose default deployment options
 	$global:inputs.enqueue('ca.crt')  # specify cluster cert
 	$global:inputs.enqueue('cdx-app') # specify namespace
@@ -690,6 +704,7 @@ function Set-UseSamlPass([int] $saveOption) {
 	$global:inputs.enqueue(0) # choose default port
 	$global:inputs.enqueue(1) # skip tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(0) # choose default deployment options
 	$global:inputs.enqueue('ca.crt')  # specify cluster cert
 	$global:inputs.enqueue('cdx-app') # specify namespace
@@ -734,6 +749,7 @@ function Set-SomeDockerImageNames([int] $saveOption) {
 	$global:inputs.enqueue(0) # choose default port
 	$global:inputs.enqueue(0) # choose tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(0) # choose default deployment options
 	$global:inputs.enqueue('ca.crt')  # specify cluster cert
 	$global:inputs.enqueue('cdx-app') # specify namespace
@@ -786,6 +802,7 @@ function Set-PassWithDefaultResourceReservations([int] $saveOption) {
 	$global:inputs.enqueue(0) # choose default port
 	$global:inputs.enqueue(0) # choose tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(0) # choose default deployment options
 	$global:inputs.enqueue('ca.crt')  # specify cluster cert
 	$global:inputs.enqueue('cdx-app') # specify namespace
@@ -829,6 +846,7 @@ function Set-PassWithCustomAcceptingDefaultResourceReservations([int] $saveOptio
 	$global:inputs.enqueue(0) # choose default port
 	$global:inputs.enqueue(0) # choose tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(0) # choose default deployment options
 	$global:inputs.enqueue('ca.crt')  # specify cluster cert
 	$global:inputs.enqueue('cdx-app') # specify namespace
@@ -892,6 +910,80 @@ function Set-PassWithCustomAcceptingDefaultResourceReservations([int] $saveOptio
 	$global:inputs.enqueue('') # accept and confirm default
 	$global:inputs.enqueue(0)
 	$global:inputs.enqueue(0) # choose default sizes
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue($saveOption) # next step save option
+}
+
+function Set-DefaultPassWithVelero([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(0) # choose minikube env
+	$global:inputs.enqueue(0) # choose minikube context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(1) # skip tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(1) # choose Velero plug-in
+	$global:inputs.enqueue(0) # choose default deployment options
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue(0) # specify db replicas
+	$global:inputs.enqueue(0) # choose default cacerts
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(0) # choose default Docker images
+	$global:inputs.enqueue(0) # skip ingress
+	$global:inputs.enqueue(0) # use local accounts
+	$global:inputs.enqueue(1) # skip cpu reservation
+	$global:inputs.enqueue(1) # skip memory reservation
+	$global:inputs.enqueue(1) # skip storage reservation
+	$global:inputs.enqueue(0) # use default volume sizes
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue($saveOption) # next step save option
+}
+
+function Set-DefaultPassWithVeleroRestic([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(0) # choose minikube env
+	$global:inputs.enqueue(0) # choose minikube context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(1) # skip tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(2) # choose Velero Restic
+	$global:inputs.enqueue(0) # choose default deployment options
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue(0) # specify db replicas
+	$global:inputs.enqueue(0) # choose default cacerts
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(0) # choose default Docker images
+	$global:inputs.enqueue(0) # skip ingress
+	$global:inputs.enqueue(0) # use local accounts
+	$global:inputs.enqueue(1) # skip cpu reservation
+	$global:inputs.enqueue(1) # skip memory reservation
+	$global:inputs.enqueue(1) # skip storage reservation
+	$global:inputs.enqueue(0) # use default volume sizes
 	$global:inputs.enqueue('default') # storage class name
 	$global:inputs.enqueue($saveOption) # next step save option
 }

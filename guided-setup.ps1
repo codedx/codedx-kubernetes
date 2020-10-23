@@ -17,6 +17,7 @@ Write-Host 'Loading...' -NoNewline
 './setup/steps/step.ps1',
 './setup/steps/welcome.ps1',
 './setup/steps/gitops.ps1',
+'./setup/steps/backup.ps1',
 './setup/steps/k8s.ps1',
 './setup/steps/ingress.ps1',
 './setup/steps/image.ps1',
@@ -81,7 +82,7 @@ $s = @{}
 [Prerequisites],[PrequisitesNotMet],[WorkDir],[ChooseEnvironment],
 [ChooseContext],[SelectContext],[HandleNoContext],
 [GetKubernetesPort],
-[UseToolOrchestration],[UseExternalDatabase],
+[UseToolOrchestration],[UseExternalDatabase],[BackupType],
 [UseDefaultOptions],[UsePodSecurityPolicyOption],[UseNetworkPolicyOption],[UseTlsOption],[CertsCAPath],
 [CodeDxNamespace],[CodeDxReleaseName],
 [ToolOrchestrationNamespace],[ToolOrchestrationReleaseName],
@@ -116,7 +117,7 @@ Add-StepTransitions $graph $s[[ChooseContext]] $s[[HandleNoContext]],$s[[Abort]]
 Add-StepTransitions $graph $s[[ChooseContext]] $s[[SelectContext]],$s[[GetKubernetesPort]]
 
 Add-StepTransitions $graph $s[[GetKubernetesPort]] $s[[SealedSecretsNamespace]],$s[[SealedSecretsControllerName]],$s[[SealedSecretsPublicKeyPath]],$s[[UseToolOrchestration]]
-Add-StepTransitions $graph $s[[GetKubernetesPort]] $s[[UseToolOrchestration]],$s[[UseExternalDatabase]],$s[[UseDefaultOptions]]
+Add-StepTransitions $graph $s[[GetKubernetesPort]] $s[[UseToolOrchestration]],$s[[UseExternalDatabase]],$s[[BackupType]],$s[[UseDefaultOptions]]
 
 Add-StepTransitions $graph $s[[UseDefaultOptions]] $s[[UsePodSecurityPolicyOption]],$s[[UseNetworkPolicyOption]],$s[[UseTlsOption]],$s[[CertsCaPath]],$s[[CodeDxNamespace]]
 Add-StepTransitions $graph $s[[UseTlsOption]] $s[[CodeDxNamespace]]

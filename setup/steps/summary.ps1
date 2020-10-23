@@ -145,7 +145,8 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 		'dockerImagePullSecretName','dockerRegistry','dockerRegistryUser',
 		'storageClassName',
 		'serviceTypeCodeDx',
-		'caCertsFilePath' | ForEach-Object {
+		'caCertsFilePath',
+		'backupType' | ForEach-Object {
 			$this.AddParameter($sb, $_)
 		}
 

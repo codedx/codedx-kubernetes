@@ -595,7 +595,12 @@ if ($useTLS -and $useToolOrchestration) {
 ### Fetch Code Dx Charts
 Write-Verbose 'Fetching Code Dx Helm charts...'
 $repoDirectory = './.repo'
-Remove-Item $repoDirectory -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
+$oldRepoDirectory = './codedx-kubernetes'
+$repoDirectory,$oldRepoDirectory | ForEach-Object {
+	if (Test-Path $_ -PathType Container) {
+		Remove-Item $_ -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
+	}
+}
 Invoke-GitClone $codedxGitRepo $codedxGitRepoBranch $repoDirectory
 if ($pauseAfterGitClone) {
 	Read-Host -Prompt 'git clone complete, press Enter to continue...' | Out-Null

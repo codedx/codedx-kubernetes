@@ -60,8 +60,8 @@ backup schedule.
 		$multipleChoiceQuestion = ([MultipleChoiceQuestion]$question)
 		switch ($multipleChoiceQuestion.choice) {
 			0 { $this.config.backupType = '' }
-			1 { $this.config.backupType = 'Velero' }
-			2 { $this.config.backupType = 'Velero-Restic' }
+			1 { $this.config.backupType = 'velero' }
+			2 { $this.config.backupType = 'velero-restic' }
 		}
 		return $true
 	}

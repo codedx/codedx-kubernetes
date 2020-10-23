@@ -23,6 +23,10 @@ spec:
       labels:
         {{- include "codedx.commonLabels" . | nindent 8 }}
         component: frontend
+      {{- if .Values.podAnnotations }}
+      annotations:
+      {{- toYaml .Values.podAnnotations | trim | nindent 8 }}
+      {{- end }}
     spec:
       {{- if .Values.codedxTomcatImagePullSecrets }}
       imagePullSecrets:

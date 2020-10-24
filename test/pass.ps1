@@ -929,8 +929,8 @@ function Set-DefaultPassWithVelero([int] $saveOption) {
 	$global:inputs.enqueue(1)           # choose Velero plug-in
 	$global:inputs.enqueue('velerons')  # specify Velero namespace
 	$global:inputs.enqueue('0 4 * * *') # specify backup schedule
-	$global:inputs.enqueue('32m')       # specify database backup timeout
-	$global:inputs.enqueue('24h')       # specify backup TTL
+	$global:inputs.enqueue(32)          # specify database backup timeout
+	$global:inputs.enqueue(24)          # specify backup TTL
 	$global:inputs.enqueue(0) # choose default deployment options
 	$global:inputs.enqueue('ca.crt')  # specify cluster cert
 	$global:inputs.enqueue('cdx-app') # specify namespace
@@ -970,8 +970,8 @@ function Set-DefaultPassWithVeleroRestic([int] $saveOption) {
 	$global:inputs.enqueue(2)           # choose Velero Restic
 	$global:inputs.enqueue('velero-ns') # specify Velero namespace
 	$global:inputs.enqueue('0 5 * * *') # specify backup schedule
-	$global:inputs.enqueue('33m')       # specify database backup timeout
-	$global:inputs.enqueue('25h')       # specify backup TTL
+	$global:inputs.enqueue(33)          # specify database backup timeout
+	$global:inputs.enqueue(25)          # specify backup TTL
 	$global:inputs.enqueue(0) # choose default deployment options
 	$global:inputs.enqueue('ca.crt')  # specify cluster cert
 	$global:inputs.enqueue('cdx-app') # specify namespace

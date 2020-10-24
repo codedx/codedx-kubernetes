@@ -146,8 +146,11 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 		'storageClassName',
 		'serviceTypeCodeDx',
 		'caCertsFilePath',
-		'backupType','namespaceVelero','backupScheduleCronExpression','backupDatabaseTimeout','backupTimeToLive' | ForEach-Object {
+		'backupType','namespaceVelero','backupScheduleCronExpression' | ForEach-Object {
 			$this.AddParameter($sb, $_)
+		}
+		'backupDatabaseTimeout','backupTimeToLive' | ForEach-Object {
+			$this.AddPositiveIntParameter($sb, $_)
 		}
 
 		$runNow = ([MultipleChoiceQuestion]$question).choice -eq 0
@@ -465,6 +468,16 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 		$parameterValue = ($this.config | select-object -property $parameterName).$parameterName
 		if ($null -ne $parameterValue) {
 			$sb.appendformat(" -{0} {1}", $parameterName, $parameterValue)
+		}
+	}
+
+	[void]AddPositiveIntParameter([text.stringbuilder] $sb, [string] $parameterName) {
+
+		$parameterValue = ($this.config | select-object -property $parameterName).$parameterName
+		if ($null -ne $parameterValue) {
+			if (([int]($parameterValue)) -gt 0) {
+				$sb.appendformat(" -{0} {1}", $parameterName, $parameterValue)
+			}
 		}
 	}
 

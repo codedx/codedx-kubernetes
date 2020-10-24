@@ -158,10 +158,10 @@ Specify the timeout in minutes for the database backup to complete. The
 database backup runs as a Velero pre exec hook. The timeout determines how 
 long Velero will wait for the database backup command to finish running. 
 
-Note: Press Enter to use the default timeout (30 minutes).
+Note: Press Enter to use the default timeout value.
 '@
 
-	static [string] hidden $default = '30m'
+	static [string] hidden $default = '30'
 
 	BackupDatabaseTimeout([ConfigInput] $config) : base(
 		[BackupDatabaseTimeout].Name, 
@@ -174,18 +174,13 @@ Note: Press Enter to use the default timeout (30 minutes).
 		$question = new-object Question($prompt)
 		$question.allowEmptyResponse = $true
 		$question.emptyResponseLabel = "Accept default ($([BackupDatabaseTimeout]::default))"
-		$question.validationExpr = '^[1-9]\d*(?:m)?$'
+		$question.validationExpr = '^[1-9]\d*$'
 		$question.validationHelp = "You entered an invalid value. Enter a value in minutes such as $([BackupDatabaseTimeout]::default)"
 		return $question
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
-
-		$response = ([Question]$question).GetResponse([BackupDatabaseTimeout]::default)
-		if (-not $response.endswith('m')) {
-			$response += 'm'
-		}
-		$this.config.backupDatabaseTimeout = $response
+		$this.config.backupDatabaseTimeout = ([Question]$question).GetResponse([BackupDatabaseTimeout]::default)
 		return $true
 	}
 
@@ -194,7 +189,7 @@ Note: Press Enter to use the default timeout (30 minutes).
 	}
 
 	[void]Reset(){
-		$this.config.backupDatabaseTimeout = ''
+		$this.config.backupDatabaseTimeout = 0
 	}
 }
 
@@ -204,10 +199,10 @@ class BackupTimeToLive : Step {
 Specify the duration in hours to protect a backup from deletion. Once a backup 
 has expired, it is eligible for deletion. 
 
-Note: Press Enter to use the default value of (720 hours).
+Note: Press Enter to use the default time to live value.
 '@
 
-	static [string] hidden $default = '720h'
+	static [string] hidden $default = '720'
 
 	BackupTimeToLive([ConfigInput] $config) : base(
 		[BackupTimeToLive].Name, 
@@ -220,18 +215,13 @@ Note: Press Enter to use the default value of (720 hours).
 		$question = new-object Question($prompt)
 		$question.allowEmptyResponse = $true
 		$question.emptyResponseLabel = "Accept default ($([BackupTimeToLive]::default))"
-		$question.validationExpr = '^[1-9]\d*(?:h)?$'
+		$question.validationExpr = '^[1-9]\d*$'
 		$question.validationHelp = "You entered an invalid value. Enter a value in minutes such as $([BackupTimeToLive]::default)"
 		return $question
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
-
-		$response = ([Question]$question).GetResponse([BackupTimeToLive]::default)
-		if (-not $response.endswith('h')) {
-			$response += 'h'
-		}
-		$this.config.backupTimeToLive = $response
+		$this.config.backupTimeToLive = ([Question]$question).GetResponse([BackupTimeToLive]::default)
 		return $true
 	}
 
@@ -240,6 +230,6 @@ Note: Press Enter to use the default value of (720 hours).
 	}
 
 	[void]Reset(){
-		$this.config.backupTimeToLive = ''
+		$this.config.backupTimeToLive = 0
 	}
 }

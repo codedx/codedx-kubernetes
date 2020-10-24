@@ -180,7 +180,7 @@ Note: Press Enter to use the default timeout value.
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
-		$this.config.backupDatabaseTimeout = ([Question]$question).GetResponse([BackupDatabaseTimeout]::default)
+		$this.config.backupDatabaseTimeoutMinutes = ([Question]$question).GetResponse([BackupDatabaseTimeout]::default)
 		return $true
 	}
 
@@ -189,7 +189,7 @@ Note: Press Enter to use the default timeout value.
 	}
 
 	[void]Reset(){
-		$this.config.backupDatabaseTimeout = 0
+		$this.config.backupDatabaseTimeoutMinutes = 0
 	}
 }
 
@@ -221,7 +221,7 @@ Note: Press Enter to use the default time to live value.
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
-		$this.config.backupTimeToLive = ([Question]$question).GetResponse([BackupTimeToLive]::default)
+		$this.config.backupTimeToLiveHours = ([Question]$question).GetResponse([BackupTimeToLive]::default)
 		return $true
 	}
 
@@ -230,6 +230,6 @@ Note: Press Enter to use the default time to live value.
 	}
 
 	[void]Reset(){
-		$this.config.backupTimeToLive = 0
+		$this.config.backupTimeToLiveHours = 0
 	}
 }

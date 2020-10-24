@@ -193,8 +193,8 @@ class ConfigInput {
 	[string] $backupType
 	[string] $namespaceVelero
 	[string] $backupScheduleCronExpression
-	[int]    $backupDatabaseTimeout
-	[int]    $backupTimeToLive
+	[int]    $backupDatabaseTimeoutMinutes
+	[int]    $backupTimeToLiveHours
 
 	[hashtable]  $notes = @{}
 

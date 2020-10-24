@@ -191,6 +191,10 @@ class ConfigInput {
 	[string] $sealedSecretsPublicKeyPath
 
 	[string] $backupType
+	[string] $namespaceVelero
+	[string] $backupScheduleCronExpression
+	[string] $backupDatabaseTimeout
+	[string] $backupTimeToLive
 
 	[hashtable]  $notes = @{}
 
@@ -211,6 +215,10 @@ class ConfigInput {
 
 	[bool]HasNginxIngress() {
 		return $this.ingressType -eq [IngressType]::NginxLetsEncrypt -or $this.ingressType -eq [IngressType]::NginxLetsEncryptWithLoadBalancerIP
+	}
+
+	[bool]IsUsingVelero() {
+		return $this.backupType -like 'velero*'
 	}
 }
 

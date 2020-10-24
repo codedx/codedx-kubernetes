@@ -82,7 +82,8 @@ $s = @{}
 [Prerequisites],[PrequisitesNotMet],[WorkDir],[ChooseEnvironment],
 [ChooseContext],[SelectContext],[HandleNoContext],
 [GetKubernetesPort],
-[UseToolOrchestration],[UseExternalDatabase],[BackupType],
+[UseToolOrchestration],[UseExternalDatabase],
+[BackupType],[VeleroNamespace],[BackupSchedule],[BackupDatabaseTimeout],[BackupTimeToLive],
 [UseDefaultOptions],[UsePodSecurityPolicyOption],[UseNetworkPolicyOption],[UseTlsOption],[CertsCAPath],
 [CodeDxNamespace],[CodeDxReleaseName],
 [ToolOrchestrationNamespace],[ToolOrchestrationReleaseName],
@@ -117,7 +118,8 @@ Add-StepTransitions $graph $s[[ChooseContext]] $s[[HandleNoContext]],$s[[Abort]]
 Add-StepTransitions $graph $s[[ChooseContext]] $s[[SelectContext]],$s[[GetKubernetesPort]]
 
 Add-StepTransitions $graph $s[[GetKubernetesPort]] $s[[SealedSecretsNamespace]],$s[[SealedSecretsControllerName]],$s[[SealedSecretsPublicKeyPath]],$s[[UseToolOrchestration]]
-Add-StepTransitions $graph $s[[GetKubernetesPort]] $s[[UseToolOrchestration]],$s[[UseExternalDatabase]],$s[[BackupType]],$s[[UseDefaultOptions]]
+Add-StepTransitions $graph $s[[GetKubernetesPort]] $s[[UseToolOrchestration]],$s[[UseExternalDatabase]],$s[[BackupType]],$s[[VeleroNamespace]],$s[[BackupSchedule]],$s[[BackupDatabaseTimeout]],$s[[BackupTimeToLive]],$s[[UseDefaultOptions]]
+Add-StepTransitions $graph $s[[BackupType]] $s[[UseDefaultOptions]]
 
 Add-StepTransitions $graph $s[[UseDefaultOptions]] $s[[UsePodSecurityPolicyOption]],$s[[UseNetworkPolicyOption]],$s[[UseTlsOption]],$s[[CertsCaPath]],$s[[CodeDxNamespace]]
 Add-StepTransitions $graph $s[[UseTlsOption]] $s[[CodeDxNamespace]]

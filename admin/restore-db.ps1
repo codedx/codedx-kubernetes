@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.2
+.VERSION 1.1.0
 .GUID 89d3b6a9-4f1b-4df9-8706-b6dbb7ec27b2
 .AUTHOR Code Dx
 #>
@@ -26,7 +26,7 @@ $VerbosePreference = 'Continue'
 
 Set-PSDebug -Strict
 
-'../setup/core/common/mariadb.ps1','../setup/core/common/k8s.ps1','../setup/core/common/helm.ps1','../setup/core/common/codedx.ps1' | ForEach-Object {
+'../setup/core/common/mariadb.ps1','../setup/core/common/k8s.ps1','../setup/core/common/helm.ps1','../setup/core/common/velero.ps1','../setup/core/common/codedx.ps1' | ForEach-Object {
 	$path = join-path $PSScriptRoot $_
 	if (-not (Test-Path $path)) {
 		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
@@ -66,6 +66,9 @@ if (-not (Test-Service $namespaceCodeDx $mariaDbMasterServiceName)) {
 
 $statefulSetMariaDBSlaveCount = (Get-HelmValues $namespaceCodeDx $releaseNameCodeDx).mariadb.slave.replicas
 
+$deploymentBackupAnnotation = kubectl -n $namespaceCodeDx get deployment $deploymentCodeDx -o jsonpath='{.spec.template.metadata.annotations}'
+$usingVeleroPlugin = $deploymentBackupAnnotation -match '\[backup.codedx.io/type:velero\]'
+
 Write-Host @"
 
 Using the following configuration:
@@ -76,6 +79,7 @@ MariaDB Slave StatefulSet Name: $statefulSetMariaDBSlave
 MariaDB Slave Replica Count: $statefulSetMariaDBSlaveCount
 MariaDB Secret Name: $mariaDbSecretName
 MariaDB Master Service Name: $mariaDbMasterServiceName
+Using Velero Plug-in: $usingVeleroPlugin
 "@
 
 if ($backupToRestore -eq '') { 
@@ -95,6 +99,11 @@ $workDirectory = join-path $workDirectory 'backup-files'
 Write-Verbose "Testing for directory at '$workDirectory'"
 if (Test-Path $workDirectory -PathType Container) {
 	Write-Error "Unable to continue because $workDirectory already exists. Remove the directory and rerun this script."
+}
+
+if ($usingVeleroPlugin) {
+	Write-Verbose 'Restarting database...'
+	& (join-path $PSScriptRoot 'restart-db.ps1') -namespaceCodeDx $namespaceCodeDx -releaseNameCodeDx $releaseNameCodeDx -waitSeconds $waitSeconds
 }
 
 $backupDirectory = '/bitnami/mariadb/backup/data'
@@ -215,6 +224,10 @@ if ($skipCodeDxRestart) {
 } else {
 	Write-Verbose "Starting Code Dx deployment named $deploymentCodeDx..."
 	Set-DeploymentReplicas  $namespaceCodeDx $deploymentCodeDx 1 $waitSeconds
+}
+
+if ($usingVeleroPlugin) {
+	Set-ExcludePVsFromPluginBackup $namespaceCodeDx @{'app'='mariadb'} 'persistentvolumeclaim/data*' -applyBackupConfiguration
 }
 
 Write-Host 'Done'

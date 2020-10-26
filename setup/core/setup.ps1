@@ -156,7 +156,13 @@ param (
 	[switch]                 $skipSealedSecrets,
 	[string]                 $sealedSecretsNamespace,
 	[string]                 $sealedSecretsControllerName,
-	[string]                 $sealedSecretsPublicKeyPath
+	[string]                 $sealedSecretsPublicKeyPath,
+
+	[string]                 $backupType,
+	[string]                 $namespaceVelero = 'velero',
+	[string]                 $backupScheduleCronExpression = '0 3 * * *',
+	[int]                    $backupDatabaseTimeoutMinutes = 30,
+	[int]                    $backupTimeToLiveHours = 720
 )
 
 $ErrorActionPreference = 'Stop'
@@ -164,7 +170,7 @@ $VerbosePreference = 'Continue'
 
 Set-PSDebug -Strict
 
-'./common/helm.ps1','./common/codedx.ps1','./common/prereqs.ps1','./common/mariadb.ps1','./common/keytool.ps1','./common/resource.ps1' | ForEach-Object {
+'./common/helm.ps1','./common/codedx.ps1','./common/prereqs.ps1','./common/mariadb.ps1','./common/velero.ps1','./common/keytool.ps1','./common/resource.ps1' | ForEach-Object {
 	$path = join-path $PSScriptRoot $_
 	if (-not (Test-Path $path)) {
 		Write-ErrorMessageAndExit "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
@@ -183,6 +189,8 @@ $useNginxIngressController = -not $skipNginxIngressControllerInstall
 $useLocalDatabase = -not $skipDatabase
 $useSealedSecrets = -not $skipSealedSecrets
 
+$useVelero = $backupType -like 'velero*'
+$useVeleroResticIntegration = $backupType -eq 'velero-restic'
 $useGitOps = $useHelmOperator
 
 
@@ -402,6 +410,28 @@ if ('' -eq $caCertsFilePath -and $useGitOps -and $codeDxMustTrustCerts) {
 
 if ($kubeContextName -eq '' -and $useGitOps) {
 	$kubeContextName = Read-HostText 'Enter a kube context name (required for helm-operator)'
+}
+
+if ($backupType -eq '') {
+	$backupType = 'none'
+}
+
+if ('none','velero','velero-restic' -notcontains $backupType) {
+	Write-ErrorMessageAndExit "Unable to continue because backup type $backupType is unknown."
+}
+
+if ($useVelero) {
+	if (-not (Test-IsValidParameterValue $namespaceVelero $dns1123SubdomainExpr)) {
+		$namespaceVelero = Read-HostText 'Enter the Velero namespace' -validationExpr $dns1123SubdomainExpr 
+	}
+
+	if ($backupDatabaseTimeoutMinutes -le 0) {
+		$backupDatabaseTimeoutMinutes = [int](Read-HostText 'Enter backup database timeout in minutes ' -validationExpr '^[1-9]\d*$' -validationHelp 'Enter the number of minutes (1 or more)')
+	}
+
+	if ($backupTimeToLiveHours -le 0) {
+		$backupTimeToLiveHours = [int](Read-HostText 'Enter backup time to live in hours ' -validationExpr '^[1-9]\d*$' -validationHelp 'Enter the number of hours (1 or more)')
+	}
 }
 
 ### Select Kube Context
@@ -639,6 +669,7 @@ if ($useToolOrchestration) {
 		$tlsMinioCertSecretName $minioCertConfigMapName `
 		$toolServiceNodeSelector $minioNodeSelector $workflowControllerNodeSelector $toolNodeSelector `
 		$toolServiceNoScheduleExecuteToleration $minioNoScheduleExecuteToleration $workflowControllerNoScheduleExecuteToleration $toolNoScheduleExecuteToleration `
+		$backupType `
 		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS `
 		'./toolsvc-values.yaml'
 
@@ -732,6 +763,7 @@ $codeDxDeploymentValuesFile = New-CodeDxDeploymentValuesFile $codeDxDnsName $cod
 	$tlsSecretNameCodeDx `
 	$codeDxNodeSelector $masterDatabaseNodeSelector $subordinateDatabaseNodeSelector `
 	$codeDxNoScheduleExecuteToleration $masterDatabaseNoScheduleExecuteToleration $subordinateDatabaseNoScheduleExecuteToleration `
+	$backupType `
 	-useSaml:$useSaml `
 	-ingressEnabled:$useIngress -ingressAssumesNginx:$useIngressAssumesNginx `
 	-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -skipDatabase:$skipDatabase `
@@ -754,6 +786,45 @@ Invoke-HelmSingleDeployment 'Code Dx' `
 	1 `
 	$extraCodeDxValuesPaths `
 	-dryRun:$useGitOps
+
+if ($useVelero) {
+
+	$skipDatabaseBackup = $skipDatabase -or $dbSlaveReplicaCount -le 0
+	if (-not $useGitOps -and -not $skipDatabaseBackup -and -not $useVeleroResticIntegration) {
+
+		# Skip the unnecessary back up of MariaDB data volumes that get restored by a database backup file.
+		#
+		# The Code Dx Helm charts add annotations to skip unwanted volume backups when using Velero with 
+		# Restic. When using Velero with a volume storage provider plug-in, skip data volume snapshots by
+		# using a PV label. The Code Dx chart could handle PVC labeling, but auto-provisioned PVs do not 
+		# currently inherit PVC labels, so all PVC/PV labelling is done here.
+		#
+		# Note: The restore procedure covers relabeling PVs after a restore.
+		Set-ExcludePVsFromPluginBackup $namespaceCodeDx @{'app'='mariadb'} 'persistentvolumeclaim/data*' -applyBackupConfiguration
+	}
+
+	$scheduleName = "$releaseNameCodeDx-schedule"
+	$databaseBackupTimeout = "$($backupDatabaseTimeoutMinutes)m"
+	$databaseBackupTimeToLive = "$($backupTimeToLiveHours)h0m0s"
+
+	Write-Verbose "Creating Velero Schedule resource $scheduleName..."
+	$schedule = New-VeleroBackupSchedule $workDir $scheduleName `
+		'schedule.yaml' `
+		$releaseNameCodeDx `
+		$namespaceVelero `
+		$backupScheduleCronExpression `
+		$namespaceCodeDx `
+		$namespaceToolOrchestration `
+		$databaseBackupTimeout `
+		$databaseBackupTimeToLive `
+		-skipDatabaseBackup:$skipDatabaseBackup `
+		-skipToolOrchestration:$skipToolOrchestration `
+		-dryRun:$useGitOps
+
+	if ($useGitOps) {
+		New-ResourceFile 'Schedule' $namespaceVelero $scheduleName $schedule
+	}
+}
 
 if ($useGitOps) {
 

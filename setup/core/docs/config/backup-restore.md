@@ -1,16 +1,12 @@
 # Code Dx Kubernetes Backup & Restore Procedure
 
-Here are the steps to configure a Code Dx backup and test a restore so that you can return Code Dx to a previous state when necessary.
+You can configure your Code Dx backup using the Guided Setup. If you already ran the Guided Setup without specifying a backup configuration, you can configure your backup by appending the following [script parameters](https://github.com/codedx/codedx-kubernetes/tree/master/setup/core) to your setup.ps1 command: backupType, namespaceVelero, backupScheduleCronExpression, backupDatabaseTimeoutMinutes, and backupTimeToLiveHours.
 
-## Approach
-
-Code Dx depends on [Velero](https://velero.io) for cluster state and volume data backups. When not using an external Code Dx database, you must deploy Code Dx with at least one MariaDB subordinate database that will get backed up when Velero creates a backup.
+Code Dx depends on [Velero](https://velero.io) for cluster state and volume data backups. When not using an external Code Dx database, you must deploy Code Dx with at least one MariaDB subordinate database so that a database backup occurs before Velero runs a backup.
 
 > Note: The Code Dx Kubernetes Backup & Restore Procedure has been tested with Velero versions 1.3, 1.4, and 1.5.
 
-If you are using an external Code Dx database, your database will not be included in the Velero-based backup. You must create a database backup schedule on your own. To minimize data loss, schedule your database backups for a time that matches your Code Dx backup to help align your Kubernetes volume and external database data after a restore.
-
-Code Dx gets restored with either a two-step or a three-step process depending on whether you're using Velero's Restic integration. You first use Velero to restore cluster state and volume data for the Code Dx AppData directory, MariaDB database backups (when not using an external database), and MinIO (when using Code Dx Tool Orchestration). When not using Velero's Restic integration, you restart the MariaDB master and slave database instances to provision new MariaDB PVC and PV resources. Finally, you run the Code Dx admin/restore-db.ps1 script to restore the MariaDB master and slave databases (when not using an external database).
+If you are using an external Code Dx database, your database will not be included in the Velero-based backup. You must create a database backup schedule on your own. To minimize data loss, schedule your database backups to coincide with your Code Dx backups to help align your Kubernetes volume and database data after a restore.
 
 > Note: The overall backup process is not an atomic operation, so it's possible to capture inconsistent state in a backup. For example, the Code Dx AppData volume backup could include a file that was unknown at the time the database backup occurred. The likelihood of capturing inconsistent state is a function of multiple factors to include system activity and the duration of backup operations.
 
@@ -26,109 +22,6 @@ Install the [Velero CLI](https://velero.io/docs/v1.5/basic-install/#install-the-
 
 > Note: If your Velero backup unexpectedly fails, you may need to increase the amount of memory available to the Velero pod. Use the --velero-pod-mem-limit parameter with the velero install command as described [here](https://velero.io/docs/v1.5/customize-installation/#customize-resource-requests-and-limits).
 
-## Applying Backup Configuration
-
-This section explains how to add Velero-specific configuration to previously installed Code Dx software running on k8s. Since Code Dx can run with or without the Code Dx Tool Orchestration feature, and Velero can run with or without Restic, this section covers all of those cases.
-
-While the Code Dx deployment includes a database backup script, it does not apply Velero-specific configuration, nor does it set up a backup schedule. You will accomplish both tasks by running the admin/set-backup.ps1 script.
-
-Start a new PowerShell Core 7 session and change directory to where you downloaded the setup scripts from the [codedx-kubernetes](https://github.com/codedx/codedx-kubernetes).
-
-```
-/$ pwsh
-PS /> cd ~/git/codedx-kubernetes/admin
-```
-
-The set-backup.ps1 admin script applies the required Velero backup configuration. There are four supported scenarios described in the next four sections, so follow the one that matches your deployment.
-
-IMPORTANT NOTE: If you are using an external Code Dx database, append the `-skipDatabaseBackup` parameter to each usage of set-backup.ps1.
-
-> Note: Running set-backup.ps1 will start a scheduled backup if the schedule has not previously run.
-
-### Code Dx with Tool Orchestration (Velero Storage Provider Plugins)
-
-If you're using storage provider plugins with Velero and using Code Dx Tool Orchestration, run the following command after replacing parameter placeholders:
-
-```
-PS /git/codedx-kubernetes/admin> ./set-backup.ps1 `
-        -namespaceCodeDx 'code-dx-namespace-placeholder' `
-        -releaseNameCodeDx 'code-dx-helm-release-name-placeholder' `
-        -namespaceCodeDxToolOrchestration 'code-dx-orchestration-namespace-placeholder' `
-        -releaseNameCodeDxToolOrchestration 'code-dx-orchestration-helm-release-name-placeholder'
-```
-
-> Note: By default, the backup will occur daily at 3 AM (UTC). To change the schedule, use the -scheduleCronExpression parameter to specify your own cron expression. If you need to change the backup schedule, rerun set-backup.ps1 and specify a different value for -scheduleCronExpression.
-
-### Code Dx without Tool Orchestration (Velero Storage Provider Plugins)
-
-If you're using storage provider plugins with Velero and are not using Code Dx Tool Orchestration, run the following command after replacing parameter placeholders:
-
-```
-PS >/ ./set-backup.ps1 `
-        -namespaceCodeDx 'code-dx-namespace-placeholder' `
-        -releaseNameCodeDx 'code-dx-helm-release-name-placeholder' `
-        -skipToolOrchestration
-```
-
-> Note: By default, the backup will occur daily at 3 AM (UTC). To change the schedule, use the -scheduleCronExpression parameter to specify your own cron expression. If you need to change the backup schedule, rerun set-backup.ps1 and specify a different value for -scheduleCronExpression.
-
-### Code Dx with Tool Orchestration (Velero Restic Integration)
-
-If you're using Velero's Restic integration and you are using Code Dx Tool Orchestration, run the following command after replacing parameter placeholders:
-
-```
-PS >/ ./set-backup.ps1 `
-        -namespaceCodeDx 'code-dx-namespace-placeholder' `
-        -releaseNameCodeDx 'code-dx-helm-release-name-placeholder' `
-        -namespaceCodeDxToolOrchestration 'code-dx-orchestration-namespace-placeholder' `
-        -releaseNameCodeDxToolOrchestration 'code-dx-orchestration-helm-release-name-placeholder' `
-        -useVeleroResticIntegration
-```
-
-> Note: By default, the backup will occur daily at 3 AM (UTC). To change the schedule, use the -scheduleCronExpression parameter to specify your own cron expression. If you need to change the backup schedule, rerun set-backup.ps1 and specify a different value for -scheduleCronExpression.
-
-### Code Dx without Tool Orchestration (Velero Restic Integration)
-
-If you're using Velero's Restic integration and you are not using Code Dx Tool Orchestration, run the following command after replacing parameter placeholders:
-
-```
-PS >/ ./set-backup.ps1 `
-        -namespaceCodeDx 'code-dx-namespace-placeholder' `
-        -releaseNameCodeDx 'code-dx-helm-release-name-placeholder' `
-        -skipToolOrchestration `
-        -useVeleroResticIntegration
-```
-
-> Note: By default, the backup will occur daily at 3 AM (UTC). To change the schedule, use the -scheduleCronExpression parameter to specify your own cron expression. If you need to change the backup schedule, rerun set-backup.ps1 and specify a different value for -scheduleCronExpression.
-
-### Set-Backup.ps1 Parameters
-
-Refer to the following table for a description of the set-backup.ps1 script parameters.
-
-| Parameter                          | Description                                    | Default                   |
-|------------------------------------|------------------------------------------------|---------------------------|
-| namespaceCodeDx                    | Code Dx namespace                              | cdx-app                   |
-| releaseNameCodeDx                  | Code Dx Helm release name                      | codedx                    |
-|                                    |                                                |                           |
-| namespaceCodeDxToolOrchestration   | Tool Orchestration namespace                   | cdx-svc                   |
-| releaseNameCodeDxToolOrchestration | Tool Orchestration Helm release name           | codedx-tool-orchestration |
-|                                    |                                                |                           |
-| scheduleCronExpression             | Backup schedule expression                     | 0 3 * * *                 |
-| databaseBackupTimeout              | Allowable database backup time                 | 30m                       |
-| databaseBackupTimeToLive           | Duration of Velero backups                     | 720h0m0s                  |
-|                                    |                                                |                           |
-| useVeleroResticIntegration         | Whether using Velero Restic integration        | $false                    |
-|                                    |                                                |                           |
-| skipDatabaseBackup                 | Whether to skip a database backup              | $false                    |
-| skipToolOrchestration              | Whether to skip a Tool Orchestration backup    | $false                    |
-|                                    |                                                |                           |
-| workDirectory                      | Directory for creating working files           | ~                         |
-| namespaceVelero                    | Velero namespace                               | velero                    |
-|                                    |                                                |                           |
-| waitTimeSeconds                    | Time to wait for pod restarts                  | 900                       |
-|                                    |                                                |                           |
-| delete                             | Whether to delete backup config                | $false                    |
-
 ## Verify Backup
 
 Once backups start running, use the velero commands that [describe backups and fetch logs](https://velero.io/docs/v1.5/troubleshooting/#general-troubleshooting-information) to confirm that the backups are completing successfully and that they include the following volumes:
@@ -137,7 +30,7 @@ Once backups start running, use the velero commands that [describe backups and f
 - backup (Code Dx MariaDB Slave databases - when not using an external Code Dx database)
 - data (MinIO - when using Code Dx Tool Orchestration)
 
-When using Velero with Storage Provider Plugins, the volume snapshots initiated by a plugin may finish after the Backup resource reports a completed status. Wait for the volume snapshot process to finish before attempting to verify a backup by testing a restore.
+When using Velero with Storage Provider Plugins, the volume snapshots initiated by a plugin may finish after the Backup resource reports a completed status. Wait for the volume snapshot process to finish before starting a restore.
 
 If applicable, you should also confirm that the database backup script runs correctly and produces database backups with each Velero backup in the /bitnami/mariadb/backup/data directory. Use the following command after replacing placeholder parameters to list recent backups for a MariaDB slave database instance:
 
@@ -159,9 +52,11 @@ The backup.log file should have a "completed OK!" message above the log entries 
 
 ## Restoring Code Dx
 
+While the Guided Setup can generate a Velero Schedule resource for use with a GitOps-based deployment, restoring a Code Dx backup currently requires running ad-hoc commands on your cluster.
+
 Velero will skip restoring resources that already exist, so delete those you want to restore from a backup. You can delete the Code Dx namespace(s) to remove all namespaced resources, and you can delete cluster scoped Code Dx resources to remove Code Dx entirely. Since Code Dx depends on multiple PersistentVolume (PV) resources, you will typically want to delete Code Dx PVs when restoring Code Dx to a previous known good state.
 
-Below are the steps for a full restore of a Code Dx instance from a backup. When using Velero's Restic integration, you can skip Step 2 and Step 4.
+There are two steps required to restore Code Dx from a Velero backup. The first step is to use the velero CLI to restore a specific backup. For the second step, you will run the restore-db.ps1 script to restore a local Code Dx database. If you're using an external database, you will skip the second step by restoring your Code Dx database on your own.
 
 >Note: When using Velero with Storage Provider Plugins, wait for the volume snapshot process to finish before restoring a backup.
 
@@ -193,32 +88,13 @@ $ velero restore create --from-backup my-backup
 
 > Note: Running two velero commands works around an issue discovered in Velero v1.3.2 that blocks the restoration of Code Dx pods. If you run only the second command, Code Dx priority classes get restored, but pods depending on those classes do not.
 
-### Step 2: Restart MariaDB
+When using Velero with storage provider plugins, your Code Dx and MariaDB pods may not return to a running state. Step 2 will resolve that issue.
 
-Skip this section if you are using Velero's Restic integration or if you are using an external Code Dx database. Step 2 is required when using Velero with storage provider plugins.
+> Note: Code Dx is not ready for use at the end of Step 1.
 
-During Step 2, you will start the process of bringing Code Dx and the MariaDB databases online. Initially, volume data excluded from the backup will cause MariaDB database pods to get stuck in the Pending state. This step will result in new PVCs and PVs for the data volumes.
+### Step 2: Restore Code Dx Database
 
-Start a new PowerShell Core 7 session and change directory to where you downloaded the setup scripts from the [codedx-kubernetes](https://github.com/codedx/codedx-kubernetes).
-
-```
-/$ pwsh
-PS /> cd ~/git/codedx-kubernetes/admin
-```
-
-Restart the MariaDB databases by running the restart-db.ps1 script:
-
-```
-PS /git/codedx-kubernetes/admin> ./restart-db.ps1
-```
-
-> Note: At the conclusion of Step 2, Code Dx and the MariaDB databases will be in a running state, but you must finish Step 3 before using the Code Dx application.
-
-### Step 3: Restore Code Dx Database
-
-During Step 3, you will run the admin/restore-db.ps1 script to restore the Code Dx database from a backup residing on the volume data you restored. If you are using an external Code Dx database, restore your external database at this time and skip this section.
-
-Before continuing, make sure that all Velero restore operations have finished and that the Code Dx pods are in a ready state.
+During Step 2, you will run the admin/restore-db.ps1 script to restore the Code Dx database from a backup residing on the volume data you restored. If you are using an external Code Dx database, restore your external database to a time that coincides with your Code Dx backup and skip this section.
 
 At this point, you can find the database backup corresponding to the backup you want to restore. Refer to the Verify Backup section for the command to list backup files on a MariaDB slave database instance. Note the name of the database backup that coincides with the Velero backup you restored (e.g., '20200523-020200-Full'). You will enter this name when prompted by the restore-db.ps1 script.
 
@@ -237,36 +113,13 @@ PS /git/codedx-kubernetes/admin> ./restore-db.ps1 `
         -releaseNameCodeDx 'code-dx-helm-release-name-placeholder'
 ```
 
-When prompted by the script, enter the name of the database backup you want to restore and the password for the MariaDB database root user. The script will search for the database backup, copy it to a folder in your profile, and use the backup to restore both master and slave database(s). It will then restart database replication, and it will manage the running instances of MariaDB and Code Dx, so when the script is finished, you can start using the restored Code Dx instance.
+When prompted by the script, enter the name of the database backup you want to restore and the password for the MariaDB database root user. The script will search for the database backup, copy it to a folder in your profile, and use the backup to restore both master and slave database(s). It will then restart database replication, and it will manage the running instances of MariaDB and Code Dx, so when the script is finished, all Code Dx pods will be online. Depending on your ingress type and what was restored, you may need to update your DNS configuration before using the new Code Dx instance.
 
 > Note: The restore-db.ps1 script requires that your work directory (default is your profile directory) not already include a folder named backup-files. The script will stop if it finds that directory, so delete it before starting the script.
 
-### Step 4: Reapply Backup Configuration
-
-Skip this section if you are using Velero's Restic integration or if you are using an external Code Dx database. Step 4 is required when using Velero with storage provider plugins.
-
-Reapply the backup configuration by following the steps in the Applying Backup Configuration section. Running set-backup.ps1 again will reapply volume labels to avoid storing unnecessary volume snapshots for database volumes.
-
-## Removing Backup Configuration
-
-You can remove the backup configuration you applied to Code Dx k8s resources by rerunning the command you ran in the Apply Backup Configuration section with the additional -delete parameter. For example, if you applied a backup configuration suitable for Code Dx running with Tool Orchestration and are using Velero's Restic integration, run the following command to undo that configuration (replacing parameter placeholders):
-
-```
-PS >/ ./set-backup.ps1 `
-        -namespaceCodeDx 'code-dx-namespace-placeholder' `
-        -releaseNameCodeDx 'code-dx-helm-release-name-placeholder' `
-        -namespaceCodeDxToolOrchestration 'code-dx-orchestration-namespace-placeholder' `
-        -releaseNameCodeDxToolOrchestration 'code-dx-orchestration-helm-release-name-placeholder' `
-        -useVeleroResticIntegration `
-        -delete
-```
-
->Note: Remember to append `-skipDatabaseBackup` to your set-backup.ps1 usage when using an external Code Dx database.
-
 ## Uninstalling
 
-If you need to uninstall the backup capability, do the following:
+If you need to uninstall the backup configuration and Velero, do the following:
 
-- Remove the backup configuration you applied to Code Dx k8s resources (see the Removing Backup Configuration section)
-- Remove Velero backup and restore objects with `velero backup delete --all` and `velero restore delete --all`
+- Remove the Velero Schedule resource for your Code Dx instance and related Backup and Restore resources (you can remove *all* Velero backup and restore objects by running `velero backup delete --all` and `velero restore delete --all`)
 - [Uninstall Velero](https://velero.io/docs/v1.5/uninstalling/)

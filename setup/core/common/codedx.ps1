@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.1.0
+.VERSION 1.2.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -57,6 +57,7 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 	[Tuple`2[string,string]] $codeDxNoScheduleExecuteToleration,
 	[Tuple`2[string,string]] $masterDatabaseNoScheduleExecuteToleration,
 	[Tuple`2[string,string]] $subordinateDatabaseNoScheduleExecuteToleration,
+	[string]   $backupType,
 	[switch]   $useSaml,
 	[switch]   $ingressEnabled,
 	[switch]   $ingressAssumesNginx,
@@ -145,6 +146,22 @@ codedxTomcatImagePullSecrets:
 		$hostBasePath = "$protocol`://$codeDxDnsName/codedx"
 	}
 
+	$codedxPodAnnotations = New-BackupAnnotation $backupType
+	if ($backupType -eq 'velero-restic') {
+		$codedxPodAnnotations['backup.velero.io/backup-volumes'] = 'codedx-appdata'
+	}
+
+	$primaryDbPodAnnotations = New-BackupAnnotation $backupType
+	if ($backupType -eq 'velero-restic') {
+		$primaryDbPodAnnotations['backup.velero.io/backup-volumes-excludes'] = 'data'
+	}
+
+	$replicaDbPodAnnotations = New-BackupAnnotation $backupType
+	if ($backupType -eq 'velero-restic') {
+		$replicaDbPodAnnotations['backup.velero.io/backup-volumes'] = 'backup'
+		$replicaDbPodAnnotations['backup.velero.io/backup-volumes-excludes'] = 'data'
+	}
+
 	$values = @'
 existingSecret: '{0}'
 codedxTomcatPort: {22}
@@ -157,6 +174,7 @@ codedxTls:
   secret: {6}
   certFile: {7}
   keyFile: {8}
+podAnnotations: {47}
 service:
   type: {24}
   annotations: {25}
@@ -199,6 +217,7 @@ mariadb:
     persistence:
       storageClass: {17}
       size: {10}Gi
+    annotations: {45}
     nodeSelector: {32}
     tolerations: {35}
 {19}
@@ -209,6 +228,7 @@ mariadb:
       size: {14}Gi
       backup:
         size: {14}Gi
+    annotations: {46}
     nodeSelector: {33}
     tolerations: {36}
 {21}
@@ -248,7 +268,10 @@ $externalDb, $caCertsSecretName, $offlineMode.ToString().ToLower(),
 (Format-NodeSelector $codeDxNodeSelector), (Format-NodeSelector $masterDatabaseNodeSelector), (Format-NodeSelector $subordinateDatabaseNodeSelector),
 (Format-PodTolerationNoScheduleNoExecute $codeDxNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $masterDatabaseNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $subordinateDatabaseNoScheduleExecuteToleration),
 $hostBasePath, $useSaml.tostring().tolower(), $samlAppName, $samlIdpXmlFileConfigMapName, $samlSecretName,
-$dbConnectionSecret, $toolServiceSelector, $toolOrchestrationValues
+$dbConnectionSecret, $toolServiceSelector, $toolOrchestrationValues,
+(ConvertTo-YamlMap $primaryDbPodAnnotations),
+(ConvertTo-YamlMap $replicaDbPodAnnotations),
+(ConvertTo-YamlMap $codedxPodAnnotations)
 
 	$values | out-file $valuesFile -Encoding ascii -Force
 	Get-ChildItem $valuesFile
@@ -296,6 +319,9 @@ function New-ToolOrchestrationValuesFile([string]   $codedxNamespace,
 	[Tuple`2[string,string]] $minioNoScheduleExecuteToleration,
 	[Tuple`2[string,string]] $workflowControllerNoScheduleExecuteToleration,
 	[Tuple`2[string,string]] $toolNoScheduleExecuteToleration,
+
+	[string]   $backupType,
+
 	[switch]   $enablePSPs,
 	[switch]   $enableNetworkPolicies,
 	[switch]   $configureTls,
@@ -324,6 +350,11 @@ toolServiceImagePullSecrets:
 	$psp = $enablePSPs.ToString().ToLower()
 	$networkPolicy = $enableNetworkPolicies.ToString().ToLower()
 
+	$minioPodAnnotations = New-BackupAnnotation $backupType
+	if ($backupType -eq 'velero-restic') {
+		$minioPodAnnotations['backup.velero.io/backup-volumes'] = 'data'
+	}
+
 	$values = @'
 argo:
   installCRD: false
@@ -344,6 +375,7 @@ minio:
   persistence:
     storageClass: {23}
     size: {20}Gi
+  podAnnotations: {39}
   nodeSelector: {30}
   tolerations: {33}
 {27}
@@ -420,7 +452,8 @@ $minioCertConfigMap,
 ($null -eq $toolNodeSelector ? '' : $toolNodeSelector.Item1),
 ($null -eq $toolNodeSelector ? '' : $toolNodeSelector.Item2),
 ($null -eq $toolNoScheduleExecuteToleration ? '' : $toolNoScheduleExecuteToleration.Item1),
-($null -eq $toolNoScheduleExecuteToleration ? '' : $toolNoScheduleExecuteToleration.Item2)
+($null -eq $toolNoScheduleExecuteToleration ? '' : $toolNoScheduleExecuteToleration.Item2),
+(ConvertTo-YamlMap $minioPodAnnotations)
 
 	$values | out-file $valuesFile -Encoding ascii -Force
 	Get-ChildItem $valuesFile
@@ -635,4 +668,9 @@ swa.db.password = $databasePwd
 "@ | out-file $dbConnectionFile -Encoding ascii -Force
 
 	Get-ChildItem $dbConnectionFile
+}
+
+function New-BackupAnnotation([string] $backupType) {
+
+	@{'backup.codedx.io/type' = $backupType}
 }

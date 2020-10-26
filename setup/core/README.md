@@ -148,5 +148,14 @@ This section describes the setup.ps1 script parameters, which you can specify by
 |                                                    |                                                            |                                                   |
 | `pauseAfterGitClone`                               | whether to pause (for debug purposes) after git clone      |                                                   |
 |                                                    |                                                            |                                                   |
-| `provisionNetworkPolicy`                           | script block for optional network policy provisioning      |                                                   |
-| `provisionIngressController`                       | script block for optional ingress controller provisioning  |                                                   |
+| `useHelmOperator`                                  | whether to create resources for helm-operator and GitOps   | false                                             |
+| `skipSealedSecrets`                                | whether to skip generating sealed secrets                  | false                                             |
+| `sealedSecretsNamespace`                           | namespace containing the Sealed Secrets application        | adm (example)                                     |
+| `sealedSecretsControllerName`                      | name of the Sealed Secrets controller                      | sealed-secrets (example)                          |
+| `sealedSecretsPublicKeyPath`                       | file path for the Sealed Secrets public key file           | sealed-secrets.pem (example)                      |
+|                                                    |                                                            |                                                   |
+| `backupType`                                       | type of backup to define (none, velero, velero-restic)     | velero                                            |
+| `namespaceVelero`                                  | namespace containing the Velero application                |                                                   |
+| `backupScheduleCronExpression`                     | cron expression definining when Code Dx backup runs        | 0 3 * * *                                         |
+| `backupDatabaseTimeoutMinutes`                     | minutes to wait for database backup to complete            | 30                                                |
+| `backupTimeToLiveHours`                            | hours to wait before a backup is eligible for deletion     | 720                                               |

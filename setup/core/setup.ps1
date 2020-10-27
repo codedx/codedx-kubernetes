@@ -892,7 +892,10 @@ if ($useGitOps) {
 		-chartGit 'git@github.com:codedx/codedx-kubernetes' `
 		-chartRef $codedxGitRepoBranch `
 		-chartPath 'setup/core/charts/codedx' `
-		-valuesConfigMapNames $codeDxValuesConfigMapNames
+		-valuesConfigMapNames $codeDxValuesConfigMapNames `
+		-dockerImageNames @{
+			'codedxTomcatImage' = $imageCodeDxTomcat
+		}
 
 	### Optionally Create Tool Orchestration HelmRelease
 	if ($useToolOrchestration) {
@@ -919,7 +922,16 @@ if ($useGitOps) {
 			-chartGit 'git@github.com:codedx/codedx-kubernetes' `
 			-chartRef $codedxGitRepoBranch `
 			-chartPath 'setup/core/charts/codedx-tool-orchestration' `
-			-valuesConfigMapNames $toolOrchestrationValuesConfigMapNames
+			-valuesConfigMapNames $toolOrchestrationValuesConfigMapNames `
+			-dockerImageNames @{
+				'imageNameCodeDxTools'      = $imageCodeDxTools;
+				'imageNameCodeDxToolsMono'  = $imageCodeDxToolsMono;
+				'imageNameNewAnalysis'      = $imageNewAnalysis;
+				'imageNameSendResults'      = $imageSendResults;
+				'imageNameSendErrorResults' = $imageSendErrorResults;
+				'imageNameHelmPreDelete'    = $imagePreDelete;
+				'toolServiceImageName'      = $imageToolService;
+			}
 	}
 }
 

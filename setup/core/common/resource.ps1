@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.0
+.VERSION 1.1.0
 .GUID 0c9bd537-7359-4ebb-a64c-cf1693ccc4f9
 .AUTHOR Code Dx
 #>
@@ -147,40 +147,80 @@ function New-SealedSecret([io.fileinfo] $secretFileInfo,
 
 function New-HelmRelease(
 	[Parameter(Position=0)] [Parameter(ParameterSetName='GitChart')] [Parameter(ParameterSetName='RepoChart')]
-	[string] $name,
+	[string]    $name,
 	[Parameter(Position=1)] [Parameter(ParameterSetName='GitChart')] [Parameter(ParameterSetName='RepoChart')]
-	[string]   $namespace,
+	[string]    $namespace,
 	[Parameter(Position=2)] [Parameter(ParameterSetName='GitChart')] [Parameter(ParameterSetName='RepoChart')]
-	[string]   $releaseName,
+	[string]    $releaseName,
 	[Parameter(ParameterSetName='GitChart')]
-	[string]   $chartGit,
+	[string]    $chartGit,
 	[Parameter(ParameterSetName='GitChart')]
-	[string]   $chartRef,
+	[string]    $chartRef,
 	[Parameter(ParameterSetName='GitChart')]
-	[string]   $chartPath,
+	[string]    $chartPath,
 	[Parameter(ParameterSetName='RepoChart')]
-	[string]   $chartRepository,
+	[string]    $chartRepository,
 	[Parameter(ParameterSetName='RepoChart')]
-	[string]   $chartName,
+	[string]    $chartName,
 	[Parameter(ParameterSetName='RepoChart')]
-	[string]   $chartVersion,
+	[string]    $chartVersion,
 	[Parameter(ParameterSetName='GitChart')] [Parameter(ParameterSetName='RepoChart')]
-	[string[]] $valuesConfigMapNames) {
+	[string[]]  $valuesConfigMapNames,
+	[Parameter(ParameterSetName='GitChart')] [Parameter(ParameterSetName='RepoChart')]
+	[hashtable] $dockerImageNames) {
 
-    $chart = ''
+	$chartSource = ''
     if ('' -ne $chartGit) {
-		$chart = @'
-    git: {0}
-    ref: {1}
-    path: {2}
-'@ -f $chartGit,$chartRef,$chartPath
-    } else {
-		$chart = @'
-    repository: {0}
-    name: {1}
-    version: {2}
-'@ -f $chartRepository,$chartName,$chartVersion
-    }
+
+		$chartSource = @"
+    git: $chartGit
+    ref: $chartRef
+    path: $chartPath
+"@	} else {
+
+		$chartSource = @"
+    repository: $chartRepository
+    name: $chartName
+    version: $chartVersion
+"@	}
+	
+	$values = ''
+	$annotations = @'
+  annotations:
+    fluxcd.io/automated: "false"
+'@
+	if ($dockerImageNames.Count -gt 0) {
+
+		$values = @'
+  values:
+'@
+		$dockerImageNames.Keys | ForEach-Object {
+			$annotations += @"
+
+    repository.fluxcd.io/$_`: $_
+    filter.fluxcd.io/$_`: 'glob:*'
+"@
+			$values += @"
+
+    $_`: $($dockerImageNames[$_])
+"@
+		}
+	}
+
+	$valuesFrom = ''
+	if ($valuesConfigMapNames.Count -gt 0) {
+
+		$valuesFrom = @'
+  valuesFrom:
+'@
+ 		$valuesConfigMapNames | ForEach-Object {
+	  
+			$valuesFrom += @"
+
+  - configMapKeyRef:
+      name: $_
+"@		}
+	}
 
     $helmRelease = @'
 apiVersion: helm.fluxcd.io/v1
@@ -188,27 +228,14 @@ kind: HelmRelease
 metadata:
   name: {0}
   namespace: {1}
-  annotations:
+{2}
 spec:
-  releaseName: {2}
+  releaseName: {3}
   chart:
-{3}
-  valuesFrom:
-'@ -f $name,$namespace,$releaseName,$chart
-
-    $valuesConfigMapNames | ForEach-Object {
-
-        $valuesFromTemplate = @'
-
-  - configMapKeyRef:
-      name: {0}
-      namespace: {1}
-      key: values.yaml
-      optional: false
-'@ -f $_,$namespace
-
-        $helmRelease += $valuesFromTemplate
-    }
+{4}
+{5}
+{6}
+'@ -f $name,$namespace,$annotations,$releaseName,$chartSource,$valuesFrom,$values
 
     New-ResourceFile 'HelmRelease' $namespace $name $helmRelease
 }

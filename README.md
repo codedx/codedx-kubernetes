@@ -65,17 +65,13 @@ At the conclusion of the guided setup, you can either run the generated setup co
 
 If you are migrating from a Code Dx system created by the Code Dx Installer to a Code Dx Kubernetes deployment, follow the [data migration steps](./setup/core/docs/config/migrate-data.md) to move your data to Kubernetes.
 
-## Code Dx Backup
-
-Follow the [Code Dx Kubernetes Backup & Restore](./setup/core/docs/config/backup-restore.md) procedure to create a Code Dx backup schedule and test a Code Dx restore.
-
 ## Upgrading
 
 If you want the option of recovering from a failed upgrade by rolling back to a known good state, start a Code Dx backup and wait for it to finish before beginning an upgrade.
 
 >Note: When using Velero Storage Provider Plugins, volume snapshots may complete after your Velero backup reports a completed status, so wait for snapshots to finish before proceeding.
 
-You can start a Velero backup using the schedule you created with the set-backup.ps1 script. If you have not yet configured your Code Dx backup, refer to the [Code Dx Kubernetes Backup & Restore](./setup/core/docs/config/backup-restore.md) document for configuration details. For example, if the name of your Velero schedule is `codedx-schedule`, you can start a backup with this command:
+You can start a Velero backup using the schedule you created. If you have not yet configured your Code Dx backup, refer to the [Code Dx Kubernetes Backup & Restore](./setup/core/docs/config/backup-restore.md) document for configuration details. For example, if the name of your Velero schedule is `codedx-schedule`, you can start a backup with this command:
 
 ```
 velero backup create --from-schedule codedx-schedule
@@ -97,7 +93,7 @@ You can recover from a failed upgrade by restoring the Code Dx backup you create
 velero backup get
 ```
 
-Velero will skip restoring resources that already exist, so delete the resources you want to revert before starting a restore. You can delete the Code Dx namespace(s) to remove all namespaced resources, and you can delete cluster scoped Code Dx resources to remove Code Dx entirely. Since Code Dx depends on multiple PersistentVolume resources, you should always delete Code Dx PersistentVolume resources when restoring Code Dx to a previous known good state. 
+Velero will skip restoring resources that already exist, so delete the resources you want to revert before starting a restore. You can delete the Code Dx namespace(s) to remove all namespaced resources, and you can delete cluster scoped Code Dx resources to remove Code Dx entirely. Since Code Dx depends on multiple PersistentVolume resources, you should always delete Code Dx PersistentVolume resources when restoring Code Dx to a previous known good state.
 
 Refer to the [Code Dx Kubernetes Backup & Restore](./setup/core/docs/config/backup-restore.md#restoring-code-dx) document for details on how to restore Code Dx from a Velero backup.
 

@@ -97,7 +97,7 @@ Your system must meet these prerequisites to run the Code Dx setup scripts:
 '@
 	static [string] hidden $kubesealDescription = @'
 
-	- kubeseal (https://github.com/bitnami-labs/sealed-secrets)
+	- kubeseal (https://github.com/bitnami-labs/sealed-secrets/releases)
 '@
 
 	Prerequisites([ConfigInput] $config) : base(

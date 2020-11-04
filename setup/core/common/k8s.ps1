@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.2
+.VERSION 1.1.0
 .GUID 5614d5a5-d33b-4a86-a7bb-ccc91c3f9bb3
 .AUTHOR Code Dx
 #>
@@ -376,8 +376,11 @@ function Remove-ConfigMap([string] $namespace, [string] $name) {
 	}
 }
 
-function New-CertificateConfigMap([string] $namespace, [string] $name, [string] $certFile, [switch] $dryRun) {
-	New-ConfigMap $namespace $name @{} @{(split-path $certFile -Leaf) = $certFile} -dryRun:$dryRun
+function New-CertificateConfigMap([string] $namespace, [string] $name, [string] $certFile, [string] $certFilenameInConfigMap, [switch] $dryRun) {
+	if ('' -eq $certFilenameInConfigMap) {
+		$certFilenameInConfigMap = split-path $certFile -Leaf
+	}
+	New-ConfigMap $namespace $name @{} @{$certFilenameInConfigMap = $certFile} -dryRun:$dryRun
 }
 
 function New-ConfigMap([string] $namespace, [string] $name, [hashtable] $keyValues = @{}, [hashtable] $fileKeyValues = @{}, [switch] $dryRun) {

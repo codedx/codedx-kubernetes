@@ -5,10 +5,11 @@ metadata:
   labels:
     {{- include "codedx.commonLabels" . | nindent 4 }}
 data:
-  {{- /* We use `replace` here instead of usual file templating. A `codedx.props` file can contain documenting */ -}}
-  {{- /* comments with sample parameters named ie "{{project.name}}". Rather than try to trim comments from the output */ -}}
-  {{- /* or change the `codedx.props` sample file, we use a simple text-replace for flexibility. */ -}}
-  {{- $dbUrl := (printf "jdbc:mysql://%s-mariadb/codedx" .Release.Name) -}}
+  {{- $tlsOpts := "" -}}
+  {{- if .Values.codedxTls.enabled -}}
+  {{-   $tlsOpts = "?useSSL=true&requireSSL=true" -}}
+  {{- end -}}
+  {{- $dbUrl := (printf "jdbc:mysql://%s-mariadb/codedx%s" .Release.Name $tlsOpts) -}}
   {{- if not .Values.mariadb.enabled -}}
   {{-   $dbUrl = (required ".Values.codedxProps.dbconnection.externalDbUrl must be specified when using an external MariaDB instance" .Values.codedxProps.dbconnection.externalDbUrl) -}}
   {{- end -}}

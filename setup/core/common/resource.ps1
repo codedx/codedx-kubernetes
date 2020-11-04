@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.1.0
+.VERSION 1.2.0
 .GUID 0c9bd537-7359-4ebb-a64c-cf1693ccc4f9
 .AUTHOR Code Dx
 #>
@@ -72,10 +72,10 @@ function New-CertificateSecretResource([string] $namespace, [string] $name, [str
 	New-SecretResourceFile $namespace $name $cs -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
 }
 
-function New-CertificateConfigMapResource([string] $namespace, [string] $name, [string] $certFile,
+function New-CertificateConfigMapResource([string] $namespace, [string] $name, [string] $certFile, [string] $certFilenameInConfigMap, 
 	[switch] $useGitOps) {
 
-	$ccm = New-CertificateConfigMap $namespace $name $certFile -dryRun:$useGitOps
+	$ccm = New-CertificateConfigMap $namespace $name $certFile $certFilenameInConfigMap -dryRun:$useGitOps
 	if (-not $useGitOps) {
 		return $ccm
 	}

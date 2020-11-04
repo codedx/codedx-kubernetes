@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.2.0
+.VERSION 1.3.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -51,6 +51,8 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 	[string]   $samlIdpXmlFileConfigMapName,
 	[string]   $samlSecretName,
 	[string]   $tlsSecretName,
+	[string]   $dbMasterTlsSecretName,
+	[string]   $dbMasterTlsCaConfigMapName,
 	[Tuple`2[string,string]] $codeDxNodeSelector,
 	[Tuple`2[string,string]] $masterDatabaseNodeSelector,
 	[Tuple`2[string,string]] $subordinateDatabaseNodeSelector,
@@ -162,6 +164,22 @@ codedxTomcatImagePullSecrets:
 		$replicaDbPodAnnotations['backup.velero.io/backup-volumes-excludes'] = 'data'
 	}
 
+	
+	$masterDatabaseTlsConfig = ''
+	if ('' -ne $dbMasterTlsSecretName) {
+		$masterDatabaseTlsConfig = @'
+      ssl_cert=/bitnami/mariadb/tls/cert/tls.crt
+      ssl_key=/bitnami/mariadb/tls/cert/tls.key
+'@
+	}
+	
+	$masterDatabaseTlsCaConfig = ''
+	if ('' -ne $dbMasterTlsCaConfigMapName) {
+		$masterDatabaseTlsCaConfig = @'
+      ssl_ca=/bitnami/mariadb/tls/ca/ca.crt
+'@
+	}
+
 	$values = @'
 existingSecret: '{0}'
 codedxTomcatPort: {22}
@@ -214,9 +232,40 @@ mariadb:
   db:
     user: ''
   master:
+    masterTlsSecret: {48}
+    masterCaConfigMap: {49}
     persistence:
       storageClass: {17}
       size: {10}Gi
+    config: |-
+      [mysqld]
+      skip-name-resolve
+      explicit_defaults_for_timestamp
+      basedir=/opt/bitnami/mariadb
+      port=3306
+      socket=/opt/bitnami/mariadb/tmp/mysql.sock
+      tmpdir=/opt/bitnami/mariadb/tmp
+      max_allowed_packet=16M
+      bind-address=0.0.0.0
+      pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
+      log-error=/opt/bitnami/mariadb/logs/mysqld.log
+      character-set-server=utf8mb4
+      collation-server=utf8mb4_general_ci
+      optimizer_search_depth=0
+      lower_case_table_names=1
+      innodb_flush_log_at_trx_commit=0
+{50}
+{51}
+
+      [client]
+      port=3306
+      socket=/opt/bitnami/mariadb/tmp/mysql.sock
+      default-character-set=utf8mb4
+
+      [manager]
+      port=3306
+      socket=/opt/bitnami/mariadb/tmp/mysql.sock
+      pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
     annotations: {45}
     nodeSelector: {32}
     tolerations: {35}
@@ -228,6 +277,34 @@ mariadb:
       size: {14}Gi
       backup:
         size: {14}Gi
+    config: |-
+      [mysqld]
+      skip-name-resolve
+      explicit_defaults_for_timestamp
+      basedir=/opt/bitnami/mariadb
+      port=3306
+      socket=/opt/bitnami/mariadb/tmp/mysql.sock
+      tmpdir=/opt/bitnami/mariadb/tmp
+      max_allowed_packet=16M
+      bind-address=0.0.0.0
+      pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
+      log-error=/opt/bitnami/mariadb/logs/mysqld.log
+      character-set-server=utf8mb4
+      collation-server=utf8mb4_general_ci
+      optimizer_search_depth=0
+      lower_case_table_names=1
+      innodb_flush_log_at_trx_commit=0
+
+      [client]
+      port=3306
+      socket=/opt/bitnami/mariadb/tmp/mysql.sock
+      default-character-set=utf8mb4
+{51}
+
+      [manager]
+      port=3306
+      socket=/opt/bitnami/mariadb/tmp/mysql.sock
+      pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
     annotations: {46}
     nodeSelector: {33}
     tolerations: {36}
@@ -271,7 +348,9 @@ $hostBasePath, $useSaml.tostring().tolower(), $samlAppName, $samlIdpXmlFileConfi
 $dbConnectionSecret, $toolServiceSelector, $toolOrchestrationValues,
 (ConvertTo-YamlMap $primaryDbPodAnnotations),
 (ConvertTo-YamlMap $replicaDbPodAnnotations),
-(ConvertTo-YamlMap $codedxPodAnnotations)
+(ConvertTo-YamlMap $codedxPodAnnotations),
+$dbMasterTlsSecretName, $dbMasterTlsCaConfigMapName,
+$masterDatabaseTlsConfig, $masterDatabaseTlsCaConfig
 
 	$values | out-file $valuesFile -Encoding ascii -Force
 	Get-ChildItem $valuesFile

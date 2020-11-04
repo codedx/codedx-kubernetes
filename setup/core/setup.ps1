@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.5.0
+.VERSION 1.6.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -578,6 +578,8 @@ if ($useToolOrchestration) {
 
 ### Optionally Configure Code Dx TLS
 $tlsSecretNameCodeDx = ''
+$tlsSecretNameMasterDatabase = ''
+$masterDatabaseCertConfigMapName = ''
 $codeDxChartFullName = Get-CodeDxChartFullName $releaseNameCodeDx
 if ($useTLS) {
 
@@ -589,6 +591,17 @@ if ($useTLS) {
 
 	$tlsSecretNameCodeDx = "$codeDxChartFullName-tls"
 	New-CertificateSecretResource $namespaceCodeDx $tlsSecretNameCodeDx $tlsCertFile $tlsKeyFile -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+
+	$masterDatabaseServiceName = "$codeDxChartFullName-mariadb"
+
+	# NOTE: New-Certificate uses kubectl to create and approve a CertificateSigningRequest, so this next line requires cluster access
+	New-Certificate $clusterCertificateAuthorityCertPath $masterDatabaseServiceName $masterDatabaseServiceName "$masterDatabaseServiceName.pem" "$masterDatabaseServiceName.key" $namespaceCodeDx @()
+
+	$tlsSecretNameMasterDatabase = "$masterDatabaseServiceName-tls"
+	New-CertificateSecretResource $namespaceCodeDx $tlsSecretNameMasterDatabase "$masterDatabaseServiceName.pem" "$masterDatabaseServiceName.key" -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+
+	$masterDatabaseCertConfigMapName = "$masterDatabaseServiceName-ca-cert"
+	New-CertificateConfigMapResource $namespaceCodeDx $masterDatabaseCertConfigMapName $clusterCertificateAuthorityCertPath 'ca.crt' -useGitOps:$useGitOps
 }
 
 ### Optionally Configure Code Dx Orchestration TLS
@@ -761,6 +774,7 @@ $codeDxDeploymentValuesFile = New-CodeDxDeploymentValuesFile $codeDxDnsName $cod
 	$externalDatabaseUrl `
 	$samlAppName $samlIdpXmlFileConfigMapName $samlSecretName `
 	$tlsSecretNameCodeDx `
+	$tlsSecretNameMasterDatabase $masterDatabaseCertConfigMapName `
 	$codeDxNodeSelector $masterDatabaseNodeSelector $subordinateDatabaseNodeSelector `
 	$codeDxNoScheduleExecuteToleration $masterDatabaseNoScheduleExecuteToleration $subordinateDatabaseNoScheduleExecuteToleration `
 	$backupType `

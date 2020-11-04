@@ -130,7 +130,7 @@ function Start-SlaveDB([string] $namespace,
 	[string] $mariaDbServiceName,
 	$filePos) {
 
-	$cmd = "RESET SLAVE; CHANGE MASTER TO MASTER_LOG_FILE='$($filePos.file)',MASTER_LOG_POS=$($filePos.position),MASTER_HOST='$mariaDbServiceName',MASTER_USER='root',MASTER_PASSWORD='$rootPwd'; START SLAVE; SHOW SLAVE STATUS \G;"
+	$cmd = "RESET SLAVE; CHANGE MASTER TO MASTER_LOG_FILE='$($filePos.file)',MASTER_LOG_POS=$($filePos.position); START SLAVE; SHOW SLAVE STATUS \G;"
 
 	kubectl -n $namespace exec -c $containerName $podName -- mysql -uroot --password=$rootPwd -e $cmd
 	if (0 -ne $LASTEXITCODE) {

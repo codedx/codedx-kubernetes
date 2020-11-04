@@ -706,8 +706,8 @@ $dbConnectionSecret = 'codedx-mariadb-props'; $dbConnectionFile = './codedx.mari
 New-DatabaseConfigPropsFile $namespaceCodeDx $dbConnectionSecret ($externalDatabaseUser -eq '' ? 'root' : $externalDatabaseUser) ($externalDatabasePwd -eq '' ? $mariadbRootPwd : $externalDatabasePwd) $dbConnectionFile
 New-GenericSecretResource $namespaceCodeDx $dbConnectionSecret @{} @{'codedx.mariadb.props' = $dbConnectionFile} -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
 
-### Optionally Add CA Certificate for Tool Service
-if ($useTLS -and $useToolOrchestration) {
+### Optionally Add CA Certificate (required for TLS connection to database and Tool Service)
+if ($useTLS) {
 	$extraCodeDxTrustedCaCertPaths += $clusterCertificateAuthorityCertPath
 }
 

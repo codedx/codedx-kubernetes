@@ -208,8 +208,9 @@ class GetKubernetesPort: Step {
 class CertsCAPath : Step {
 
 	static [string] hidden $description = @'
-Specify a path to the CA associated with your Kubernetes Certificates API 
-(certificates.k8s.io API). This may not be the same as your cluster's root CA.
+Specify a path to the CA (PEM format) associated with your Kubernetes 
+Certificates API (certificates.k8s.io API). This may not be the same as your 
+cluster's root CA.
 '@
 
 	static [string] hidden $aksDescription = @'

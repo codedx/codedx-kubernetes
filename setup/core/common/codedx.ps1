@@ -227,6 +227,8 @@ codedxTomcatImage: {1}
 {2}
 {18}
 mariadb:
+  image:
+    pullPolicy: Always
   enabled: {26}
   existingSecret: '{9}'
   db:
@@ -582,9 +584,13 @@ function Get-CodeDxKeystore([string] $namespace, [string] $imageCodeDxTomcat, [i
 
 function Add-LetsEncryptCertManagerCRDs([switch] $dryRun) {
 
-	$output = $dryRun ? 'yaml' : 'name'
-	$dryRunParam = $dryRun ? (Get-KubectlDryRunParam) : ''
-	kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/v0.13.0/deploy/manifests/00-crds.yaml -o $output $dryRunParam
+	$crdURL = 'https://raw.githubusercontent.com/jetstack/cert-manager/v0.13.0/deploy/manifests/00-crds.yaml'
+	if ($dryRun) {
+		(Invoke-WebRequest $crdURL).Content
+		return
+	}
+
+	kubectl apply --validate=false -f $crdURL
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to add cert-manager CRDs, helm exited with code $LASTEXITCODE."
 	}
@@ -670,6 +676,10 @@ function Get-CodeDxChartFullName([string] $releaseName) {
 
 function Get-CodeDxToolOrchestrationChartFullName([string] $releaseName) {
 	Get-HelmChartFullname $releaseName 'codedx-tool-orchestration'
+}
+
+function Get-MariaDbChartFullName([string] $releaseName) {
+	Get-HelmChartFullname $releaseName 'mariadb'
 }
 
 function Get-HelmChartFullname([string] $releaseName, [string] $chartName) {

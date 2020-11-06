@@ -592,7 +592,7 @@ if ($useTLS) {
 	$tlsSecretNameCodeDx = "$codeDxChartFullName-tls"
 	New-CertificateSecretResource $namespaceCodeDx $tlsSecretNameCodeDx $tlsCertFile $tlsKeyFile -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
 
-	$masterDatabaseServiceName = "$codeDxChartFullName-mariadb"
+	$masterDatabaseServiceName = Get-MariaDbChartFullName $releaseNameCodeDx
 
 	# NOTE: New-Certificate uses kubectl to create and approve a CertificateSigningRequest, so this next line requires cluster access
 	New-Certificate $clusterCertificateAuthorityCertPath $masterDatabaseServiceName $masterDatabaseServiceName "$masterDatabaseServiceName.pem" "$masterDatabaseServiceName.key" $namespaceCodeDx @()

@@ -232,7 +232,7 @@ spec:
 
 	$resourceRequest | out-file  $csrResourceFile -Encoding ascii -Force
 
-	kubectl apply -f $csrResourceFile
+	kubectl create -f $csrResourceFile
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to apply CSR resource, kubectl exited with code $LASTEXITCODE."
 	}
@@ -795,7 +795,7 @@ function Copy-K8sItem([string] $namespace,
 }
 
 function Test-KubectlUsesDryRunBool { 
-	$null -ne (kubectl apply --help | select-string '--dry-run=false' -SimpleMatch) 
+	$null -ne (kubectl create --help | select-string '--dry-run=false' -SimpleMatch) 
 }
 
 function Get-KubectlDryRunParam {

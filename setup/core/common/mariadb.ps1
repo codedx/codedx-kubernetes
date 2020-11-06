@@ -91,7 +91,7 @@ spec:
 	$file = [io.path]::GetTempFileName()
 	$job | out-file $file -Encoding ascii
 
-	kubectl apply -f $file
+	kubectl create -f $file
 	if (0 -ne $LASTEXITCODE) {
 		Write-Error "Unable to create restore job from file $file, kubectl exited with exit code $LASTEXITCODE."
 	}

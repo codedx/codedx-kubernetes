@@ -260,7 +260,6 @@ mariadb:
       [client]
       port=3306
       socket=/opt/bitnami/mariadb/tmp/mysql.sock
-      default-character-set=utf8mb4
 
       [manager]
       port=3306
@@ -298,7 +297,6 @@ mariadb:
       [client]
       port=3306
       socket=/opt/bitnami/mariadb/tmp/mysql.sock
-      default-character-set=utf8mb4
 {51}
 
       [manager]

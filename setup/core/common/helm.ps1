@@ -64,6 +64,7 @@ function Invoke-HelmSingleDeployment([string] $message,
 	[int]      $totalReplicas, 
 	[string[]] $extraValuesPaths, 
 	[string]   $version, 
+	[switch]   $reuseValues,
 	[switch]   $dryRun) {
 
 	if (-not $dryRun) {
@@ -106,9 +107,12 @@ function Invoke-HelmSingleDeployment([string] $message,
 	$dryRunParam = $dryRun ? '--dry-run' : ''
 	$debugParam = $dryRun ? '--debug' : ''
 
-	# Note: This uses --reuse-values instead of --reset-values, which would merge $values with the latest, default chart values instead of the 
-	# values used with the last upgrade.
-	helm upgrade --namespace $namespace --install --reuse-values $releaseName @($values) $chartReference @($versionParam) $dryRunParam $debugParam
+	$valuesParam = '--reset-values' # merge $values with the latest, default chart values
+	if ($reuseValues) {
+		$valuesParam = '--reuse-values' # merge $values used with the last upgrade
+	}
+
+	helm upgrade --namespace $namespace --install $valuesParam $releaseName @($values) $chartReference @($versionParam) $dryRunParam $debugParam
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to run helm upgrade/install, helm exited with code $LASTEXITCODE."
 	}

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.1.0
+.VERSION 1.1.1
 .GUID d65a6b13-910d-4220-8cfb-5de8cdd52011
 .AUTHOR Code Dx
 #>
@@ -41,6 +41,12 @@ function New-VeleroBackupSchedule([string] $workDir,
 	[switch] $skipToolOrchestration,
 	[switch] $dryRun) {
 
+	if (-not $dryRun) {
+		if (Test-VeleroBackupSchedule $scheduleNamespace $scheduleName) {
+			Remove-VeleroBackupSchedule $scheduleNamespace $scheduleName
+		}
+	}
+
 	$scheduleFilePath = join-path $workDir $scheduleFilename
 	if (test-path $scheduleFilePath) {
 		remove-item $scheduleFilePath -force
@@ -62,16 +68,14 @@ apiVersion: velero.io/v1
 kind: Schedule
 metadata:
   name: {0}
-  namespace: {1}
 spec:
-  schedule: '{2}'
+  schedule: '{1}'
   template:
-    includedNamespaces: {3}
+    includedNamespaces: {2}
     storageLocation: default
-    ttl: {4}
+    ttl: {3}
     includeClusterResources: true
 '@ -f $scheduleName, `
-	$scheduleNamespace, `
 	$scheduleExpression, `
 	$includedNamespaces, `
 	$backupTimeToLive
@@ -111,7 +115,7 @@ spec:
 	$output = $dryRun ? 'yaml' : 'name'
 	$dryRunParam = $dryRun ? (Get-KubectlDryRunParam) : ''
 
-	kubectl apply -f $scheduleFilePath -o $output $dryRunParam
+	kubectl -n $scheduleNamespace create -f $scheduleFilePath -o $output $dryRunParam
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to create the following Velero Schedule resource (kubectl exited with code $LASTEXITCODE):`n$scheduleTemplate"
 	}

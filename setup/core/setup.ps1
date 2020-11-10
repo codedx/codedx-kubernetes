@@ -609,10 +609,10 @@ $tlsToolServiceCertSecretName = ''
 $codedxCaConfigMapName = ''
 $tlsMinioCertSecretName = ''
 $minioCertConfigMapName = ''
+$toolOrchestrationFullName = Get-CodeDxToolOrchestrationChartFullName $releaseNameToolOrchestration
 if ($useTLS -and $useToolOrchestration) {
 
 	$minioFullName = '{0}-minio' -f $releaseNameToolOrchestration
-	$toolOrchestrationFullName = Get-CodeDxToolOrchestrationChartFullName $releaseNameToolOrchestration
 	
 	# NOTE: New-Certificate uses kubectl to create and approve a CertificateSigningRequest, so it requires cluster access
 	$minioPublicKeyFile = 'minio.pem'; $minioPrivateKeyFile = 'minio.key'

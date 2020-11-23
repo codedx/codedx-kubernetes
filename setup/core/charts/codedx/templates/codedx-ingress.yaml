@@ -1,6 +1,11 @@
 {{- if .Values.ingress.enabled -}}
 {{- range .Values.ingress.hosts -}}
+
+{{- if $.Capabilities.APIVersions.Has "extensions/v1beta1/Ingress" -}}
 apiVersion: extensions/v1beta1
+{{- else -}}
+apiVersion: networking.k8s.io/v1
+{{- end }}
 kind: Ingress
 metadata:
   {{- $fullName := printf "%s-%s" (include "codedx.fullname" $) .name }}

@@ -473,6 +473,12 @@ if (-not $useGitOps) {
 	}
 }
 
+### Identify current version
+$currentToolOrchestrationAppVersion = $null
+if ($useToolOrchestration) {
+	$currentToolOrchestrationAppVersion = Get-HelmReleaseAppVersion $namespaceToolOrchestration $releaseNameToolOrchestration
+}
+
 ### Optionally Deploy NGINX
 $nginxValuesFile = ''
 $nginxLoadBalancerValuesFile = ''
@@ -948,6 +954,24 @@ if ($useGitOps) {
 			}
 	}
 }
+
+if ($null -ne $currentToolOrchestrationAppVersion) {
+
+	Write-Verbose "Tool Orchestration upgraded from version $currentToolOrchestrationAppVersion. Checking for CRDs to apply..."
+	$crdsDirectory = join-path $repoDirectory 'setup/core/crds'
+	$versions = Get-ChildItem $crdsDirectory -Directory | ForEach-Object { new-object Management.Automation.SemanticVersion($_.Name) } | Sort-Object -Descending
+	$versions | ForEach-Object {
+		if ($_ -gt $currentToolOrchestrationAppVersion) {
+			Get-ChildItem (join-path $crdsDirectory ($_.ToString())) -File | ForEach-Object {
+				Write-Verbose "Applying $($_.FullName)..."
+				# Note: This will not remove CRD, which would remove related resources
+				Set-CustomResourceDefinitionResource $_.Name $_.FullName -useGitOps:$useGitOps
+			}
+			break
+		}
+	}
+}
+
 
 Write-Verbose 'Done'
 Write-ImportantNote "The '$workDir' directory may contain .key files and other configuration data that should be kept private."

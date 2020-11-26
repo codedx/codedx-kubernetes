@@ -26,6 +26,17 @@ function Get-HelmVersionMajorMinor() {
 	[double]$versionMatch.Matches.Groups[1].Value
 }
 
+function Get-HelmReleaseAppVersion([string] $namespace, [string] $releaseName) {
+
+	$history = helm -n $namespace history $releaseName --max 1 -o json
+	if ($null -eq $history) {
+		return $null
+	}
+
+	$historyJson = convertfrom-json $history
+	new-object Management.Automation.SemanticVersion($historyJson.app_version)
+}
+
 function Add-HelmRepo([string] $name, [string] $url) {
 
 	helm repo add $name $url

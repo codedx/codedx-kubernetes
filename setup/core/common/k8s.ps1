@@ -410,6 +410,17 @@ function New-ConfigMap([string] $namespace, [string] $name, [hashtable] $keyValu
 	}
 }
 
+function Set-NonNamespacedResource([string] $path, [switch] $dryRun) {
+	
+	$output = $dryRun ? 'yaml' : 'name'
+	$dryRunParam = $dryRun ? (Get-KubectlDryRunParam) : ''
+	kubectl apply -f $path -o $output $dryRunParam
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to create non namespaced resource from $path, kubectl exited with code $LASTEXITCODE."
+	}
+}
+
+
 function New-ImagePullSecret([string] $namespace, 
 	[string] $name, 
 	[string] $dockerRegistry,

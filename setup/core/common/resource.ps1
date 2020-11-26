@@ -126,6 +126,16 @@ function New-ConfigMapResource([string] $namespace, [string] $name, [hashtable] 
 	New-ResourceFile 'ConfigMap' $namespace $name $cm
 }
 
+function Set-CustomResourceDefinitionResource([string] $name, [string] $path,
+	[switch] $useGitOps) {
+
+	$crd = Set-NonNamespacedResource $path -dryRun:$useGitOps
+	if (-not $useGitOps) {
+		return $crd
+	}
+	New-ResourceFile 'CustomResourceDefinition' '' $name $crd
+}
+
 function New-SealedSecret([io.fileinfo] $secretFileInfo,
     [string] $sealedSecretsNamespace,
     [string] $sealedSecretsControllerName,

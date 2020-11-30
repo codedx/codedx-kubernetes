@@ -162,7 +162,9 @@ param (
 	[string]                 $namespaceVelero = 'velero',
 	[string]                 $backupScheduleCronExpression = '0 3 * * *',
 	[int]                    $backupDatabaseTimeoutMinutes = 30,
-	[int]                    $backupTimeToLiveHours = 720
+	[int]                    $backupTimeToLiveHours = 720,
+
+	[switch]                 $usePnsContainerRuntimeExecutor
 )
 
 $ErrorActionPreference = 'Stop'
@@ -690,7 +692,8 @@ if ($useToolOrchestration) {
 		$toolServiceNoScheduleExecuteToleration $minioNoScheduleExecuteToleration $workflowControllerNoScheduleExecuteToleration $toolNoScheduleExecuteToleration `
 		$backupType `
 		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS `
-		'./toolsvc-values.yaml'
+		'./toolsvc-values.yaml' `
+		-usePnsExecutor:$usePnsContainerRuntimeExecutor
 
 	Write-Verbose 'Deploying Tool Orchestration...'
 	$chartFolder = join-path $workDir .repo/setup/core/charts/codedx-tool-orchestration

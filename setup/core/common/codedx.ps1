@@ -404,7 +404,8 @@ function New-ToolOrchestrationValuesFile([string]   $codedxNamespace,
 	[switch]   $enablePSPs,
 	[switch]   $enableNetworkPolicies,
 	[switch]   $configureTls,
-	[string]   $valuesFile) {
+	[string]   $valuesFile,
+	[switch]   $usePnsExecutor) {
 
 	$protocol = 'http'
 	$codedxPort = $codeDxTomcatPortNumber
@@ -440,6 +441,7 @@ argo:
   controller:
     nodeSelector: {31}
     tolerations: {34}
+    containerRuntimeExecutor: {40}
 {26}
 
 minio:
@@ -532,7 +534,8 @@ $minioCertConfigMap,
 ($null -eq $toolNodeSelector ? '' : $toolNodeSelector.Item2),
 ($null -eq $toolNoScheduleExecuteToleration ? '' : $toolNoScheduleExecuteToleration.Item1),
 ($null -eq $toolNoScheduleExecuteToleration ? '' : $toolNoScheduleExecuteToleration.Item2),
-(ConvertTo-YamlMap $minioPodAnnotations)
+(ConvertTo-YamlMap $minioPodAnnotations),
+($usePnsExecutor ? "pns" : "docker")
 
 	$values | out-file $valuesFile -Encoding ascii -Force
 	Get-ChildItem $valuesFile

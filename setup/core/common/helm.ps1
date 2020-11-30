@@ -17,15 +17,6 @@ This script includes functions for Helm-related tasks.
 	. $path
 }
 
-function Get-HelmVersionMajorMinor() {
-
-	$versionMatch = helm version -c | select-string 'Version:"v(?<version>\d+\.\d+)'
-	if ($null -eq $versionMatch -or -not $versionMatch.Matches.Success) {
-		return $null
-	}
-	[double]$versionMatch.Matches.Groups[1].Value
-}
-
 function Get-HelmReleaseAppVersion([string] $namespace, [string] $releaseName) {
 
 	$history = helm -n $namespace history $releaseName --max 1 -o json

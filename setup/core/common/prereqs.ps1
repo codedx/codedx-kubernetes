@@ -12,13 +12,41 @@ Note: Do not use PowerShell Core v7 syntax in this file because
 it will interfere with the PowerShell Core v7 prereq check.
 #>
 
-'utils.ps1',
-'helm.ps1' | ForEach-Object {
+'utils.ps1' | ForEach-Object {
 	$path = join-path $PSScriptRoot $_
 	if (-not (Test-Path $path)) {
 		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
 	}
 	. $path
+}
+
+function Get-KubectlVersion {
+	$version = kubectl version -o json
+	if (0 -ne $LASTEXITCODE) {
+		Write-Error "Unable to fetch kubectl version, kubectl exited with exit code $LASTEXITCODE."
+	}
+	$version | ConvertFrom-Json
+}
+
+function Get-KubectlClientVersion {
+
+	$versionInfo = Get-KubectlVersion
+	"$($versionInfo.clientVersion.major).$($versionInfo.clientVersion.minor)"
+}
+
+function Get-KubectlServerVersion {
+
+	$versionInfo = Get-KubectlVersion
+	"$($versionInfo.serverVersion.major).$($versionInfo.serverVersion.minor)"
+}
+
+function Get-HelmVersionMajorMinor() {
+
+	$versionMatch = helm version -c | select-string 'Version:"v(?<version>\d+\.\d+)'
+	if ($null -eq $versionMatch -or -not $versionMatch.Matches.Success) {
+		return $null
+	}
+	[double]$versionMatch.Matches.Groups[1].Value
 }
 
 function Test-SetupPreqs([ref] $messages, [switch] $useSealedSecrets) {
@@ -55,5 +83,12 @@ function Test-SetupPreqs([ref] $messages, [switch] $useSealedSecrets) {
 			}
 		}
 	}
+
+	$clientVersion = Get-KubectlClientVersion
+	$serverVersion = Get-KubectlServerVersion
+	if ($clientVersion -ne $serverVersion) {
+		$messages.Value += "Unable to continue because the kubectl client version ($clientVersion) and server version ($serverVersion) do not match."
+	}
+
 	$messages.Value.count -eq 0
 }

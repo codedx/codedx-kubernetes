@@ -23,7 +23,11 @@ This section describes the setup.ps1 script parameters, which you can specify by
 | `dbSlaveVolumeSizeGiB`                             | volume size of the MariaDB slave database                  | `32`                                              |
 | `minioVolumeSizeGiB`                               | volume size for the MinIO storage application              | `32`                                              |
 | `codeDxVolumeSizeGiB`                              | volume size for the Code Dx web application                | `32`                                              |
-| `storageClassName`                                 | storage class name for persistance volumes                 | `gp2` (example)                                   |
+|                                                    |                                                            |                                                   |
+| `storageClassName`                                 | storage class name for all persistance volumes (PVs)       | `gp2` (example)                                   |
+| `codeDxAppDataStorageClassName`                    | storage class name for Code Dx appdata PV                  | `gp2` (example)                                   |
+| `dbStorageClassName`                               | storage class name for Database PVs                        | `gp2` (example)                                   |
+| `minioStorageClassName`                            | storage class name for MinIO PV                            | `gp2` (example)                                   |
 |                                                    |                                                            |                                                   |
 | `codeDxMemoryReservation`                          | memory request and limit for Code Dx                       | `16Gi` (example)                                  |
 | `dbMasterMemoryReservation`                        | memory request and limit for the master database           | `16Gi` (example)                                  |
@@ -159,3 +163,5 @@ This section describes the setup.ps1 script parameters, which you can specify by
 | `backupScheduleCronExpression`                     | cron expression definining when Code Dx backup runs        | 0 3 * * *                                         |
 | `backupDatabaseTimeoutMinutes`                     | minutes to wait for database backup to complete            | 30                                                |
 | `backupTimeToLiveHours`                            | hours to wait before a backup is eligible for deletion     | 720                                               |
+|                                                    |                                                            |                                                   |
+| `usePnsContainerRuntimeExecutor`                   | whether to use PNS workflow executor (instead of Docker)   | false                                             |

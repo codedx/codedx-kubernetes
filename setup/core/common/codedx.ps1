@@ -31,7 +31,8 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 	[int]      $dbSlaveReplicaCount,
 	[int]      $dbSlaveVolumeSizeGiB,
 	[int]      $codeDxVolumeSizeGiB,	
-	[string]   $storageClassName,
+	[string]   $appDataStorageClassName,
+	[string]   $dbStorageClassName,
 	[string]   $codeDxMemoryLimit,
 	[string]   $dbMasterMemoryLimit,
 	[string]   $dbSlaveMemoryLimit,
@@ -237,7 +238,7 @@ mariadb:
     masterTlsSecret: {48}
     masterCaConfigMap: {49}
     persistence:
-      storageClass: {17}
+      storageClass: {52}
       size: {10}Gi
     config: |-
       [mysqld]
@@ -274,7 +275,7 @@ mariadb:
   slave:
     replicas: {15}
     persistence:
-      storageClass: {17}
+      storageClass: {52}
       size: {14}Gi
       backup:
         size: {14}Gi
@@ -333,7 +334,7 @@ $psp, $networkPolicy,
 $tlsEnabled, $tlsSecretName, 'tls.crt', 'tls.key',
 (Get-DatabasePdSecretName $releaseName),
 $dbVolumeSizeGiB, $codeDxVolumeSizeGiB, $codeDxDnsName, $ingress,
-$dbSlaveVolumeSizeGiB, $dbSlaveReplicaCount, $ingressNamespaceSelector, $storageClassName,
+$dbSlaveVolumeSizeGiB, $dbSlaveReplicaCount, $ingressNamespaceSelector, $appDataStorageClassName,
 (Format-ResourceLimitRequest -limitMemory $codeDxMemoryLimit -limitCPU $codeDxCPULimit -limitEphemeralStorage $codeDxEphemeralStorageLimit),
 (Format-ResourceLimitRequest -limitMemory $dbMasterMemoryLimit -limitCPU $dbMasterCPULimit -limitEphemeralStorage $dbMasterEphemeralStorageLimit -indent 4),
 (ConvertTo-YamlMap $ingressAnnotations),
@@ -350,7 +351,8 @@ $dbConnectionSecret, $toolServiceSelector, $toolOrchestrationValues,
 (ConvertTo-YamlMap $replicaDbPodAnnotations),
 (ConvertTo-YamlMap $codedxPodAnnotations),
 $dbMasterTlsSecretName, $dbMasterTlsCaConfigMapName,
-$masterDatabaseTlsConfig, $masterDatabaseTlsCaConfig
+$masterDatabaseTlsConfig, $masterDatabaseTlsCaConfig,
+$dbStorageClassName
 
 	$values | out-file $valuesFile -Encoding ascii -Force
 	Get-ChildItem $valuesFile

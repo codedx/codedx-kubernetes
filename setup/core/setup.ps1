@@ -26,7 +26,11 @@ param (
 	[int]                    $dbSlaveVolumeSizeGiB = 32,
 	[int]                    $minioVolumeSizeGiB = 32,
 	[int]                    $codeDxVolumeSizeGiB = 32,
+
 	[string]                 $storageClassName,
+	[string]                 $codeDxAppDataStorageClassName,
+	[string]                 $dbStorageClassName,
+	[string]                 $minioStorageClassName,
 
 	[string]                 $codeDxMemoryReservation,
 	[string]                 $dbMasterMemoryReservation,
@@ -436,6 +440,12 @@ if ($useVelero) {
 	}
 }
 
+if ($storageClassName -ne '') {
+	$codeDxAppDataStorageClassName -eq '' ? $storageClassName : $codeDxAppDataStorageClassName
+	$dbStorageClassName            -eq '' ? $storageClassName : $dbStorageClassName
+	$minioStorageClassName         -eq '' ? $storageClassName : $minioStorageClassName
+}
+
 ### Select Kube Context
 if ($kubeContextName -ne '') {
 	Write-Verbose "Selecting kubectl context named $kubeContextName..."
@@ -679,7 +689,7 @@ if ($useToolOrchestration) {
 		$imageCodeDxTools $imageCodeDxToolsMono `
 		$imageNewAnalysis $imageSendResults $imageSendErrorResults $imageToolService $imagePreDelete `
 		$dockerImagePullSecretName `
-		$minioVolumeSizeGiB $storageClassName `
+		$minioVolumeSizeGiB $minioStorageClassName `
 		$toolServiceMemoryReservation $minioMemoryReservation $workflowMemoryReservation `
 		$toolServiceCPUReservation $minioCPUReservation $workflowCPUReservation `
 		$toolServiceEphemeralStorageReservation $minioEphemeralStorageReservation $workflowEphemeralStorageReservation `
@@ -772,7 +782,7 @@ $codeDxDeploymentValuesFile = New-CodeDxDeploymentValuesFile $codeDxDnsName $cod
 	$dbVolumeSizeGiB `
 	$dbSlaveReplicaCount $dbSlaveVolumeSizeGiB `
 	$codeDxVolumeSizeGiB `
-	$storageClassName `
+	$codeDxAppDataStorageClassName $dbStorageClassName `
 	$codeDxMemoryReservation $dbMasterMemoryReservation $dbSlaveMemoryReservation `
 	$codeDxCPUReservation $dbMasterCPUReservation $dbSlaveCPUReservation `
 	$codeDxEphemeralStorageReservation $dbMasterEphemeralStorageReservation $dbSlaveEphemeralStorageReservation `

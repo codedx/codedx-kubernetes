@@ -207,6 +207,12 @@ priorityClass:
   workflowValue: 10000
   serviceValue: 10100
 
+# Configuration for running Code Dx Tool Orchestration on an OpenShift cluster.
+openshift:
+  # Enable creation of OpenShift Security Context Constraint resources. This is done explicitly rather than using 
+  # `$.Capabilities.APIVersions.Has "security.openshift.io/v1"`, which is incompatible with helm template.
+  createSCC: false
+
 # NOTE: These are setting attributes for the `argo` dependency
 argo:
   installCRD: false

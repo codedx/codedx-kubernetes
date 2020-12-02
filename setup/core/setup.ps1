@@ -168,7 +168,8 @@ param (
 	[int]                    $backupDatabaseTimeoutMinutes = 30,
 	[int]                    $backupTimeToLiveHours = 720,
 
-	[switch]                 $usePnsContainerRuntimeExecutor
+	[switch]                 $usePnsContainerRuntimeExecutor,
+	[switch]                 $createSCCs
 )
 
 $ErrorActionPreference = 'Stop'
@@ -703,7 +704,8 @@ if ($useToolOrchestration) {
 		$backupType `
 		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS `
 		'./toolsvc-values.yaml' `
-		-usePnsExecutor:$usePnsContainerRuntimeExecutor
+		-usePnsExecutor:$usePnsContainerRuntimeExecutor `
+		-createSCCs:$createSCCs
 
 	Write-Verbose 'Deploying Tool Orchestration...'
 	$chartFolder = join-path $workDir .repo/setup/core/charts/codedx-tool-orchestration
@@ -805,7 +807,8 @@ $codeDxDeploymentValuesFile = New-CodeDxDeploymentValuesFile $codeDxDnsName $cod
 	$toolServiceUrl `
 	$toolServiceApiKeySecretName `
 	-offlineMode:$false `
-	'./codedx-values.yaml'
+	'./codedx-values.yaml' `
+	-createSCCs:$createSCCs
 
 ### Deploy Code Dx
 Write-Verbose 'Deploying Code Dx...'

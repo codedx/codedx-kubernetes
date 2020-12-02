@@ -73,7 +73,8 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 	[string]   $toolServiceUrl,
 	[string]   $toolServiceApiKeySecretName,
 	[switch]   $offlineMode,
-	[string]   $valuesFile) {
+	[string]   $valuesFile,
+	[switch]   $createSCCs) {
  
 	$imagePullSecretYaml = 'codedxTomcatImagePullSecrets: []'
 	if (-not ([string]::IsNullOrWhiteSpace($tomcatImagePullSecretName))) {
@@ -329,6 +330,9 @@ authentication:
     samlIdpXmlFileConfigMap: '{40}'
     samlSecret: '{41}'
 databaseConnectionSecret: '{42}'
+
+openshift:
+  createSCC: {53}
 '@ -f (Get-CodeDxPdSecretName $releaseName), $tomcatImage, $imagePullSecretYaml,
 $psp, $networkPolicy,
 $tlsEnabled, $tlsSecretName, 'tls.crt', 'tls.key',
@@ -352,7 +356,8 @@ $dbConnectionSecret, $toolServiceSelector, $toolOrchestrationValues,
 (ConvertTo-YamlMap $codedxPodAnnotations),
 $dbMasterTlsSecretName, $dbMasterTlsCaConfigMapName,
 $masterDatabaseTlsConfig, $masterDatabaseTlsCaConfig,
-$dbStorageClassName
+$dbStorageClassName,
+$createSCCs.tostring().tolower()
 
 	$values | out-file $valuesFile -Encoding ascii -Force
 	Get-ChildItem $valuesFile
@@ -407,7 +412,8 @@ function New-ToolOrchestrationValuesFile([string]   $codedxNamespace,
 	[switch]   $enableNetworkPolicies,
 	[switch]   $configureTls,
 	[string]   $valuesFile,
-	[switch]   $usePnsExecutor) {
+	[switch]   $usePnsExecutor,
+	[switch]   $createSCCs) {
 
 	$protocol = 'http'
 	$codedxPort = $codeDxTomcatPortNumber
@@ -520,6 +526,9 @@ tools:
   nodeSelectorValue: '{36}'
   tolerationKey: '{37}'
   tolerationValue: '{38}'
+
+openshift:
+  createSCC: {41}
 '@ -f $minioExistingSecretName,
 $codedxNamespace,$codedxReleaseName,$toolOrchestrationExistingSecret,
 $imagePullSecretName,$toolsImage,$toolsMonoImage,$newAnalysisImage,$sendResultsImage,$sendErrorResultsImage,$toolServiceImage,$numReplicas,
@@ -537,7 +546,8 @@ $minioCertConfigMap,
 ($null -eq $toolNoScheduleExecuteToleration ? '' : $toolNoScheduleExecuteToleration.Item1),
 ($null -eq $toolNoScheduleExecuteToleration ? '' : $toolNoScheduleExecuteToleration.Item2),
 (ConvertTo-YamlMap $minioPodAnnotations),
-($usePnsExecutor ? "pns" : "docker")
+($usePnsExecutor ? "pns" : "docker"),
+$createSCCs.tostring().tolower()
 
 	$values | out-file $valuesFile -Encoding ascii -Force
 	Get-ChildItem $valuesFile

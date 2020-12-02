@@ -94,6 +94,14 @@ If release name contains chart name it will be used as a full name.
 {{- include "sanitize" (printf "%s-svc-pc" (include "codedx-tool-orchestration.fullname" .)) -}}
 {{- end -}}
 
+{{- define "codedx-tool-orchestration.scc" -}}
+{{- include "sanitize" (printf "%s-scc" (include "codedx-tool-orchestration.fullname" .)) -}}
+{{- end -}}
+
+{{- define "codedx-tool-orchestration.workflow-scc" -}}
+{{- include "sanitize" (printf "%s-workflow-scc" (include "codedx-tool-orchestration.fullname" .)) -}}
+{{- end -}}
+
 {{/*
 Duplicates of a Minio template helper so we can reference Minio's service name
 */}}

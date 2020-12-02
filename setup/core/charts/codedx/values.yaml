@@ -493,6 +493,12 @@ priorityClassValue: 10100
 # Annotations for Code Dx pod
 podAnnotations: {}
 
+# Configuration for running Code Dx on an OpenShift cluster.
+openshift:
+  # Enable creation of OpenShift Security Context Constraint resources. This is done explicitly rather than using 
+  # `$.Capabilities.APIVersions.Has "security.openshift.io/v1"`, which is incompatible with helm template.
+  createSCC: false
+
 # Code Dx-specific MariaDB configuration. This should usually be left untouched, unless changing database passwords or
 # opting to use an external MariaDB instance by setting mariadb.enabled to false. When using an external MariaDB instance,
 # you must specify a value for codedxProps.dbconnection.externalDbUrl and create your own k8s secret containing a MariaDB 

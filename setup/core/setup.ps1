@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.6.1
+.VERSION 1.6.2
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -56,7 +56,7 @@ param (
 	[string]                 $workflowEphemeralStorageReservation,
 	[string]                 $nginxEphemeralStorageReservation,
 
-	[string]                 $imageCodeDxTomcat     = 'codedx/codedx-tomcat:v5.2.8',
+	[string]                 $imageCodeDxTomcat     = 'codedx/codedx-tomcat:v5.2.9',
 	[string]                 $imageCodeDxTools      = 'codedx/codedx-tools:v1.1.0',
 	[string]                 $imageCodeDxToolsMono  = 'codedx/codedx-toolsmono:v1.1.0',
 	[string]                 $imageNewAnalysis      = 'codedx/codedx-newanalysis:v1.1.0',
@@ -114,7 +114,7 @@ param (
 	[string]                 $codedxHelmRepo = 'https://codedx.github.io/codedx-kubernetes',
 	
 	[string]                 $codedxGitRepo = 'https://github.com/codedx/codedx-kubernetes.git',
-	[string]                 $codedxGitRepoBranch = 'v1.6.1',
+	[string]                 $codedxGitRepoBranch = 'v1.6.2',
 
 	[int]                    $kubeApiTargetPort = 443,
 

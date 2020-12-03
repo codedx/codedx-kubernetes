@@ -66,6 +66,8 @@ if (-not (Test-Service $namespaceCodeDx $mariaDbMasterServiceName)) {
 
 $statefulSetMariaDBSlaveCount = (Get-HelmValues $namespaceCodeDx $releaseNameCodeDx).mariadb.slave.replicas
 
+$mariaDBServiceAccount = Get-ServiceAccountName $namespaceCodeDx 'statefulset' $statefulSetMariaDBMaster
+
 $deploymentBackupAnnotation = kubectl -n $namespaceCodeDx get deployment $deploymentCodeDx -o jsonpath='{.spec.template.metadata.annotations}'
 $usingVeleroPlugin = $deploymentBackupAnnotation -match '\[backup.codedx.io/type:velero\]'
 
@@ -79,6 +81,7 @@ MariaDB Slave StatefulSet Name: $statefulSetMariaDBSlave
 MariaDB Slave Replica Count: $statefulSetMariaDBSlaveCount
 MariaDB Secret Name: $mariaDbSecretName
 MariaDB Master Service Name: $mariaDbMasterServiceName
+MariaDB Service Account: $mariaDBServiceAccount
 Using Velero Plug-in: $usingVeleroPlugin
 "@
 
@@ -197,10 +200,10 @@ Write-Verbose "Stopping $statefulSetMariaDBSlave statefulset replica(s)..."
 Set-StatefulSetReplicas $namespaceCodeDx $statefulSetMariaDBSlave 0 $waitSeconds
 
 Write-Verbose "Restoring database backup on pod $podNameMaster..."
-Restore-DBBackup 'Master Restore' $waitSeconds $namespaceCodeDx $podNameMaster $mariaDbSecretName
+Restore-DBBackup 'Master Restore' $waitSeconds $namespaceCodeDx $podNameMaster $mariaDbSecretName $mariaDBServiceAccount
 $podNamesSlaves | ForEach-Object {
 	Write-Verbose "Restoring database backup on pod $_..."
-	Restore-DBBackup "Slave Restore [$_]" $waitSeconds $namespaceCodeDx $_ $mariaDbSecretName
+	Restore-DBBackup "Slave Restore [$_]" $waitSeconds $namespaceCodeDx $_ $mariaDbSecretName $mariaDBServiceAccount
 }
 
 Write-Verbose "Starting $statefulSetMariaDBMaster statefulset replica..."

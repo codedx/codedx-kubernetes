@@ -45,7 +45,8 @@ function Restore-DBBackup([string] $message,
 	[int] $waitSeconds,
 	[string] $namespace,
 	[string] $podName,
-	[string] $rootPwdSecretName) {
+	[string] $rootPwdSecretName,
+	[string] $serviceAccountName) {
 
 	if (Test-KubernetesJob $namespace $podName) {
 		Remove-KubernetesJob $namespace $podName
@@ -76,6 +77,7 @@ spec:
       securityContext:
         fsGroup: 1001
         runAsUser: 1001
+      serviceAccountName: {3}
       volumes:
       - name: data
         persistentVolumeClaim:
@@ -86,7 +88,7 @@ spec:
           items:
           - key: mariadb-root-password
             path: .passwd
-'@ -f $namespace, $podName, $rootPwdSecretName
+'@ -f $namespace, $podName, $rootPwdSecretName, $serviceAccountName
 
 	$file = [io.path]::GetTempFileName()
 	$job | out-file $file -Encoding ascii

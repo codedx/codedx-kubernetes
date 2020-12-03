@@ -717,6 +717,17 @@ function Set-Replicas([string] $namespace,
 	Wait-ReplicasReady 'Replica Wait' $waitSeconds $namespace $resourceType $resourceName $replicaCount
 }
 
+function Get-ServiceAccountName([string] $namespace,
+	[string] $resourceType,
+	[string] $resourceName) {
+
+	$name = kubectl -n $namespace get $resourceType $resourceName -o jsonpath='{.spec.template.spec.serviceAccountName}'
+	if (0 -ne $LASTEXITCODE) {
+		throw "Unable to set replicas for $resourceType named $resourceName, kubectl exited with code $LASTEXITCODE."
+	}
+	$name
+}
+
 function Set-DeploymentReplicas([string] $namespace,
 	[string] $resourceName,
 	[int]    $replicaCount,

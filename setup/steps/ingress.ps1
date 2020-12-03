@@ -11,10 +11,20 @@
 class IngressKind : Step {
 
 	static [string] hidden $description = @'
-Specify the the type of ingress you want to use. If you select the 'NGINX and 
-Cert Manager with Let's Encrypt' option, you will install the Let's Encrypt 
-Cert Manager. You should not run more than one copy of Cert Manager on your 
-cluster.
+Specify the the type of ingress you want to use.
+
+
+'@
+
+	static [string] hidden $nginxDescription = @'
+If you select the 'NGINX and Cert Manager with Let's Encrypt' option, you will 
+install the Let's Encrypt Cert Manager. You should not run more than one copy 
+of Cert Manager on your cluster.
+'@
+
+	static [string] hidden $openshiftDescription = @'
+The Guided Setup does not include support for creating OpenShift routes. If 
+you plan to use routes, configure your routes after installing Code Dx.
 '@
 
 	IngressKind([ConfigInput] $config) : base(
@@ -24,19 +34,37 @@ cluster.
 		[IngressKind]::description,
 		'What type of ingress do you want to use?') {}
 
+	[string]GetMessage() {
+
+		$message = [IngressKind]::description
+
+		if ($this.config.k8sProvider -eq [ProviderType]::OpenShift) {
+			$message += [IngressKind]::openshiftDescription
+		} else {
+			$message += [IngressKind]::nginxDescription
+		}
+		return $message
+	}
+
 	[IQuestion]MakeQuestion([string] $prompt) {
 
-		$choices = `
+		$choices = @(
 			[tuple]::create('None', 'Do not configure any type of ingress (use port-forward or something else to access Code Dx)'),
-			[tuple]::create('NGINX and &Let''s Encrypt', 'Install and use NGINX with Let''s Encrypt Cert Manager'),
-			[tuple]::create('NGINX and Let''s Encrypt (with Load Balancer IP)', 'Install and use NGINX with Let''s Encrypt Cert Manager with a specified Load Balancer IP address'),
 			[tuple]::create('Load Balancer', 'Configure the Code Dx Kubernetes service as a LoadBalancer service type'),
 			[tuple]::create('External Ingress Controller', 'Create ingress resource for use with an ingress controller you installed separately'),
 			[tuple]::create('External NGINX Ingress Controller', 'Create ingress resource for use with an NGINX ingress controller you installed separately')
+		)
+
+		if ($this.config.k8sProvider -ne [ProviderType]::OpenShift) {
+			$choices += @(
+				[tuple]::create('NGINX and Let''s Encrypt', 'Install and use NGINX with Let''s Encrypt Cert Manager'),
+				[tuple]::create('NGINX and Let''s Encrypt (with Load Balancer IP)', 'Install and use NGINX with Let''s Encrypt Cert Manager with a specified Load Balancer IP address')	
+			)
+		}
 
 		if ($this.config.k8sProvider -eq [ProviderType]::Eks) {
-			$choices += [tuple]::create('AWS &Classic Load Balancer with Certificate Manager', 'Use AWS Classic Load Balancer')
-			$choices += [tuple]::create('AWS &Network Load Balancer with Certificate Manager', 'Use AWS Network Load Balancer')
+			$choices += [tuple]::create('AWS Classic Load Balancer with Certificate Manager', 'Use AWS Classic Load Balancer')
+			$choices += [tuple]::create('AWS Network Load Balancer with Certificate Manager', 'Use AWS Network Load Balancer')
 		}
 
 		return new-object MultipleChoiceQuestion($prompt, $choices, -1)
@@ -45,11 +73,11 @@ cluster.
 	[bool]HandleResponse([IQuestion] $question) {
 		switch (([MultipleChoiceQuestion]$question).choice) {
 			0 { $this.config.ingressType = [IngressType]::None }
-			1 { $this.config.ingressType = [IngressType]::NginxLetsEncrypt }
-			2 { $this.config.ingressType = [IngressType]::NginxLetsEncryptWithLoadBalancerIP }
-			3 { $this.config.ingressType = [IngressType]::LoadBalancer }
-			4 { $this.config.ingressType = [IngressType]::ExternalIngressController }
-			5 { $this.config.ingressType = [IngressType]::ExternalNginxIngressController }
+			1 { $this.config.ingressType = [IngressType]::LoadBalancer }
+			2 { $this.config.ingressType = [IngressType]::ExternalIngressController }
+			3 { $this.config.ingressType = [IngressType]::ExternalNginxIngressController }
+			4 { $this.config.ingressType = [IngressType]::NginxLetsEncrypt }
+			5 { $this.config.ingressType = [IngressType]::NginxLetsEncryptWithLoadBalancerIP }
 			6 { $this.config.ingressType = [IngressType]::ClassicElb }
 			7 { $this.config.ingressType = [IngressType]::NetworkElb }
 		}

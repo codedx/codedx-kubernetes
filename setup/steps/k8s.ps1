@@ -32,7 +32,8 @@ Note: Running Code Dx on AWS EKS requires a minimum Kubernetes version of 1.16.
 			[tuple]::create('&Minikube', 'Use Minikube for eval/test/dev purposes'),
 			[tuple]::create('&AKS', 'Use Microsoft''s Azure Kubernetes Service (AKS)'),
 			[tuple]::create('&EKS', 'Use Amazon''s Elastic Kubernetes Service (EKS)'),
-			[tuple]::create('&Other', 'Use a different Kubernetes provider')), -1)
+			[tuple]::create('&OpenShift', 'Use OpenShift 4'),
+			[tuple]::create('O&ther', 'Use a different Kubernetes provider')), -1)
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
@@ -40,13 +41,22 @@ Note: Running Code Dx on AWS EKS requires a minimum Kubernetes version of 1.16.
 			0 { $this.config.k8sProvider = [ProviderType]::Minikube }
 			1 { $this.config.k8sProvider = [ProviderType]::Aks }
 			2 { $this.config.k8sProvider = [ProviderType]::Eks }
-			3 { $this.config.k8sProvider = [ProviderType]::Other }
+			3 { $this.config.k8sProvider = [ProviderType]::OpenShift }
+			4 { $this.config.k8sProvider = [ProviderType]::Other }
 		}
+
+		$usingOpenShift = $this.config.k8sProvider -eq [ProviderType]::OpenShift
+
+		$this.config.usePnsContainerRuntimeExecutor = $usingOpenShift
+		$this.config.createSCCs = $usingOpenShift
+
 		return $true
 	}
 
 	[void]Reset(){
 		$this.config.k8sProvider = [ProviderType]::Other
+		$this.config.usePnsContainerRuntimeExecutor = $false
+		$this.config.createSCCs = $false
 	}
 }
 

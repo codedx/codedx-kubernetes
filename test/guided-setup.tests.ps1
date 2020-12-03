@@ -42,7 +42,7 @@ function Test-SetupParameters([string] $testScriptPath, [string] $runSetupPath, 
 Describe 'Generate Setup Commands' {
 
 	BeforeEach {
-		$global:kubeContexts = 'minikube','EKS','AKS','Other'
+		$global:kubeContexts = 'minikube','EKS','AKS','Other','OpenShift'
 		$global:missingPrereqs = $false
 		$global:k8sport = 8443
 		$global:caCertCertificateExists = $true
@@ -334,6 +334,19 @@ Describe 'Generate Setup Commands' {
 		$runSetupFile = join-path $TestDrive run-setup.ps1
 		$runSetupFile | Should -Exist
 		$expectedParams = "-kubeContextName 'minikube' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -storageClassName 'default' -backupType 'velero-restic' -namespaceVelero 'velero-ns' -backupScheduleCronExpression '0 5 * * *' -backupDatabaseTimeoutMinutes 33 -backupTimeToLiveHours 25 -codedxAdminPwd 'my-codedx-password' -skipIngressEnabled -skipIngressAssumesNginx -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 9443 -dbVolumeSizeGiB 64 -dbSlaveReplicaCount 0 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -skipToolOrchestration -skipNginxIngressControllerInstall -skipLetsEncryptCertManagerInstall"
+		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
+	}
+
+	It '(23) Should generate run-setup.ps1 with OpenShift switches' {
+	
+		Set-OpenShiftPass 1 # save w/o prereqs command
+
+		New-Mocks
+		. ./guided-setup.ps1
+
+		$runSetupFile = join-path $TestDrive run-setup.ps1
+		$runSetupFile | Should -Exist
+		$expectedParams = "-kubeContextName 'OpenShift' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -storageClassName 'default' -backupType 'velero-restic' -namespaceVelero 'velero-ns' -backupScheduleCronExpression '0 5 * * *' -backupDatabaseTimeoutMinutes 33 -backupTimeToLiveHours 25 -codedxAdminPwd 'my-codedx-password' -skipIngressEnabled -skipIngressAssumesNginx -usePnsContainerRuntimeExecutor -createSCCs -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 9443 -dbVolumeSizeGiB 64 -dbSlaveReplicaCount 0 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -skipToolOrchestration -skipNginxIngressControllerInstall -skipLetsEncryptCertManagerInstall"
 		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
 	}
 }

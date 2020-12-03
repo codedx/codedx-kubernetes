@@ -15,6 +15,7 @@ enum ProviderType {
 	Minikube
 	Aks
 	Eks
+	OpenShift
 	Other
 }
 
@@ -196,6 +197,9 @@ class ConfigInput {
 	[int]    $backupDatabaseTimeoutMinutes
 	[int]    $backupTimeToLiveHours
 
+	[bool]   $usePnsContainerRuntimeExecutor
+	[bool]   $createSCCs
+	
 	[hashtable]  $notes = @{}
 
 	ConfigInput() {

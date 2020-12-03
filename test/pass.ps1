@@ -451,7 +451,7 @@ function Set-NginxLetsEncryptWithLoadBalancerIpPass([int] $saveOption) {
 	$global:inputs.enqueue(2) # specify tool service replicas
 	$global:inputs.enqueue(1) # skip private reg
 	$global:inputs.enqueue(0) # choose default Docker images
-	$global:inputs.enqueue(2) # choose NGINX and Let's Encrypt ingress with LoadBalancer IP
+	$global:inputs.enqueue(5) # choose NGINX and Let's Encrypt ingress with LoadBalancer IP
 	$global:inputs.enqueue('nginx') # specify nginx namespace
 	$global:inputs.enqueue('10.0.0.1') # specify IP address
 	$global:inputs.enqueue('cert-manager') # specify let's encrypt namespace
@@ -503,7 +503,7 @@ function Set-NginxLetsEncryptWithoutLoadBalancerIpPass([int] $saveOption) {
 	$global:inputs.enqueue(2) # specify tool service replicas
 	$global:inputs.enqueue(1) # skip private reg
 	$global:inputs.enqueue(0) # choose default Docker images
-	$global:inputs.enqueue(1) # choose NGINX and Let's Encrypt ingress
+	$global:inputs.enqueue(4) # choose NGINX and Let's Encrypt ingress
 	$global:inputs.enqueue('nginx') # specify nginx namespace
 	$global:inputs.enqueue('cert-manager') # specify let's encrypt namespace
 	$global:inputs.enqueue(0) # choose staging clusterissuer
@@ -993,5 +993,49 @@ function Set-DefaultPassWithVeleroRestic([int] $saveOption) {
 	$global:inputs.enqueue(1) # skip storage reservation
 	$global:inputs.enqueue(0) # use default volume sizes
 	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue($saveOption) # next step save option
+}
+
+function Set-OpenShiftPass([int] $saveOption) {
+
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(3) # choose OpenShift env
+	$global:inputs.enqueue(4) # choose OpenShift context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(1) # skip tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(2)           # choose Velero Restic
+	$global:inputs.enqueue('velero-ns') # specify Velero namespace
+	$global:inputs.enqueue('0 5 * * *') # specify backup schedule
+	$global:inputs.enqueue(33)          # specify database backup timeout
+	$global:inputs.enqueue(25)          # specify backup TTL
+	$global:inputs.enqueue(0) # choose default deployment options
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue(0) # specify db replicas
+	$global:inputs.enqueue(0) # choose default cacerts
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(0) # choose default Docker images
+	$global:inputs.enqueue(0) # choose None ingress
+	$global:inputs.enqueue(0) # use local accounts
+	$global:inputs.enqueue(1) # skip cpu reservation
+	$global:inputs.enqueue(1) # skip memory reservation
+	$global:inputs.enqueue(1) # skip storage reservation
+	$global:inputs.enqueue(0) # use default volume sizes
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue(1) # skip node selectors
+	$global:inputs.enqueue(1) # skip pod tolerations
 	$global:inputs.enqueue($saveOption) # next step save option
 }

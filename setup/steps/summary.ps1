@@ -171,7 +171,7 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 			}
 		}
 
-		'skipTLS','skipPSPs','skipNetworkPolicies','skipIngressEnabled','skipIngressAssumesNginx','useSaml' | ForEach-Object {
+		'skipTLS','skipPSPs','skipNetworkPolicies','skipIngressEnabled','skipIngressAssumesNginx','useSaml','usePnsContainerRuntimeExecutor','createSCCs' | ForEach-Object {
 			$this.AddSwitchParameter($sb, $_)
 		}
 

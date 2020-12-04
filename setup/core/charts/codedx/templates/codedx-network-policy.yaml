@@ -66,6 +66,19 @@ spec:
 {{ toYaml .Values.networkPolicy.codedx.toolServiceSelectors | indent 4 -}}
     {{- end }}
   {{- end }}
+  # ML Service
+  - ports:
+    {{- if .Values.codedxTls.enabled }}
+    - port: 8443
+    {{- else }}
+    - port: 8080
+    {{- end }}
+      protocol: TCP
+    to:
+    - podSelector:
+        matchLabels:
+          app: {{ include "codedx.name" . | quote }}
+          release: {{ .Release.Name | quote }}
   ingress:
   - ports:
     {{- if .Values.codedxTls.enabled }}

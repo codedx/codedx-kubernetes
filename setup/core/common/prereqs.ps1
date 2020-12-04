@@ -28,16 +28,32 @@ function Get-KubectlVersion {
 	$version | ConvertFrom-Json
 }
 
+function Get-SemanticVersionComponents([string] $version) {
+
+	if ($version.ToLower().StartsWith('v')) {
+		$version = $version.Substring(1)
+	}
+
+	# Regular Expression from https://semver.org/
+	$semanticVersionRegex = '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'
+	if (-not ($version -match $semanticVersionRegex)) {
+		throw "$version is not a semantic version"
+	}
+	$matches
+}
+
 function Get-KubectlClientVersion {
 
 	$versionInfo = Get-KubectlVersion
-	"$($versionInfo.clientVersion.major).$($versionInfo.clientVersion.minor)"
+	$version = Get-SemanticVersionComponents $versionInfo.clientVersion.gitVersion
+	"$($version[1]).$($version[2])"
 }
 
 function Get-KubectlServerVersion {
 
 	$versionInfo = Get-KubectlVersion
-	"$($versionInfo.serverVersion.major).$($versionInfo.serverVersion.minor)"
+	$version = Get-SemanticVersionComponents $versionInfo.serverVersion.gitVersion
+	"$($version[1]).$($version[2])"
 }
 
 function Get-HelmVersionMajorMinor() {

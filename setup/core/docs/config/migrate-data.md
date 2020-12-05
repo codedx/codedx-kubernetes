@@ -23,7 +23,7 @@ mysqldump --host=127.0.0.1 --port=3306 --user=root -p codedx > dump-codedx.sql
 4) Clone this repository on your system by running the following command from the directory where you want to store the codedx-kubernetes files:
 
 ```
-git clone https://github.com/codedx/codedx-kubernetes.git -b feature/guide
+git clone https://github.com/codedx/codedx-kubernetes.git
 ```
 
 5) Run the migrate-data.ps1 script in the codedx-kubernetes/admin directory. When prompted, enter the path to your dump-codedx.sql file, your Code Dx AppData directory, and specify the password for the root database user.

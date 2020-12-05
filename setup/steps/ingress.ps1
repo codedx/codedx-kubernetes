@@ -28,15 +28,15 @@ cluster.
 
 		$choices = `
 			[tuple]::create('None', 'Do not configure any type of ingress (use port-forward or something else to access Code Dx)'),
-			[tuple]::create('NGINX and &Let''s Encrypt', 'Install and use NGINX with Let''s Encrypt Cert Manager'),
+			[tuple]::create('NGINX and Let''s Encrypt', 'Install and use NGINX with Let''s Encrypt Cert Manager'),
 			[tuple]::create('NGINX and Let''s Encrypt (with Load Balancer IP)', 'Install and use NGINX with Let''s Encrypt Cert Manager with a specified Load Balancer IP address'),
 			[tuple]::create('Load Balancer', 'Configure the Code Dx Kubernetes service as a LoadBalancer service type'),
 			[tuple]::create('External Ingress Controller', 'Create ingress resource for use with an ingress controller you installed separately'),
 			[tuple]::create('External NGINX Ingress Controller', 'Create ingress resource for use with an NGINX ingress controller you installed separately')
 
 		if ($this.config.k8sProvider -eq [ProviderType]::Eks) {
-			$choices += [tuple]::create('AWS &Classic Load Balancer with Certificate Manager', 'Use AWS Classic Load Balancer')
-			$choices += [tuple]::create('AWS &Network Load Balancer with Certificate Manager', 'Use AWS Network Load Balancer')
+			$choices += [tuple]::create('AWS Classic Load Balancer with Certificate Manager', 'Use AWS Classic Load Balancer')
+			$choices += [tuple]::create('AWS Network Load Balancer with Certificate Manager', 'Use AWS Network Load Balancer')
 		}
 
 		return new-object MultipleChoiceQuestion($prompt, $choices, -1)

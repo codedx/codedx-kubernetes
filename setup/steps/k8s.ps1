@@ -250,6 +250,15 @@ PS> $d = 'encoded-cert-data'
 PS> [text.encoding]::utf8.getstring([convert]::FromBase64String($d)) | out-file aws-eks.pem -nonewline
 '@
 
+	static [string] hidden $openshiftDescription = @'
+For OpenShift clusters, you can use the following commands from a 
+PowerShell Core session:
+
+$ pwsh
+PS> $tlsCert = kubectl -n openshift-kube-controller-manager get secret csr-signer -o "jsonpath={.data['tls\.crt']}"
+PS> [text.encoding]::utf8.getstring([convert]::FromBase64String($tlsCert)) | out-file openshift-ca.pem -nonewline
+'@
+
 	static [string] hidden $minikubeDescription = @'
 For Minikube clusters, you can find the CA file in the .minikube directory 
 under your home profile folder 
@@ -277,6 +286,7 @@ under your home profile folder
 			0 { $message += [CertsCAPath]::minikubeDescription + "($($env:HOME)/.minikube/ca.crt)." }
 			1 { $message += [CertsCAPath]::aksDescription }
 			2 { $message += [CertsCAPath]::eksDescription }
+			3 { $message += [CertsCAPath]::openshiftDescription }
 		}
 		return $message
 	}

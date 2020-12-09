@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.3
+.VERSION 1.1.0
 .GUID 9b147f81-cb5d-4f13-830c-f0eb653520a7
 .AUTHOR Code Dx
 #>
@@ -11,7 +11,7 @@ This script contains helpers for Code Dx adminstration-related tasks.
 
 
 param(
-	[string] $kubeContext = 'eks',
+	[string] $kubeContext = '',
 	[string] $codedxNamespace = 'cdx-app',
 	[string] $codedxReleaseName = 'codedx',
 	[string] $codedxBaseUrl = '',
@@ -66,6 +66,19 @@ function Test-Vim() {
 
 function Test-Argo() {
 	Test-AppCommandPath 'argo'
+}
+
+function Get-KubectlContexts([switch] $nameOnly) {
+
+	$output = @()
+	if ($nameOnly) {
+		$output = '-o','name'
+	}
+	$contexts = kubectl config get-contexts @($output)
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to get kubectl contexts, kubectl exited with code $LASTEXITCODE."
+	}
+	$contexts
 }
 
 $choices = @(
@@ -302,16 +315,74 @@ $choices = @(
 			kubectl -n $codedxNamespace scale --replicas=0 "deployment/$deploymentName"
 			kubectl -n $codedxNamespace scale --replicas=1 "deployment/$deploymentName"
 		};
-		valid = {$codedxNamespace -ne ''}
+		valid = {$codedxNamespace -ne '' -and $codedxReleaseName -ne ''}
 	}
 
 	@{id="R2"; name='Replace Tool Orchestration Pod(s)';
 		action={
-			$podNames = kubectl -n $toolOrchestrationNamespace get pod -l component=service -o name
+			$replicaCount = (Get-HelmValues $toolOrchestrationNamespace $toolOrchestrationReleaseName).numReplicas
 
 			$deploymentName = Get-CodeDxToolOrchestrationChartFullName $toolOrchestrationReleaseName
+			kubectl -n $toolOrchestrationNamespace scale --replicas=0             "deployment/$deploymentName"
+			kubectl -n $toolOrchestrationNamespace scale --replicas=$replicaCount "deployment/$deploymentName"
+		};
+		valid = {$toolOrchestrationNamespace -ne '' -and $toolOrchestrationReleaseName -ne ''}
+	}
+
+	@{id="R3"; name='Replace MariaDB Pod(s)';
+		action={
+			$deploymentNamePrefix = Get-MariaDbChartFullName $codedxReleaseName
+			kubectl -n $codedxNamespace scale --replicas=0 "statefulset/$deploymentNamePrefix-master"
+			kubectl -n $codedxNamespace scale --replicas=1 "statefulset/$deploymentNamePrefix-master"
+
+			$subordinateCount = (Get-HelmValues $codedxNamespace $codedxReleaseName).mariadb.slave.replicas
+			kubectl -n $codedxNamespace scale --replicas=0                 "statefulset/$deploymentNamePrefix-slave"
+			kubectl -n $codedxNamespace scale --replicas=$subordinateCount "statefulset/$deploymentNamePrefix-slave"
+		};
+		valid = {$codedxNamespace -ne '' -and $codedxReleaseName -ne '' -and (Get-HelmValues $codedxNamespace $codedxReleaseName).mariadb.enabled}
+	}
+
+	@{id="R4"; name='Replace MinIO Pod';
+		action={
+			$deploymentName = Get-MinIOChartFullName $toolOrchestrationReleaseName
 			kubectl -n $toolOrchestrationNamespace scale --replicas=0 "deployment/$deploymentName"
-			kubectl -n $toolOrchestrationNamespace scale --replicas=$($podNames.count) "deployment/$deploymentName"
+			kubectl -n $toolOrchestrationNamespace scale --replicas=1 "deployment/$deploymentName"
+		};
+		valid = {$toolOrchestrationNamespace -ne '' -and $toolOrchestrationReleaseName -ne ''}
+	}
+
+	@{id="S1"; name='Shut Down Code Dx Deployment';
+		action={
+			$deploymentName = Get-CodeDxChartFullName $codedxReleaseName
+			kubectl -n $codedxNamespace scale --replicas=0 "deployment/$deploymentName"
+		};
+		valid = {$codedxNamespace -ne '' -and $codedxReleaseName -ne ''}
+	}
+
+	@{id="S2"; name='Shut Down Tool Orchestration Deployment';
+		action={
+			$deploymentName = Get-CodeDxToolOrchestrationChartFullName $toolOrchestrationReleaseName
+			kubectl -n $toolOrchestrationNamespace scale --replicas=0 "deployment/$deploymentName"
+		};
+		valid = {$toolOrchestrationNamespace -ne '' -and $toolOrchestrationReleaseName -ne ''}
+	}
+
+	@{id="S3"; name='Shut Down MariaDB StatefulSet(s)';
+		action={
+			$deploymentNamePrefix = Get-MariaDbChartFullName $codedxReleaseName
+			kubectl -n $codedxNamespace scale --replicas=0 "statefulset/$deploymentNamePrefix-master"
+			$subordinateCount = (Get-HelmValues $codedxNamespace $codedxReleaseName).mariadb.slave.replicas
+			if ($subordinateCount -gt 0) {
+				kubectl -n $codedxNamespace scale --replicas=0 "statefulset/$deploymentNamePrefix-slave"
+			}
+		};
+		valid = {$codedxNamespace -ne '' -and $codedxReleaseName -ne '' -and (Get-HelmValues $codedxNamespace $codedxReleaseName).mariadb.enabled}
+	}
+
+	@{id="S4"; name='Shut Down MinIO Deployment';
+		action={
+			$deploymentName = Get-MinIOChartFullName $toolOrchestrationReleaseName
+			kubectl -n $toolOrchestrationNamespace scale --replicas=0 "deployment/$deploymentName"
 		};
 		valid = {$toolOrchestrationNamespace -ne '' -and $toolOrchestrationReleaseName -ne ''}
 	}
@@ -346,14 +417,41 @@ $choices = @(
 	}
 )
 
+$kubeContexts = Get-KubectlContexts -nameOnly
+if ($kubeContexts.count -eq 0) {
+	Write-Host 'Unable to find any kubectl contexts. Are you connected to your cluster?'
+	exit 2
+}
+
+if ($kubeContext -eq '' -or $kubeContexts -notcontains $kubeContext) {
+
+	Write-Host "`nHere are your kubectl contexts:`n"
+	$kubeContexts | ForEach-Object {
+		Write-Host "  $_"
+	}
+	$kubeContext = Read-Host -Prompt "`nEnter the name of the kubectl context for your cluster"
+}
+
 kubectl config use-context $kubeContext
 if ($LASTEXITCODE -ne 0) {
 	Write-Host "Failed to switch to '$kubeContext' kube context."
-	Write-Host 'Run kubectl config get-contexts to see whether you are connected to your EKS cluster.'
+	Write-Host 'Run kubectl config get-contexts to see whether you are connected to your cluster.'
 	Write-Host "You must have a context named '$kubeContext' or you must run this program with a different '-kubeContext' parameter value."
-	Write-Host "You can also rename your current EKS context to '$kubeContext' by running kubectl config rename-context."
+	Write-Host "You can also rename your current context to '$kubeContext' by running kubectl config rename-context."
 	exit 2
 }
+
+if (-not (Test-HelmRelease $codedxNamespace $codedxReleaseName)) {
+	Write-Host "Unable to find Helm release named $codedxReleaseName in namespace $codedxNamespace."
+	exit 2
+}
+
+if ($toolOrchestrationNamespace -ne '' -and (-not (Test-HelmRelease $toolOrchestrationNamespace $toolOrchestrationReleaseName))) {
+	Write-Host "Unable to find Helm release named $toolOrchestrationReleaseName in namespace $toolOrchestrationNamespace."
+	exit 2
+}
+
+Write-Host 'Loading...'
 
 $cmdCount = $choices.count
 $choices = $choices | Where-Object { & $_.valid } | Sort-Object -Property id

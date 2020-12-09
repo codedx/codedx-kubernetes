@@ -1006,8 +1006,9 @@ if ($tlsFiles.Count -gt 0) {
 
 	Write-Host "`nThis script generated the following certificates. You must rerun this script to generate new certificates and restart related components before the listed expiration times.`n"
 	$tlsFiles | ForEach-Object {
-		$certDetails = Get-Content $_ | openssl x509 -subject -enddate -noout
-		Write-Host "---`n$certDetails`n"
+		$certSubject = Get-Content $_ | openssl x509 -subject -noout
+		$certEndDate = Get-Content $_ | openssl x509 -enddate -noout
+		Write-Host "---`n$certSubject`n$certEndDate`n"
 	}
 }
 

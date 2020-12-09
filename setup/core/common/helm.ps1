@@ -43,6 +43,7 @@ function Add-HelmRepo([string] $name, [string] $url) {
 
 function Test-HelmRelease([string] $namespace, [string] $releaseName) {
 
+	$Local:ErrorActionPreference = 'SilentlyContinue'
 	helm -n $namespace status $releaseName *>&1 | Out-Null
 	$LASTEXITCODE -eq 0
 }

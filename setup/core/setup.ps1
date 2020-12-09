@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.6.2
+.VERSION 1.7.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -385,6 +385,8 @@ if ($dockerImagePullSecretName -ne '') {
 	}
 }
 
+$tlsFiles = @()
+
 if ($useTLS -and -not (test-path $clusterCertificateAuthorityCertPath -PathType Leaf)) {
 	Write-ErrorMessageAndExit "Unable to continue because path '$clusterCertificateAuthorityCertPath' cannot be found."
 }
@@ -606,6 +608,7 @@ if ($useTLS) {
 	$tlsKeyFile = "$codeDxChartFullName.key"
 
 	# NOTE: New-Certificate uses kubectl to create and approve a CertificateSigningRequest, so this next line requires cluster access
+	$tlsFiles += $tlsCertFile
 	New-Certificate $clusterCertificateAuthorityCertPath $codeDxChartFullName $codeDxChartFullName $tlsCertFile $tlsKeyFile $namespaceCodeDx @()
 
 	$tlsSecretNameCodeDx = "$codeDxChartFullName-tls"
@@ -614,10 +617,12 @@ if ($useTLS) {
 	$masterDatabaseServiceName = Get-MariaDbChartFullName $releaseNameCodeDx
 
 	# NOTE: New-Certificate uses kubectl to create and approve a CertificateSigningRequest, so this next line requires cluster access
-	New-Certificate $clusterCertificateAuthorityCertPath $masterDatabaseServiceName $masterDatabaseServiceName "$masterDatabaseServiceName.pem" "$masterDatabaseServiceName.key" $namespaceCodeDx @()
+	$masterDatabaseCertFile = "$masterDatabaseServiceName.pem"
+	$tlsFiles += $masterDatabaseCertFile
+	New-Certificate $clusterCertificateAuthorityCertPath $masterDatabaseServiceName $masterDatabaseServiceName $masterDatabaseCertFile "$masterDatabaseServiceName.key" $namespaceCodeDx @()
 
 	$tlsSecretNameMasterDatabase = "$masterDatabaseServiceName-tls"
-	New-CertificateSecretResource $namespaceCodeDx $tlsSecretNameMasterDatabase "$masterDatabaseServiceName.pem" "$masterDatabaseServiceName.key" -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+	New-CertificateSecretResource $namespaceCodeDx $tlsSecretNameMasterDatabase $masterDatabaseCertFile "$masterDatabaseServiceName.key" -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
 
 	$masterDatabaseCertConfigMapName = "$masterDatabaseServiceName-ca-cert"
 	New-CertificateConfigMapResource $namespaceCodeDx $masterDatabaseCertConfigMapName $clusterCertificateAuthorityCertPath 'ca.crt' -useGitOps:$useGitOps
@@ -635,6 +640,7 @@ if ($useTLS -and $useToolOrchestration) {
 	
 	# NOTE: New-Certificate uses kubectl to create and approve a CertificateSigningRequest, so it requires cluster access
 	$minioPublicKeyFile = 'minio.pem'; $minioPrivateKeyFile = 'minio.key'
+	$tlsFiles += $minioPublicKeyFile
 	New-Certificate $clusterCertificateAuthorityCertPath $minioFullName $minioFullName $minioPublicKeyFile $minioPrivateKeyFile $namespaceToolOrchestration @()
 
 	$tlsMinioCertSecretName = '{0}-minio-tls' -f $toolOrchestrationFullName
@@ -645,6 +651,7 @@ if ($useTLS -and $useToolOrchestration) {
 
 	# NOTE: New-Certificate uses kubectl to create and approve a CertificateSigningRequest, so it requires cluster access
 	$toolServicePublicKeyFile = 'toolsvc.pem'; $toolServicePrivateKeyFile = 'toolsvc.key'
+	$tlsFiles += $toolServicePublicKeyFile
 	New-Certificate $clusterCertificateAuthorityCertPath $toolOrchestrationFullName $toolOrchestrationFullName $toolServicePublicKeyFile $toolServicePrivateKeyFile $namespaceToolOrchestration @()
 
 	$tlsToolServiceCertSecretName = '{0}-tls' -f $toolOrchestrationFullName
@@ -988,6 +995,20 @@ if ($null -ne $currentToolOrchestrationAppVersion) {
 	}
 }
 
-
 Write-Verbose 'Done'
+
+if ($tlsFiles.Count -gt 0) {
+
+	Write-Host "`nIMPORTANT CERTIFICATE NOTES:"
+
+	$date = Get-Content $clusterCertificateAuthorityCertPath | openssl x509 -enddate -noout
+	Write-Host "`nCA certificate expiration (-clusterCertificateAuthorityCertPath parameter): $date"
+
+	Write-Host "`nThis script generated the following certificates. You must rerun this script to generate new certificates and restart related components before the listed expiration times.`n"
+	$tlsFiles | ForEach-Object {
+		$certDetails = Get-Content $_ | openssl x509 -subject -enddate -noout
+		Write-Host "---`n$certDetails`n"
+	}
+}
+
 Write-ImportantNote "The '$workDir' directory may contain .key files and other configuration data that should be kept private."

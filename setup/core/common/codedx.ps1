@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.3.0
+.VERSION 1.4.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -695,6 +695,10 @@ function Get-CodeDxToolOrchestrationChartFullName([string] $releaseName) {
 
 function Get-MariaDbChartFullName([string] $releaseName) {
 	Get-HelmChartFullname $releaseName 'mariadb'
+}
+
+function Get-MinIOChartFullName([string] $releaseName) {
+	Get-HelmChartFullname $releaseName 'minio'
 }
 
 function Get-HelmChartFullname([string] $releaseName, [string] $chartName) {

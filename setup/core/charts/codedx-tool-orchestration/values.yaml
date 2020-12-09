@@ -220,7 +220,7 @@ argo:
     namespace: codedx
     executor: codedx-argoexec
     controller: codedx-workflow-controller
-    tag: v2.12.0-rc3
+    tag: v2.11.8
   controller:
     priorityClassValue: 10100
   ui:

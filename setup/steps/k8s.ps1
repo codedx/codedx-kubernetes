@@ -255,8 +255,17 @@ For OpenShift clusters, you can use the following commands from a
 PowerShell Core session:
 
 $ pwsh
-PS> $tlsCert = kubectl -n openshift-kube-controller-manager get secret csr-signer -o "jsonpath={.data['tls\.crt']}"
-PS> [text.encoding]::utf8.getstring([convert]::FromBase64String($tlsCert)) | out-file openshift-ca.pem -nonewline
+PS> $csrSigner = [text.encoding]::utf8.getstring( `
+      [convert]::frombase64string( `
+        (kubectl -n openshift-kube-controller-manager get secret csr-signer -o "jsonpath={.data['tls\.crt']}") `
+      )`
+    )
+PS> $csrSignerSigner = [text.encoding]::utf8.getstring( `
+      [convert]::frombase64string( `
+        (kubectl -n openshift-kube-controller-manager-operator get secret csr-signer-signer -o "jsonpath={.data['tls\.crt']}") `
+      )`
+    )
+PS> "$csrSigner`n$csrSignerSigner" | out-file 'openshift-ca.pem' -Encoding ascii -force
 '@
 
 	static [string] hidden $minikubeDescription = @'

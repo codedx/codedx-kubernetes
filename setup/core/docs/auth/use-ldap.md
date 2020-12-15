@@ -23,7 +23,7 @@ auth.ldap.authenticationMechanism = simple
 kubectl create ns cdx-app
 ```
 
-4) Generate a Kubernetes secret named `codedx-ldap` in the Code Dx namespace. For example, if your Code Dx namespace is cdx-app, run the following command (otherwise, replace cdx-app wit your Code Dx namespace):
+4) Generate a Kubernetes secret named `codedx-ldap` in the Code Dx namespace. For example, if your Code Dx namespace is cdx-app, run the following command (otherwise, replace cdx-app with your Code Dx namespace):
 
 ```
 kubectl -n cdx-app create secret generic codedx-ldap --from-file=codedx-ldap-creds-props

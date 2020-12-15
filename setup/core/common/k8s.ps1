@@ -187,6 +187,12 @@ function Test-Deployment([string] $namespace, [string] $deploymentName) {
 	$LASTEXITCODE -eq 0
 }
 
+function Test-NonNamespacedResource([string] $kind, [string] $resourceName) {
+	$Local:ErrorActionPreference = 'SilentlyContinue'
+	kubectl get $kind $resourceName *>&1 | out-null
+	$LASTEXITCODE -eq 0
+}
+
 function Test-StatefulSet([string] $namespace, [string] $statefulSetName) {
 
 	$Local:ErrorActionPreference = 'SilentlyContinue'
@@ -410,13 +416,20 @@ function New-ConfigMap([string] $namespace, [string] $name, [hashtable] $keyValu
 	}
 }
 
-function Set-NonNamespacedResource([string] $path, [switch] $dryRun) {
-	
+
+function Set-NonNamespacedResource([string] $jsonPath, [string] $kind, [switch] $dryRun) {
+
+	$resourceName = (get-content $jsonPath | ConvertFrom-Json).metadata.name
+	if (-not $dryRun -and (Test-NonNamespacedResource $kind $resourceName)) {
+		kubectl replace -f $jsonPath -o 'name' # Do not use apply here because it may fail with a resourceVersion mismatch
+		return
+	}
+
 	$output = $dryRun ? 'yaml' : 'name'
 	$dryRunParam = $dryRun ? (Get-KubectlDryRunParam) : ''
-	kubectl apply -f $path -o $output $dryRunParam
+	kubectl apply -f $jsonPath -o $output $dryRunParam
 	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to create non namespaced resource from $path, kubectl exited with code $LASTEXITCODE."
+		throw "Unable to create non namespaced resource from $jsonPath, kubectl exited with code $LASTEXITCODE."
 	}
 }
 

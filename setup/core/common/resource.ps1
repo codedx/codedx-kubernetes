@@ -129,7 +129,7 @@ function New-ConfigMapResource([string] $namespace, [string] $name, [hashtable] 
 function Set-CustomResourceDefinitionResource([string] $name, [string] $path,
 	[switch] $useGitOps) {
 
-	$crd = Set-NonNamespacedResource $path -dryRun:$useGitOps
+	$crd = Set-NonNamespacedResource $path 'crd' -dryRun:$useGitOps
 	if (-not $useGitOps) {
 		return $crd
 	}

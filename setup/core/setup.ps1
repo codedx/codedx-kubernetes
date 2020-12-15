@@ -56,9 +56,9 @@ param (
 	[string]                 $workflowEphemeralStorageReservation,
 	[string]                 $nginxEphemeralStorageReservation,
 
-	[string]                 $imageCodeDxTomcat     = 'codedx/codedx-tomcat:v5.2.9',
-	[string]                 $imageCodeDxTools      = 'codedx/codedx-tools:v1.1.0',
-	[string]                 $imageCodeDxToolsMono  = 'codedx/codedx-toolsmono:v1.1.0',
+	[string]                 $imageCodeDxTomcat     = 'codedx/codedx-tomcat:v5.2.10',
+	[string]                 $imageCodeDxTools      = 'codedx/codedx-tools:v5.2.10',
+	[string]                 $imageCodeDxToolsMono  = 'codedx/codedx-toolsmono:v5.2.10',
 	[string]                 $imageNewAnalysis      = 'codedx/codedx-newanalysis:v1.1.0',
 	[string]                 $imageSendResults      = 'codedx/codedx-results:v1.2.0',
 	[string]                 $imageSendErrorResults = 'codedx/codedx-error-results:v1.2.0',
@@ -114,7 +114,7 @@ param (
 	[string]                 $codedxHelmRepo = 'https://codedx.github.io/codedx-kubernetes',
 	
 	[string]                 $codedxGitRepo = 'https://github.com/codedx/codedx-kubernetes.git',
-	[string]                 $codedxGitRepoBranch = 'v1.6.2',
+	[string]                 $codedxGitRepoBranch = 'v1.6.3',
 
 	[int]                    $kubeApiTargetPort = 443,
 

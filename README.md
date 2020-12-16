@@ -55,9 +55,9 @@ pwsh ./guided-setup.ps1
 
 >Note: If running `pwsh ./guided-setup.ps1` generates errors mentioning unexpected tokens, run `pwsh ./guided-setup-check-prereqs.ps1` to test whether your system meets the PowerShell Core v7 prerequisite.
 
-The guided setup script checks to see whether your system meets the prerequisites before gathering configuration data with a [series of steps](#guided-setup-steps) to help you specify the setup.ps1 parameters necessary to deploy Code Dx in your Kubernetes environment. If you want to use LDAP for authentication, refer to the [LDAP configuration instructions](./setup/core/docs/auth/use-ldap.md) before starting the guided setup.
+The guided setup script checks whether your system meets the prerequisites before gathering configuration data with a [series of steps](#guided-setup-steps) to help you specify the setup.ps1 parameters necessary to deploy Code Dx in your Kubernetes environment.
 
-At the conclusion of the guided setup, you can either run the generated setup commands or save the commands to run them later (recommended).
+Finish the guided setup by either running the generated setup command or saving your setup command to one or more files. Saving your setup command is recommended and something that's required if you want to configure authentication with [LDAP](./setup/core/docs/auth/use-ldap.md) or [specify Code Dx property values](./setup/core/docs/config/codedx-props.md) in the [Code Dx Properties File](https://codedx.com/Documentation/InstallGuide.html#CodeDxPropertiesFile).
 
 >Note: You can find a description of each setup command parameter [here](./setup/core#setup-script).
 

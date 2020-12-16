@@ -2,6 +2,8 @@
 
 Here are the deployment steps required to use [Code Dx with LDAP](https://codedx.com/Documentation/InstallGuide.html#ActiveDirectoryLDAPConfiguration) with a GitOps deployment that uses SealedSecrets and helm-operator:
 
+>Note: If you're not using a GitOps deployment, refer to [these LDAP instructions](use-ldap.md).
+
 1) Complete the guided setup to determine the setup command(s) for using GitOps to deploy Code Dx on your Kubernetes cluster. End the guided setup with the option to save your setup command to a file.
 
 >Note: If you're planning to use LDAPS and your LDAP server uses either a self-signed certificate or a certificate issued by a CA other than a well-known one, you must select a custom cacerts file and add the certificate for your LDAP server.

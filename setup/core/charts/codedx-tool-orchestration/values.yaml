@@ -207,6 +207,11 @@ priorityClass:
   workflowValue: 10000
   serviceValue: 10100
 
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+  maxUnavailable:
+
 # Configuration for running Code Dx Tool Orchestration on an OpenShift cluster.
 openshift:
   # Enable creation of OpenShift Security Context Constraint resources. This is done explicitly rather than using 
@@ -223,6 +228,9 @@ argo:
     tag: v2.11.8
   controller:
     priorityClassValue: 10100
+    pdb:
+      # workflow controller can tolerate occasional downtime
+      enabled: false
   ui:
     enabled: false
   server:
@@ -258,6 +266,10 @@ minio:
     size: 50Gi
     storageClass: 
   priorityClassValue: 10100
+  podDisruptionBudget:
+    enabled: true
+    minAvailable:
+    maxUnavailable: 0
 
 # Options for configuring clients to explicitly trust certificate data for the MinIO TLS configuration. This section
 # does not apply when minio.tls.enabled=false.

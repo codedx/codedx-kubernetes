@@ -1,0 +1,25 @@
+{{- if .Values.podDisruptionBudget.enabled }}
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "codedx-tool-orchestration.fullname" . | quote }}
+spec:
+{{- $minAvailable := .Values.podDisruptionBudget.minAvailable -}}
+{{- $maxUnavailable := .Values.podDisruptionBudget.maxUnavailable -}}
+
+{{- if or (kindIs "int64" $minAvailable) (kindIs "float64" $minAvailable) }}     {{/* use kindIs to distinguish between an empty value and 0 */}}
+  minAvailable: {{ $minAvailable }}
+{{- else if $minAvailable }}  
+  minAvailable: {{ $minAvailable | quote }}
+{{- end }}
+
+{{- if or (kindIs "int64" $maxUnavailable) (kindIs "float64" $maxUnavailable) }} {{/* use kindIs to distinguish between an empty value and 0 */}}
+  maxUnavailable: {{ $maxUnavailable }}
+{{- else if $maxUnavailable }}  
+  maxUnavailable: {{ $maxUnavailable | quote }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "codedx-tool-orchestration.commonLabels" . | nindent 6 }}
+      component: service
+{{- end }}

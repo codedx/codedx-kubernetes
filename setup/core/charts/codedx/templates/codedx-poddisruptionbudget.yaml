@@ -1,0 +1,11 @@
+{{- if .Values.podDisruptionBudget.enabled }}
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "codedx.fullname" . | quote }}
+spec:
+  maxUnavailable: 0
+  selector:
+    matchLabels:
+      {{- include "codedx.commonLabels" . | nindent 6 }}
+{{- end }}

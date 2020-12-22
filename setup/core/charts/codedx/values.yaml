@@ -499,6 +499,9 @@ openshift:
   # `$.Capabilities.APIVersions.Has "security.openshift.io/v1"`, which is incompatible with helm template.
   createSCC: false
 
+podDisruptionBudget:
+  enabled: true
+
 # Code Dx-specific MariaDB configuration. This should usually be left untouched, unless changing database passwords or
 # opting to use an external MariaDB instance by setting mariadb.enabled to false. When using an external MariaDB instance,
 # you must specify a value for codedxProps.dbconnection.externalDbUrl and create your own k8s secret containing a MariaDB 
@@ -531,6 +534,10 @@ mariadb:
       storageClass: 
       size: 32Gi
     priorityClassValue: 10200
+    podDisruptionBudget:
+      enabled: true
+      minAvailable:
+      maxUnavailable: 0
     config: |-
       [mysqld]
       skip-name-resolve
@@ -565,6 +572,10 @@ mariadb:
       backup:
         size: 32Gi
     priorityClassValue: 10200
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1
+      maxUnavailable:
     config: |-
       [mysqld]
       skip-name-resolve

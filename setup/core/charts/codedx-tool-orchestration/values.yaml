@@ -225,7 +225,7 @@ argo:
     namespace: codedx
     executor: codedx-argoexec
     controller: codedx-workflow-controller
-    tag: v2.11.8
+    tag: v2.12.2
   controller:
     priorityClassValue: 10100
     pdb:

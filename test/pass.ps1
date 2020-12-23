@@ -1039,3 +1039,59 @@ function Set-OpenShiftPass([int] $saveOption) {
 	$global:inputs.enqueue(1) # skip pod tolerations
 	$global:inputs.enqueue($saveOption) # next step save option
 }
+
+function Set-LoadBalancerIngressPass([int] $saveOption, [switch] $useClassicLoadBalancer, [switch] $useTls) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(2) # choose EKS env
+	$global:inputs.enqueue(1) # choose EKS context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(1) # skip tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # skip backup
+
+	$global:inputs.enqueue(2) # choose other deployment options
+	$global:inputs.enqueue(1) # skip pod security policy
+	$global:inputs.enqueue(1) # skip pod network policy
+
+	if ($useTls) {
+		$global:inputs.enqueue(1) # skip TLS
+	} else {
+		$global:inputs.enqueue(0) # select TLS
+		$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	}
+
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue(0) # specify db replicas
+	$global:inputs.enqueue(0) # choose default cacerts
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(0) # choose default Docker images
+
+	if ($useClassicLoadBalancer) {
+		$global:inputs.enqueue(6) # choose AWS Classic Load Balancer ingress
+	} else {
+		$global:inputs.enqueue(7) # choose AWS Network Load Balancer ingress
+	}
+	$global:inputs.enqueue('arn:value') # specify AWS Certificate ARN
+
+	$global:inputs.enqueue(0) # use local accounts
+	$global:inputs.enqueue(1) # skip cpu reservation
+	$global:inputs.enqueue(1) # skip memory reservation
+	$global:inputs.enqueue(1) # skip storage reservation
+	$global:inputs.enqueue(0) # use default volume sizes
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue(1) # skip node selectors
+	$global:inputs.enqueue(1) # skip pod tolerations
+	$global:inputs.enqueue($saveOption) # next step save option
+}

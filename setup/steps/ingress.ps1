@@ -291,9 +291,12 @@ AWS Certificates console.
 		
 		$certArn = ([Question]$question).response
 
-		$protocol = $this.config.skipTLS ? 'http' : 'https'
+		$backendProtocol = 'http'
+		if (-not $this.config.skipTLS) {
+			$backendProtocol = $this.config.ingressType -eq [IngressType]::NetworkElb ? 'ssl' : 'https'
+		}
 		$this.config.serviceAnnotationsCodeDx = @{
-			'service.beta.kubernetes.io/aws-load-balancer-backend-protocol' = $protocol
+			'service.beta.kubernetes.io/aws-load-balancer-backend-protocol' = $backendProtocol
     		'service.beta.kubernetes.io/aws-load-balancer-ssl-ports' = 'https'
     		'service.beta.kubernetes.io/aws-load-balancer-ssl-cert' = $certArn
 		}

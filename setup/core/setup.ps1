@@ -614,18 +614,21 @@ if ($useTLS) {
 	$tlsSecretNameCodeDx = "$codeDxChartFullName-tls"
 	New-CertificateSecretResource $namespaceCodeDx $tlsSecretNameCodeDx $tlsCertFile $tlsKeyFile -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
 
-	$masterDatabaseServiceName = Get-MariaDbChartFullName $releaseNameCodeDx
+	if ($useLocalDatabase) {
+		
+		$masterDatabaseServiceName = Get-MariaDbChartFullName $releaseNameCodeDx
 
-	# NOTE: New-Certificate uses kubectl to create and approve a CertificateSigningRequest, so this next line requires cluster access
-	$masterDatabaseCertFile = "$masterDatabaseServiceName.pem"
-	$tlsFiles += $masterDatabaseCertFile
-	New-Certificate $clusterCertificateAuthorityCertPath $masterDatabaseServiceName $masterDatabaseServiceName $masterDatabaseCertFile "$masterDatabaseServiceName.key" $namespaceCodeDx @()
+		# NOTE: New-Certificate uses kubectl to create and approve a CertificateSigningRequest, so this next line requires cluster access
+		$masterDatabaseCertFile = "$masterDatabaseServiceName.pem"
+		$tlsFiles += $masterDatabaseCertFile
+		New-Certificate $clusterCertificateAuthorityCertPath $masterDatabaseServiceName $masterDatabaseServiceName $masterDatabaseCertFile "$masterDatabaseServiceName.key" $namespaceCodeDx @()
 
-	$tlsSecretNameMasterDatabase = "$masterDatabaseServiceName-tls"
-	New-CertificateSecretResource $namespaceCodeDx $tlsSecretNameMasterDatabase $masterDatabaseCertFile "$masterDatabaseServiceName.key" -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+		$tlsSecretNameMasterDatabase = "$masterDatabaseServiceName-tls"
+		New-CertificateSecretResource $namespaceCodeDx $tlsSecretNameMasterDatabase $masterDatabaseCertFile "$masterDatabaseServiceName.key" -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
 
-	$masterDatabaseCertConfigMapName = "$masterDatabaseServiceName-ca-cert"
-	New-CertificateConfigMapResource $namespaceCodeDx $masterDatabaseCertConfigMapName $clusterCertificateAuthorityCertPath 'ca.crt' -useGitOps:$useGitOps
+		$masterDatabaseCertConfigMapName = "$masterDatabaseServiceName-ca-cert"
+		New-CertificateConfigMapResource $namespaceCodeDx $masterDatabaseCertConfigMapName $clusterCertificateAuthorityCertPath 'ca.crt' -useGitOps:$useGitOps
+	}
 }
 
 ### Optionally Configure Code Dx Orchestration TLS

@@ -511,8 +511,6 @@ mariadb:
   # Enable installation of the MariaDB chart to create a Code Dx database host. Set to false when using Code Dx 
   # with an external MariaDB instance whose connection details can be found in codedxProps.dbconnection.
   enabled: true
-  image:
-    tag: 10.3.25-debian-10-r18
   db:
     # Name of the database for MariaDB to create automatically
     name: codedx

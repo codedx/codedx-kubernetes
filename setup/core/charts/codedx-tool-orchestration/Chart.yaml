@@ -12,7 +12,7 @@ keywords:
 sources:
 dependencies:
 - name: argo
-  version: 0.14.0
+  version: 0.14.1
   repository: https://codedx.github.io/codedx-kubernetes
 - name: minio
   version: 3.1.6

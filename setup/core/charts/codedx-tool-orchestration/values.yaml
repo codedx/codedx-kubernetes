@@ -221,11 +221,6 @@ openshift:
 # NOTE: These are setting attributes for the `argo` dependency
 argo:
   installCRD: false
-  images:
-    namespace: codedx
-    executor: codedx-argoexec
-    controller: codedx-workflow-controller
-    tag: v2.12.2
   controller:
     priorityClassValue: 10100
     pdb:

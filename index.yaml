@@ -2,8 +2,29 @@ apiVersion: v1
 entries:
   argo:
   - apiVersion: v2
+    appVersion: v2.12.2
+    created: "2021-01-07T20:50:18.297612379-05:00"
+    dependencies:
+    - condition: minio.install
+      name: minio
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.0.6
+    description: A Helm chart for Argo Workflows
+    digest: 44d4f02dffba7f678192c8d65b00cb179d429be846c991fde6f14be9962e4ad3
+    home: https://github.com/argoproj/argo-helm
+    icon: https://raw.githubusercontent.com/argoproj/argo/master/docs/assets/argo.png
+    maintainers:
+    - name: alexec
+    - name: alexmt
+    - name: jessesuen
+    - name: benjaminws
+    name: argo
+    urls:
+    - https://codedx.github.io/codedx-kubernetes/argo-0.14.1.tgz
+    version: 0.14.1
+  - apiVersion: v2
     appVersion: v2.11.7
-    created: "2020-12-22T09:29:18.255435882-05:00"
+    created: "2021-01-07T20:50:18.295243035-05:00"
     dependencies:
     - condition: minio.install
       name: minio
@@ -24,7 +45,7 @@ entries:
     version: 0.14.0
   - apiVersion: v1
     appVersion: v2.11.7
-    created: "2020-12-22T09:29:18.253207812-05:00"
+    created: "2021-01-07T20:50:18.289101485-05:00"
     dependencies:
     - condition: minio.install
       name: minio
@@ -45,7 +66,7 @@ entries:
     version: 0.13.8
   - apiVersion: v1
     appVersion: v2.4.3
-    created: "2020-12-22T09:29:18.261929171-05:00"
+    created: "2021-01-07T20:50:18.316632636-05:00"
     dependencies:
     - condition: minio.install
       name: minio
@@ -66,7 +87,7 @@ entries:
     version: 0.6.9
   - apiVersion: v1
     appVersion: v2.4.3
-    created: "2020-12-22T09:29:18.259954366-05:00"
+    created: "2021-01-07T20:50:18.310504724-05:00"
     dependencies:
     - condition: minio.install
       name: minio
@@ -87,7 +108,7 @@ entries:
     version: 0.6.8
   - apiVersion: v1
     appVersion: v2.4.2
-    created: "2020-12-22T09:29:18.257287617-05:00"
+    created: "2021-01-07T20:50:18.303608531-05:00"
     dependencies:
     - condition: minio.install
       name: minio
@@ -109,7 +130,7 @@ entries:
   mariadb:
   - apiVersion: v1
     appVersion: 10.3.25
-    created: "2020-12-22T09:29:18.272176437-05:00"
+    created: "2021-01-07T20:50:18.375599161-05:00"
     description: Fast, reliable, scalable, and easy to use open-source relational
       database system. MariaDB Server is intended for mission-critical, heavy-load
       production systems as well as for embedding into mass-deployed software. Highly
@@ -135,7 +156,7 @@ entries:
     version: 7.3.18
   - apiVersion: v1
     appVersion: 10.3.25
-    created: "2020-12-22T09:29:18.270575821-05:00"
+    created: "2021-01-07T20:50:18.364519747-05:00"
     description: Fast, reliable, scalable, and easy to use open-source relational
       database system. MariaDB Server is intended for mission-critical, heavy-load
       production systems as well as for embedding into mass-deployed software. Highly
@@ -161,7 +182,7 @@ entries:
     version: 7.3.17
   - apiVersion: v1
     appVersion: 10.3.22
-    created: "2020-12-22T09:29:18.269058814-05:00"
+    created: "2021-01-07T20:50:18.353867644-05:00"
     description: Fast, reliable, scalable, and easy to use open-source relational
       database system. MariaDB Server is intended for mission-critical, heavy-load
       production systems as well as for embedding into mass-deployed software. Highly
@@ -187,7 +208,7 @@ entries:
     version: 7.3.16
   - apiVersion: v1
     appVersion: 10.3.22
-    created: "2020-12-22T09:29:18.267447392-05:00"
+    created: "2021-01-07T20:50:18.345509182-05:00"
     description: Fast, reliable, scalable, and easy to use open-source relational
       database system. MariaDB Server is intended for mission-critical, heavy-load
       production systems as well as for embedding into mass-deployed software. Highly
@@ -213,7 +234,7 @@ entries:
     version: 7.3.15
   - apiVersion: v1
     appVersion: 10.3.22
-    created: "2020-12-22T09:29:18.265726605-05:00"
+    created: "2021-01-07T20:50:18.338797245-05:00"
     description: Fast, reliable, scalable, and easy to use open-source relational
       database system. MariaDB Server is intended for mission-critical, heavy-load
       production systems as well as for embedding into mass-deployed software. Highly
@@ -239,7 +260,7 @@ entries:
     version: 7.3.14
   - apiVersion: v1
     appVersion: 10.3.22
-    created: "2020-12-22T09:29:18.264471431-05:00"
+    created: "2021-01-07T20:50:18.331654518-05:00"
     description: Fast, reliable, scalable, and easy to use open-source relational
       database system. MariaDB Server is intended for mission-critical, heavy-load
       production systems as well as for embedding into mass-deployed software. Highly
@@ -265,7 +286,7 @@ entries:
     version: 7.3.13
   - apiVersion: v1
     appVersion: 10.3.22
-    created: "2020-12-22T09:29:18.263183741-05:00"
+    created: "2021-01-07T20:50:18.325627371-05:00"
     description: Fast, reliable, scalable, and easy to use open-source relational
       database system. MariaDB Server is intended for mission-critical, heavy-load
       production systems as well as for embedding into mass-deployed software. Highly
@@ -292,7 +313,7 @@ entries:
   minio:
   - apiVersion: v1
     appVersion: 2020.3.25
-    created: "2020-12-22T09:29:18.278684508-05:00"
+    created: "2021-01-07T20:50:18.426105067-05:00"
     description: MinIO is an object storage server, compatible with Amazon S3 cloud
       storage service, mainly used for storing unstructured data (such as photos,
       videos, log files, etc.)
@@ -316,7 +337,7 @@ entries:
     version: 3.1.6
   - apiVersion: v1
     appVersion: 2020.3.25
-    created: "2020-12-22T09:29:18.277498-05:00"
+    created: "2021-01-07T20:50:18.416713466-05:00"
     description: MinIO is an object storage server, compatible with Amazon S3 cloud
       storage service, mainly used for storing unstructured data (such as photos,
       videos, log files, etc.)
@@ -340,7 +361,7 @@ entries:
     version: 3.1.5
   - apiVersion: v1
     appVersion: 2020.3.25
-    created: "2020-12-22T09:29:18.276521806-05:00"
+    created: "2021-01-07T20:50:18.408710493-05:00"
     description: MinIO is an object storage server, compatible with Amazon S3 cloud
       storage service, mainly used for storing unstructured data (such as photos,
       videos, log files, etc.)
@@ -364,7 +385,7 @@ entries:
     version: 3.1.4
   - apiVersion: v1
     appVersion: 2020.3.14
-    created: "2020-12-22T09:29:18.275534193-05:00"
+    created: "2021-01-07T20:50:18.400640681-05:00"
     description: MinIO is an object storage server, compatible with Amazon S3 cloud
       storage service, mainly used for storing unstructured data (such as photos,
       videos, log files, etc.)
@@ -388,7 +409,7 @@ entries:
     version: 3.0.15
   - apiVersion: v1
     appVersion: 2020.3.5
-    created: "2020-12-22T09:29:18.274158376-05:00"
+    created: "2021-01-07T20:50:18.392768526-05:00"
     description: MinIO is an object storage server, compatible with Amazon S3 cloud
       storage service, mainly used for storing unstructured data (such as photos,
       videos, log files, etc.)
@@ -412,7 +433,7 @@ entries:
     version: 3.0.10
   - apiVersion: v1
     appVersion: 2019.9.26
-    created: "2020-12-22T09:29:18.273199361-05:00"
+    created: "2021-01-07T20:50:18.384836397-05:00"
     description: MinIO is an object storage server, compatible with Amazon S3 cloud
       storage service, mainly used for storing unstructured data (such as photos,
       videos, log files, etc.)
@@ -434,4 +455,4 @@ entries:
     urls:
     - https://codedx.github.io/codedx-kubernetes/minio-1.2.13.tgz
     version: 1.2.13
-generated: "2020-12-22T09:29:18.251091807-05:00"
+generated: "2021-01-07T20:50:18.28147318-05:00"

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.7.0
+.VERSION 1.8.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -56,14 +56,14 @@ param (
 	[string]                 $workflowEphemeralStorageReservation,
 	[string]                 $nginxEphemeralStorageReservation,
 
-	[string]                 $imageCodeDxTomcat     = 'codedx/codedx-tomcat:v5.2.10',
-	[string]                 $imageCodeDxTools      = 'codedx/codedx-tools:v5.2.10',
-	[string]                 $imageCodeDxToolsMono  = 'codedx/codedx-toolsmono:v5.2.10',
-	[string]                 $imageNewAnalysis      = 'codedx/codedx-newanalysis:v1.1.0',
-	[string]                 $imageSendResults      = 'codedx/codedx-results:v1.2.0',
-	[string]                 $imageSendErrorResults = 'codedx/codedx-error-results:v1.2.0',
-	[string]                 $imageToolService      = 'codedx/codedx-tool-service:v1.1.1',
-	[string]                 $imagePreDelete        = 'codedx/codedx-cleanup:v1.0.0',
+	[string]                 $imageCodeDxTomcat     = 'codedx/codedx-tomcat:v5.2.11',
+	[string]                 $imageCodeDxTools      = 'codedx/codedx-tools:v5.2.11',
+	[string]                 $imageCodeDxToolsMono  = 'codedx/codedx-toolsmono:v5.2.11',
+	[string]                 $imageNewAnalysis      = 'codedx/codedx-newanalysis:v1.3.0',
+	[string]                 $imageSendResults      = 'codedx/codedx-results:v1.3.0',
+	[string]                 $imageSendErrorResults = 'codedx/codedx-error-results:v1.3.0',
+	[string]                 $imageToolService      = 'codedx/codedx-tool-service:v1.3.0',
+	[string]                 $imagePreDelete        = 'codedx/codedx-cleanup:v1.3.0',
 
 	[int]                    $toolServiceReplicas = 3,
 

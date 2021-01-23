@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.8.0
+.VERSION 1.8.1
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -444,9 +444,9 @@ if ($useVelero) {
 }
 
 if ($storageClassName -ne '') {
-	$codeDxAppDataStorageClassName -eq '' ? $storageClassName : $codeDxAppDataStorageClassName
-	$dbStorageClassName            -eq '' ? $storageClassName : $dbStorageClassName
-	$minioStorageClassName         -eq '' ? $storageClassName : $minioStorageClassName
+	$codeDxAppDataStorageClassName = $codeDxAppDataStorageClassName -eq '' ? $storageClassName : $codeDxAppDataStorageClassName
+	$dbStorageClassName            = $dbStorageClassName            -eq '' ? $storageClassName : $dbStorageClassName
+	$minioStorageClassName         = $minioStorageClassName         -eq '' ? $storageClassName : $minioStorageClassName
 }
 
 ### Select Kube Context

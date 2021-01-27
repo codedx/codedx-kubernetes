@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.8.1
+.VERSION 1.8.2
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -585,10 +585,15 @@ if ($useLetsEncryptCertManager) {
 Write-Verbose "Creating namespace $namespaceCodeDx..."
 New-NamespaceResource $namespaceCodeDx ([Tuple]::Create('name', $namespaceCodeDx)) -useGitOps:$useGitOps
 
+### Optionally Configure Docker Image Pull Secret
+if ('' -ne $dockerImagePullSecretName) {
+	New-DockerImagePullSecretResource $namespaceCodeDx $dockerImagePullSecretName $dockerRegistry $dockerRegistryUser $dockerRegistryPwd -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+}
+
 ### Optionally Fetch cacerts from Pod
 if ('' -eq $caCertsFilePath -and $codeDxMustTrustCerts) {
 	Write-Verbose "Starting $imageCodeDxTomcat pod in namespace $namespaceCodeDx to fetch cacerts file..."
-	$caCertsFilePath = (Get-CodeDxKeystore $namespaceCodeDx $imageCodeDxTomcat $waitTimeSeconds './cacerts-from-pod').FullName
+	$caCertsFilePath = (Get-CodeDxKeystore $namespaceCodeDx $imageCodeDxTomcat $dockerImagePullSecretName $waitTimeSeconds './cacerts-from-pod').FullName
 }
 
 ### Optionally Create Code Dx Tool Orchestration Namespace
@@ -751,11 +756,6 @@ if ($caCertsFilePath -ne '') {
 	Write-Verbose 'Creating cacerts secret...'
 	$caCertsFilename = 'cacerts'; $caCertsSecretName = $caCertsFilename
 	New-GenericSecretResource $namespaceCodeDx $caCertsSecretName @{} @{$caCertsFilename=(join-path $workDir $caCertsFilename)} -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
-}
-
-### Optionally Configure Docker Image Pull Secret
-if ('' -ne $dockerImagePullSecretName) {
-	New-DockerImagePullSecretResource $namespaceCodeDx $dockerImagePullSecretName $dockerRegistry $dockerRegistryUser $dockerRegistryPwd -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
 }
 
 ### Optionally Configure SAML

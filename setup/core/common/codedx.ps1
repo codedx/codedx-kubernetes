@@ -573,13 +573,19 @@ function Get-RunningCodeDxKeystore([string] $codedxNamespace, [string] $outPath)
 	}
 }
 
-function Get-CodeDxKeystore([string] $namespace, [string] $imageCodeDxTomcat, [int] $waitSeconds, [string] $outPath) {
+function Get-CodeDxKeystore([string] $namespace, [string] $imageCodeDxTomcat, [string] $imagePullSecretName, [int] $waitSeconds, [string] $outPath) {
 
 	$podName = 'copy-cacerts'
 
 	Write-Verbose "Starting pod in $namespace using Docker image $imageCodeDxTomcat..."
 	Remove-Pod $namespace $podName -force
-	kubectl -n $namespace run $podName --image=$imageCodeDxTomcat --restart=Never -- sleep "$($waitSeconds)s"
+
+	$overrides = ''
+	if ('' -ne $imagePullSecretName) {
+		$overrides = '--overrides={ ""apiVersion"": ""v1"", ""spec"": {""imagePullSecrets"": [{""name"": ""' + $imagePullSecretName + '""}]} }'
+	}
+
+	kubectl -n $namespace run $podName --image=$imageCodeDxTomcat --restart=Never $overrides -- sleep "$($waitSeconds)s"
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to start Code Dx pod to fetch cacerts file, kubectl exited with code $LASTEXITCODE."
 	}

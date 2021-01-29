@@ -268,6 +268,29 @@ class CodeDxNewAnalysisDockerImage : DockerImageNameStep {
 	}
 }
 
+class CodeDxPrepareDockerImage : DockerImageNameStep {
+
+	CodeDxPrepareDockerImage([ConfigInput] $config) : base(
+		[CodeDxPrepareDockerImage].Name, 
+		$config,
+		'Code Dx Prepare Docker Image',
+		'The Code Dx Prepare Docker image prepares an orchestrated analysis.',
+		'Enter the Code Dx Prepare Docker image name') {}
+
+	[bool]HandleResponse([IQuestion] $question) {
+		$this.config.imagePrepare = ([Question]$question).response
+		return $true
+	}
+
+	[void]Reset(){
+		$this.config.imagePrepare = ''
+	}
+
+	[bool]CanRun() {
+		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration
+	}
+}
+
 class CodeDxPreDeleteDockerImage : DockerImageNameStep {
 
 	CodeDxPreDeleteDockerImage([ConfigInput] $config) : base(

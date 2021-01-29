@@ -98,6 +98,7 @@ class ConfigInput {
 	[string]       $imageSendResults
 	[string]       $imageSendErrorResults
 	[string]       $imageNewAnalysis
+	[string]       $imagePrepare
 	[string]       $imagePreDelete
 
 	[int]          $toolServiceReplicas

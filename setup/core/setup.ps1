@@ -118,6 +118,7 @@ param (
 	[string]                 $dockerRegistry,
 	[string]                 $dockerRegistryUser,
 	[string]                 $dockerRegistryPwd,
+	[switch]                 $redirectDockerHubReferences,
 
 	[string]                 $codedxHelmRepo = 'https://codedx.github.io/codedx-kubernetes',
 	
@@ -191,6 +192,24 @@ Set-PSDebug -Strict
 		Write-ErrorMessageAndExit "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
 	}
 	. $path
+}
+
+function Get-DockerImageName([bool] $redirectDefaultRegistry, [string] $dockerRegistry, [string] $imageName) {
+
+	if (-not $redirectDefaultRegistry) {
+		return $imageName
+	}
+
+	$imageNameParts = Get-DockerImageParts $imageName
+	if ($imageNameParts[0] -ne 'docker.io') {
+		return $imageName
+	}
+
+	if ($imageNameParts[1] -notmatch '^codedx/codedx-.+' -and $imageNameParts[1] -ne 'bitnami/minio') {
+		return $imageName
+	}
+
+	return "$dockerRegistry/$($imageNameParts[1]):$($imageNameParts[2])"
 }
 
 $useTLS = -not $skipTLS
@@ -390,6 +409,24 @@ if ($dockerImagePullSecretName -ne '') {
 		if ('' -eq $dockerRegistryPwd) {
 			$dockerRegistryPwd = Read-HostSecureText "Enter a docker password for $dockerRegistry"
 		}
+	}
+
+	if ($redirectDockerHubReferences) {
+
+		$imageCodeDxTomcat       = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageCodeDxTomcat
+		$imageCodeDxTools        = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageCodeDxTools
+		$imageCodeDxToolsMono    = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageCodeDxToolsMono
+		$imagePrepare            = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imagePrepare
+		$imageNewAnalysis        = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageNewAnalysis
+		$imageSendResults        = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageSendResults
+		$imageSendErrorResults   = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageSendErrorResults
+		$imageToolService        = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageToolService
+		$imagePreDelete          = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imagePreDelete
+		$imageCodeDxTomcatInit   = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageCodeDxTomcatInit
+		$imageMariaDB            = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageMariaDB
+		$imageMinio              = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageMinio
+		$imageWorkflowController = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageWorkflowController
+		$imageWorkflowExecutor   = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageWorkflowExecutor
 	}
 }
 

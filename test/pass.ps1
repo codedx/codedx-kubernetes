@@ -566,6 +566,7 @@ function Set-DockerImageNamesAndPrivateRegistryPass([int] $saveOption) {
 	$global:inputs.enqueue('codedx-sendresults') # specify sendresults name
 	$global:inputs.enqueue('codedx-senderrorresults') # specify senderrorresults name
 	$global:inputs.enqueue('codedx-newanalysis') # specify newanalysis name
+	$global:inputs.enqueue('codedx-prepare') # specify prepare name
 	$global:inputs.enqueue('codedx-cleanup') # specify cleanup name
 	$global:inputs.enqueue(0) # skip ingress
 	$global:inputs.enqueue(0) # use local accounts
@@ -779,6 +780,7 @@ function Set-SomeDockerImageNames([int] $saveOption) {
 	$global:inputs.enqueue('codedx-sendresults') # specify sendresults name
 	$global:inputs.enqueue('codedx-senderrorresults') # specify senderrorresults name
 	$global:inputs.enqueue('codedx-newanalysis') # specify newanalysis name
+	$global:inputs.enqueue('codedx-prepare') # specify prepare name
 	$global:inputs.enqueue('codedx-cleanup') # specify cleanup name
 	$global:inputs.enqueue(0) # skip ingress
 	$global:inputs.enqueue(0) # use local accounts

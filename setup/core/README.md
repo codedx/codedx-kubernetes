@@ -56,11 +56,19 @@ This section describes the setup.ps1 script parameters, which you can specify by
 | `imageCodeDxTomcat`                                | Code Dx Tomcat Docker image name                           | `latest version`                                  |
 | `imageCodeDxTools`                                 | Code Dx Tools Docker image name                            | `latest version`                                  |
 | `imageCodeDxToolsMono`                             | Code Dx Tools Mono Docker image name                       | `latest version`                                  |
+|                                                    |                                                            |                                                   |
+| `imagePrepare`                                     | Code Dx Prepare Docker image name                          | `latest version`                                  |
 | `imageNewAnalysis`                                 | Code Dx New Analysis Docker image name                     | `latest version`                                  |
 | `imageSendResults`                                 | Code Dx Send Results Docker image name                     | `latest version`                                  |
 | `imageSendErrorResults`                            | Code Dx Send Result Errors Docker image name               | `latest version`                                  |
 | `imageToolService`                                 | Code Dx Tool Service Docker image name                     | `latest version`                                  |
 | `imagePreDelete`                                   | Code Dx Tool Service pre-delete Docker image name          | `latest version`                                  |
+|                                                    |                                                            |                                                   |
+| `imageCodeDxTomcatInit`                            | Code Dx Tomcat initialization Docker image name            | `latest version`                                  |
+| `imageMariaDB`                                     | Code Dx Maria DB Docker image name                         | `latest version`                                  |
+| `imageMinio`                                       | MinIO Docker image name                                    | `supported MinIO version`                         |
+| `imageWorkflowController`                          | Code Dx Argo workflow controller Docker image name         | `latest version`                                  |
+| `imageWorkflowExecutor`                            | Code Dx Argo workflow executor Docker image name           | `latest version`                                  |
 |                                                    |                                                            |                                                   |
 | `toolServiceReplicas`                              | number of tool service copies to run concurrently          | `3`                                               |
 |                                                    |                                                            |                                                   |

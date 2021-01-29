@@ -56,14 +56,22 @@ param (
 	[string]                 $workflowEphemeralStorageReservation,
 	[string]                 $nginxEphemeralStorageReservation,
 
-	[string]                 $imageCodeDxTomcat     = 'codedx/codedx-tomcat:v5.2.12',
-	[string]                 $imageCodeDxTools      = 'codedx/codedx-tools:v5.2.12',
-	[string]                 $imageCodeDxToolsMono  = 'codedx/codedx-toolsmono:v5.2.12',
-	[string]                 $imageNewAnalysis      = 'codedx/codedx-newanalysis:v1.3.0',
-	[string]                 $imageSendResults      = 'codedx/codedx-results:v1.3.0',
-	[string]                 $imageSendErrorResults = 'codedx/codedx-error-results:v1.3.0',
-	[string]                 $imageToolService      = 'codedx/codedx-tool-service:v1.3.0',
-	[string]                 $imagePreDelete        = 'codedx/codedx-cleanup:v1.3.0',
+	[string]                 $imageCodeDxTomcat       = 'codedx/codedx-tomcat:v5.2.12',
+	[string]                 $imageCodeDxTools        = 'codedx/codedx-tools:v5.2.12',
+	[string]                 $imageCodeDxToolsMono    = 'codedx/codedx-toolsmono:v5.2.12',
+
+	[string]                 $imagePrepare            = 'codedx/codedx-prepare:v1.4.0',
+	[string]                 $imageNewAnalysis        = 'codedx/codedx-newanalysis:v1.4.0',
+	[string]                 $imageSendResults        = 'codedx/codedx-results:v1.4.0',
+	[string]                 $imageSendErrorResults   = 'codedx/codedx-error-results:v1.4.0',
+	[string]                 $imageToolService        = 'codedx/codedx-tool-service:v1.4.0',
+	[string]                 $imagePreDelete          = 'codedx/codedx-cleanup:v1.4.0',
+
+	[string]                 $imageCodeDxTomcatInit   = 'codedx/codedx-bash:v1.0.0',
+	[string]                 $imageMariaDB            = 'codedx/codedx-mariadb:v1.0.0',
+	[string]                 $imageMinio              = 'bitnami/minio:2020.3.25-debian-10-r4',
+	[string]                 $imageWorkflowController = 'codedx/codedx-workflow-controller:v2.12.2',
+	[string]                 $imageWorkflowExecutor   = 'codedx/codedx-argoexec:v2.12.2',
 
 	[int]                    $toolServiceReplicas = 3,
 
@@ -703,7 +711,8 @@ if ($useToolOrchestration) {
 		$codeDxServicePortNumber $codeDxTlsServicePortNumber `
 		$toolServiceReplicas `
 		$imageCodeDxTools $imageCodeDxToolsMono `
-		$imageNewAnalysis $imageSendResults $imageSendErrorResults $imageToolService $imagePreDelete `
+		$imagePrepare $imageNewAnalysis $imageSendResults $imageSendErrorResults $imageToolService $imagePreDelete `
+		$imageMinio $imageWorkflowController $imageWorkflowExecutor `
 		$dockerImagePullSecretName `
 		$minioVolumeSizeGiB $minioStorageClassName `
 		$toolServiceMemoryReservation $minioMemoryReservation $workflowMemoryReservation `
@@ -788,7 +797,8 @@ if ($useToolOrchestration) {
 ### Create Code Dx Values File
 Write-Verbose 'Creating Code Dx values file...'
 $codeDxDeploymentValuesFile = New-CodeDxDeploymentValuesFile $codeDxDnsName $codeDxServicePortNumber $codeDxTlsServicePortNumber `
-	$releaseNameCodeDx $imageCodeDxTomcat `
+	$releaseNameCodeDx `
+	$imageCodeDxTomcat $imageCodeDxTomcatInit $imageMariaDB `
 	$dockerImagePullSecretName `
 	$dbConnectionSecret `
 	$dbVolumeSizeGiB `

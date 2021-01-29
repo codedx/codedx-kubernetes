@@ -20,12 +20,48 @@ This script includes functions for the deployment of Code Dx and Code Dx Orchest
 	. $path
 }
 
+function Split-DockerName([string] $dockerImageName, [switch] $name) {
+
+	if (-not ($dockerImageName -match '^(?<name>.+):(?<tag>[^:]+)$')) {
+		throw "Unable to find Docker image name and tag in $dockerImageName"
+	}
+	($matches[$name ? 'name' : 'tag']).trim()
+}
+
+function Split-DockerRepo([string] $dockerName, [switch] $repo) {
+
+	$domain = 'docker.io'
+	$name = $dockerName
+
+	$i = $dockerName.IndexOf('/')
+	if ($i -ne -1) {
+		$str = $dockerName.Substring(0, $i)
+		if ($str.Contains('.') -or $str.Contains(':')) {
+			$domain = $str
+			$name = $dockerName.Substring($i+1)
+		}
+	}
+	return $repo ? $domain : $name
+}
+
+function Get-DockerImageParts([string] $dockerImageName) {
+
+	$repo      = Split-DockerRepo $dockerImageName -repo
+	$remainder = Split-DockerRepo $dockerImageName
+	$name      = Split-DockerName $remainder -name
+	$tag       = Split-DockerName $remainder
+
+	@($repo, $name, $tag)
+}
+
 function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 	[int]      $codeDxTomcatPortNumber,
 	[int]      $codeDxTlsTomcatPortNumber,
 	[string]   $releaseName,
 	[string]   $tomcatImage,
-	[string]   $tomcatImagePullSecretName,
+	[string]   $tomcatInitImage,
+	[string]   $mariaDbImage,
+	[string]   $imagePullSecretName,
 	[string]   $dbConnectionSecret,
 	[int]      $dbVolumeSizeGiB,
 	[int]      $dbSlaveReplicaCount,
@@ -76,14 +112,8 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 	[string]   $valuesFile,
 	[switch]   $createSCCs) {
  
-	$imagePullSecretYaml = 'codedxTomcatImagePullSecrets: []'
-	if (-not ([string]::IsNullOrWhiteSpace($tomcatImagePullSecretName))) {
-
-		$imagePullSecretYaml = @'
-codedxTomcatImagePullSecrets:
-- name: {0}
-'@ -f $tomcatImagePullSecretName
-	}
+	$imagePullSecretYaml   = $imagePullSecretName -eq '' ? '[]' : "[ {name: '$imagePullSecretName'} ]"
+	$mariaDbPullSecretYaml = $imagePullSecretName -eq '' ? '[]' : "[ '$imagePullSecretName' ]"
 
 	$psp = $enablePSPs.ToString().ToLower()
 	$networkPolicy = $enableNetworkPolicies.ToString().ToLower()
@@ -182,6 +212,8 @@ codedxTomcatImagePullSecrets:
 '@
 	}
 
+	$mariaDbDockerImageParts = Get-DockerImageParts $mariaDbImage
+
 	$values = @'
 existingSecret: '{0}'
 codedxTomcatPort: {22}
@@ -226,11 +258,16 @@ networkPolicy:
     slave:
       create: {4}
 codedxTomcatImage: {1}
-{2}
+codedxTomcatInitImage: {54}
+codedxTomcatImagePullSecrets: {2}
 {18}
 mariadb:
   image:
+    registry: {55}
+    repository: {56}
+    tag: {57}
     pullPolicy: Always
+    pullSecrets: {58}
   enabled: {26}
   existingSecret: '{9}'
   db:
@@ -357,7 +394,10 @@ $dbConnectionSecret, $toolServiceSelector, $toolOrchestrationValues,
 $dbMasterTlsSecretName, $dbMasterTlsCaConfigMapName,
 $masterDatabaseTlsConfig, $masterDatabaseTlsCaConfig,
 $dbStorageClassName,
-$createSCCs.tostring().tolower()
+$createSCCs.tostring().tolower(),
+$tomcatInitImage,
+$mariaDbDockerImageParts[0], $mariaDbDockerImageParts[1], $mariaDbDockerImageParts[2],
+$mariaDbPullSecretYaml
 
 	$values | out-file $valuesFile -Encoding ascii -Force
 	Get-ChildItem $valuesFile
@@ -370,11 +410,15 @@ function New-ToolOrchestrationValuesFile([string]   $codedxNamespace,
 	[int]      $numReplicas,
 	[string]   $toolsImage,
 	[string]   $toolsMonoImage,
+	[string]   $prepareImage,
 	[string]   $newAnalysisImage,
 	[string]   $sendResultsImage,
 	[string]   $sendErrorResultsImage,
 	[string]   $toolServiceImage,
 	[string]   $preDeleteImageName,
+	[string]   $minioImageName,
+	[string]   $workflowControllerImageName,
+	[string]   $workflowExecutorImageName,
 	[string]   $imagePullSecretName,
 	[int]      $minioVolumeSizeGiB,
 	[string]   $storageClassName,
@@ -426,14 +470,8 @@ function New-ToolOrchestrationValuesFile([string]   $codedxNamespace,
 	$codeDxOrchestrationFullName = Get-CodeDxChartFullName $codedxReleaseName
 	$codedxBaseUrl = '{0}://{1}.{2}.svc.cluster.local:{3}/codedx' -f $protocol,$codeDxOrchestrationFullName,$codedxNamespace,$codedxPort
 
-	$imagePullSecretYaml = 'toolServiceImagePullSecrets: []'
-	if (-not ([string]::IsNullOrWhiteSpace($imagePullSecretName))) {
-
-		$imagePullSecretYaml = @'
-toolServiceImagePullSecrets:
-- name: {0}
-'@ -f $imagePullSecretName
-	}
+	$imagePullSecretYaml      = $imagePullSecretName -eq '' ? '[]' : "[ {name: '$imagePullSecretName'} ]"
+	$minioImagePullSecretYaml = $imagePullSecretName -eq '' ? '[]' : "[ '$imagePullSecretName' ]"
 
 	$psp = $enablePSPs.ToString().ToLower()
 	$networkPolicy = $enableNetworkPolicies.ToString().ToLower()
@@ -443,9 +481,27 @@ toolServiceImagePullSecrets:
 		$minioPodAnnotations['backup.velero.io/backup-volumes'] = 'data'
 	}
 
+	$minioDockerImageParts        = Get-DockerImageParts $minioImageName
+	$workflowControllerImageParts = Get-DockerImageParts $workflowControllerImageName
+	$workflowExecutorImageParts   = Get-DockerImageParts $workflowExecutorImageName
+
+	if ($workflowControllerImageParts[0] -ne $workflowExecutorImageParts[0]) {
+		throw "Unable to continue because $workflowControllerImageName must have the same domain as $workflowExecutorImageName"
+	}
+
+	if ($workflowControllerImageParts[2] -ne $workflowExecutorImageParts[2]) {
+		throw "Unable to continue because $workflowControllerImageName must have the same tag as $workflowExecutorImageName"
+	}
+
 	$values = @'
 argo:
   installCRD: false
+  images:
+    namespace: {45}
+    controller: {46}
+    executor: {47}
+    tag: {48}
+    pullSecrets: {21}
   controller:
     nodeSelector: {31}
     tolerations: {34}
@@ -456,6 +512,11 @@ minio:
   global:
     minio:
       existingSecret: '{0}'
+  image:
+    registry: {42}
+    repository: {43}
+    tag: {44}
+    pullSecrets: {49}
   tls:
     enabled: {12}
     certSecret: {13}
@@ -510,12 +571,13 @@ toolServiceTls:
 imagePullSecretKey: '{4}'
 imageNameCodeDxTools: '{5}'
 imageNameCodeDxToolsMono: '{6}' 
+imageNamePrepare: '{50}' 
 imageNameNewAnalysis: '{7}' 
 imageNameSendResults: '{8}' 
 imageNameSendErrorResults: '{9}' 
 toolServiceImageName: '{10}' 
 imageNameHelmPreDelete: '{22}' 
-{21}
+toolServiceImagePullSecrets: {21}
 
 {25}
 nodeSelectors: {29}
@@ -547,7 +609,10 @@ $minioCertConfigMap,
 ($null -eq $toolNoScheduleExecuteToleration ? '' : $toolNoScheduleExecuteToleration.Item2),
 (ConvertTo-YamlMap $minioPodAnnotations),
 ($usePnsExecutor ? "pns" : "docker"),
-$createSCCs.tostring().tolower()
+$createSCCs.tostring().tolower(),
+$minioDockerImageParts[0],$minioDockerImageParts[1],$minioDockerImageParts[2],
+$workflowControllerImageParts[0],$workflowControllerImageParts[1],$workflowExecutorImageParts[1],$workflowControllerImageParts[2],
+$minioImagePullSecretYaml,$prepareImage
 
 	$values | out-file $valuesFile -Encoding ascii -Force
 	Get-ChildItem $valuesFile

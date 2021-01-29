@@ -164,7 +164,7 @@ spec:
         {{- end }}
       initContainers:
         - name: {{ include "dbinit.fullname" . | quote }}
-          image: "codedx/codedx-bash:v1.0.0"
+          image: {{ required "A tomcat init image must be provided! Assign codedxTomcatInitImage!" .Values.codedxTomcatInitImage | quote }}
       {{- if .Values.mariadb.enabled }}
           command: ["bash", "-c", "for i in {1..60}; do if (timeout 2 bash -c \"</dev/tcp/{{ .Release.Name }}-mariadb/3306\" echo $?); then echo 'Successfully connected to MariaDB port'; exit 0; else echo 'Retrying database connection...'; sleep 2; fi; done; echo 'MariaDB is unavailable'; exit 1"]
       {{ else }}

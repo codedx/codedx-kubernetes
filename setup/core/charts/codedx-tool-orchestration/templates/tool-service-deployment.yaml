@@ -50,6 +50,7 @@ spec:
           "-codeDxCaConfigMapName", "{{ .Values.codedxTls.caConfigMap }}",
           "-imageNameCodeDxTools", "{{ required "imageNameCodeDxTools is required" .Values.imageNameCodeDxTools }}",
           "-imageNameCodeDxToolsMono", "{{ required "imageNameCodeDxToolsMono is required" .Values.imageNameCodeDxToolsMono }}",
+          "-imageNamePrepare", "{{ required "imageNamePrepare is required" .Values.imageNamePrepare }}",
           "-imageNameNewAnalysis", "{{ required "imageNameNewAnalysis is required" .Values.imageNameNewAnalysis }}",
           "-imageNameSendErrorResults", "{{ required "imageNameSendErrorResults is required" .Values.imageNameSendErrorResults }}",
           "-imageNameSendResults", "{{ required "imageNameSendResults is required" .Values.imageNameSendResults }}",

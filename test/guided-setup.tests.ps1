@@ -190,7 +190,7 @@ Describe 'Generate Setup Commands' {
 
 		$runSetupFile = join-path $TestDrive run-setup.ps1
 		$runSetupFile | Should -Exist
-		$expectedParams = "-kubeContextName 'minikube' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -imageCodeDxTomcat 'codedx-tomcat' -imageCodeDxTools 'codedx-tools' -imageCodeDxToolsMono 'codedx-toolsmono' -imageNewAnalysis 'codedx-newanalysis' -imageSendResults 'codedx-sendresults' -imageSendErrorResults 'codedx-senderrorresults' -imageToolService 'codedx-toolservice' -imagePrepare 'codedx-prepare' -imagePreDelete 'codedx-cleanup' -dockerImagePullSecretName 'private-reg' -dockerRegistry 'private-reg-host' -dockerRegistryUser 'private-reg-username' -storageClassName 'default' -dockerRegistryPwd 'private-reg-password' -codedxAdminPwd 'my-codedx-password' -skipIngressEnabled -skipIngressAssumesNginx -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 9443 -dbVolumeSizeGiB 64 -dbSlaveVolumeSizeGiB 64 -dbSlaveReplicaCount 1 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -minioVolumeSizeGiB 64 -toolServiceReplicas 2 -namespaceToolOrchestration 'cdx-svc' -releaseNameToolOrchestration 'codedx-tool-orchestration' -toolServiceApiKey 'my-tool-service-password' -minioAdminPwd 'my-minio-password' -skipNginxIngressControllerInstall -skipLetsEncryptCertManagerInstall"
+		$expectedParams = "-kubeContextName 'minikube' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -imageCodeDxTomcat 'codedx-tomcat' -imageCodeDxTools 'codedx-tools' -imageCodeDxToolsMono 'codedx-toolsmono' -imageNewAnalysis 'codedx-newanalysis' -imageSendResults 'codedx-sendresults' -imageSendErrorResults 'codedx-senderrorresults' -imageToolService 'codedx-toolservice' -imagePrepare 'codedx-prepare' -imagePreDelete 'codedx-cleanup' -imageCodeDxTomcatInit 'codedx-tomcat-init' -imageMariaDB 'codedx-mariadb' -imageMinio 'minio' -imageWorkflowController 'codedx-workflow-controller' -imageWorkflowExecutor 'codedx-workflow-executor' -dockerImagePullSecretName 'private-reg' -dockerRegistry 'private-reg-host' -dockerRegistryUser 'private-reg-username' -storageClassName 'default' -dockerRegistryPwd 'private-reg-password' -codedxAdminPwd 'my-codedx-password' -skipIngressEnabled -skipIngressAssumesNginx -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 9443 -dbVolumeSizeGiB 64 -dbSlaveVolumeSizeGiB 64 -dbSlaveReplicaCount 1 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -minioVolumeSizeGiB 64 -toolServiceReplicas 2 -namespaceToolOrchestration 'cdx-svc' -releaseNameToolOrchestration 'codedx-tool-orchestration' -toolServiceApiKey 'my-tool-service-password' -minioAdminPwd 'my-minio-password' -skipNginxIngressControllerInstall -skipLetsEncryptCertManagerInstall"
 		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
 	}
 
@@ -242,7 +242,7 @@ Describe 'Generate Setup Commands' {
 
 		$runSetupFile = join-path $TestDrive run-setup.ps1
 		$runSetupFile | Should -Exist
-		$expectedParams = "-kubeContextName 'minikube' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -imageCodeDxTomcat 'codedx-tomcat' -imageCodeDxToolsMono 'codedx-toolsmono' -imageNewAnalysis 'codedx-newanalysis' -imageSendResults 'codedx-sendresults' -imageSendErrorResults 'codedx-senderrorresults' -imageToolService 'codedx-toolservice' -imagePrepare 'codedx-prepare' -imagePreDelete 'codedx-cleanup' -storageClassName 'default' -codedxAdminPwd 'my-codedx-password' -skipIngressEnabled -skipIngressAssumesNginx -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 9443 -dbVolumeSizeGiB 64 -dbSlaveVolumeSizeGiB 64 -dbSlaveReplicaCount 1 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -minioVolumeSizeGiB 64 -toolServiceReplicas 2 -namespaceToolOrchestration 'cdx-svc' -releaseNameToolOrchestration 'codedx-tool-orchestration' -toolServiceApiKey 'my-tool-service-password' -minioAdminPwd 'my-minio-password' -skipNginxIngressControllerInstall -skipLetsEncryptCertManagerInstall"
+		$expectedParams = "-kubeContextName 'minikube' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -imageCodeDxTomcat 'codedx-tomcat' -imageCodeDxToolsMono 'codedx-toolsmono' -imageNewAnalysis 'codedx-newanalysis' -imageSendResults 'codedx-sendresults' -imageSendErrorResults 'codedx-senderrorresults' -imageToolService 'codedx-toolservice' -imagePrepare 'codedx-prepare' -imagePreDelete 'codedx-cleanup' -imageCodeDxTomcatInit 'codedx-tomcat-init' -imageMariaDB 'codedx-mariadb' -imageMinio 'minio' -imageWorkflowController 'codedx-workflow-controller' -imageWorkflowExecutor 'codedx-workflow-executor' -storageClassName 'default' -codedxAdminPwd 'my-codedx-password' -skipIngressEnabled -skipIngressAssumesNginx -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 9443 -dbVolumeSizeGiB 64 -dbSlaveVolumeSizeGiB 64 -dbSlaveReplicaCount 1 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -minioVolumeSizeGiB 64 -toolServiceReplicas 2 -namespaceToolOrchestration 'cdx-svc' -releaseNameToolOrchestration 'codedx-tool-orchestration' -toolServiceApiKey 'my-tool-service-password' -minioAdminPwd 'my-minio-password' -skipNginxIngressControllerInstall -skipLetsEncryptCertManagerInstall"
 		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
 	}
 
@@ -399,6 +399,45 @@ Describe 'Generate Setup Commands' {
 		$runSetupFile = join-path $TestDrive run-setup.ps1
 		$runSetupFile | Should -Exist
 		$expectedParams = "-kubeContextName 'EKS' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -storageClassName 'default' -serviceTypeCodeDx 'LoadBalancer' -codedxAdminPwd 'my-codedx-password' -skipPSPs -skipNetworkPolicies -skipIngressEnabled -skipIngressAssumesNginx -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 443 -dbVolumeSizeGiB 64 -dbSlaveReplicaCount 0 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -skipToolOrchestration -skipNginxIngressControllerInstall -skipLetsEncryptCertManagerInstall -serviceAnnotationsCodeDx @{'service.beta.kubernetes.io/aws-load-balancer-backend-protocol'='ssl';'service.beta.kubernetes.io/aws-load-balancer-ssl-cert'='arn:value';'service.beta.kubernetes.io/aws-load-balancer-ssl-ports'='https';'service.beta.kubernetes.io/aws-load-balancer-type'='nlb'}"
+		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
+	}
+
+	It '(28) Should generate minikube setup.ps1 command with Docker image names and no orchestration' -Tag 'Docker' {
+	
+		Set-DockerImageNamesDatabaseNoOrchestration 1
+
+		New-Mocks
+		. ./guided-setup.ps1
+
+		$runSetupFile = join-path $TestDrive run-setup.ps1
+		$runSetupFile | Should -Exist
+		$expectedParams = "-kubeContextName 'minikube' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -imageCodeDxTomcat 'codedx-tomcat' -imageCodeDxTomcatInit 'codedx-tomcat-init' -imageMariaDB 'codedx-mariadb' -storageClassName 'default' -codedxAdminPwd 'my-codedx-password' -skipIngressEnabled -skipIngressAssumesNginx -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 9443 -dbVolumeSizeGiB 64 -dbSlaveVolumeSizeGiB 64 -dbSlaveReplicaCount 1 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -skipToolOrchestration -skipNginxIngressControllerInstall -skipLetsEncryptCertManagerInstall"
+		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
+	}
+
+	It '(29) Should generate minikube setup.ps1 command with Docker image names and no database and no orchestration' -Tag 'Docker' {
+	
+		Set-DockerImageNamesNoDatabaseNoOrchestration 1
+
+		New-Mocks
+		. ./guided-setup.ps1
+
+		$runSetupFile = join-path $TestDrive run-setup.ps1
+		$runSetupFile | Should -Exist
+		$expectedParams = "-kubeContextName 'minikube' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -imageCodeDxTomcat 'codedx-tomcat' -imageCodeDxTomcatInit 'codedx-tomcat-init' -storageClassName 'default' -caCertsFilePath 'cacerts' -codedxAdminPwd 'my-codedx-password' -caCertsFilePwd 'changeit' -skipIngressEnabled -skipIngressAssumesNginx -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 9443 -externalDatabaseHost 'my-external-db-host' -externalDatabaseName 'codedxdb' -externalDatabaseUser 'codedx' -externalDatabasePwd 'codedx-db-password' -skipDatabase -externalDatabasePort 3306 -externalDatabaseServerCert 'db-ca.crt' -skipToolOrchestration -skipNginxIngressControllerInstall -skipLetsEncryptCertManagerInstall"
+		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
+	}	
+
+	It '(30) Should generate minikube setup.ps1 command with Docker image names and no database and orchestration' -Tag 'Docker' {
+	
+		Set-DockerImageNamesNoDatabaseOrchestration 1
+
+		New-Mocks
+		. ./guided-setup.ps1
+
+		$runSetupFile = join-path $TestDrive run-setup.ps1
+		$runSetupFile | Should -Exist
+		$expectedParams = "-kubeContextName 'minikube' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -imageCodeDxTomcat 'codedx-tomcat' -imageCodeDxTools 'codedx-tools' -imageCodeDxToolsMono 'codedx-toolsmono' -imageNewAnalysis 'codedx-newanalysis' -imageSendResults 'codedx-sendresults' -imageSendErrorResults 'codedx-senderrorresults' -imageToolService 'codedx-toolservice' -imagePrepare 'codedx-prepare' -imagePreDelete 'codedx-cleanup' -imageCodeDxTomcatInit 'codedx-tomcat-init' -imageMinio 'minio' -imageWorkflowController 'codedx-workflow-controller' -imageWorkflowExecutor 'codedx-workflow-executor' -storageClassName 'default' -caCertsFilePath 'cacerts' -codedxAdminPwd 'my-codedx-password' -caCertsFilePwd 'changeit' -skipIngressEnabled -skipIngressAssumesNginx -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 9443 -externalDatabaseHost 'my-external-db-host' -externalDatabaseName 'codedxdb' -externalDatabaseUser 'codedx' -externalDatabasePwd 'codedx-db-password' -skipDatabase -externalDatabasePort 3306 -externalDatabaseServerCert 'db-ca.crt' -minioVolumeSizeGiB 64 -toolServiceReplicas 2 -namespaceToolOrchestration 'cdx-svc' -releaseNameToolOrchestration 'codedx-tool-orchestration' -toolServiceApiKey 'my-tool-service-password' -minioAdminPwd 'my-minio-password' -skipNginxIngressControllerInstall -skipLetsEncryptCertManagerInstall"
 		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
 	}
 }

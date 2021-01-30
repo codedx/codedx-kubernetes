@@ -130,6 +130,52 @@ class CodeDxTomcatDockerImage : DockerImageNameStep {
 	}
 }
 
+class CodeDxTomcatInitDockerImage : DockerImageNameStep {
+
+	CodeDxTomcatInitDockerImage([ConfigInput] $config) : base(
+		[CodeDxTomcatInitDockerImage].Name, 
+		$config,
+		'Code Dx Tomcat Init Docker Image',
+		'The Code Dx Tomcat Init Docker image handles the initialization of the Tomcat container.',
+		'Enter the Code Dx Tomcat Init Docker image name') {}
+
+	[bool]HandleResponse([IQuestion] $question) {
+		$this.config.imageCodeDxTomcatInit = ([Question]$question).response
+		return $true
+	}
+
+	[void]Reset(){
+		$this.config.imageCodeDxTomcatInit = ''
+	}
+
+	[bool]CanRun() {
+		return -not $this.config.useDefaultDockerImages
+	}
+}
+
+class CodeDxMariaDBDockerImage : DockerImageNameStep {
+
+	CodeDxMariaDBDockerImage([ConfigInput] $config) : base(
+		[CodeDxMariaDBDockerImage].Name, 
+		$config,
+		'Code Dx MariaDB Docker Image',
+		'The Code Dx MariaDB Docker image is used to host the Code Dx database.',
+		'Enter the Code Dx MariaDB Docker image name') {}
+
+	[bool]HandleResponse([IQuestion] $question) {
+		$this.config.imageMariaDB = ([Question]$question).response
+		return $true
+	}
+
+	[void]Reset(){
+		$this.config.imageMariaDB = ''
+	}
+
+	[bool]CanRun() {
+		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipDatabase
+	}
+}
+
 class CodeDxToolsDockerImage : DockerImageNameStep {
 
 	CodeDxToolsDockerImage([ConfigInput] $config) : base(
@@ -307,6 +353,75 @@ class CodeDxPreDeleteDockerImage : DockerImageNameStep {
 
 	[void]Reset(){
 		$this.config.imagePreDelete = ''
+	}
+
+	[bool]CanRun() {
+		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration
+	}
+}
+
+class MinioDockerImage : DockerImageNameStep {
+
+	MinioDockerImage([ConfigInput] $config) : base(
+		[MinioDockerImage].Name, 
+		$config,
+		'MinIO Docker Image',
+		'The MinIO Docker image provides workflow storage for Tool Orchestration.',
+		'Enter the MinIO Docker image name') {}
+
+	[bool]HandleResponse([IQuestion] $question) {
+		$this.config.imageMinio = ([Question]$question).response
+		return $true
+	}
+
+	[void]Reset(){
+		$this.config.imageMinio = ''
+	}
+
+	[bool]CanRun() {
+		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration
+	}
+}
+
+class CodeDxWorkflowControllerDockerImage : DockerImageNameStep {
+
+	CodeDxWorkflowControllerDockerImage([ConfigInput] $config) : base(
+		[CodeDxWorkflowControllerDockerImage].Name, 
+		$config,
+		'Code Dx Workflow Controller Docker Image',
+		'The Code Dx Workflow Controller Docker image is the Argo workflow controller for Tool Orchestration.',
+		'Enter the Code Dx Workflow Controller Docker image name') {}
+
+	[bool]HandleResponse([IQuestion] $question) {
+		$this.config.imageWorkflowController = ([Question]$question).response
+		return $true
+	}
+
+	[void]Reset(){
+		$this.config.imageWorkflowController = ''
+	}
+
+	[bool]CanRun() {
+		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration
+	}
+}
+
+class CodeDxWorkflowExecutorDockerImage : DockerImageNameStep {
+
+	CodeDxWorkflowExecutorDockerImage([ConfigInput] $config) : base(
+		[CodeDxWorkflowExecutorDockerImage].Name, 
+		$config,
+		'Code Dx Workflow Executor Docker Image',
+		'The Code Dx Workflow Executor Docker image is the Argo workflow executor for Tool Orchestration.',
+		'Enter the Code Dx Workflow Executor Docker image name') {}
+
+	[bool]HandleResponse([IQuestion] $question) {
+		$this.config.imageWorkflowExecutor = ([Question]$question).response
+		return $true
+	}
+
+	[void]Reset(){
+		$this.config.imageWorkflowExecutor = ''
 	}
 
 	[bool]CanRun() {

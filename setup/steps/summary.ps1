@@ -142,6 +142,7 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 		'codeDxCPUReservation','dbMasterCPUReservation','dbSlaveCPUReservation','toolServiceCPUReservation','minioCPUReservation','workflowCPUReservation','nginxCPUReservation',
 		'codeDxEphemeralStorageReservation','dbMasterEphemeralStorageReservation','dbSlaveEphemeralStorageReservation','toolServiceEphemeralStorageReservation','minioEphemeralStorageReservation','workflowEphemeralStorageReservation','nginxEphemeralStorageReservation',
 		'imageCodeDxTomcat','imageCodeDxTools','imageCodeDxToolsMono','imageNewAnalysis','imageSendResults','imageSendErrorResults','imageToolService','imagePrepare','imagePreDelete',
+		'imageCodeDxTomcatInit','imageMariaDB','imageMinio','imageWorkflowController','imageWorkflowExecutor',
 		'dockerImagePullSecretName','dockerRegistry','dockerRegistryUser',
 		'storageClassName',
 		'serviceTypeCodeDx',

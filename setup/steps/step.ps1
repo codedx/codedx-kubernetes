@@ -101,6 +101,12 @@ class ConfigInput {
 	[string]       $imagePrepare
 	[string]       $imagePreDelete
 
+	[string]       $imageCodeDxTomcatInit
+	[string]       $imageMariaDB
+	[string]       $imageMinio
+	[string]       $imageWorkflowController
+	[string]       $imageWorkflowExecutor
+
 	[int]          $toolServiceReplicas
 
 	[bool]         $useDefaultOptions

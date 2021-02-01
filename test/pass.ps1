@@ -1255,3 +1255,83 @@ function Set-DockerImageNamesNoDatabaseOrchestration([int] $saveOption) {
 	$global:inputs.enqueue('default') # storage class name
 	$global:inputs.enqueue($saveOption) # next step save option
 }
+
+function Set-DockerImageRedirect([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(0) # choose minikube env
+	$global:inputs.enqueue(0) # choose minikube context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(1) # skip tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # skip backup
+	$global:inputs.enqueue(0) # choose default deployment options
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue(1) # specify db replicas
+	$global:inputs.enqueue(0) # choose default cacerts
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(2) # choose redirect Docker images
+	$global:inputs.enqueue('myregistry.codedx.com') # specify redirect
+	$global:inputs.enqueue(0) # skip ingress
+	$global:inputs.enqueue(0) # use local accounts
+	$global:inputs.enqueue(1) # skip cpu reservation
+	$global:inputs.enqueue(1) # skip memory reservation
+	$global:inputs.enqueue(1) # skip storage reservation
+	$global:inputs.enqueue(0) # use default volume sizes
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue($saveOption) # next step save option
+}
+
+function Set-DockerImagePrivateRedirect([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(0) # choose minikube env
+	$global:inputs.enqueue(0) # choose minikube context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(1) # skip tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # skip backup
+	$global:inputs.enqueue(0) # choose default deployment options
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue(1) # specify db replicas
+	$global:inputs.enqueue(0) # choose default cacerts
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue(0) # choose private reg
+	$global:inputs.enqueue('private-reg') # skip reg k8s name
+	$global:inputs.enqueue('private-reg-host') # skip reg host name
+	$global:inputs.enqueue('private-reg-username') # skip reg username
+	$global:inputs.enqueue((New-Password 'private-reg-password')) # specify reg pwd
+	$global:inputs.enqueue((New-Password 'private-reg-password')) # specify reg pwd confirm
+	$global:inputs.enqueue(3) # choose private redirect Docker images
+	$global:inputs.enqueue(0) # skip ingress
+	$global:inputs.enqueue(0) # use local accounts
+	$global:inputs.enqueue(1) # skip cpu reservation
+	$global:inputs.enqueue(1) # skip memory reservation
+	$global:inputs.enqueue(1) # skip storage reservation
+	$global:inputs.enqueue(0) # use default volume sizes
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue($saveOption) # next step save option
+}

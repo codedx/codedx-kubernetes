@@ -107,6 +107,9 @@ class ConfigInput {
 	[string]       $imageWorkflowController
 	[string]       $imageWorkflowExecutor
 
+	[bool]         $useDockerRedirection
+	[string]       $redirectDockerHubReferencesTo
+
 	[int]          $toolServiceReplicas
 
 	[bool]         $useDefaultOptions

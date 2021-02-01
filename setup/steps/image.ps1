@@ -12,6 +12,9 @@ class UseDefaultDockerImages : Step {
 
 	static [string] hidden $description = @'
 Specify whether you want to use the default versions of Code Dx Docker images. 
+You can specify one or more alternatives for each required Docker image, or you
+can redirect all Docker references to another Docker registry. When redirecting, 
+you must copy required Docker images to the registry.
 '@
 
 	static [string] hidden $descriptionPrivateAllowed = @'
@@ -32,16 +35,32 @@ for pull access.
 		$config,
 		'Code Dx Docker Images',
 		'',
-		'Do you want to use the default Docker images?') {}
+		'What Docker images do you want to use?') {}
 
 	[IQuestion]MakeQuestion([string] $prompt) {
-		return new-object YesNoQuestion($prompt,
-			'Yes, I want to use the latest Code Dx Docker images',
-			'No, I want to specify versions of Code Dx Docker images', 0)
+
+		$options = @(
+			[tuple]::create('&Default', 'Use the default set of Docker images'),
+			[tuple]::create('&Custom',  'Specify one or more custom Docker images'),
+			[tuple]::create('&Anonymous Redirect', 'Redirect Docker image requests to another registry (no login required)'))
+		
+		# cannot support private redirect on docker.io or w/o private registry details
+		if ((-not ([string]::isnullorempty($this.config.dockerRegistry))) -and $this.config.dockerRegistry -notmatch 'docker.io$') {
+			$options += ([tuple]::create('&Private Redirect', 'Redirect Docker image requests to your private registry'))
+		}
+		return new-object MultipleChoiceQuestion($prompt, $options, 0)
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
-		$this.config.useDefaultDockerImages = ([YesNoQuestion]$question).choice -eq 0
+
+		$choice = ([MultipleChoiceQuestion]$question).choice
+
+		$this.config.useDefaultDockerImages = $choice -eq 0
+		$this.config.useDockerRedirection   = $choice -ge 2
+
+		if ($choice -eq 3) {
+			$this.config.redirectDockerHubReferencesTo = $this.config.dockerRegistry
+		}
 		return $true
 	}
 
@@ -55,6 +74,42 @@ for pull access.
 
 	[void]Reset(){
 		$this.config.useDefaultDockerImages = $false
+		$this.config.useDockerRedirection   = $false
+		$this.config.redirectDockerHubReferencesTo = ''
+	}
+}
+
+class PublicRedirect : Step {
+
+	static [string] hidden $description = @'
+Specify the hostname for your Docker registry redirect. 
+
+Note: The use of docker.io is not supported here (it would redirect to the 
+Code Dx Docker images).
+'@
+
+	PublicRedirect([ConfigInput] $config) : base(
+		[PublicRedirect].Name, 
+		$config,
+		'Docker Registry Redirect',
+		[PublicRedirect]::description,
+		'Enter your Docker registry host') {}
+
+	[bool]HandleResponse([IQuestion] $question) {
+		$response = ([Question]$question).response
+		if ($response -match 'docker.io$') {
+			return $false
+		}
+		$this.config.redirectDockerHubReferencesTo = $response
+		return $true
+	}
+
+	[void]Reset(){
+		$this.config.redirectDockerHubReferencesTo = ''
+	}
+
+	[bool]CanRun() {
+		return $this.config.useDockerRedirection -and [string]::isnullorempty($this.config.redirectDockerHubReferencesTo)
 	}
 }
 
@@ -126,7 +181,7 @@ class CodeDxTomcatDockerImage : DockerImageNameStep {
 	}
 
 	[bool]CanRun() {
-		return -not $this.config.useDefaultDockerImages
+		return -not $this.config.useDefaultDockerImages -and -not $this.config.useDockerRedirection
 	}
 }
 
@@ -149,7 +204,7 @@ class CodeDxTomcatInitDockerImage : DockerImageNameStep {
 	}
 
 	[bool]CanRun() {
-		return -not $this.config.useDefaultDockerImages
+		return -not $this.config.useDefaultDockerImages -and -not $this.config.useDockerRedirection
 	}
 }
 
@@ -172,7 +227,7 @@ class CodeDxMariaDBDockerImage : DockerImageNameStep {
 	}
 
 	[bool]CanRun() {
-		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipDatabase
+		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipDatabase -and -not $this.config.useDockerRedirection
 	}
 }
 
@@ -195,7 +250,7 @@ class CodeDxToolsDockerImage : DockerImageNameStep {
 	}
 
 	[bool]CanRun() {
-		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration
+		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration -and -not $this.config.useDockerRedirection
 	}
 }
 
@@ -218,7 +273,7 @@ class CodeDxToolsMonoDockerImage : DockerImageNameStep {
 	}
 
 	[bool]CanRun() {
-		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration
+		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration -and -not $this.config.useDockerRedirection
 	}
 }
 
@@ -241,7 +296,7 @@ class CodeDxToolServiceDockerImage : DockerImageNameStep {
 	}
 
 	[bool]CanRun() {
-		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration
+		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration -and -not $this.config.useDockerRedirection
 	}
 }
 
@@ -264,7 +319,7 @@ class CodeDxSendResultsDockerImage : DockerImageNameStep {
 	}
 
 	[bool]CanRun() {
-		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration
+		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration -and -not $this.config.useDockerRedirection
 	}
 }
 
@@ -287,7 +342,7 @@ class CodeDxSendErrorResultsDockerImage : DockerImageNameStep {
 	}
 
 	[bool]CanRun() {
-		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration
+		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration -and -not $this.config.useDockerRedirection
 	}
 }
 
@@ -310,7 +365,7 @@ class CodeDxNewAnalysisDockerImage : DockerImageNameStep {
 	}
 
 	[bool]CanRun() {
-		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration
+		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration -and -not $this.config.useDockerRedirection
 	}
 }
 
@@ -333,7 +388,7 @@ class CodeDxPrepareDockerImage : DockerImageNameStep {
 	}
 
 	[bool]CanRun() {
-		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration
+		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration -and -not $this.config.useDockerRedirection
 	}
 }
 
@@ -356,7 +411,7 @@ class CodeDxPreDeleteDockerImage : DockerImageNameStep {
 	}
 
 	[bool]CanRun() {
-		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration
+		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration -and -not $this.config.useDockerRedirection
 	}
 }
 
@@ -379,7 +434,7 @@ class MinioDockerImage : DockerImageNameStep {
 	}
 
 	[bool]CanRun() {
-		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration
+		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration -and -not $this.config.useDockerRedirection
 	}
 }
 
@@ -402,7 +457,7 @@ class CodeDxWorkflowControllerDockerImage : DockerImageNameStep {
 	}
 
 	[bool]CanRun() {
-		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration
+		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration -and -not $this.config.useDockerRedirection
 	}
 }
 
@@ -425,6 +480,6 @@ class CodeDxWorkflowExecutorDockerImage : DockerImageNameStep {
 	}
 
 	[bool]CanRun() {
-		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration
+		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration -and -not $this.config.useDockerRedirection
 	}
 }

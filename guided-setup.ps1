@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.3.0
+.VERSION 1.4.0
 .GUID e917c41a-260f-4ea4-980d-db00f8baef1b
 .AUTHOR Code Dx
 #>
@@ -91,7 +91,8 @@ $s = @{}
 [DatabaseRootPwd],[DatabaseReplicationPwd],[DatabaseReplicaCount],
 [CodeDxPassword],[ToolServiceKey],[MinioAdminPassword],[ToolServiceReplicaCount],
 [UsePrivateDockerRegistry],[DockerImagePullSecret],[PrivateDockerRegistryHost],[PrivateDockerRegistryUser],[PrivateDockerRegistryPwd],
-[UseDefaultDockerImages],[CodeDxTomcatDockerImage],[CodeDxToolsDockerImage],[CodeDxToolsMonoDockerImage],[CodeDxToolServiceDockerImage],[CodeDxSendResultsDockerImage],[CodeDxSendErrorResultsDockerImage],[CodeDxNewAnalysisDockerImage],[CodeDxPrepareDockerImage],[CodeDxPreDeleteDockerImage],
+[UseDefaultDockerImages],[PublicRedirect],
+[CodeDxTomcatDockerImage],[CodeDxToolsDockerImage],[CodeDxToolsMonoDockerImage],[CodeDxToolServiceDockerImage],[CodeDxSendResultsDockerImage],[CodeDxSendErrorResultsDockerImage],[CodeDxNewAnalysisDockerImage],[CodeDxPrepareDockerImage],[CodeDxPreDeleteDockerImage],
 [CodeDxTomcatInitDockerImage],[CodeDxMariaDBDockerImage],[MinioDockerImage],[CodeDxWorkflowControllerDockerImage],[CodeDxWorkflowExecutorDockerImage],
 [IngressKind],[NginxIngressNamespace],[NginxIngressAddress],
 [LetsEncryptNamespace],[LetsEncryptClusterIssuer],[LetsEncryptEmail],[IngressCertificateArn],
@@ -153,11 +154,13 @@ Add-StepTransitions $graph $s[[CodeDxPassword]] $s[[UsePrivateDockerRegistry]]
 Add-StepTransitions $graph $s[[UsePrivateDockerRegistry]] $s[[DockerImagePullSecret]],$s[[PrivateDockerRegistryHost]],$s[[PrivateDockerRegistryUser]],$s[[PrivateDockerRegistryPwd]],$s[[UseDefaultDockerImages]]
 
 Add-StepTransitions $graph $s[[UsePrivateDockerRegistry]] $s[[UseDefaultDockerImages]]
+Add-StepTransitions $graph $s[[UseDefaultDockerImages]] $s[[PublicRedirect]],$s[[IngressKind]]
 Add-StepTransitions $graph $s[[UseDefaultDockerImages]] $s[[CodeDxTomcatDockerImage]],$s[[CodeDxTomcatInitDockerImage]],$s[[CodeDxMariaDBDockerImage]],$s[[CodeDxToolsDockerImage]]
 Add-StepTransitions $graph $s[[UseDefaultDockerImages]] $s[[CodeDxTomcatDockerImage]],$s[[CodeDxTomcatInitDockerImage]],$s[[CodeDxMariaDBDockerImage]],$s[[IngressKind]]
 Add-StepTransitions $graph $s[[UseDefaultDockerImages]] $s[[CodeDxTomcatDockerImage]],$s[[CodeDxTomcatInitDockerImage]],$s[[CodeDxToolsDockerImage]]
 Add-StepTransitions $graph $s[[CodeDxToolsDockerImage]] $s[[CodeDxToolsMonoDockerImage]],$s[[CodeDxToolServiceDockerImage]],$s[[CodeDxSendResultsDockerImage]],$s[[CodeDxSendErrorResultsDockerImage]],$s[[CodeDxNewAnalysisDockerImage]],$s[[CodeDxPrepareDockerImage]],$s[[CodeDxPreDeleteDockerImage]],$s[[MinioDockerImage]],$s[[CodeDxWorkflowControllerDockerImage]],$s[[CodeDxWorkflowExecutorDockerImage]],$s[[IngressKind]]
 Add-StepTransitions $graph $s[[UseDefaultDockerImages]] $s[[CodeDxTomcatDockerImage]],$s[[CodeDxTomcatInitDockerImage]],$s[[IngressKind]]
+
 Add-StepTransitions $graph $s[[UseDefaultDockerImages]] $s[[IngressKind]]
 
 Add-StepTransitions $graph $s[[IngressKind]] $s[[NginxIngressNamespace]],$s[[NginxIngressAddress]],$s[[LetsEncryptNamespace]]

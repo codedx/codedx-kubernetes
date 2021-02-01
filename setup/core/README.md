@@ -117,6 +117,8 @@ This section describes the setup.ps1 script parameters, which you can specify by
 | `dockerRegistryUser`                               | username for private Docker registry                       | `myregistryuser` (example)                        |
 | `dockerRegistryPwd`                                | password for private Docker registry username              | `R4dLYCfuda9ej!` (example)                        |
 |                                                    |                                                            |                                                   |
+| `redirectDockerHubReferencesTo`                    | server name of Docker registry for redirects               | `my-registry`    (example)                        |
+|                                                    |                                                            |                                                   |
 | `codedxHelmRepo`                                   | Code Dx Helm repository                                    | `https://codedx.github.io/codedx-kubernetes`      |
 |                                                    |                                                            |                                                   |
 | `codedxGitRepo`                                    | Code Dx Kubernetes git repository                          | `https://github.com/codedx/codedx-kubernetes.git` |

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.8.2
+.VERSION 1.9.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -118,12 +118,13 @@ param (
 	[string]                 $dockerRegistry,
 	[string]                 $dockerRegistryUser,
 	[string]                 $dockerRegistryPwd,
-	[switch]                 $redirectDockerHubReferences,
+	
+	[string]                 $redirectDockerHubReferencesTo,
 
 	[string]                 $codedxHelmRepo = 'https://codedx.github.io/codedx-kubernetes',
 	
 	[string]                 $codedxGitRepo = 'https://github.com/codedx/codedx-kubernetes.git',
-	[string]                 $codedxGitRepoBranch = 'v1.9.0',
+	[string]                 $codedxGitRepoBranch = 'master',
 
 	[int]                    $kubeApiTargetPort = 443,
 
@@ -194,9 +195,9 @@ Set-PSDebug -Strict
 	. $path
 }
 
-function Get-DockerImageName([bool] $redirectDefaultRegistry, [string] $dockerRegistry, [string] $imageName) {
+function Get-DockerImageName([string] $dockerRegistryRedirect, [string] $imageName) {
 
-	if (-not $redirectDefaultRegistry) {
+	if ('' -eq $imageName -or '' -eq $dockerRegistryRedirect) {
 		return $imageName
 	}
 
@@ -209,7 +210,7 @@ function Get-DockerImageName([bool] $redirectDefaultRegistry, [string] $dockerRe
 		return $imageName
 	}
 
-	return "$dockerRegistry/$($imageNameParts[1]):$($imageNameParts[2])"
+	return "$dockerRegistryRedirect/$($imageNameParts[1]):$($imageNameParts[2])"
 }
 
 $useTLS = -not $skipTLS
@@ -410,24 +411,24 @@ if ($dockerImagePullSecretName -ne '') {
 			$dockerRegistryPwd = Read-HostSecureText "Enter a docker password for $dockerRegistry"
 		}
 	}
+}
 
-	if ($redirectDockerHubReferences) {
+if ('' -ne $redirectDockerHubReferencesTo) {
 
-		$imageCodeDxTomcat       = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageCodeDxTomcat
-		$imageCodeDxTools        = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageCodeDxTools
-		$imageCodeDxToolsMono    = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageCodeDxToolsMono
-		$imagePrepare            = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imagePrepare
-		$imageNewAnalysis        = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageNewAnalysis
-		$imageSendResults        = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageSendResults
-		$imageSendErrorResults   = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageSendErrorResults
-		$imageToolService        = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageToolService
-		$imagePreDelete          = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imagePreDelete
-		$imageCodeDxTomcatInit   = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageCodeDxTomcatInit
-		$imageMariaDB            = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageMariaDB
-		$imageMinio              = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageMinio
-		$imageWorkflowController = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageWorkflowController
-		$imageWorkflowExecutor   = Get-DockerImageName $redirectDockerHubReferences $dockerRegistry $imageWorkflowExecutor
-	}
+	$imageCodeDxTomcat       = Get-DockerImageName $redirectDockerHubReferencesTo $imageCodeDxTomcat
+	$imageCodeDxTools        = Get-DockerImageName $redirectDockerHubReferencesTo $imageCodeDxTools
+	$imageCodeDxToolsMono    = Get-DockerImageName $redirectDockerHubReferencesTo $imageCodeDxToolsMono
+	$imagePrepare            = Get-DockerImageName $redirectDockerHubReferencesTo $imagePrepare
+	$imageNewAnalysis        = Get-DockerImageName $redirectDockerHubReferencesTo $imageNewAnalysis
+	$imageSendResults        = Get-DockerImageName $redirectDockerHubReferencesTo $imageSendResults
+	$imageSendErrorResults   = Get-DockerImageName $redirectDockerHubReferencesTo $imageSendErrorResults
+	$imageToolService        = Get-DockerImageName $redirectDockerHubReferencesTo $imageToolService
+	$imagePreDelete          = Get-DockerImageName $redirectDockerHubReferencesTo $imagePreDelete
+	$imageCodeDxTomcatInit   = Get-DockerImageName $redirectDockerHubReferencesTo $imageCodeDxTomcatInit
+	$imageMariaDB            = Get-DockerImageName $redirectDockerHubReferencesTo $imageMariaDB
+	$imageMinio              = Get-DockerImageName $redirectDockerHubReferencesTo $imageMinio
+	$imageWorkflowController = Get-DockerImageName $redirectDockerHubReferencesTo $imageWorkflowController
+	$imageWorkflowExecutor   = Get-DockerImageName $redirectDockerHubReferencesTo $imageWorkflowExecutor
 }
 
 $tlsFiles = @()

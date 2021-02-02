@@ -113,7 +113,9 @@ PS /git/codedx-kubernetes/admin> ./restore-db.ps1 `
         -releaseNameCodeDx 'code-dx-helm-release-name-placeholder'
 ```
 
-When prompted by the script, enter the name of the database backup you want to restore and the password for the MariaDB database root user. The script will search for the database backup, copy it to a folder in your profile, and use the backup to restore both master and slave database(s). It will then restart database replication, and it will manage the running instances of MariaDB and Code Dx, so when the script is finished, all Code Dx pods will be online. Depending on your ingress type and what was restored, you may need to update your DNS configuration before using the new Code Dx instance.
+> Note: You can pull the Code Dx Restore Database Docker image from an alternate Docker registry using the -imageDatabaseRestore parameter and from a private Docker registry by adding the -dockerImagePullSecretName parameter.
+
+When prompted by the script, enter the name of the database backup you want to restore and the passwords for the MariaDB database root and replicator users. The script will search for the database backup, copy it to a folder in your profile, and use the backup to restore both master and slave database(s). It will then restart database replication, and it will manage the running instances of MariaDB and Code Dx, so when the script is finished, all Code Dx pods will be online. Depending on your ingress type and what was restored, you may need to update your DNS configuration before using the new Code Dx instance.
 
 > Note: The restore-db.ps1 script requires that your work directory (default is your profile directory) not already include a folder named backup-files. The script will stop if it finds that directory, so delete it before starting the script.
 

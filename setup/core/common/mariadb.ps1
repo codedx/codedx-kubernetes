@@ -46,7 +46,9 @@ function Restore-DBBackup([string] $message,
 	[string] $namespace,
 	[string] $podName,
 	[string] $rootPwdSecretName,
-	[string] $serviceAccountName) {
+	[string] $serviceAccountName,
+	[string] $imageDatabaseRestore,
+	[string] $imageDatabaseRestorePullSecretName) {
 
 	if (Test-KubernetesJob $namespace $podName) {
 		Remove-KubernetesJob $namespace $podName
@@ -61,9 +63,10 @@ metadata:
 spec:
   template:
     spec:
+      imagePullSecrets: {5}
       containers:
       - name: restoredb
-        image: codedx/codedx-dbrestore:v1.0.0
+        image: {4}
         imagePullPolicy: Always
         command: ["/bin/bash"]
         args: ["-c", "/home/sdb/restore"]
@@ -88,7 +91,8 @@ spec:
           items:
           - key: mariadb-root-password
             path: .passwd
-'@ -f $namespace, $podName, $rootPwdSecretName, $serviceAccountName
+'@ -f $namespace, $podName, $rootPwdSecretName, $serviceAccountName, 
+$imageDatabaseRestore, ($imageDatabaseRestorePullSecretName -eq '' ? '[]' : "[ {name: '$imageDatabaseRestorePullSecretName'} ]")
 
 	$file = [io.path]::GetTempFileName()
 	$job | out-file $file -Encoding ascii
@@ -128,12 +132,14 @@ function Get-MasterFilePosAfterReset([string] $namespace,
 function Start-SlaveDB([string] $namespace, 
 	[string] $podName,
 	[string] $containerName,
+	[string] $replUsername,
+	[string] $replPwd,
 	[string] $rootPwd,
 	[string] $mariaDbServiceName,
 	$filePos) {
 
 	# Assume `STOP SLAVE` (or Stop-SlaveDB) was run
-	$cmd = "RESET SLAVE; CHANGE MASTER TO MASTER_LOG_FILE='$($filePos.file)',MASTER_LOG_POS=$($filePos.position); START SLAVE; SHOW SLAVE STATUS \G;"
+	$cmd = "RESET SLAVE; CHANGE MASTER TO MASTER_LOG_FILE='$($filePos.file)',MASTER_LOG_POS=$($filePos.position),MASTER_HOST='$mariaDbServiceName',MASTER_USER='$replUsername',MASTER_PASSWORD='$replPwd'; START SLAVE; SHOW SLAVE STATUS \G;"
 
 	kubectl -n $namespace exec -c $containerName $podName -- mysql -uroot --password=$rootPwd -e $cmd
 	if (0 -ne $LASTEXITCODE) {

@@ -551,33 +551,33 @@ networkPolicy:
   toolServiceEnabled: {16}
   twsWorkflowsEnabled: {16}
   argoEnabled: {16}
-  minioEnabled: {16}      
+  minioEnabled: {16}
   kubeApiTargetPort: {24}
   codedxSelectors:
   - namespaceSelector:
       matchLabels:
         name: '{1}'
-  
+
 codedxBaseUrl: '{17}'
 codedxTls:
   enabled: {18}
   caConfigMap: {19}
-  
+
 existingSecret: '{3}'
 toolServiceTls:
   secret: {14}
   certFile: 'tls.crt'
   keyFile: 'tls.key'
-  
+
 imagePullSecretKey: '{4}'
 imageNameCodeDxTools: '{5}'
-imageNameCodeDxToolsMono: '{6}' 
-imageNamePrepare: '{50}' 
-imageNameNewAnalysis: '{7}' 
-imageNameSendResults: '{8}' 
-imageNameSendErrorResults: '{9}' 
-toolServiceImageName: '{10}' 
-imageNameHelmPreDelete: '{22}' 
+imageNameCodeDxToolsMono: '{6}'
+imageNamePrepare: '{50}'
+imageNameNewAnalysis: '{7}'
+imageNameSendResults: '{8}'
+imageNameSendErrorResults: '{9}'
+toolServiceImageName: '{10}'
+imageNameHelmPreDelete: '{22}'
 toolServiceImagePullSecrets: {21}
 
 {25}

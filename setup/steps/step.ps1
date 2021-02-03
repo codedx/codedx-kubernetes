@@ -16,7 +16,8 @@ enum ProviderType {
 	Aks
 	Eks
 	OpenShift
-	Other
+	OtherDocker
+	OtherNonDocker
 }
 
 enum IngressType {
@@ -208,6 +209,7 @@ class ConfigInput {
 	[int]    $backupTimeToLiveHours
 
 	[bool]   $usePnsContainerRuntimeExecutor
+	[int]    $workflowStepMinimumRunTimeSeconds
 	[bool]   $createSCCs
 	
 	[hashtable]  $notes = @{}

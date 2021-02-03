@@ -7,14 +7,14 @@ codedxTls:
 
 imageNameCodeDxTools: "codedx/codedx-tools:v5.2.13"
 imageNameCodeDxToolsMono: "codedx/codedx-toolsmono:v5.2.13"
-imageNamePrepare: "codedx/codedx-prepare:v1.4.0"
-imageNameNewAnalysis: "codedx/codedx-newanalysis:v1.4.0"
-imageNameSendResults: "codedx/codedx-results:v1.4.0"
-imageNameSendErrorResults: "codedx/codedx-error-results:v1.4.0"
-imageNameHelmPreDelete: "codedx/codedx-cleanup:v1.4.0"
+imageNamePrepare: "codedx/codedx-prepare:v1.5.0"
+imageNameNewAnalysis: "codedx/codedx-newanalysis:v1.5.0"
+imageNameSendResults: "codedx/codedx-results:v1.5.0"
+imageNameSendErrorResults: "codedx/codedx-error-results:v1.5.0"
+imageNameHelmPreDelete: "codedx/codedx-cleanup:v1.5.0"
 imagePullSecretKey: ""
 
-toolServiceImageName: codedx/codedx-tool-service:v1.4.0
+toolServiceImageName: codedx/codedx-tool-service:v1.5.0
 toolServiceImagePullSecrets: []
 toolServicePort: 3333
 
@@ -38,6 +38,8 @@ limits:
   tool:
     cpu: '2'
     memory: '2G'
+
+minimumWorkflowStepRunTimeSeconds: 0
 
 # Use nodeSelectors to influence the scheduling of tool service pods.
 #

@@ -457,6 +457,7 @@ function New-ToolOrchestrationValuesFile([string]   $codedxNamespace,
 	[switch]   $configureTls,
 	[string]   $valuesFile,
 	[switch]   $usePnsExecutor,
+	[int]      $stepMinimumRunTimeSeconds,
 	[switch]   $createSCCs) {
 
 	$protocol = 'http'
@@ -591,6 +592,8 @@ tools:
 
 openshift:
   createSCC: {41}
+
+minimumWorkflowStepRunTimeSeconds: {51}
 '@ -f $minioExistingSecretName,
 $codedxNamespace,$codedxReleaseName,$toolOrchestrationExistingSecret,
 $imagePullSecretName,$toolsImage,$toolsMonoImage,$newAnalysisImage,$sendResultsImage,$sendErrorResultsImage,$toolServiceImage,$numReplicas,
@@ -612,7 +615,8 @@ $minioCertConfigMap,
 $createSCCs.tostring().tolower(),
 $minioDockerImageParts[0],$minioDockerImageParts[1],$minioDockerImageParts[2],
 $workflowControllerImageParts[0],$workflowControllerImageParts[1],$workflowExecutorImageParts[1],$workflowControllerImageParts[2],
-$minioImagePullSecretYaml,$prepareImage
+$minioImagePullSecretYaml,$prepareImage,
+$stepMinimumRunTimeSeconds
 
 	$values | out-file $valuesFile -Encoding ascii -Force
 	Get-ChildItem $valuesFile

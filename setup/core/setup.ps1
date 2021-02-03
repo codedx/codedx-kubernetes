@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.9.0
+.VERSION 1.10.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -60,12 +60,12 @@ param (
 	[string]                 $imageCodeDxTools        = 'codedx/codedx-tools:v5.2.13',
 	[string]                 $imageCodeDxToolsMono    = 'codedx/codedx-toolsmono:v5.2.13',
 
-	[string]                 $imagePrepare            = 'codedx/codedx-prepare:v1.4.0',
-	[string]                 $imageNewAnalysis        = 'codedx/codedx-newanalysis:v1.4.0',
-	[string]                 $imageSendResults        = 'codedx/codedx-results:v1.4.0',
-	[string]                 $imageSendErrorResults   = 'codedx/codedx-error-results:v1.4.0',
-	[string]                 $imageToolService        = 'codedx/codedx-tool-service:v1.4.0',
-	[string]                 $imagePreDelete          = 'codedx/codedx-cleanup:v1.4.0',
+	[string]                 $imagePrepare            = 'codedx/codedx-prepare:v1.5.0',
+	[string]                 $imageNewAnalysis        = 'codedx/codedx-newanalysis:v1.5.0',
+	[string]                 $imageSendResults        = 'codedx/codedx-results:v1.5.0',
+	[string]                 $imageSendErrorResults   = 'codedx/codedx-error-results:v1.5.0',
+	[string]                 $imageToolService        = 'codedx/codedx-tool-service:v1.5.0',
+	[string]                 $imagePreDelete          = 'codedx/codedx-cleanup:v1.5.0',
 
 	[string]                 $imageCodeDxTomcatInit   = 'codedx/codedx-bash:v1.0.0',
 	[string]                 $imageMariaDB            = 'codedx/codedx-mariadb:v1.0.0',
@@ -124,7 +124,7 @@ param (
 	[string]                 $codedxHelmRepo = 'https://codedx.github.io/codedx-kubernetes',
 	
 	[string]                 $codedxGitRepo = 'https://github.com/codedx/codedx-kubernetes.git',
-	[string]                 $codedxGitRepoBranch = 'v1.10.0',
+	[string]                 $codedxGitRepoBranch = 'master',
 
 	[int]                    $kubeApiTargetPort = 443,
 
@@ -179,6 +179,7 @@ param (
 	[int]                    $backupTimeToLiveHours = 720,
 
 	[switch]                 $usePnsContainerRuntimeExecutor,
+	[int]                    $workflowStepMinimumRunTimeSeconds,
 	[switch]                 $createSCCs
 )
 
@@ -767,6 +768,7 @@ if ($useToolOrchestration) {
 		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS `
 		'./toolsvc-values.yaml' `
 		-usePnsExecutor:$usePnsContainerRuntimeExecutor `
+		$workflowStepMinimumRunTimeSeconds `
 		-createSCCs:$createSCCs
 
 	Write-Verbose 'Deploying Tool Orchestration...'

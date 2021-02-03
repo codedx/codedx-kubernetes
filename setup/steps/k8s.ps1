@@ -15,7 +15,11 @@ class ChooseEnvironment : Step {
 
 	static [string] hidden $description = @'
 Specify your Kubernetes provider so that the setup script can make options 
-available for your type of Kubernetes cluster.
+available for your type of Kubernetes cluster. 
+
+If your Kubernetes provider is not listed below, choose either 'Other Docker' 
+or 'Other Non-Docker' based on whether your k8s environment uses a Docker 
+container runtime.
 
 Note: Running Code Dx on AWS EKS requires a minimum Kubernetes version of 1.16.
 '@
@@ -29,11 +33,12 @@ Note: Running Code Dx on AWS EKS requires a minimum Kubernetes version of 1.16.
 
 	[IQuestion]MakeQuestion([string] $prompt) {
 		return new-object MultipleChoiceQuestion($prompt, @(
-			[tuple]::create('&Minikube', 'Use Minikube for eval/test/dev purposes'),
-			[tuple]::create('&AKS', 'Use Microsoft''s Azure Kubernetes Service (AKS)'),
-			[tuple]::create('&EKS', 'Use Amazon''s Elastic Kubernetes Service (EKS)'),
-			[tuple]::create('&OpenShift', 'Use OpenShift 4'),
-			[tuple]::create('O&ther', 'Use a different Kubernetes provider')), -1)
+			[tuple]::create('&Minikube',         'Use Minikube for eval/test/dev purposes with a Docker container runtime'),
+			[tuple]::create('&AKS',              'Use Microsoft''s Azure Kubernetes Service (AKS) with a Docker container runtime'),
+			[tuple]::create('&EKS',              'Use Amazon''s Elastic Kubernetes Service (EKS) with a Docker container runtime'),
+			[tuple]::create('&OpenShift',        'Use OpenShift 4'),
+			[tuple]::create('Other &Docker',     'Use a different Kubernetes provider with a Docker container runtime'),
+			[tuple]::create('Other &Non-Docker', 'Use a different Kubernetes provider without a Docker container runtime')), -1)
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
@@ -42,20 +47,24 @@ Note: Running Code Dx on AWS EKS requires a minimum Kubernetes version of 1.16.
 			1 { $this.config.k8sProvider = [ProviderType]::Aks }
 			2 { $this.config.k8sProvider = [ProviderType]::Eks }
 			3 { $this.config.k8sProvider = [ProviderType]::OpenShift }
-			4 { $this.config.k8sProvider = [ProviderType]::Other }
+			4 { $this.config.k8sProvider = [ProviderType]::OtherDocker }
+			5 { $this.config.k8sProvider = [ProviderType]::OtherNonDocker }
 		}
 
 		$usingOpenShift = $this.config.k8sProvider -eq [ProviderType]::OpenShift
+		$usingNonDockerRuntime = $usingOpenShift -or $this.config.k8sProvider -eq [ProviderType]::OtherNonDocker
 
-		$this.config.usePnsContainerRuntimeExecutor = $usingOpenShift
+		$this.config.usePnsContainerRuntimeExecutor = $usingNonDockerRuntime
+		$this.config.workflowStepMinimumRunTimeSeconds = $usingNonDockerRuntime ? 3 : 0
 		$this.config.createSCCs = $usingOpenShift
 
 		return $true
 	}
 
 	[void]Reset(){
-		$this.config.k8sProvider = [ProviderType]::Other
+		$this.config.k8sProvider = [ProviderType]::OtherDocker
 		$this.config.usePnsContainerRuntimeExecutor = $false
+		$this.config.workflowStepMinimumRunTimeSeconds = 0
 		$this.config.createSCCs = $false
 	}
 }

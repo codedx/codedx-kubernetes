@@ -151,7 +151,7 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 		'backupType','namespaceVelero','backupScheduleCronExpression' | ForEach-Object {
 			$this.AddParameter($sb, $_)
 		}
-		'backupDatabaseTimeoutMinutes','backupTimeToLiveHours' | ForEach-Object {
+		'backupDatabaseTimeoutMinutes','backupTimeToLiveHours','workflowStepMinimumRunTimeSeconds' | ForEach-Object {
 			$this.AddPositiveIntParameter($sb, $_)
 		}
 

@@ -346,7 +346,7 @@ Describe 'Generate Setup Commands' {
 
 		$runSetupFile = join-path $TestDrive run-setup.ps1
 		$runSetupFile | Should -Exist
-		$expectedParams = "-kubeContextName 'OpenShift' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -storageClassName 'default' -backupType 'velero-restic' -namespaceVelero 'velero-ns' -backupScheduleCronExpression '0 5 * * *' -backupDatabaseTimeoutMinutes 33 -backupTimeToLiveHours 25 -codedxAdminPwd 'my-codedx-password' -skipIngressEnabled -skipIngressAssumesNginx -usePnsContainerRuntimeExecutor -createSCCs -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 9443 -dbVolumeSizeGiB 64 -dbSlaveReplicaCount 0 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -skipToolOrchestration -skipNginxIngressControllerInstall -skipLetsEncryptCertManagerInstall"
+		$expectedParams = "-kubeContextName 'OpenShift' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -storageClassName 'default' -backupType 'velero-restic' -namespaceVelero 'velero-ns' -backupScheduleCronExpression '0 5 * * *' -backupDatabaseTimeoutMinutes 33 -backupTimeToLiveHours 25 -workflowStepMinimumRunTimeSeconds 3 -codedxAdminPwd 'my-codedx-password' -skipIngressEnabled -skipIngressAssumesNginx -usePnsContainerRuntimeExecutor -createSCCs -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 9443 -dbVolumeSizeGiB 64 -dbSlaveReplicaCount 0 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -skipToolOrchestration -skipNginxIngressControllerInstall -skipLetsEncryptCertManagerInstall"
 		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
 	}
 
@@ -466,4 +466,30 @@ Describe 'Generate Setup Commands' {
 		$expectedParams = "-kubeContextName 'minikube' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -dockerImagePullSecretName 'private-reg' -dockerRegistry 'private-reg-host' -dockerRegistryUser 'private-reg-username' -redirectDockerHubReferencesTo 'private-reg-host' -storageClassName 'default' -dockerRegistryPwd 'private-reg-password' -codedxAdminPwd 'my-codedx-password' -skipIngressEnabled -skipIngressAssumesNginx -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 9443 -dbVolumeSizeGiB 64 -dbSlaveVolumeSizeGiB 64 -dbSlaveReplicaCount 1 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -skipToolOrchestration -skipNginxIngressControllerInstall -skipLetsEncryptCertManagerInstall"
 		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
 	}	
+
+	It '(33) Should generate setup.ps1 command with PNS' -Tag 'PNS' {
+	
+		Set-RequiresPnsPass 1 # save w/o prereqs command
+
+		New-Mocks
+		. ./guided-setup.ps1
+
+		$runSetupFile = join-path $TestDrive run-setup.ps1
+		$runSetupFile | Should -Exist
+		$expectedParams = "-kubeContextName 'Other' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -storageClassName 'default' -backupType 'velero-restic' -namespaceVelero 'velero-ns' -backupScheduleCronExpression '0 5 * * *' -backupDatabaseTimeoutMinutes 33 -backupTimeToLiveHours 25 -workflowStepMinimumRunTimeSeconds 3 -codedxAdminPwd 'my-codedx-password' -skipIngressEnabled -skipIngressAssumesNginx -usePnsContainerRuntimeExecutor -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 9443 -dbVolumeSizeGiB 64 -dbSlaveReplicaCount 0 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -skipToolOrchestration -skipNginxIngressControllerInstall -skipLetsEncryptCertManagerInstall"
+		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
+	}	
+
+	It '(34) Should generate setup.ps1 command without PNS' -Tag 'PNS' {
+	
+		Set-OtherDockerPass 1 # save w/o prereqs command
+
+		New-Mocks
+		. ./guided-setup.ps1
+
+		$runSetupFile = join-path $TestDrive run-setup.ps1
+		$runSetupFile | Should -Exist
+		$expectedParams = "-kubeContextName 'Other' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -storageClassName 'default' -backupType 'velero-restic' -namespaceVelero 'velero-ns' -backupScheduleCronExpression '0 5 * * *' -backupDatabaseTimeoutMinutes 33 -backupTimeToLiveHours 25 -codedxAdminPwd 'my-codedx-password' -skipIngressEnabled -skipIngressAssumesNginx -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 9443 -dbVolumeSizeGiB 64 -dbSlaveReplicaCount 0 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -skipToolOrchestration -skipNginxIngressControllerInstall -skipLetsEncryptCertManagerInstall"
+		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
+	}
 }

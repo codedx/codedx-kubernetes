@@ -175,4 +175,5 @@ This section describes the setup.ps1 script parameters, which you can specify by
 | `backupTimeToLiveHours`                            | hours to wait before a backup is eligible for deletion     | 720                                               |
 |                                                    |                                                            |                                                   |
 | `usePnsContainerRuntimeExecutor`                   | whether to use PNS workflow executor (instead of Docker)   | false                                             |
+| `minimumWorkflowStepRunTimeSeconds`                | minimum run time for workflow step (when enforced)         | 0                                                 |
 | `createSCCs`                                       | whether to create Security Context Constraints (OpenShift) | false                                             |

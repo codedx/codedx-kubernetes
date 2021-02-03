@@ -59,6 +59,7 @@ spec:
           "-logFile", "/opt/codedx/service/logs/service.log",
           "-logMaxSizeMB", "{{ .Values.logs.maxSizeMB }}",
           "-logMaxBackups", "{{ .Values.logs.maxBackups }}",
+          "-minimumWorkflowStepRunTime", "{{ .Values.minimumWorkflowStepRunTimeSeconds }}",
           "-minioAdminClientPath", "/opt/codedx/service/tools/mc",
           "-minioAdminPasswordPath", "/opt/codedx/service/secrets/minioAdminPassword",
           "-minioAdminUsernamePath", "/opt/codedx/service/secrets/minioAdminUsername",

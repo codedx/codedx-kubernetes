@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.10.0
+.VERSION 1.11.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -990,7 +990,8 @@ if ($useGitOps) {
 		-chartPath 'setup/core/charts/codedx' `
 		-valuesConfigMapNames $codeDxValuesConfigMapNames `
 		-dockerImageNames @{
-			'codedxTomcatImage' = $imageCodeDxTomcat
+			'codedxTomcatImage' = $imageCodeDxTomcat;
+			'codedxTomcatInitImage' = $imageCodeDxTomcatInit
 		}
 
 	### Optionally Create Tool Orchestration HelmRelease
@@ -1022,6 +1023,7 @@ if ($useGitOps) {
 			-dockerImageNames @{
 				'imageNameCodeDxTools'      = $imageCodeDxTools;
 				'imageNameCodeDxToolsMono'  = $imageCodeDxToolsMono;
+				'imageNamePrepare'          = $imagePrepare;
 				'imageNameNewAnalysis'      = $imageNewAnalysis;
 				'imageNameSendResults'      = $imageSendResults;
 				'imageNameSendErrorResults' = $imageSendErrorResults;

@@ -98,3 +98,19 @@ function Test-CodeDxVersion([string] $setupScriptPath,
 	$tags['$imageWorkflowController'] -eq $workflowVersion -and 
 	$tags['$imageWorkflowExecutor']   -eq $workflowVersion
 }
+
+function Set-SetupScriptChartsReference([string] $setupScriptPath,
+	[string] $chartsTag) {
+
+	$setupScriptLines = Get-Content $setupScriptPath
+
+	$pattern = "(?m)^(?<definition>\t+\[string\]\s+)\`$codedxGitRepoBranch(?<alignment>\s+)=\s'[^']+',`$"
+	$m = $setupScriptLines | select-string -pattern $pattern
+	if ($null -eq $m) {
+		throw "Expected to find a match in path $setupScriptPath with pattern $pattern"
+	}
+
+	$setupScriptLines = $setupScriptLines -replace $pattern,"`${definition}`$codedxGitRepoBranch`${alignment}= '$chartsTag',"
+
+	Set-Content $setupScriptPath $setupScriptLines
+}

@@ -209,6 +209,26 @@ pipeline {
 									git config --local credential.helper "!helper() { echo username=\\$GIT_USERNAME; echo password=\\$GIT_TOKEN; }; helper"
 									git push
 								''')
+
+								script {
+
+									versionToRelease = runSemanticRelease(GIT_TOKEN, true)
+									chartTag = "charts-$versionToRelease"
+
+									setupScriptPath = './setup/core/setup.ps1'
+								}
+
+								sh "git tag $chartTag"
+
+								// note: pipeline requires 'Suppress automatic SCM triggering' behavior
+								sh 'git push --tags'
+
+								sh "pwsh -command \"&{ . ./.version/common.ps1; Set-SetupScriptChartsReference '$setupScriptPath' '$chartTag' }\""
+								sh "git add $setupScriptPath"
+								sh "git commit -m 'chore: set chart reference to $chartTag'"
+
+								// note: pipeline requires 'Suppress automatic SCM triggering' behavior
+								sh 'git push'
 							}
 						}
 					}

@@ -27,6 +27,36 @@ if (Test-CodeDxVersion $setupScriptPath `
 	throw 'Neither the Code Dx nor Tool Orchestration charts require an update'
 }
 
+if (-not (Test-CodeDxChartVersion $setupScriptPath $codeDxVersion $codeDxTomcatInitVersion)) {
+
+	Write-Verbose 'Updating Code Dx chart version...'
+	$codeDxChartDirectory = './setup/core/charts/codedx'
+	Set-HelmChartVersion "$codeDxChartDirectory/Chart.yaml" $codeDxVersion
+
+	Write-Verbose 'Updating Code Dx chart values...'
+	Set-ChartDockerImageValues "$codeDxChartDirectory/values.yaml" `
+		([Tuple`3[string,string,string]]::new('codedxTomcatImage',     'codedx/codedx-tomcat', $codeDxVersion),
+		 [Tuple`3[string,string,string]]::new('codedxTomcatInitImage', 'codedx/codedx-bash',   $codeDxTomcatInitVersion))
+}
+
+if (-not (Test-ToolOrchestrationChartVersion $setupScriptPath $codeDxVersion $toolOrchestrationVersion)) {
+
+	Write-Verbose 'Updating Code Tool Orchestration chart version...'
+	$toolOrchestrationDirectory = './setup/core/charts/codedx-tool-orchestration'
+	Set-HelmChartVersion "$toolOrchestrationDirectory/Chart.yaml" $toolOrchestrationVersion
+	
+	Write-Verbose 'Updating Code Tool Orchestration chart values...'
+	Set-ChartDockerImageValues "$toolOrchestrationDirectory/values.yaml" `
+		([Tuple`3[string,string,string]]::new('imageNameCodeDxTools',      'codedx/codedx-tools',         $codeDxVersion),
+		 [Tuple`3[string,string,string]]::new('imageNameCodeDxToolsMono',  'codedx/codedx-toolsmono',     $codeDxVersion),
+		 [Tuple`3[string,string,string]]::new('imageNamePrepare',          'codedx/codedx-prepare',       $toolOrchestrationVersion),
+		 [Tuple`3[string,string,string]]::new('imageNameNewAnalysis',      'codedx/codedx-newanalysis',   $toolOrchestrationVersion),
+		 [Tuple`3[string,string,string]]::new('imageNameSendResults',      'codedx/codedx-results',       $toolOrchestrationVersion),
+		 [Tuple`3[string,string,string]]::new('imageNameSendErrorResults', 'codedx/codedx-error-results', $toolOrchestrationVersion),
+		 [Tuple`3[string,string,string]]::new('imageNameHelmPreDelete',    'codedx/codedx-cleanup',       $toolOrchestrationVersion),
+		 [Tuple`3[string,string,string]]::new('toolServiceImageName',      'codedx/codedx-tool-service',  $toolOrchestrationVersion))
+}
+
 Write-Verbose 'Updating setup script...'
 Set-SetupScriptDockerImageTags $setupScriptPath `
 	([Tuple`3[string,string,string]]::new('imageCodeDxTomcat',       'codedx/codedx-tomcat',              $codeDxVersion),
@@ -42,27 +72,3 @@ Set-SetupScriptDockerImageTags $setupScriptPath `
 	 [Tuple`3[string,string,string]]::new('imagePreDelete',          'codedx/codedx-cleanup',             $toolOrchestrationVersion),
 	 [Tuple`3[string,string,string]]::new('imageWorkflowController', 'codedx/codedx-workflow-controller', $workflowVersion),
 	 [Tuple`3[string,string,string]]::new('imageWorkflowExecutor',   'codedx/codedx-argoexec',            $workflowVersion))
-
-Write-Verbose 'Updating Code Dx chart version...'
-$codeDxChartDirectory = './setup/core/charts/codedx'
-Set-HelmChartVersion "$codeDxChartDirectory/Chart.yaml" $codeDxVersion
-
-Write-Verbose 'Updating Code Dx chart values...'
-Set-ChartDockerImageValues "$codeDxChartDirectory/values.yaml" `
-	([Tuple`3[string,string,string]]::new('codedxTomcatImage',     'codedx/codedx-tomcat', $codeDxVersion),
-	 [Tuple`3[string,string,string]]::new('codedxTomcatInitImage', 'codedx/codedx-bash',   $codeDxTomcatInitVersion))
-
-Write-Verbose 'Updating Code Tool Orchestration chart version...'
-$toolOrchestrationDirectory = './setup/core/charts/codedx-tool-orchestration'
-Set-HelmChartVersion "$toolOrchestrationDirectory/Chart.yaml" $toolOrchestrationVersion
-
-Write-Verbose 'Updating Code Tool Orchestration chart values...'
-Set-ChartDockerImageValues "$toolOrchestrationDirectory/values.yaml" `
-	([Tuple`3[string,string,string]]::new('imageNameCodeDxTools',      'codedx/codedx-tools',         $codeDxVersion),
-	 [Tuple`3[string,string,string]]::new('imageNameCodeDxToolsMono',  'codedx/codedx-toolsmono',     $codeDxVersion),
-	 [Tuple`3[string,string,string]]::new('imageNamePrepare',          'codedx/codedx-prepare',       $toolOrchestrationVersion),
-	 [Tuple`3[string,string,string]]::new('imageNameNewAnalysis',      'codedx/codedx-newanalysis',   $toolOrchestrationVersion),
-	 [Tuple`3[string,string,string]]::new('imageNameSendResults',      'codedx/codedx-results',       $toolOrchestrationVersion),
-	 [Tuple`3[string,string,string]]::new('imageNameSendErrorResults', 'codedx/codedx-error-results', $toolOrchestrationVersion),
-	 [Tuple`3[string,string,string]]::new('imageNameHelmPreDelete',    'codedx/codedx-cleanup',       $toolOrchestrationVersion),
-	 [Tuple`3[string,string,string]]::new('toolServiceImageName',      'codedx/codedx-tool-service',  $toolOrchestrationVersion))

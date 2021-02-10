@@ -8,18 +8,22 @@ function Set-HelmChartVersion([string] $chartPath, [string] $appVersion) {
 
 	$versionPattern = '(?m)^version:\s(?<version>.+)$'
 
-	$m = select-string -path $chartPath -pattern $versionPattern
-	if ($null -eq $m) {
+	$versionMatch = select-string -path $chartPath -pattern $versionPattern
+	if ($null -eq $versionMatch) {
 		throw "Expected to find a version match in path $chartPath with $versionPattern"
 	}
 
-	$v = new-object Management.Automation.SemanticVersion($m.Matches.Groups[1].Value)
-	$newVersion = "$($v.Major).$($v.Minor+1).$($v.Patch)"
+	$currentVersion = new-object Management.Automation.SemanticVersion($versionMatch.Matches.Groups[1].Value)
+	$newVersion = "$($currentVersion.Major).$($currentVersion.Minor+1).$($currentVersion.Patch)"
 
 	$chartLines = $chartLines -replace $versionPattern,"version: $newVersion"
 
+	if ($appVersion -notmatch 'v\d+\.\d+\.\d+') {
+		throw "Expected to find an appVersion number matching format v1.2.3 (not $appVersion)"
+	}
+
 	$appVersionPattern = '(?m)^appVersion:\s.+$'
-	$chartLines = $chartLines -replace $appVersionPattern,"appVersion: ""$appVersion"""
+	$chartLines = $chartLines -replace $appVersionPattern,"appVersion: ""$($appVersion.substring(1))"""
 
 	Set-Content $chartPath $chartLines
 }
@@ -84,19 +88,53 @@ function Test-CodeDxVersion([string] $setupScriptPath,
 
 	$tags = Get-SetupScriptDockerImageTags $setupScriptPath
 
-	$tags['$imageCodeDxTomcat']       -eq $codeDxVersion             -and 
-	$tags['$imageCodeDxTools']        -eq $codeDxVersion             -and 
-	$tags['$imageCodeDxToolsMono']    -eq $codeDxVersion             -and 
-	$tags['$imageCodeDxTomcatInit']   -eq $codeDxTomcatInitVersion   -and 
-	$tags['$imageMariaDB']            -eq $mariaDBVersion            -and 
-	$tags['$imagePrepare']            -eq $toolOrchestrationVersion  -and 
-	$tags['$imageNewAnalysis']        -eq $toolOrchestrationVersion  -and 
-	$tags['$imageSendResults']        -eq $toolOrchestrationVersion  -and 
-	$tags['$imageSendErrorResults']   -eq $toolOrchestrationVersion  -and 
-	$tags['$imageToolService']        -eq $toolOrchestrationVersion  -and 
-	$tags['$imagePreDelete']          -eq $toolOrchestrationVersion  -and 
-	$tags['$imageWorkflowController'] -eq $workflowVersion -and 
+	(Test-CodeDxChartVersionTags            $tags $codeDxVersion $codeDxTomcatInitVersion)  -and 
+	(Test-ToolOrchestrationChartVersionTags $tags $codeDxVersion $toolOrchestrationVersion) -and 
+	$tags['$imageMariaDB']            -eq $mariaDBVersion                                   -and 
+	$tags['$imageWorkflowController'] -eq $workflowVersion                                  -and 
 	$tags['$imageWorkflowExecutor']   -eq $workflowVersion
+}
+
+function Test-CodeDxChartVersion([string] $setupScriptPath,
+	[string] $codeDxVersion,
+	[string] $codeDxTomcatInitVersion) {
+
+	Test-CodeDxChartVersionTags `
+		(Get-SetupScriptDockerImageTags $setupScriptPath) `
+		$codeDxVersion `
+		$codeDxTomcatInitVersion
+}
+
+function Test-ToolOrchestrationChartVersion([string] $setupScriptPath,
+	[string] $codeDxVersion,
+	[string] $toolOrchestrationVersion) {
+
+	Test-ToolOrchestrationChartVersionTags `
+		(Get-SetupScriptDockerImageTags $setupScriptPath) `
+		$codeDxVersion `
+		$toolOrchestrationVersion
+}
+
+function Test-CodeDxChartVersionTags($tags,
+	[string] $codeDxVersion,
+	[string] $codeDxTomcatInitVersion) {
+
+	$tags['$imageCodeDxTomcat']       -eq $codeDxVersion           -and 
+	$tags['$imageCodeDxTomcatInit']   -eq $codeDxTomcatInitVersion
+}
+
+function Test-ToolOrchestrationChartVersionTags($tags,
+	[string] $codeDxVersion,
+	[string] $toolOrchestrationVersion) {
+
+	$tags['$imageCodeDxTools']        -eq $codeDxVersion            -and 
+	$tags['$imageCodeDxToolsMono']    -eq $codeDxVersion            -and 
+	$tags['$imagePrepare']            -eq $toolOrchestrationVersion -and 
+	$tags['$imageNewAnalysis']        -eq $toolOrchestrationVersion -and 
+	$tags['$imageSendResults']        -eq $toolOrchestrationVersion -and 
+	$tags['$imageSendErrorResults']   -eq $toolOrchestrationVersion -and 
+	$tags['$imageToolService']        -eq $toolOrchestrationVersion -and 
+	$tags['$imagePreDelete']          -eq $toolOrchestrationVersion
 }
 
 function Set-SetupScriptChartsReference([string] $setupScriptPath,

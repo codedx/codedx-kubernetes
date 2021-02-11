@@ -74,7 +74,7 @@ def slackSendMessage(success) {
 	}
 
 	withCredentials([string(credentialsId: 'dockerSlackChannel', variable: 'slackChannel')]) {
-		slackSend channel: slackChannel, color: messageColor, message: "Code Dx Docker Compose: Release stage $messageStatus: <${env.BUILD_URL}console|Open>"
+		slackSend channel: slackChannel, color: messageColor, message: "Code Dx Kubernetes: Release stage $messageStatus: <${env.BUILD_URL}console|Open>"
 	}
 }
 

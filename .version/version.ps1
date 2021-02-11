@@ -3,7 +3,8 @@ param (
 	[Parameter(Mandatory=$true)][string] $codeDxTomcatInitVersion,
 	[Parameter(Mandatory=$true)][string] $mariaDBVersion,
 	[Parameter(Mandatory=$true)][string] $toolOrchestrationVersion,
-	[Parameter(Mandatory=$true)][string] $workflowVersion
+	[Parameter(Mandatory=$true)][string] $workflowVersion,
+	[Parameter(Mandatory=$true)][string] $restoreDBVersion
 )
 
 $ErrorActionPreference = 'Stop'
@@ -16,14 +17,17 @@ Push-Location (Join-Path $PSScriptRoot '..')
 . ./.version/common.ps1
 
 $setupScriptPath = './setup/core/setup.ps1'
+$restoreDBPath   = './admin/restore-db.ps1'
 
 Write-Verbose 'Testing whether update is required...'
 if (Test-CodeDxVersion $setupScriptPath `
+	$restoreDBPath `
 	$codeDxVersion `
 	$codeDxTomcatInitVersion `
 	$mariaDBVersion `
 	$toolOrchestrationVersion `
-	$workflowVersion) {
+	$workflowVersion `
+	$restoreDBVersion) {
 	throw 'Neither the Code Dx nor Tool Orchestration charts require an update'
 }
 
@@ -58,7 +62,7 @@ if (-not (Test-ToolOrchestrationChartVersion $setupScriptPath $codeDxVersion $to
 }
 
 Write-Verbose 'Updating setup script...'
-Set-SetupScriptDockerImageTags $setupScriptPath `
+Set-ScriptDockerImageTags $setupScriptPath `
 	([Tuple`3[string,string,string]]::new('imageCodeDxTomcat',       'codedx/codedx-tomcat',              $codeDxVersion),
 	 [Tuple`3[string,string,string]]::new('imageCodeDxTools',        'codedx/codedx-tools',               $codeDxVersion),
 	 [Tuple`3[string,string,string]]::new('imageCodeDxToolsMono',    'codedx/codedx-toolsmono',           $codeDxVersion),
@@ -72,3 +76,7 @@ Set-SetupScriptDockerImageTags $setupScriptPath `
 	 [Tuple`3[string,string,string]]::new('imagePreDelete',          'codedx/codedx-cleanup',             $toolOrchestrationVersion),
 	 [Tuple`3[string,string,string]]::new('imageWorkflowController', 'codedx/codedx-workflow-controller', $workflowVersion),
 	 [Tuple`3[string,string,string]]::new('imageWorkflowExecutor',   'codedx/codedx-argoexec',            $workflowVersion))
+
+Write-Verbose 'Updating restore script...'
+Set-ScriptDockerImageTags $restoreDBPath `
+	([Tuple`3[string,string,string]]::new('imageDatabaseRestore',    'codedx/codedx-dbrestore',           $restoreDBVersion))

@@ -47,30 +47,30 @@ function Set-ChartDockerImageValues([string] $valuesPath, $dockerImageValues) {
 	Set-Content $valuesPath $valuesLines
 }
 
-function Set-SetupScriptDockerImageTags([string] $setupScriptPath, $dockerImageValues) {
+function Set-ScriptDockerImageTags([string] $scriptPath, $dockerImageValues) {
 
-	$setupScriptLines = Get-Content $setupScriptPath
+	$scriptLines = Get-Content $scriptPath
 
 	$dockerImageValues | ForEach-Object {
 
 		$pattern = "(?m)^(?<definition>\t+\[string\]\s+)\`$$($_.Item1)(?<alignment>\s+)=\s'$($_.Item2)`:(?<version>.+)',`$"
 
-		$m = $setupScriptLines | select-string -pattern $pattern
+		$m = $scriptLines | select-string -pattern $pattern
 		if ($null -eq $m) {
-			throw "Expected to find a match in path $setupScriptPath with pattern $pattern"
+			throw "Expected to find a match in path $scriptPath with pattern $pattern"
 		}
 
-		$setupScriptLines = $setupScriptLines -replace $pattern,"`${definition}`$$($_.Item1)`${alignment}= '$($_.Item2)`:$($_.Item3)',"
+		$scriptLines = $scriptLines -replace $pattern,"`${definition}`$$($_.Item1)`${alignment}= '$($_.Item2)`:$($_.Item3)',"
 	}
 
-	Set-Content $setupScriptPath $setupScriptLines
+	Set-Content $scriptPath $scriptLines
 }
 
-function Get-SetupScriptDockerImageTags([string] $setupScriptPath) {
+function Get-ScriptDockerImageTags([string] $scriptPath) {
 
 	$pattern = "(?m)^\t+\[string\]\s+(?<dockerImageName>\`$image\S+)\s+=\s'[^:]+`:(?<version>.+)',`$"
 
-	$m = Get-Content $setupScriptPath | Select-String -Pattern $pattern
+	$m = Get-Content $scriptPath | Select-String -Pattern $pattern
 
 	$tags = @{}
 	$m | ForEach-Object {
@@ -80,19 +80,22 @@ function Get-SetupScriptDockerImageTags([string] $setupScriptPath) {
 }
 
 function Test-CodeDxVersion([string] $setupScriptPath,
+	[string] $restoreDBScriptPath,
 	[string] $codeDxVersion,
 	[string] $codeDxTomcatInitVersion,
 	[string] $mariaDBVersion,
 	[string] $toolOrchestrationVersion,
-	[string] $workflowVersion) {
+	[string] $workflowVersion,
+	[string] $restoreDBVersion) {
 
-	$tags = Get-SetupScriptDockerImageTags $setupScriptPath
+	$tags = (Get-ScriptDockerImageTags $setupScriptPath) + (Get-ScriptDockerImageTags $restoreDBScriptPath)
 
 	(Test-CodeDxChartVersionTags            $tags $codeDxVersion $codeDxTomcatInitVersion)  -and 
 	(Test-ToolOrchestrationChartVersionTags $tags $codeDxVersion $toolOrchestrationVersion) -and 
 	$tags['$imageMariaDB']            -eq $mariaDBVersion                                   -and 
 	$tags['$imageWorkflowController'] -eq $workflowVersion                                  -and 
-	$tags['$imageWorkflowExecutor']   -eq $workflowVersion
+	$tags['$imageWorkflowExecutor']   -eq $workflowVersion                                  -and 
+	$tags['$imageDatabaseRestore']    -eq $restoreDBVersion
 }
 
 function Test-CodeDxChartVersion([string] $setupScriptPath,
@@ -100,7 +103,7 @@ function Test-CodeDxChartVersion([string] $setupScriptPath,
 	[string] $codeDxTomcatInitVersion) {
 
 	Test-CodeDxChartVersionTags `
-		(Get-SetupScriptDockerImageTags $setupScriptPath) `
+		(Get-ScriptDockerImageTags $setupScriptPath) `
 		$codeDxVersion `
 		$codeDxTomcatInitVersion
 }
@@ -110,7 +113,7 @@ function Test-ToolOrchestrationChartVersion([string] $setupScriptPath,
 	[string] $toolOrchestrationVersion) {
 
 	Test-ToolOrchestrationChartVersionTags `
-		(Get-SetupScriptDockerImageTags $setupScriptPath) `
+		(Get-ScriptDockerImageTags $setupScriptPath) `
 		$codeDxVersion `
 		$toolOrchestrationVersion
 }

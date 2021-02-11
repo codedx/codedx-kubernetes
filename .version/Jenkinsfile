@@ -131,12 +131,13 @@ pipeline {
 								string(credentialsId: 'tomcatinitreponame',         variable: 'GIT_TOMCAT_INIT_REPO'),
 								string(credentialsId: 'mariadbreponame',            variable: 'GIT_MARIADB_REPO'),
 								string(credentialsId: 'toolorchestrationreponame',  variable: 'GIT_TOOL_ORCHESTRATION_REPO'),
-								string(credentialsId: 'workflowreponame',           variable: 'GIT_WORKFLOW_REPO')]) {
+								string(credentialsId: 'workflowreponame',           variable: 'GIT_WORKFLOW_REPO'),
+								string(credentialsId: 'restoredbreponame',          variable: 'GIT_RESTOREDB_REPO')]) {
 
 								script {
 
 									currentVersions = []
-									[GIT_CODEDX_REPO,GIT_TOMCAT_INIT_REPO,GIT_MARIADB_REPO,GIT_TOOL_ORCHESTRATION_REPO,GIT_WORKFLOW_REPO].each { x ->
+									[GIT_CODEDX_REPO,GIT_TOMCAT_INIT_REPO,GIT_MARIADB_REPO,GIT_TOOL_ORCHESTRATION_REPO,GIT_WORKFLOW_REPO,GIT_RESTOREDB_REPO].each { x ->
 
 										currentVersion = getLatestGitHubRelease(GIT_TOKEN, GIT_OWNER, x)
 										if (currentVersion == '') {
@@ -150,11 +151,12 @@ pipeline {
 									mariaDBVersion            = currentVersions[2]
 									toolOrchestrationVersion  = currentVersions[3]
 									workflowVersion           = currentVersions[4]
+									restoreDBVersion          = currentVersions[5]
 
-									def isCurrentVersion = sh(returnStdout: true, script: "pwsh -command \"&{ . ./.version/common.ps1; Test-CodeDxVersion './setup/core/setup.ps1' '$codeDxVersion' '$codeDxTomcatInitVersion' '$mariaDBVersion' '$toolOrchestrationVersion' '$workflowVersion' }\"")
+									def isCurrentVersion = sh(returnStdout: true, script: "pwsh -command \"&{ . ./.version/common.ps1; Test-CodeDxVersion './setup/core/setup.ps1' './admin/restore-db.ps1' '$codeDxVersion' '$codeDxTomcatInitVersion' '$mariaDBVersion' '$toolOrchestrationVersion' '$workflowVersion' '$restoreDBVersion' }\"")
 
 									if (isCurrentVersion.toBoolean()) {
-										error("unable to continue because the repository already references the latest versions; codeDxVersion=$codeDxVersion; codeDxTomcatInitVersion=$codeDxTomcatInitVersion; mariaDBVersion=$mariaDBVersion; toolOrchestrationVersion=$toolOrchestrationVersion; workflowVersion=$workflowVersion")
+										error("unable to continue because the repository already references the latest versions; codeDxVersion=$codeDxVersion; codeDxTomcatInitVersion=$codeDxTomcatInitVersion; mariaDBVersion=$mariaDBVersion; toolOrchestrationVersion=$toolOrchestrationVersion; workflowVersion=$workflowVersion; restoreDBVersion=$restoreDBVersion")
 									}
 								}
 							}
@@ -175,7 +177,7 @@ pipeline {
 								timeout(time: 15) {
 
 									// pipeline not triggered by SCM and input response should occur with minimal delay, so invoke input in this stage (leaving container running)
-									input message: "Continue with these versions? Code Dx: $codeDxVersion; Tomcat Init: $codeDxTomcatInitVersion; MariaDB: $mariaDBVersion; Tool Orchestration: $toolOrchestrationVersion; Workflow: $workflowVersion"
+									input message: "Continue with these versions? Code Dx: $codeDxVersion; Tomcat Init: $codeDxTomcatInitVersion; MariaDB: $mariaDBVersion; Tool Orchestration: $toolOrchestrationVersion; Workflow: $workflowVersion; RestoreDB: $restoreDBVersion"
 								}
 							} catch (err) {
 
@@ -198,9 +200,9 @@ pipeline {
 
 							sh 'git config user.name \'Code Dx Build\' && git config user.email support@codedx.com'
 							sh "git checkout ${scm.branches[0]}"
-							sh "pwsh ./.version/version.ps1 '$codeDxVersion' '$codeDxTomcatInitVersion' '$mariaDBVersion' '$toolOrchestrationVersion' '$workflowVersion'"
+							sh "pwsh ./.version/version.ps1 '$codeDxVersion' '$codeDxTomcatInitVersion' '$mariaDBVersion' '$toolOrchestrationVersion' '$workflowVersion' '$restoreDBVersion'"
 							sh 'git add .'
-							sh "git commit -m 'feat: update to latest Docker image versions' -m 'Code Dx: $codeDxVersion' -m 'Tomcat Init: $codeDxTomcatInitVersion' -m 'MariaDB: $mariaDBVersion' -m 'Tool Orchestration: $toolOrchestrationVersion' -m 'Workflow: $workflowVersion'"
+							sh "git commit -m 'feat: update to latest Docker image versions' -m 'Code Dx: $codeDxVersion' -m 'Tomcat Init: $codeDxTomcatInitVersion' -m 'MariaDB: $mariaDBVersion' -m 'Tool Orchestration: $toolOrchestrationVersion' -m 'Workflow: $workflowVersion' -m 'RestoreDB: $restoreDBVersion'"
 
 							withCredentials([usernamePassword(credentialsId: 'codedx-build-github', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_TOKEN')]){
 

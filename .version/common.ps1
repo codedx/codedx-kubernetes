@@ -8,7 +8,7 @@ function Set-HelmChartVersion([string] $chartPath, [string] $appVersion) {
 
 	$versionPattern = '(?m)^version:\s(?<version>.+)$'
 
-	$versionMatch = select-string -path $chartPath -pattern $versionPattern
+	$versionMatch = $chartLines | select-string -pattern $versionPattern
 	if ($null -eq $versionMatch) {
 		throw "Expected to find a version match in path $chartPath with $versionPattern"
 	}
@@ -70,7 +70,7 @@ function Get-ScriptDockerImageTags([string] $scriptPath) {
 
 	$pattern = "(?m)^\t+\[string\]\s+(?<dockerImageName>\`$image\S+)\s+=\s'[^:]+`:(?<version>.+)',`$"
 
-	$m = Get-Content $scriptPath | Select-String -Pattern $pattern
+	$m = (Get-Content $scriptPath) | Select-String -Pattern $pattern
 
 	$tags = @{}
 	$m | ForEach-Object {

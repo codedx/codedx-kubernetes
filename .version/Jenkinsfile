@@ -110,10 +110,11 @@ pipeline {
 
 					steps {
 
-						dir ('repo') {
+						dir ('repo/.version/test') {
 
 							// note: the -CI parameter sets Run.Exit, but it also creates two files in the working directory
-							sh 'pwsh -command "&{ Import-Module Pester; \\$cfg = [PesterConfiguration]::Default; \\$cfg.Run.Exit = \\$true; \\$cfg.Run.Path = \'./.version/test/version.tests.ps1\'; Invoke-Pester -Configuration \\$cfg }"'
+							sh 'pwsh -command "&{ Import-Module Pester; \\$cfg = [PesterConfiguration]::Default; \\$cfg.Run.Exit = \\$true; \\$cfg.Run.Path = \'./common.tests.ps1\';  Invoke-Pester -Configuration \\$cfg }"'
+							sh 'pwsh -command "&{ Import-Module Pester; \\$cfg = [PesterConfiguration]::Default; \\$cfg.Run.Exit = \\$true; \\$cfg.Run.Path = \'./version.tests.ps1\'; Invoke-Pester -Configuration \\$cfg }"'
 						}
 					}
 				}

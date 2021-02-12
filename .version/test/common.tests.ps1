@@ -10,9 +10,6 @@ if (-not $?) {
 $location = Join-Path $PSScriptRoot '../..'
 Push-Location $location
 
-. ./.version/common.ps1
-. ./.version/test/mocks.ps1
-
 Describe 'Get-ScriptDockerImageTags' {
 
 	It 'gets tags' {
@@ -47,9 +44,9 @@ Describe 'Get-ScriptDockerImageTags' {
 	}
 
 	BeforeEach {
-		. $fileData
 
-		$global:fileContent = @{}
+		. ./.version/common.ps1
+		. ./.version/test/mocks.ps1
 	}
 }
 
@@ -98,9 +95,9 @@ Describe 'Test-ToolOrchestrationChartVersion' {
 	}
 
 	BeforeEach {
-		. $fileData
 
-		$global:fileContent = @{}
+		. ./.version/common.ps1
+		. ./.version/test/mocks.ps1
 	}
 }
 
@@ -149,9 +146,9 @@ Describe 'Test-CodeDxChartVersion' {
 	}
 
 	BeforeEach {
-		. $fileData
 
-		$global:fileContent = @{}
+		. ./.version/common.ps1
+		. ./.version/test/mocks.ps1
 	}
 }
 
@@ -291,9 +288,9 @@ Describe 'Test-CodeDxVersion' {
 	}
 
 	BeforeEach {
-		. $fileData
 
-		$global:fileContent = @{}
+		. ./.version/common.ps1
+		. ./.version/test/mocks.ps1
 	}
 }
 
@@ -340,9 +337,9 @@ Describe 'Set-HelmChartVersion' {
 	}
 
 	BeforeEach {
-		. $fileData
 
-		$global:fileContent = @{}
+		. ./.version/common.ps1
+		. ./.version/test/mocks.ps1
 	}
 }
 
@@ -395,9 +392,9 @@ Describe 'Set-ChartDockerImageValues' {
 	}
 
 	BeforeEach {
-		. $fileData
 
-		$global:fileContent = @{}
+		. ./.version/common.ps1
+		. ./.version/test/mocks.ps1
 	}
 }
 
@@ -444,9 +441,9 @@ Describe 'Set-ScriptDockerImageTags' {
 	}
 
 	BeforeEach {
-		. $fileData
 
-		$global:fileContent = @{}
+		. ./.version/common.ps1
+		. ./.version/test/mocks.ps1
 	}
 }
 

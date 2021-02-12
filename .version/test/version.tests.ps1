@@ -10,9 +10,6 @@ if (-not $?) {
 $location = Join-Path $PSScriptRoot '../..'
 Push-Location $location
 
-. ./.version/common.ps1
-. ./.version/test/mocks.ps1
-
 Describe 'version' {
 
 	It 'should not run with current versions' {
@@ -165,8 +162,7 @@ Describe 'version' {
 	}
 
 	BeforeEach {
-		. $fileData
 
-		$global:fileContent = @{}
+		. ./.version/test/mocks.ps1
 	}
 }

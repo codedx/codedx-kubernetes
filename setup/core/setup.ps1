@@ -610,9 +610,9 @@ if ($useLetsEncryptCertManager) {
 		-dryRun:$useGitOps
 
 	if (-not $useGitOps) {
-		Wait-Deployment 'Add cert-manager' $waitSeconds $letsEncryptCertManagerNamespace 'cert-manager' 1
-		Wait-Deployment 'Add cert-manager (cert-manager-cainjector)' $waitSeconds $letsEncryptCertManagerNamespace 'cert-manager-cainjector' 1
-		Wait-Deployment 'Add cert-manager (cert-manager-webhook)' $waitSeconds $letsEncryptCertManagerNamespace 'cert-manager-webhook' 1
+		Wait-Deployment 'Add cert-manager' $waitTimeSeconds $letsEncryptCertManagerNamespace 'cert-manager' 1
+		Wait-Deployment 'Add cert-manager (cert-manager-cainjector)' $waitTimeSeconds $letsEncryptCertManagerNamespace 'cert-manager-cainjector' 1
+		Wait-Deployment 'Add cert-manager (cert-manager-webhook)' $waitTimeSeconds $letsEncryptCertManagerNamespace 'cert-manager-webhook' 1
 	}
 	
 	$stagingClusterIssuerFile = New-LetsEncryptCertManagerClusterIssuerFiles 'letsencrypt-staging' $letsEncryptCertManagerRegistrationEmailAddress 'staging-cluster-issuer.yaml' -useStaging

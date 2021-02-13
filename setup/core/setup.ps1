@@ -562,8 +562,8 @@ if ($useNginxIngressController) {
 
 	$nginxValuesFile = (New-NginxIngressValuesFile $nginxCPUReservation $nginxMemoryReservation $nginxEphemeralStorageReservation 'nginx-values.yaml' -enablePSPs:$usePSPs).FullName
 
-	Add-HelmRepo 'ingress-nginx' 'https://kubernetes.github.io/ingress-nginx'	
-	Add-HelmRepo 'stable' 'https://kubernetes-charts.storage.googleapis.com'
+	Add-HelmRepo 'ingress-nginx' 'https://kubernetes.github.io/ingress-nginx'
+	Add-HelmRepo 'stable' 'https://charts.helm.sh/stable'
 	Invoke-HelmSingleDeployment 'ingress-nginx' `
 		$waitTimeSeconds $nginxIngressControllerNamespace `
 		$nginxReleaseName `

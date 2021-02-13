@@ -223,11 +223,12 @@ $useIngressAssumesNginx = -not $skipIngressAssumesNginx
 $useLetsEncryptCertManager = -not $skipLetsEncryptCertManagerInstall
 $useNginxIngressController = -not $skipNginxIngressControllerInstall
 $useLocalDatabase = -not $skipDatabase
-$useSealedSecrets = -not $skipSealedSecrets
+
+$useGitOps = $useHelmOperator
+$useSealedSecrets = $useGitOps -and -not $skipSealedSecrets
 
 $useVelero = $backupType -like 'velero*'
 $useVeleroResticIntegration = $backupType -eq 'velero-restic'
-$useGitOps = $useHelmOperator
 
 
 ### Check Prerequisites

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.2.0
+.VERSION 1.3.0
 .GUID 0c9bd537-7359-4ebb-a64c-cf1693ccc4f9
 .AUTHOR Code Dx
 #>
@@ -124,6 +124,19 @@ function New-ConfigMapResource([string] $namespace, [string] $name, [hashtable] 
 		return $cm
 	}
 	New-ResourceFile 'ConfigMap' $namespace $name $cm
+}
+
+function New-NamespacedResourceFromJson([string] $namespace, [string] $jsonPath,
+	[switch] $useGitOps) {
+
+	$resource = New-NamespacedResource $namespace $jsonPath -dryRun:$useGitOps
+	if (-not $useGitOps) {
+		return $resource
+	}
+
+	$resourceKind = Get-ResourceKind $jsonPath
+	$resourceName = Get-ResourceName $jsonPath
+	New-ResourceFile $resourceKind $namespace $resourceName $resource
 }
 
 function Set-CustomResourceDefinitionResource([string] $name, [string] $path,

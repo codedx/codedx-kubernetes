@@ -455,7 +455,7 @@ function Set-NginxLetsEncryptWithLoadBalancerIpPass([int] $saveOption) {
 	$global:inputs.enqueue('nginx') # specify nginx namespace
 	$global:inputs.enqueue('10.0.0.1') # specify IP address
 	$global:inputs.enqueue('cert-manager') # specify let's encrypt namespace
-	$global:inputs.enqueue(0) # choose staging clusterissuer
+	$global:inputs.enqueue(0) # choose staging issuer
 	$global:inputs.enqueue('support@codedx.com') # specify email contact
 	$global:inputs.enqueue('codedx.com') # specify Code Dx DNS name
 	$global:inputs.enqueue(0) # use local accounts
@@ -506,7 +506,7 @@ function Set-NginxLetsEncryptWithoutLoadBalancerIpPass([int] $saveOption) {
 	$global:inputs.enqueue(4) # choose NGINX and Let's Encrypt ingress
 	$global:inputs.enqueue('nginx') # specify nginx namespace
 	$global:inputs.enqueue('cert-manager') # specify let's encrypt namespace
-	$global:inputs.enqueue(0) # choose staging clusterissuer
+	$global:inputs.enqueue(0) # choose staging issuer
 	$global:inputs.enqueue('support@codedx.com') # specify email contact
 	$global:inputs.enqueue('codedx.com') # specify Code Dx DNS name
 	$global:inputs.enqueue(0) # use local accounts

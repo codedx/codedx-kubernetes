@@ -277,7 +277,7 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 
 		if (-not $this.config.skipLetsEncryptCertManagerInstall) {
 
-			'letsEncryptCertManagerNamespace','letsEncryptCertManagerClusterIssuer','letsEncryptCertManagerRegistrationEmailAddress' | ForEach-Object {
+			'letsEncryptCertManagerNamespace','letsEncryptCertManagerIssuer','letsEncryptCertManagerRegistrationEmailAddress' | ForEach-Object {
 				$this.AddParameter($sb, $_)
 			}
 		} else {

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.1.0
+.VERSION 1.2.0
 .GUID 5614d5a5-d33b-4a86-a7bb-ccc91c3f9bb3
 .AUTHOR Code Dx
 #>
@@ -190,6 +190,12 @@ function Test-Deployment([string] $namespace, [string] $deploymentName) {
 function Test-NonNamespacedResource([string] $kind, [string] $resourceName) {
 	$Local:ErrorActionPreference = 'SilentlyContinue'
 	kubectl get $kind $resourceName *>&1 | out-null
+	$LASTEXITCODE -eq 0
+}
+
+function Test-NamespacedResource([string] $namespace, [string] $kind, [string] $resourceName) {
+	$Local:ErrorActionPreference = 'SilentlyContinue'
+	kubectl -n $namespace get $kind $resourceName *>&1 | out-null
 	$LASTEXITCODE -eq 0
 }
 
@@ -433,6 +439,33 @@ function Set-NonNamespacedResource([string] $jsonPath, [string] $kind, [switch] 
 	}
 }
 
+function Get-ResourceName([string] $jsonPath) {
+	(get-content $jsonPath | ConvertFrom-Json).metadata.name
+}
+
+function Get-ResourceKind([string] $jsonPath) {
+	(get-content $jsonPath | ConvertFrom-Json).kind
+}
+
+function New-NamespacedResource([string] $namespace, [string] $jsonPath, [switch] $dryRun) {
+
+	$kind = Get-ResourceKind $jsonPath
+	$resourceName = Get-ResourceName $jsonPath
+
+	if (-not $dryRun) {
+		if (Test-NamespacedResource $namespace $kind $resourceName) {
+			Remove-NamespacedResource $namespace $kind $resourceName
+		}
+	}
+
+	$output = $dryRun ? 'yaml' : 'name'
+	$dryRunParam = $dryRun ? (Get-KubectlDryRunParam) : ''
+
+	kubectl -n $namespace apply -f $jsonPath -o $output $dryRunParam
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to create $kind resource with name $name from $jsonPath, kubectl exited with code $LASTEXITCODE."
+	}
+}
 
 function New-ImagePullSecret([string] $namespace, 
 	[string] $name, 
@@ -814,6 +847,14 @@ function Remove-ResourceLabel([string] $namespace, [string] $resourceKindAndName
 	
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to remove label from resource, kubectl exited with code $LASTEXITCODE."
+	}
+}
+
+function Remove-NamespacedResource([string] $namespace, [string] $kind, [string] $resourceName) {
+
+	kubectl -n $namespace delete $kind $resourceName
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to delete $resourceName of kind $kind, kubectl exited with code $LASTEXITCODE."
 	}
 }
 

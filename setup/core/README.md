@@ -81,7 +81,7 @@ This section describes the setup.ps1 script parameters, which you can specify by
 |                                                    |                                                            |                                                   |
 | `skipLetsEncryptCertManagerInstall`                | whether to install a Let's Encrypt Cert Manager            | `$false`                                          |
 | `letsEncryptCertManagerRegistrationEmailAddress`   | email address for Let's Encrypt registration               | `me@codedx.com` (example)                         |
-| `letsEncryptCertManagerClusterIssuer`              | cluster issuer (letsencrypt-staging or letsencrypt-prod)   | `letsencrypt-staging`                             |
+| `letsEncryptCertManagerIssuer`              | certificate issuer (letsencrypt-staging or letsencrypt-prod)   | `letsencrypt-staging`                             |
 | `letsEncryptCertManagerNamespace`                  | namespace for Cert Manager components                      | `cert-manager`                                    |
 |                                                    |                                                            |                                                   |
 | `serviceTypeCodeDx`                                | service type for the Code Dx service                       | `LoadBalancer`    (example)                       |

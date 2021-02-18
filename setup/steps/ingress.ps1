@@ -201,25 +201,25 @@ already exist.
 	}
 }
 
-class LetsEncryptClusterIssuer : Step {
+class LetsEncryptIssuer : Step {
 
 	static [string] hidden $description = @'
-Specify the name of the Let's Encrypt Cluster Issuer you want to use. The 
-setup script will create two Cluster Issuer resources, one for staging and 
+Specify the name of the Let's Encrypt Issuer you want to use. The 
+setup script will create two Issuer resources, one for staging and 
 one for production use.
 
-The staging configuration will be generated as a ClusterIssuer resource named 
+The staging configuration will be generated as a Issuer resource named 
 letsencrypt-staging, and the production issuer will be named letsencrypt-prod. 
 Use the staging version first. When everything is working correctly, run the 
 setup again replacing the letsencrypt-staging parameter with letsencrypt-prod.
 '@
 
-	LetsEncryptClusterIssuer([ConfigInput] $config) : base(
-		[LetsEncryptClusterIssuer].Name, 
+	LetsEncryptIssuer([ConfigInput] $config) : base(
+		[LetsEncryptIssuer].Name, 
 		$config,
-		'Let''s Encrypt Cluster Issuer',
-		[LetsEncryptClusterIssuer]::description,
-		'Do you want to use the staging cluster issuer for Let''s Encrypt?') {}
+		'Let''s Encrypt Issuer',
+		[LetsEncryptIssuer]::description,
+		'Do you want to use the staging issuer for Let''s Encrypt?') {}
 
 	[IQuestion]MakeQuestion([string] $prompt) {
 		return new-object YesNoQuestion($prompt, 
@@ -228,7 +228,7 @@ setup again replacing the letsencrypt-staging parameter with letsencrypt-prod.
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
-		$this.config.letsEncryptCertManagerClusterIssuer = ([YesNoQuestion]$question).choice -eq 0 ? 'letsencrypt-staging' : 'letsencrypt-prod'
+		$this.config.letsEncryptCertManagerIssuer = ([YesNoQuestion]$question).choice -eq 0 ? 'letsencrypt-staging' : 'letsencrypt-prod'
 		return $true
 	}
 

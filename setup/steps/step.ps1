@@ -128,7 +128,7 @@ class ConfigInput {
 
 	[bool]         $skipLetsEncryptCertManagerInstall
 	[string]       $letsEncryptCertManagerRegistrationEmailAddress
-	[string]       $letsEncryptCertManagerClusterIssuer
+	[string]       $letsEncryptCertManagerIssuer
 	[string]       $letsEncryptCertManagerNamespace
 
 	[bool]         $skipIngressEnabled

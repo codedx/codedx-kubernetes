@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.4.0
+.VERSION 1.5.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -686,31 +686,42 @@ function Add-LetsEncryptCertManagerCRDs([switch] $dryRun) {
 	}
 }
 
-function New-LetsEncryptCertManagerClusterIssuerFiles([string] $name,
+function New-LetsEncryptCertManagerIssuerFile([string] $name,
 	[string] $registrationEmailAddress,
-	[string] $clusterIssuerFile,
+	[string] $issuerFile,
 	[switch] $useStaging) {
 
 	$endpoint = $useStaging ? 'https://acme-staging-v02.api.letsencrypt.org/directory' : 'https://acme-v02.api.letsencrypt.org/directory'
 
 	@'
-apiVersion: cert-manager.io/v1alpha2
-kind: ClusterIssuer
-metadata:
-  name: {1}
-spec:
-  acme:
-    server: {2}
-    email: {0}
-    privateKeySecretRef:
-      name: {1}
-    solvers:
-    - http01:
-        ingress:
-          class: nginx
-'@ -f $registrationEmailAddress,$name,$endpoint | out-file $clusterIssuerFile -Encoding ascii -Force
+{{
+	"apiVersion": "cert-manager.io/v1alpha2",
+	"kind": "Issuer",
+	"metadata": {{
+		"name": "{1}"
+	}},
+	"spec": {{
+		"acme": {{
+			"server": "{2}",
+			"email": "{0}",
+			"privateKeySecretRef": {{
+				"name": "{1}"
+			}},
+			"solvers": [
+				{{
+					"http01": {{
+						"ingress": {{
+							"class": "nginx"
+						}}
+					}}
+				}}
+			]
+		}}
+	}}
+}}
+'@ -f $registrationEmailAddress,$name,$endpoint | out-file $issuerFile -Encoding ascii -Force
 
-	Get-ChildItem $clusterIssuerFile
+	Get-ChildItem $issuerFile
 }
 
 function New-NginxIngressLoadBalancerIPValuesFile([string] $loadBalancerIP, [string] $nginxFile) {

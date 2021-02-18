@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.11.0
+.VERSION 1.12.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -85,7 +85,7 @@ param (
 
 	[switch]                 $skipLetsEncryptCertManagerInstall,
 	[string]                 $letsEncryptCertManagerRegistrationEmailAddress,
-	[string]                 $letsEncryptCertManagerClusterIssuer = 'letsencrypt-staging',
+	[string]                 $letsEncryptCertManagerIssuer = 'letsencrypt-staging',
 	[string]                 $letsEncryptCertManagerNamespace = 'cert-manager',
 
 	[string]                 $serviceTypeCodeDx,
@@ -392,8 +392,8 @@ if ($useLetsEncryptCertManager){
 	if ($letsEncryptCertManagerRegistrationEmailAddress -eq '') { 
 		$letsEncryptCertManagerRegistrationEmailAddress = Read-HostText 'Enter an email address for the Let''s Encrypt registration' 
 	}
-	if ($letsEncryptCertManagerClusterIssuer -eq '') { 
-		$letsEncryptCertManagerClusterIssuer = Read-HostText 'Enter a cluster issuer name for Let''s Encrypt' 
+	if ($letsEncryptCertManagerIssuer -eq '') { 
+		$letsEncryptCertManagerIssuer = Read-HostText 'Enter a issuer name for Let''s Encrypt' 
 	}
 }
 
@@ -580,6 +580,10 @@ if ($useNginxIngressController) {
 	$ingressAnnotationsCodeDx['nginx.ingress.kubernetes.io/proxy-body-size'] = '0'
 }
 
+### Create Code Dx Namespace
+Write-Verbose "Creating namespace $namespaceCodeDx..."
+New-NamespaceResource $namespaceCodeDx ([Tuple]::Create('name', $namespaceCodeDx)) -useGitOps:$useGitOps
+
 ### Optionally Deploy Let's Encrypt Cert Manager
 $letsEncryptSetupValuesFile = ''
 $letsEncryptHelmChartVersion = 'v0.13.0'
@@ -616,22 +620,17 @@ if ($useLetsEncryptCertManager) {
 		Wait-Deployment 'Add cert-manager (cert-manager-webhook)' $waitTimeSeconds $letsEncryptCertManagerNamespace 'cert-manager-webhook' 1
 	}
 	
-	$stagingClusterIssuerFile = New-LetsEncryptCertManagerClusterIssuerFiles 'letsencrypt-staging' $letsEncryptCertManagerRegistrationEmailAddress 'staging-cluster-issuer.yaml' -useStaging
-	$prodClusterIssuerFile = New-LetsEncryptCertManagerClusterIssuerFiles 'letsencrypt-prod' $letsEncryptCertManagerRegistrationEmailAddress 'production-cluster-issuer.yaml'
+	$stagingIssuerFile = New-LetsEncryptCertManagerIssuerFile 'letsencrypt-staging' $letsEncryptCertManagerRegistrationEmailAddress 'staging-issuer.yaml' -useStaging
+	$prodIssuerFile = New-LetsEncryptCertManagerIssuerFile 'letsencrypt-prod' $letsEncryptCertManagerRegistrationEmailAddress 'production-issuer.yaml'
 	
-	$stagingClusterIssuerFile,$prodClusterIssuerFile | ForEach-Object {
-		if ($useGitOps) {
-			New-ResourceFile 'ClusterIssuer' $letsEncryptCertManagerNamespace $_.BaseName (Get-Content $_)
-		}
+	$stagingIssuerFile,$prodIssuerFile | ForEach-Object {
+		New-NamespacedResourceFromJson $namespaceCodeDx $_ -useGitOps:$useGitOps
 	}
 
 	$ingressAnnotationsCodeDx['kubernetes.io/tls-acme'] = 'true'
-	$ingressAnnotationsCodeDx['cert-manager.io/cluster-issuer'] = $letsEncryptCertManagerClusterIssuer
+	$ingressAnnotationsCodeDx['cert-manager.io/issuer'] = $letsEncryptCertManagerIssuer
 }
 
-### Create Code Dx Namespace
-Write-Verbose "Creating namespace $namespaceCodeDx..."
-New-NamespaceResource $namespaceCodeDx ([Tuple]::Create('name', $namespaceCodeDx)) -useGitOps:$useGitOps
 
 ### Optionally Configure Docker Image Pull Secret
 if ('' -ne $dockerImagePullSecretName) {

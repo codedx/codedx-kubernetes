@@ -21,7 +21,7 @@ You must run guided-setup.ps1 from a system with administrative access to your c
 - [kubeseal](https://github.com/bitnami-labs/sealed-secrets/releases) - Required when using Helm Operator and Bitnami's Sealed Secrets.
 >Note: On Windows, make sure that you can run PowerShell Core scripts by switching your [PowerShell Execution Policy](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies) to RemoteSigned (recommended) or Unrestricted. You must run the `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned` command from an elevated/administrator Command Prompt.
 
-The Code Dx Tool Orchestration component uses customized Argo workflow components and will not work if your cluster runs an original version of the Argo workflow software.
+The Code Dx Tool Orchestration capability uses customized Argo workflow components and will not work if your cluster runs an original version of the Argo workflow software.
 
 ## Pod Resources
 

@@ -7,6 +7,8 @@ Running guided-setup.ps1 is the recommended way to deploy Code Dx on Kubernetes 
 
 Code Dx supports a minimum Kubernetes version of 1.14 if you're not using AWS EKS; otherwise, the minimum Kubernetes version is 1.16.
 
+The Code Dx Kubernetes deployment has been tested on AKS, EKS, Minikube, Rancher K3s, Rancher RKE, and OpenShift 4. If you are using another Kubernetes provider, you can try choosing either 'Other Docker' or 'Other Non-Docker' from the Guided Setup's Kubernetes Environment screen.
+
 You must run guided-setup.ps1 from a system with administrative access to your cluster. Copy the following prerequisite programs to directories that are included in your PATH environment variable:
 
 - [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
@@ -18,6 +20,8 @@ You must run guided-setup.ps1 from a system with administrative access to your c
   If your Code Dx deployment requires specifying a path to a cacerts file, use the cacerts file from a Java 8 JRE install.
 - [kubeseal](https://github.com/bitnami-labs/sealed-secrets/releases) - Required when using Helm Operator and Bitnami's Sealed Secrets.
 >Note: On Windows, make sure that you can run PowerShell Core scripts by switching your [PowerShell Execution Policy](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies) to RemoteSigned (recommended) or Unrestricted. You must run the `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned` command from an elevated/administrator Command Prompt.
+
+The Code Dx Tool Orchestration component uses customized Argo workflow components and will not work if your cluster runs an original version of the Argo workflow software.
 
 ## Pod Resources
 

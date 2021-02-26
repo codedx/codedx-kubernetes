@@ -60,12 +60,12 @@ param (
 	[string]                 $imageCodeDxTools        = 'codedx/codedx-tools:v5.2.15',
 	[string]                 $imageCodeDxToolsMono    = 'codedx/codedx-toolsmono:v5.2.15',
 
-	[string]                 $imagePrepare            = 'codedx/codedx-prepare:v1.6.0',
-	[string]                 $imageNewAnalysis        = 'codedx/codedx-newanalysis:v1.6.0',
-	[string]                 $imageSendResults        = 'codedx/codedx-results:v1.6.0',
-	[string]                 $imageSendErrorResults   = 'codedx/codedx-error-results:v1.6.0',
-	[string]                 $imageToolService        = 'codedx/codedx-tool-service:v1.6.0',
-	[string]                 $imagePreDelete          = 'codedx/codedx-cleanup:v1.6.0',
+	[string]                 $imagePrepare            = 'codedx/codedx-prepare:v1.7.0',
+	[string]                 $imageNewAnalysis        = 'codedx/codedx-newanalysis:v1.7.0',
+	[string]                 $imageSendResults        = 'codedx/codedx-results:v1.7.0',
+	[string]                 $imageSendErrorResults   = 'codedx/codedx-error-results:v1.7.0',
+	[string]                 $imageToolService        = 'codedx/codedx-tool-service:v1.7.0',
+	[string]                 $imagePreDelete          = 'codedx/codedx-cleanup:v1.7.0',
 
 	[string]                 $imageCodeDxTomcatInit   = 'codedx/codedx-bash:v1.0.0',
 	[string]                 $imageMariaDB            = 'codedx/codedx-mariadb:v1.0.0',

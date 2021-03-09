@@ -67,7 +67,7 @@ param (
 	[string]                 $imageToolService        = 'codedx/codedx-tool-service:v1.7.0',
 	[string]                 $imagePreDelete          = 'codedx/codedx-cleanup:v1.7.0',
 
-	[string]                 $imageCodeDxTomcatInit   = 'codedx/codedx-bash:v1.0.0',
+	[string]                 $imageCodeDxTomcatInit   = 'codedx/codedx-bash:v1.1.0',
 	[string]                 $imageMariaDB            = 'codedx/codedx-mariadb:v1.0.0',
 	[string]                 $imageMinio              = 'bitnami/minio:2020.3.25-debian-10-r4',
 	[string]                 $imageWorkflowController = 'codedx/codedx-workflow-controller:v2.12.2',

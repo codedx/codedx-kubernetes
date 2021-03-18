@@ -56,22 +56,22 @@ param (
 	[string]                 $workflowEphemeralStorageReservation,
 	[string]                 $nginxEphemeralStorageReservation,
 
-	[string]                 $imageCodeDxTomcat       = 'codedx/codedx-tomcat:v5.2.16',
-	[string]                 $imageCodeDxTools        = 'codedx/codedx-tools:v5.2.16',
-	[string]                 $imageCodeDxToolsMono    = 'codedx/codedx-toolsmono:v5.2.16',
+	[string]                 $imageCodeDxTomcat       = 'codedx/codedx-tomcat:v5.3.0',
+	[string]                 $imageCodeDxTools        = 'codedx/codedx-tools:v5.3.0',
+	[string]                 $imageCodeDxToolsMono    = 'codedx/codedx-toolsmono:v5.3.0',
 
-	[string]                 $imagePrepare            = 'codedx/codedx-prepare:v1.7.0',
-	[string]                 $imageNewAnalysis        = 'codedx/codedx-newanalysis:v1.7.0',
-	[string]                 $imageSendResults        = 'codedx/codedx-results:v1.7.0',
-	[string]                 $imageSendErrorResults   = 'codedx/codedx-error-results:v1.7.0',
-	[string]                 $imageToolService        = 'codedx/codedx-tool-service:v1.7.0',
-	[string]                 $imagePreDelete          = 'codedx/codedx-cleanup:v1.7.0',
+	[string]                 $imagePrepare            = 'codedx/codedx-prepare:v1.8.0',
+	[string]                 $imageNewAnalysis        = 'codedx/codedx-newanalysis:v1.8.0',
+	[string]                 $imageSendResults        = 'codedx/codedx-results:v1.8.0',
+	[string]                 $imageSendErrorResults   = 'codedx/codedx-error-results:v1.8.0',
+	[string]                 $imageToolService        = 'codedx/codedx-tool-service:v1.8.0',
+	[string]                 $imagePreDelete          = 'codedx/codedx-cleanup:v1.8.0',
 
 	[string]                 $imageCodeDxTomcatInit   = 'codedx/codedx-bash:v1.1.0',
 	[string]                 $imageMariaDB            = 'codedx/codedx-mariadb:v1.0.0',
 	[string]                 $imageMinio              = 'bitnami/minio:2020.3.25-debian-10-r4',
-	[string]                 $imageWorkflowController = 'codedx/codedx-workflow-controller:v2.12.2',
-	[string]                 $imageWorkflowExecutor   = 'codedx/codedx-argoexec:v2.12.2',
+	[string]                 $imageWorkflowController = 'codedx/codedx-workflow-controller:v2.13.0',
+	[string]                 $imageWorkflowExecutor   = 'codedx/codedx-argoexec:v2.13.0',
 
 	[int]                    $toolServiceReplicas = 3,
 

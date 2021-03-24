@@ -16,7 +16,7 @@ Here are the steps required to use Code Dx with an external database:
 4) Grant required privileges on the Code Dx database to the database user you created. The
    following statements grant permissions to the codedx database user.
 
-   GRANT SELECT, INSERT, UPDATE, DELETE,  CREATE, ALTER, REFERENCES, INDEX, DROP ON codedxdb.* to 'codedx'@'%';
+   GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, REFERENCES, INDEX, DROP, TRIGGER ON codedxdb.* to 'codedx'@'%';
    FLUSH PRIVILEGES;
 
 5) Set the optimizer_search_depth database variable to 0, the character set to utf8mb4, and the collation to

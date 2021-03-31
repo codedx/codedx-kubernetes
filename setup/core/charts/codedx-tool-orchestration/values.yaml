@@ -226,6 +226,12 @@ argo:
   installCRD: false
   controller:
     priorityClassValue: 10100
+    instanceID:
+      enabled: true
+      useReleaseName: true
+    extraEnv:
+    - name: 'RECENTLY_STARTED_POD_DURATION'
+      value: '10s'
     pdb:
       # workflow controller can tolerate occasional downtime
       enabled: false

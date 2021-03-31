@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.1.0
+.VERSION 1.2.0
 .GUID 9b147f81-cb5d-4f13-830c-f0eb653520a7
 .AUTHOR Code Dx
 #>
@@ -85,16 +85,16 @@ $choices = @(
 
 	@{id="A1"; name='Show All Workflows';
 		action={
-			argo -n $toolOrchestrationNamespace list | sort-object
+			argo -n $toolOrchestrationNamespace list --instanceid $toolOrchestrationReleaseName | sort-object
 		};
 		valid = {$toolOrchestrationNamespace -ne '' -and (Test-Argo)}
 	}
 
 	@{id="A2"; name='Show All Workflow Details';
 		action={
-			argo -n $toolOrchestrationNamespace list -o name | sort-object | ForEach-Object {
+			argo -n $toolOrchestrationNamespace list --instanceid $toolOrchestrationReleaseName -o name | sort-object | ForEach-Object {
 				write-host "`n--------$_--------" -fore red
-				argo -n $toolOrchestrationNamespace get $_
+				argo -n $toolOrchestrationNamespace get --instanceid $toolOrchestrationReleaseName $_
 			}
 		};
 		valid = {$toolOrchestrationNamespace -ne '' -and (Test-Argo)}
@@ -102,16 +102,16 @@ $choices = @(
 
 	@{id="A3"; name='Show Running Workflows';
 		action={
-			argo -n $toolOrchestrationNamespace list --running | sort-object
+			argo -n $toolOrchestrationNamespace list --instanceid $toolOrchestrationReleaseName --running | sort-object
 		};
 		valid = {$toolOrchestrationNamespace -ne '' -and (Test-Argo)}
 	}
 
 	@{id="A4"; name='Show Running Workflow Details';
 		action={
-			argo -n $toolOrchestrationNamespace list --running -o name | ForEach-Object {
+			argo -n $toolOrchestrationNamespace list --instanceid $toolOrchestrationReleaseName --running -o name | ForEach-Object {
 				write-host "`n--------$_--------" -fore red
-				argo -n $toolOrchestrationNamespace get $_
+				argo -n $toolOrchestrationNamespace get --instanceid $toolOrchestrationReleaseName $_
 			}
 		};
 		valid = {$toolOrchestrationNamespace -ne '' -and (Test-Argo)}
@@ -120,7 +120,7 @@ $choices = @(
 	@{id="A5"; name='Show Workflow Detail';
 		action={
 			$workflowName = read-host -prompt 'Enter workflow ID'
-			argo -n $toolOrchestrationNamespace get $workflowName
+			argo -n $toolOrchestrationNamespace get --instanceid $toolOrchestrationReleaseName $workflowName
 		};
 		valid = {$toolOrchestrationNamespace -ne '' -and (Test-Argo)}
 	}

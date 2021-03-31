@@ -78,6 +78,7 @@ spec:
           "-serviceTlsKeyPath", "/opt/codedx/service/tls/{{ .Values.toolServiceTls.keyFile }}",
           {{ end -}}
           "-workDir", "/opt/codedx/service/work",
+          "-workflowControllerInstanceName", "{{ .Release.Name }}",
           "-workflowPriorityClassName", {{ include "codedx-tool-orchestration.workflow.priorityClassName" . | quote }},
           "-workflowRoleNames", {{ include "codedx-tool-orchestration.workflow.role.name" . }}]
         readinessProbe:

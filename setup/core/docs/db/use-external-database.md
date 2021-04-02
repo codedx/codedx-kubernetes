@@ -19,9 +19,7 @@ Here are the steps required to use Code Dx with an external database:
    GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, REFERENCES, INDEX, DROP, TRIGGER ON codedxdb.* to 'codedx'@'%';
    FLUSH PRIVILEGES;
 
-5) Set the optimizer_search_depth database variable to 0, the character set to utf8mb4, and the collation to
-   utf8mb4_general_ci with the below configuration. Failure to complete this step will negatively affect Code Dx
-   performance or functionality.
+5) Set the following MariaDB variables. Failure to complete this step will negatively affect Code Dx performance or functionality.
 
 ```
 [mysqld]
@@ -33,3 +31,5 @@ log_bin_trust_function_creators=1
 ```
 
 >Note: The log_bin_trust_function_creators parameter is required when using MariaDB SQL replication.
+
+6) Restart your MariaDB instance.

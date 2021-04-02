@@ -29,4 +29,7 @@ optimizer_search_depth=0
 character-set-server=utf8mb4
 collation-server=utf8mb4_general_ci
 lower_case_table_names=1
+log_bin_trust_function_creators=1
 ```
+
+>Note: The log_bin_trust_function_creators parameter is required when using MariaDB SQL replication.

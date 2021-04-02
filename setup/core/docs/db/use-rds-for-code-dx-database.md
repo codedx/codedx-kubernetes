@@ -8,8 +8,11 @@ Before using your new database, you must make it compatible with Code Dx by adju
 - character_set_server=utf8mb4
 - collation_server=utf8mb4_general_ci
 - lower_case_table_names=1
+- log_bin_trust_function_creators=1
 
 >Note: When editing a parameter value, the column to the right of the edit box shows the allowable values (not the current values).
+
+The log_bin_trust_function_creators parameter is required when using MariaDB SQL replication, which is enabled by default with the AWS MariaDB Production template.
 
 Assign the codedx-recommendations DB Parameter Group to your MariaDB database instance by following the [Modifying an Amazon RDS DB Instance instructions](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.DBInstance.Modifying.html), and then [stop](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_StopInstance.html) and [start](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_StartInstance.html) your database instance to apply the changes.
 

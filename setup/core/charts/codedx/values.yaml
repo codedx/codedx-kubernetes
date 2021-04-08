@@ -3,7 +3,7 @@
 # codedxTomcatImage specifies the image to use for the Code Dx deployment.
 # ref: https://hub.docker.com/r/codedx/codedx-tomcat/tags
 #
-codedxTomcatImage: 'codedx/codedx-tomcat:v5.3.1'
+codedxTomcatImage: 'codedx/codedx-tomcat:v5.3.2'
 
 # codedxTomcatInitImage specifies the image to use for the Code Dx deployment initialization.
 # ref: https://hub.docker.com/r/codedx/codedx-bash/tags

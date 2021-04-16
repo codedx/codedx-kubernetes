@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.1.0
+.VERSION 1.2.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -96,12 +96,17 @@ function Get-DatabasePdSecretName([string] $releaseName) {
 }
 
 function New-DatabasePdSecret([string] $namespace, [string] $releaseName, 
-	[string] $mariadbRootPwd, [string] $mariadbReplicatorPwd,
+	[string] $mariadbRootPwd, [string] $mariadbReplicatorPwd, [string] $mariadbUserPwd,
 	[switch] $useGitOps,
 	[switch] $useSealedSecrets,	[string] $sealedSecretsNamespace, [string] $sealedSecretsControllerName, [string] $sealedSecretsPublicKeyPath) {
 
-	# excluding "mariadb-password" from MariaDb credential secret because db.user is unspecfied
-	New-GenericSecretResource $namespace (Get-DatabasePdSecretName $releaseName) @{"mariadb-root-password"=$mariadbRootPwd;"mariadb-replication-password"=$mariadbReplicatorPwd}  @{} `
+	$pwds = @{"mariadb-root-password"=$mariadbRootPwd;"mariadb-replication-password"=$mariadbReplicatorPwd}
+	if ($mariadbUserPwd -ne '') {
+		# "mariadb-password" gets excluded from MariaDb credential secret when db.user/password is unspecfied
+		$pwds["mariadb-password"] = $mariadbUserPwd
+	}
+	
+	New-GenericSecretResource $namespace (Get-DatabasePdSecretName $releaseName) $pwds @{} `
 		-useGitOps:$useGitOps `
 		-useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
 }
@@ -112,6 +117,10 @@ function Get-DatabaseRootPasswordFromPd([string] $namespace, [string] $releaseNa
 
 function Get-DatabaseReplicationPasswordFromPd([string] $namespace, [string] $releaseName) {
 	Get-SecretFieldValue $namespace (Get-DatabasePdSecretName $releaseName) 'mariadb-replication-password'
+}
+
+function Get-DatabaseUserDbPasswordFromPd([string] $namespace, [string] $releaseName) {
+	Get-SecretFieldValue $namespace (Get-DatabasePdSecretName $releaseName) 'mariadb-password'
 }
 
 function Get-ToolServicePdSecretName([string] $releaseName) {

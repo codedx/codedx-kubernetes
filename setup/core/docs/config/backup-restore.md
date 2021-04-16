@@ -27,6 +27,7 @@ Install the [Velero CLI](https://velero.io/docs/v1.5/basic-install/#install-the-
 Once backups start running, use the velero commands that [describe backups and fetch logs](https://velero.io/docs/v1.5/troubleshooting/#general-troubleshooting-information) to confirm that the backups are completing successfully and that they include the following volumes:
 
 - codedx-appdata (Code Dx web application)
+- data (Code Dx MariaDB databases - when not using an external Code Dx database)
 - backup (Code Dx MariaDB Slave databases - when not using an external Code Dx database)
 - data (MinIO - when using Code Dx Tool Orchestration)
 
@@ -49,6 +50,8 @@ $ kubectl -n code-dx-namespace-placeholder exec codedx-mariadb-slave-pod-placeho
 The backup.log file should have a "completed OK!" message above the log entries indicating that old backups are getting removed.
 
 > Note: To confirm that a backup includes the volume holding your Code Dx database backup, test a backup by running a restore.
+
+You should periodically check your Velero backups based on your backup schedule to ensure that backups are succeeding.
 
 ## Restoring Code Dx
 

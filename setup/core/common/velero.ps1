@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.1.1
+.VERSION 1.2.0
 .GUID d65a6b13-910d-4220-8cfb-5de8cdd52011
 .AUTHOR Code Dx
 #>
@@ -129,43 +129,4 @@ function Remove-VeleroBackupSchedule([string] $namespace, [string] $name) {
 	}
 }
 
-function Set-ExcludePVsFromPluginBackup([string] $namespace, [hashtable] $pvcLabelFilter, [string] $pvcNameLikeFilter, [switch] $applyBackupConfiguration) {
 
-	$label = ''
-	if ($pvcLabelFilter.Count -gt 0) {
-		$label = '-l {0}' -f [string]::join(',',($pvcLabelFilter.keys | ForEach-Object { "$_=$($pvcLabelFilter[$_])" }))
-	}
-	$pvcs = kubectl -n $namespace get pvc $label -o name
-	
-	if ($LASTEXITCODE -ne 0) {
-		Write-Error "Unable to edit resource with strategic patch, kubectl exited with code $LASTEXITCODE."
-	}
-
-	$exclusionLabelKey = 'velero.io/exclude-from-backup'
-	$exclusionLabelValue = 'true'
-
-	$pvs = @()
-	$pvcs | Where-Object { $_ -like $pvcNameLikeFilter } | ForEach-Object {
-
-		$pvs += 'pv/{0}' -f (kubectl -n $namespace get $_ -o jsonpath='{.spec.volumeName}')
-		if ($LASTEXITCODE -ne 0) {
-			Write-Error "Unable to fetch PV name from $_, kubectl exited with code $LASTEXITCODE."
-		}
-
-		if ($applyBackupConfiguration) {
-			# Added labels to exclude MariaDB data PVCs from backup must be reapplied post-restore
-			Add-ResourceLabel $namespace $_ $exclusionLabelKey $exclusionLabelValue
-		} else {
-			Remove-ResourceLabel $namespace $_ $exclusionLabelKey
-		}
-	}
-
-	$pvs | ForEach-Object {
-		if ($applyBackupConfiguration) {
-			# Added labels to exclude MariaDB data PVCs from backup must be reapplied post-restore
-			Add-ResourceLabel '' $_ $exclusionLabelKey $exclusionLabelValue
-		} else {
-			Remove-ResourceLabel '' $_ $exclusionLabelKey
-		}
-	}
-}

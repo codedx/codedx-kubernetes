@@ -142,6 +142,9 @@ class ConfigInput {
 	[string]       $mariadbRootPwd
 	[string]       $mariadbReplicatorPwd
 	[int]          $dbSlaveReplicaCount
+
+	[string]       $codedxDatabaseUserPwd
+	[bool]         $skipUseRootDatabaseUser
       
 	[bool]         $skipToolOrchestration
 

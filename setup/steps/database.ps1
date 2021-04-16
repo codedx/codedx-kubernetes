@@ -341,6 +341,39 @@ will create when provisioning the MariaDB database.
 	}
 }
 
+class DatabaseUserPwd : Step {
+
+	static [string] hidden $description = @'
+Specify the password for the 'codedx' database user account that the Code Dx 
+setup script will create for the Code Dx application to access the 'codedx' 
+database.
+'@
+
+	DatabaseUserPwd([ConfigInput] $config) : base(
+		[DatabaseUserPwd].Name, 
+		$config,
+		'Code Dx Database User Password',
+		[DatabaseUserPwd]::description,
+		"Enter a password for the 'codedx' database user account") {}
+
+	[IQuestion]MakeQuestion([string] $prompt) {
+		$question = new-object ConfirmationQuestion($prompt)
+		$question.isSecure = $true
+		return $question
+	}
+
+	[bool]HandleResponse([IQuestion] $question) {
+		$this.config.codedxDatabaseUserPwd = ([ConfirmationQuestion]$question).response
+		$this.config.skipUseRootDatabaseUser = $true
+		return $true
+	}
+
+	[void]Reset(){
+		$this.config.codedxDatabaseUserPwd = ''
+		$this.config.skipUseRootDatabaseUser = $false
+	}
+}
+
 class DatabaseReplicaCount : Step {
 
 	static [string] hidden $description = @'

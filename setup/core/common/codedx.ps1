@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.5.0
+.VERSION 1.6.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -110,7 +110,8 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 	[string]   $toolServiceApiKeySecretName,
 	[switch]   $offlineMode,
 	[string]   $valuesFile,
-	[switch]   $createSCCs) {
+	[switch]   $createSCCs,
+	[switch]   $useCodeDxDbUser) {
  
 	$imagePullSecretYaml   = $imagePullSecretName -eq '' ? '[]' : "[ {name: '$imagePullSecretName'} ]"
 	$mariaDbPullSecretYaml = $imagePullSecretName -eq '' ? '[]' : "[ '$imagePullSecretName' ]"
@@ -214,6 +215,31 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 
 	$mariaDbDockerImageParts = Get-DockerImageParts $mariaDbImage
 
+	$grantScript = @'
+      DELIMITER ^
+      BEGIN NOT ATOMIC
+        SELECT count(*) INTO @hasUser FROM mysql.user WHERE user='codedx';
+        IF @hasUser = 1 THEN
+          # Drop default privileges granted to user
+          REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'codedx';
+          # Grant privileges required for codedx database user
+          GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, REFERENCES, INDEX, DROP, TRIGGER ON codedx.* to 'codedx'@'%';
+          FLUSH PRIVILEGES;
+        END IF;
+      END^
+'@
+
+	$codeDxDbUserConfig = "    user: ''"
+	if ($useCodeDxDbUser) {
+		$codeDxDbUserConfig = @"
+    user: 'codedx'
+    name: 'codedx'
+  initdbScripts:
+    runalways-setup.sql: |
+$grantScript
+"@
+	}
+
 	$values = @'
 existingSecret: '{0}'
 codedxTomcatPort: {22}
@@ -271,7 +297,7 @@ mariadb:
   enabled: {26}
   existingSecret: '{9}'
   db:
-    user: ''
+{59}
   master:
     masterTlsSecret: {48}
     masterCaConfigMap: {49}
@@ -295,6 +321,7 @@ mariadb:
       optimizer_search_depth=0
       lower_case_table_names=1
       innodb_flush_log_at_trx_commit=0
+      log_bin_trust_function_creators=1
 {50}
 {51}
 
@@ -334,6 +361,7 @@ mariadb:
       optimizer_search_depth=0
       lower_case_table_names=1
       innodb_flush_log_at_trx_commit=0
+      log_bin_trust_function_creators=1
 
       [client]
       port=3306
@@ -397,7 +425,8 @@ $dbStorageClassName,
 $createSCCs.tostring().tolower(),
 $tomcatInitImage,
 $mariaDbDockerImageParts[0], $mariaDbDockerImageParts[1], $mariaDbDockerImageParts[2],
-$mariaDbPullSecretYaml
+$mariaDbPullSecretYaml,
+$codeDxDbUserConfig
 
 	$values | out-file $valuesFile -Encoding ascii -Force
 	Get-ChildItem $valuesFile

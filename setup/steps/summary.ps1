@@ -168,12 +168,12 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 		}
 
 		if (-not $usePd) {
-			'dockerRegistryPwd','codedxAdminPwd','caCertsFilePwd','caCertsFileNewPwd' | ForEach-Object {
+			'dockerRegistryPwd','codedxAdminPwd','caCertsFilePwd','caCertsFileNewPwd','codedxDatabaseUserPwd' | ForEach-Object {
 				$this.AddParameter($sb, $_)
 			}
 		}
 
-		'skipTLS','skipPSPs','skipNetworkPolicies','skipIngressEnabled','skipIngressAssumesNginx','useSaml','usePnsContainerRuntimeExecutor','createSCCs' | ForEach-Object {
+		'skipTLS','skipPSPs','skipNetworkPolicies','skipIngressEnabled','skipIngressAssumesNginx','useSaml','usePnsContainerRuntimeExecutor','createSCCs','skipUseRootDatabaseUser' | ForEach-Object {
 			$this.AddSwitchParameter($sb, $_)
 		}
 
@@ -298,13 +298,12 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 
 		$this.PrintNotes()
 		if ($runNow) {
-			if ($this.RunNow($setupPdCmdLine, $setupCmdLine)) {
-				return $true
+			if (-not ($this.RunNow($setupPdCmdLine, $setupCmdLine))) {
+				Write-Host 'The setup script failed to run successfully.'
 			}
-			Write-Host 'The setup script failed to run successfully.'
 		}
 
-		$this.SaveScripts($setupPdCmdLine, $setupCmdLine)
+		$this.SaveScripts($setupPdCmdLine, $setupCmdLine, (-not $runNow))
 		return $true
 	}
 
@@ -353,7 +352,7 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 		return $true
 	}
 
-	[void]SaveScripts([string] $setupPdCmdLine, [string] $setupCmdLine) {
+	[void]SaveScripts([string] $setupPdCmdLine, [string] $setupCmdLine, [bool] $showRunInstruction) {
 
 		Write-Host "Writing setup script(s) to $($this.config.workDir)..."
 		if ($setupPdCmdLine -ne '') {
@@ -361,13 +360,19 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 			$prereqsScriptPath = join-path $this.config.workDir 'run-prereqs.ps1'
 			Write-Host "  Writing $prereqsScriptPath..."
 			$setupPdCmdLine | Out-File $prereqsScriptPath
-			Write-Host "  Run: pwsh ""$prereqsScriptPath"""
+
+			if ($showRunInstruction) {
+				Write-Host "  Run: pwsh ""$prereqsScriptPath"""
+			}
 		}
 
 		$setupScriptPath = join-path $this.config.workDir 'run-setup.ps1'
 		Write-Host "  Writing $setupScriptPath..."
 		$setupCmdLine | Out-File $setupScriptPath
-		Write-Host "  Run: pwsh ""$setupScriptPath"""
+
+		if ($showRunInstruction) {
+			Write-Host "  Run: pwsh ""$setupScriptPath"""
+		}
 	}
 
 	[hashtable] GetCodeDxPdTable() {
@@ -403,6 +408,10 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 		if (-not $this.config.skipDatabase) {
 			$pd['mariadb-root-password'] = $this.config.mariadbRootPwd
 			$pd['mariadb-replication-password'] = $this.config.mariadbReplicatorPwd
+
+			if ($this.config.skipUseRootDatabaseUser) {
+				$pd['mariadb-password'] = $this.config.codedxDatabaseUserPwd
+			}
 		}
 		return $pd
 	}

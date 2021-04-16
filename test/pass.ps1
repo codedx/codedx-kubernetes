@@ -23,6 +23,8 @@ function Set-DefaultPass([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(0) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -62,6 +64,8 @@ function Set-UseToolOrchestrationAndSubordinateDatabasePass([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(1) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -147,6 +151,8 @@ function Set-ClassicLoadBalancerIngressPass([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(0) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -190,6 +196,8 @@ function Set-ClassicLoadBalancerIngressGitOpsPass([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(0) # specify db replicas
 	$global:inputs.enqueue('cacerts') # specify cacerts file
 	$global:inputs.enqueue((New-Password 'changeit')) # specify cacerts file password
@@ -238,6 +246,8 @@ function Set-ClassicLoadBalancerIngressGitOpsNoTLSPass([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(0) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -278,6 +288,8 @@ function Set-NodeSelectorAndPodTolerationsPass([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(0) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -326,6 +338,8 @@ function Set-RecommendedResourcesPass([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(0) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -365,6 +379,8 @@ function Set-AllNodeSelectorAndPodTolerationsPass([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(1) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -440,6 +456,8 @@ function Set-NginxLetsEncryptWithLoadBalancerIpPass([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(1) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -492,6 +510,8 @@ function Set-NginxLetsEncryptWithoutLoadBalancerIpPass([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(1) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -543,6 +563,8 @@ function Set-DockerImageNamesAndPrivateRegistryPass([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(1) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -604,6 +626,8 @@ function Set-ConfigCertsPass([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(0) # specify db replicas
 	$global:inputs.enqueue(1) # choose default cacerts
 
@@ -655,6 +679,8 @@ function Set-UseCustomResourcesPass([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(1) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -719,6 +745,8 @@ function Set-UseSamlPass([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(0) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -766,6 +794,8 @@ function Set-SomeDockerImageNames([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(1) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -825,6 +855,8 @@ function Set-PassWithDefaultResourceReservations([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(1) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -869,6 +901,8 @@ function Set-PassWithCustomAcceptingDefaultResourceReservations([int] $saveOptio
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(1) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -951,6 +985,8 @@ function Set-DefaultPassWithVelero([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(0) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -992,6 +1028,8 @@ function Set-DefaultPassWithVeleroRestic([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(0) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -1034,6 +1072,8 @@ function Set-OpenShiftPass([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(0) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -1083,6 +1123,8 @@ function Set-LoadBalancerIngressPass([int] $saveOption, [switch] $useClassicLoad
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(0) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -1129,6 +1171,8 @@ function Set-DockerImageNamesDatabaseNoOrchestration([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(1) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -1277,6 +1321,8 @@ function Set-DockerImageRedirect([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(1) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -1315,6 +1361,8 @@ function Set-DockerImagePrivateRedirect([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(1) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -1362,6 +1410,8 @@ function Set-RequiresPnsPass([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(0) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
@@ -1407,6 +1457,8 @@ function Set-OtherDockerPass([int] $saveOption) {
 	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
 	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
 	$global:inputs.enqueue(0) # specify db replicas
 	$global:inputs.enqueue(0) # choose default cacerts
 	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.2.0
+.VERSION 1.3.0
 .GUID 89d3b6a9-4f1b-4df9-8706-b6dbb7ec27b2
 .AUTHOR Code Dx
 #>
@@ -108,7 +108,7 @@ if (-not (Test-Path $workDirectory -PathType Container)) {
 $workDirectory = join-path $workDirectory 'backup-files'
 Write-Verbose "Testing for directory at '$workDirectory'"
 if (Test-Path $workDirectory -PathType Container) {
-	Write-Error "Unable to continue because $workDirectory already exists. Remove the directory and rerun this script."
+	Write-Error "Unable to continue because '$workDirectory' already exists. Rerun this script after either removing the directory or specifying a different -workDirectory parameter value."
 }
 
 if ($usingVeleroPlugin) {
@@ -234,10 +234,6 @@ if ($skipCodeDxRestart) {
 } else {
 	Write-Verbose "Starting Code Dx deployment named $deploymentCodeDx..."
 	Set-DeploymentReplicas  $namespaceCodeDx $deploymentCodeDx 1 $waitSeconds
-}
-
-if ($usingVeleroPlugin) {
-	Set-ExcludePVsFromPluginBackup $namespaceCodeDx @{'app'='mariadb'} 'persistentvolumeclaim/data*' -applyBackupConfiguration
 }
 
 Write-Host 'Done'

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.5.0
+.VERSION 1.6.0
 .GUID e917c41a-260f-4ea4-980d-db00f8baef1b
 .AUTHOR Code Dx
 #>
@@ -88,7 +88,7 @@ $s = @{}
 [CodeDxNamespace],[CodeDxReleaseName],
 [ToolOrchestrationNamespace],[ToolOrchestrationReleaseName],
 [ExternalDatabaseHost],[ExternalDatabasePort],[ExternalDatabaseName],[ExternalDatabaseUser], [ExternalDatabasePwd],[ExternalDatabaseOneWayAuth],[ExternalDatabaseCert],
-[DatabaseRootPwd],[DatabaseReplicationPwd],[DatabaseReplicaCount],
+[DatabaseRootPwd],[DatabaseReplicationPwd],[DatabaseUserPwd],[DatabaseReplicaCount],
 [CodeDxPassword],[ToolServiceKey],[MinioAdminPassword],[ToolServiceReplicaCount],
 [UsePrivateDockerRegistry],[DockerImagePullSecret],[PrivateDockerRegistryHost],[PrivateDockerRegistryUser],[PrivateDockerRegistryPwd],
 [UseDefaultDockerImages],[PublicRedirect],
@@ -133,7 +133,7 @@ Add-StepTransitions $graph $s[[CodeDxNamespace]] $s[[CodeDxReleaseName]],$s[[Too
 Add-StepTransitions $graph $s[[CodeDxNamespace]] $s[[CodeDxReleaseName]],$s[[ExternalDatabaseHost]]
 Add-StepTransitions $graph $s[[CodeDxNamespace]] $s[[CodeDxReleaseName]],$s[[DatabaseRootPwd]]
 
-Add-StepTransitions $graph $s[[DatabaseRootPwd]] $s[[DatabaseReplicationPwd]],$s[[DatabaseReplicaCount]],$s[[UseDefaultCACerts]]
+Add-StepTransitions $graph $s[[DatabaseRootPwd]] $s[[DatabaseReplicationPwd]],$s[[DatabaseUserPwd]],$s[[DatabaseReplicaCount]],$s[[UseDefaultCACerts]]
 Add-StepTransitions $graph $s[[DatabaseReplicaCount]] $s[[CACertsFile]]
 Add-StepTransitions $graph $s[[ExternalDatabaseHost]] $s[[ExternalDatabasePort]],$s[[ExternalDatabaseName]],$s[[ExternalDatabaseUser]],$s[[ExternalDatabasePwd]],$s[[ExternalDatabaseOneWayAuth]]
 

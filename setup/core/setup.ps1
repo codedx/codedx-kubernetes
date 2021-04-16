@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.12.0
+.VERSION 1.13.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -107,6 +107,9 @@ param (
 	[string]                 $minioAdminPwd,
 	[string]                 $mariadbRootPwd,
 	[string]                 $mariadbReplicatorPwd,
+
+	[switch]                 $skipUseRootDatabaseUser,
+	[string]                 $codedxDatabaseUserPwd,
 
 	[string]                 $caCertsFilePath,
 	[string]                 $caCertsFilePwd,
@@ -223,12 +226,12 @@ $useIngressAssumesNginx = -not $skipIngressAssumesNginx
 $useLetsEncryptCertManager = -not $skipLetsEncryptCertManagerInstall
 $useNginxIngressController = -not $skipNginxIngressControllerInstall
 $useLocalDatabase = -not $skipDatabase
+$useRootDatabaseUser = -not $skipUseRootDatabaseUser
 
 $useGitOps = $useHelmOperator
 $useSealedSecrets = $useGitOps -and -not $skipSealedSecrets
 
 $useVelero = $backupType -like 'velero*'
-$useVeleroResticIntegration = $backupType -eq 'velero-restic'
 
 
 ### Check Prerequisites
@@ -383,6 +386,14 @@ else {
 		}
 		if ('' -eq $mariadbReplicatorPwd) {
 			$mariadbReplicatorPwd = Read-HostSecureText 'Enter a password for the MariaDB replicator user' 
+		}
+	}
+	if ($skipUseRootDatabaseUser -and $codedxDatabaseUserPwd -eq '') {
+		if (-not $useGitOps) {
+			$codedxDatabaseUserPwd = Get-DatabaseUserDbPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
+		}
+		if ('' -eq $codedxDatabaseUserPwd) {
+			$codedxDatabaseUserPwd = Read-HostSecureText 'Enter a password for the MariaDB codedx database user'
 		}
 	}
 }
@@ -785,10 +796,16 @@ if ($useToolOrchestration) {
 }
 
 New-CodeDxPdSecret $namespaceCodeDx $releaseNameCodeDx $codedxAdminPwd $caCertsFilePwd $externalDatabaseUser $externalDatabasePwd $dockerRegistryPwd $caCertsFileNewPwd $samlKeystorePwd $samlPrivateKeyPwd -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
-New-DatabasePdSecret $namespaceCodeDx $releaseNameCodeDx $mariadbRootPwd $mariadbReplicatorPwd -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+New-DatabasePdSecret $namespaceCodeDx $releaseNameCodeDx $mariadbRootPwd $mariadbReplicatorPwd $codedxDatabaseUserPwd -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
 
 $dbConnectionSecret = 'codedx-mariadb-props'; $dbConnectionFile = './codedx.mariadb.props'
-New-DatabaseConfigPropsFile $namespaceCodeDx $dbConnectionSecret ($externalDatabaseUser -eq '' ? 'root' : $externalDatabaseUser) ($externalDatabasePwd -eq '' ? $mariadbRootPwd : $externalDatabasePwd) $dbConnectionFile
+
+New-DatabaseConfigPropsFile `
+	$namespaceCodeDx `
+	$dbConnectionSecret `
+	($externalDatabaseUser -eq '' ? ($useRootDatabaseUser ? 'root' : 'codedx') : $externalDatabaseUser) `
+	($externalDatabasePwd  -eq '' ? ($useRootDatabaseUser ? $mariadbRootPwd : $codedxDatabaseUserPwd) : $externalDatabasePwd) `
+	$dbConnectionFile
 New-GenericSecretResource $namespaceCodeDx $dbConnectionSecret @{} @{'codedx.mariadb.props' = $dbConnectionFile} -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
 
 ### Optionally Add CA Certificate (required for TLS connection to database and Tool Service)
@@ -868,7 +885,8 @@ $codeDxDeploymentValuesFile = New-CodeDxDeploymentValuesFile $codeDxDnsName $cod
 	$toolServiceApiKeySecretName `
 	-offlineMode:$false `
 	'./codedx-values.yaml' `
-	-createSCCs:$createSCCs
+	-createSCCs:$createSCCs `
+	-useCodeDxDbUser:$skipUseRootDatabaseUser
 
 ### Deploy Code Dx
 Write-Verbose 'Deploying Code Dx...'
@@ -886,18 +904,6 @@ Invoke-HelmSingleDeployment 'Code Dx' `
 if ($useVelero) {
 
 	$skipDatabaseBackup = $skipDatabase -or $dbSlaveReplicaCount -le 0
-	if (-not $useGitOps -and -not $skipDatabaseBackup -and -not $useVeleroResticIntegration) {
-
-		# Skip the unnecessary back up of MariaDB data volumes that get restored by a database backup file.
-		#
-		# The Code Dx Helm charts add annotations to skip unwanted volume backups when using Velero with 
-		# Restic. When using Velero with a volume storage provider plug-in, skip data volume snapshots by
-		# using a PV label. The Code Dx chart could handle PVC labeling, but auto-provisioned PVs do not 
-		# currently inherit PVC labels, so all PVC/PV labelling is done here.
-		#
-		# Note: The restore procedure covers relabeling PVs after a restore.
-		Set-ExcludePVsFromPluginBackup $namespaceCodeDx @{'app'='mariadb'} 'persistentvolumeclaim/data*' -applyBackupConfiguration
-	}
 
 	$scheduleName = "$releaseNameCodeDx-schedule"
 	$databaseBackupTimeout = "$($backupDatabaseTimeoutMinutes)m"

@@ -47,7 +47,7 @@ backup schedule.
 		return new-object MultipleChoiceQuestion($prompt, @(
 			[tuple]::create('&Skip', 'Skip Code Dx back up support'),
 			[tuple]::create('&Velero (Plug-ins)', 'Use Velero with storage provider plug-ins'),
-			[tuple]::create('Velero (&Restic)', 'Use Velero''s Restic integration')), 1)
+			[tuple]::create('Velero (&Restic)', 'Use Velero''s Restic integration')), 0)
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {

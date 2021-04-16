@@ -192,12 +192,14 @@ in your work directory may contain data that should be kept private.
 		[WorkDir]::description,
 		"Enter a directory or press Enter to accept the default ($HOME/.k8s-codedx)") {}
 
-	[IQuestion]MakeQuestion([string] $prompt) {
-		return new-object PathQuestion($prompt, [microsoft.powershell.commands.testpathtype]::Container, $true)
+	[IQuestion] MakeQuestion([string] $prompt) {
+		$question = new-object Question($prompt)
+		$question.allowEmptyResponse = $true
+		return $question
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
-		$q = [PathQuestion]$question
+		$q = [Question]$question
 		$this.config.workDir = $q.isResponseEmpty ? "$($this.homeDirectory)/.k8s-codedx" : $q.response
 
 		if (-not (Test-Path $this.config.workDir -Type Container)) {

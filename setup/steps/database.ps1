@@ -35,7 +35,7 @@ https://github.com/codedx/codedx-kubernetes/blob/master/setup/core/docs/db/use-e
 	[IQuestion] MakeQuestion([string] $prompt) {
 		return new-object YesNoQuestion($prompt, 
 			'Yes, I want to use a database that I will provide', 
-			'No, I want to use the database that Code Dx deploys on Kubernetes', -1)
+			'No, I want to use the database that Code Dx deploys on Kubernetes', 1)
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
@@ -126,10 +126,17 @@ database setup instructions.
 		$config,
 		'External Database Name',
 		[ExternalDatabaseName]::description,
-		'Enter the name of your Code Dx database') {}
+		'Enter the name of your Code Dx database or press Enter to accept the default (codedxdb)') {}
+
+	[IQuestion] MakeQuestion([string] $prompt) {
+		$question = new-object Question($prompt)
+		$question.allowEmptyResponse = $true
+		return $question
+	}
 
 	[bool]HandleResponse([IQuestion] $question) {
-		$this.config.externalDatabaseName = ([Question]$question).response
+		$q = [Question]$question
+		$this.config.externalDatabaseName = $q.isResponseEmpty ? 'codedxdb' : $q.response
 		return $true
 	}
 
@@ -155,10 +162,17 @@ name during Step 1 of the Code Dx database setup instructions.
 		$config,
 		'External Database Username',
 		[ExternalDatabaseUser]::description,
-		'Enter the Code Dx database username') {}
+		'Enter the Code Dx database username or press Enter to accept the default (codedx)') {}
+
+	[IQuestion] MakeQuestion([string] $prompt) {
+		$question = new-object Question($prompt)
+		$question.allowEmptyResponse = $true
+		return $question
+	}
 
 	[bool]HandleResponse([IQuestion] $question) {
-		$this.config.externalDatabaseUser = ([Question]$question).response
+		$q = [Question]$question
+		$this.config.externalDatabaseUser = $q.isResponseEmpty ? 'codedx' : $q.response
 		return $true
 	}
 

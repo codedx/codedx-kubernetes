@@ -2,9 +2,11 @@
 
 Here are the steps to migrate your Code Dx data from a system created by the Code Dx Installer to a Code Dx deployment running on Kubernetes (with an external database).
 
+>Note: If your Code Dx Kubernetes deployment does not use an external database (one that you maintain on your own that is not installed or updated by the Code Dx Kubernetes deployment script), follow the [Migrate Code Dx Data to Kubernetes](migrate-data.md) instructions instead.
+
 The Code Dx version you are running on Kubernetes must be equal to or greater than your non-Kubernetes Code Dx system. If necessary, upgrade your Code Dx version before migrating your Code Dx data.
 
-If you have not yet installed Code Dx on Kubernetes using an external database, run the [Guided Setup](https://github.com/codedx/codedx-kubernetes#download-guided-setup) and the Code Dx deployment script at this time.
+If you have not yet installed Code Dx on Kubernetes using an external database, run the [Guided Setup](https://github.com/codedx/codedx-kubernetes#deploy-code-dx-on-kubernetes) and the Code Dx deployment script at this time.
 
 >Note: You must have adequate disk and memory resources before starting a data migration with a large Code Dx dataset.
 

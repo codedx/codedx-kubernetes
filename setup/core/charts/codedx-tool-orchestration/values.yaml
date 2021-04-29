@@ -7,14 +7,14 @@ codedxTls:
 
 imageNameCodeDxTools: 'codedx/codedx-tools:v5.3.5'
 imageNameCodeDxToolsMono: 'codedx/codedx-toolsmono:v5.3.5'
-imageNamePrepare: 'codedx/codedx-prepare:v1.9.0'
-imageNameNewAnalysis: 'codedx/codedx-newanalysis:v1.9.0'
-imageNameSendResults: 'codedx/codedx-results:v1.9.0'
-imageNameSendErrorResults: 'codedx/codedx-error-results:v1.9.0'
-imageNameHelmPreDelete: 'codedx/codedx-cleanup:v1.9.0'
+imageNamePrepare: 'codedx/codedx-prepare:v1.9.1'
+imageNameNewAnalysis: 'codedx/codedx-newanalysis:v1.9.1'
+imageNameSendResults: 'codedx/codedx-results:v1.9.1'
+imageNameSendErrorResults: 'codedx/codedx-error-results:v1.9.1'
+imageNameHelmPreDelete: 'codedx/codedx-cleanup:v1.9.1'
 imagePullSecretKey: ""
 
-toolServiceImageName: 'codedx/codedx-tool-service:v1.9.0'
+toolServiceImageName: 'codedx/codedx-tool-service:v1.9.1'
 toolServiceImagePullSecrets: []
 toolServicePort: 3333
 

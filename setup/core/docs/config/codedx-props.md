@@ -60,7 +60,7 @@ codedxProps:
   - key:  codedx-public-props
     type: values
     values:
-    - "proxy.host = squid-squid-restricted-http-proxy.squid"
+    - "proxy.host = squid-restricted-http-proxy.squid"
     - "proxy.port = 3128"
   - key: codedx-private-props
     type: secret

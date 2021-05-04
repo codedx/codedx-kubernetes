@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.6.0
+.VERSION 1.7.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -104,6 +104,7 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 	[switch]   $enableNetworkPolicies,
 	[switch]   $configureTls,
 	[switch]   $skipDatabase,
+	[int]      $proxyPort,
 	[switch]   $skipToolOrchestration,
 	[string]   $toolOrchestrationNamespace,
 	[string]   $toolServiceUrl,
@@ -276,6 +277,7 @@ networkPolicy:
     ldaps: {4}
     http: {4}
     https: {4}
+    proxyPort: {60}
 {16}
 {43}
   mariadb:
@@ -426,7 +428,8 @@ $createSCCs.tostring().tolower(),
 $tomcatInitImage,
 $mariaDbDockerImageParts[0], $mariaDbDockerImageParts[1], $mariaDbDockerImageParts[2],
 $mariaDbPullSecretYaml,
-$codeDxDbUserConfig
+$codeDxDbUserConfig,
+($proxyPort -ne 0 ? "$proxyPort" : '')
 
 	$values | out-file $valuesFile -Encoding ascii -Force
 	Get-ChildItem $valuesFile

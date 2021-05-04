@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.13.0
+.VERSION 1.14.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -78,6 +78,8 @@ param (
 	[switch]                 $skipTLS,
 	[switch]                 $skipPSPs,
 	[switch]                 $skipNetworkPolicies,
+
+	[int]                    $proxyPort,
 
 	[switch]                 $skipNginxIngressControllerInstall,
 	[string]                 $nginxIngressControllerLoadBalancerIP,
@@ -879,6 +881,7 @@ $codeDxDeploymentValuesFile = New-CodeDxDeploymentValuesFile $codeDxDnsName $cod
 	-useSaml:$useSaml `
 	-ingressEnabled:$useIngress -ingressAssumesNginx:$useIngressAssumesNginx `
 	-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -skipDatabase:$skipDatabase `
+	$proxyPort `
 	-skipToolOrchestration:$skipToolOrchestration `
 	$namespaceToolOrchestration `
 	$toolServiceUrl `

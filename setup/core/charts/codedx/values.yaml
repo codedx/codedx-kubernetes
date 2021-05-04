@@ -150,6 +150,10 @@ networkPolicy:
     http: false
     https: false
 
+    # The proxy port for the proxy server Code Dx should use (leave blank when not using a proxy). The Code Dx
+    # proxy configuration uses the same port for HTTP (http.proxyPort) and HTTPS (https.proxyPort).
+    proxyPort:
+
     # This flag indicates whether we can expect Dependency-Check to be used within Code Dx. Dependency-Check
     # requires access to various websites to download CVE data and package repository data. If 'true',
     # an egress rule will be created allowing all egress from Code Dx on ports 80 and 443. (The actual

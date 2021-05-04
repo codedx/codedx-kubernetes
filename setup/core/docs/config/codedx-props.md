@@ -12,7 +12,7 @@ If you have not yet run the guided setup to determine the setup command(s) for d
 
 The steps in this section show you how to configure public property values by specifying the proxy.host and proxy.port values.
 
-1) Create a file named `codedx-custom-props.yaml` and add the proxy.host and proxy.port property values as a new section named codedx-public-props:
+1) Create a file named `codedx-custom-props.yaml` and add the proxy.host, proxy.port, and proxy.nonProxyHosts property values as a new section named codedx-public-props (use spaces for the indents, tab characters will cause a failure at install-time):
 
 ```
 codedxProps:
@@ -20,11 +20,12 @@ codedxProps:
   - key:  codedx-public-props
     type: values
     values:
-    - "proxy.host = squid-squid-restricted-http-proxy.squid"
+    - "proxy.host = squid-restricted-http-proxy.squid"
     - "proxy.port = 3128"
+    - "proxy.nonProxyHosts = codedx-tool-orchestration.cdx-svc.svc.cluster.local|codedx|localhost|*.internal.codedx.com"
 ```
 
->Note: Use spaces for the indents shown above. Indenting with tab characters will cause a failure at install-time.
+>Note: Add non-proxy hosts as needed, separating each one with a pipe character. Code Dx deployments using Tool Orchestration must include \<tool-orchestration-release-name>.\<tool-orchestration-k8s-namespace>.svc.cluster.local. Code Dx deployments using the Triage Assistant must include <codedx-release-name>. The above configuration uses the default release names (codedx-tool-orchestration and codedx) and namespace (cdx-svc).
 
 ### Private Property Values
 
@@ -33,7 +34,7 @@ The steps in this section show you how to configure private property values by s
 1) Create a file named `codedx-private-props` (no file extension) and add the proxy.username and proxy.password properties:
 
 ```
-proxy.username = steve
+proxy.username = codedx
 proxy.password = password
 ```
 
@@ -74,7 +75,13 @@ codedxProps:
  -extraCodeDxValuesPaths '/path/to/codedx-custom-props.yaml'
 ```
 
-2) Follow the instructions provided at the end of guided-setup.ps1, but replace the run-setup.ps1 reference with run-setup-custom.ps1:
+2) If you're using network policy, you must also add this parameter to your run-setup-custom.ps1 file, specifying the correct port for your proxy server.
+
+```
+ -proxyPort 3128
+```
+
+3) Follow the instructions provided at the end of guided-setup.ps1, but replace the run-setup.ps1 reference with run-setup-custom.ps1:
 
 ```
 pwsh "/path/to/run-prereqs.ps1"

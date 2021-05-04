@@ -3,7 +3,7 @@ entries:
   argo:
   - apiVersion: v2
     appVersion: v2.12.2
-    created: "2021-01-15T15:57:30.845277067-05:00"
+    created: "2021-05-04T09:24:37.712074573-04:00"
     dependencies:
     - condition: minio.install
       name: minio
@@ -24,7 +24,7 @@ entries:
     version: 0.14.1
   - apiVersion: v2
     appVersion: v2.11.7
-    created: "2021-01-15T15:57:30.843423656-05:00"
+    created: "2021-05-04T09:24:37.710291215-04:00"
     dependencies:
     - condition: minio.install
       name: minio
@@ -45,7 +45,7 @@ entries:
     version: 0.14.0
   - apiVersion: v1
     appVersion: v2.11.7
-    created: "2021-01-15T15:57:30.841042569-05:00"
+    created: "2021-05-04T09:24:37.707583656-04:00"
     dependencies:
     - condition: minio.install
       name: minio
@@ -66,7 +66,7 @@ entries:
     version: 0.13.8
   - apiVersion: v1
     appVersion: v2.4.3
-    created: "2021-01-15T15:57:30.851360261-05:00"
+    created: "2021-05-04T09:24:37.717635085-04:00"
     dependencies:
     - condition: minio.install
       name: minio
@@ -87,7 +87,7 @@ entries:
     version: 0.6.9
   - apiVersion: v1
     appVersion: v2.4.3
-    created: "2021-01-15T15:57:30.848836235-05:00"
+    created: "2021-05-04T09:24:37.715432819-04:00"
     dependencies:
     - condition: minio.install
       name: minio
@@ -108,7 +108,7 @@ entries:
     version: 0.6.8
   - apiVersion: v1
     appVersion: v2.4.2
-    created: "2021-01-15T15:57:30.846923455-05:00"
+    created: "2021-05-04T09:24:37.713603447-04:00"
     dependencies:
     - condition: minio.install
       name: minio
@@ -130,7 +130,7 @@ entries:
   mariadb:
   - apiVersion: v1
     appVersion: 10.3.25
-    created: "2021-01-15T15:57:30.861713714-05:00"
+    created: "2021-05-04T09:24:37.728119809-04:00"
     description: Fast, reliable, scalable, and easy to use open-source relational
       database system. MariaDB Server is intended for mission-critical, heavy-load
       production systems as well as for embedding into mass-deployed software. Highly
@@ -156,7 +156,7 @@ entries:
     version: 7.3.19
   - apiVersion: v1
     appVersion: 10.3.25
-    created: "2021-01-15T15:57:30.860462947-05:00"
+    created: "2021-05-04T09:24:37.726684223-04:00"
     description: Fast, reliable, scalable, and easy to use open-source relational
       database system. MariaDB Server is intended for mission-critical, heavy-load
       production systems as well as for embedding into mass-deployed software. Highly
@@ -182,7 +182,7 @@ entries:
     version: 7.3.18
   - apiVersion: v1
     appVersion: 10.3.25
-    created: "2021-01-15T15:57:30.859212036-05:00"
+    created: "2021-05-04T09:24:37.725386917-04:00"
     description: Fast, reliable, scalable, and easy to use open-source relational
       database system. MariaDB Server is intended for mission-critical, heavy-load
       production systems as well as for embedding into mass-deployed software. Highly
@@ -208,7 +208,7 @@ entries:
     version: 7.3.17
   - apiVersion: v1
     appVersion: 10.3.22
-    created: "2021-01-15T15:57:30.85782549-05:00"
+    created: "2021-05-04T09:24:37.724125975-04:00"
     description: Fast, reliable, scalable, and easy to use open-source relational
       database system. MariaDB Server is intended for mission-critical, heavy-load
       production systems as well as for embedding into mass-deployed software. Highly
@@ -234,7 +234,7 @@ entries:
     version: 7.3.16
   - apiVersion: v1
     appVersion: 10.3.22
-    created: "2021-01-15T15:57:30.856018677-05:00"
+    created: "2021-05-04T09:24:37.722727961-04:00"
     description: Fast, reliable, scalable, and easy to use open-source relational
       database system. MariaDB Server is intended for mission-critical, heavy-load
       production systems as well as for embedding into mass-deployed software. Highly
@@ -260,7 +260,7 @@ entries:
     version: 7.3.15
   - apiVersion: v1
     appVersion: 10.3.22
-    created: "2021-01-15T15:57:30.854809833-05:00"
+    created: "2021-05-04T09:24:37.72113894-04:00"
     description: Fast, reliable, scalable, and easy to use open-source relational
       database system. MariaDB Server is intended for mission-critical, heavy-load
       production systems as well as for embedding into mass-deployed software. Highly
@@ -286,7 +286,7 @@ entries:
     version: 7.3.14
   - apiVersion: v1
     appVersion: 10.3.22
-    created: "2021-01-15T15:57:30.85367169-05:00"
+    created: "2021-05-04T09:24:37.720000247-04:00"
     description: Fast, reliable, scalable, and easy to use open-source relational
       database system. MariaDB Server is intended for mission-critical, heavy-load
       production systems as well as for embedding into mass-deployed software. Highly
@@ -312,7 +312,7 @@ entries:
     version: 7.3.13
   - apiVersion: v1
     appVersion: 10.3.22
-    created: "2021-01-15T15:57:30.852510324-05:00"
+    created: "2021-05-04T09:24:37.718796232-04:00"
     description: Fast, reliable, scalable, and easy to use open-source relational
       database system. MariaDB Server is intended for mission-critical, heavy-load
       production systems as well as for embedding into mass-deployed software. Highly
@@ -339,7 +339,7 @@ entries:
   minio:
   - apiVersion: v1
     appVersion: 2020.3.25
-    created: "2021-01-15T15:57:30.867542074-05:00"
+    created: "2021-05-04T09:24:37.733803804-04:00"
     description: MinIO is an object storage server, compatible with Amazon S3 cloud
       storage service, mainly used for storing unstructured data (such as photos,
       videos, log files, etc.)
@@ -363,7 +363,7 @@ entries:
     version: 3.1.6
   - apiVersion: v1
     appVersion: 2020.3.25
-    created: "2021-01-15T15:57:30.866447086-05:00"
+    created: "2021-05-04T09:24:37.732778819-04:00"
     description: MinIO is an object storage server, compatible with Amazon S3 cloud
       storage service, mainly used for storing unstructured data (such as photos,
       videos, log files, etc.)
@@ -387,7 +387,7 @@ entries:
     version: 3.1.5
   - apiVersion: v1
     appVersion: 2020.3.25
-    created: "2021-01-15T15:57:30.86556062-05:00"
+    created: "2021-05-04T09:24:37.731959012-04:00"
     description: MinIO is an object storage server, compatible with Amazon S3 cloud
       storage service, mainly used for storing unstructured data (such as photos,
       videos, log files, etc.)
@@ -411,7 +411,7 @@ entries:
     version: 3.1.4
   - apiVersion: v1
     appVersion: 2020.3.14
-    created: "2021-01-15T15:57:30.864691957-05:00"
+    created: "2021-05-04T09:24:37.731122813-04:00"
     description: MinIO is an object storage server, compatible with Amazon S3 cloud
       storage service, mainly used for storing unstructured data (such as photos,
       videos, log files, etc.)
@@ -435,7 +435,7 @@ entries:
     version: 3.0.15
   - apiVersion: v1
     appVersion: 2020.3.5
-    created: "2021-01-15T15:57:30.863834706-05:00"
+    created: "2021-05-04T09:24:37.73027235-04:00"
     description: MinIO is an object storage server, compatible with Amazon S3 cloud
       storage service, mainly used for storing unstructured data (such as photos,
       videos, log files, etc.)
@@ -459,7 +459,7 @@ entries:
     version: 3.0.10
   - apiVersion: v1
     appVersion: 2019.9.26
-    created: "2021-01-15T15:57:30.862648974-05:00"
+    created: "2021-05-04T09:24:37.728997764-04:00"
     description: MinIO is an object storage server, compatible with Amazon S3 cloud
       storage service, mainly used for storing unstructured data (such as photos,
       videos, log files, etc.)
@@ -481,4 +481,14 @@ entries:
     urls:
     - https://codedx.github.io/codedx-kubernetes/minio-1.2.13.tgz
     version: 1.2.13
-generated: "2021-01-15T15:57:30.838683978-05:00"
+  squid-restricted-http-proxy:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-05-04T09:24:37.734016142-04:00"
+    description: A Helm chart for Kubernetes
+    digest: 1485b99d6d7448920836df1d625c2397399845fc655ba70c04a5ac11f603100b
+    name: squid-restricted-http-proxy
+    urls:
+    - https://codedx.github.io/codedx-kubernetes/squid-restricted-http-proxy-0.1.0.tgz
+    version: 0.1.0
+generated: "2021-05-04T09:24:37.705570158-04:00"

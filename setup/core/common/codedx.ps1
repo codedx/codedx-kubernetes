@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.7.0
+.VERSION 1.8.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -255,14 +255,14 @@ codedxTls:
   keyFile: {8}
 podAnnotations: {47}
 service:
-  type: {24}
+  type: '{24}'
   annotations: {25}
 ingress:
   enabled: {13}
   annotations: {20}
   assumeNginxIngressController: {27}
   hosts:
-  - name: {12}
+  - name: '{12}'
     tls: true
     tlsSecret: ingress-tls-secret
 podSecurityPolicy:
@@ -277,7 +277,7 @@ networkPolicy:
     ldaps: {4}
     http: {4}
     https: {4}
-    proxyPort: {60}
+    proxyPort:{60}
 {16}
 {43}
   mariadb:
@@ -429,7 +429,7 @@ $tomcatInitImage,
 $mariaDbDockerImageParts[0], $mariaDbDockerImageParts[1], $mariaDbDockerImageParts[2],
 $mariaDbPullSecretYaml,
 $codeDxDbUserConfig,
-($proxyPort -ne 0 ? "$proxyPort" : '')
+($proxyPort -ne 0 ? " $proxyPort" : '')
 
 	$values | out-file $valuesFile -Encoding ascii -Force
 	Get-ChildItem $valuesFile

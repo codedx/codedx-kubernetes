@@ -120,8 +120,8 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 
 		$options = @([tuple]::create('&Run now', 'Run the setup script without saving the script command a file'))
 
-		if ($this.config.useHelmOperator) {
-			$options += [tuple]::create('Save &GitOps command', 'Save a command to generate GitOps outputs using SealedSecrets and helm-operator')
+		if ($this.config.UseFluxGitOps()) {
+			$options += [tuple]::create('Save &GitOps command', 'Save a command to generate GitOps outputs')
 		} else {
 			$options += [tuple]::create('&Save command', 'Save the setup script using password/key script parameters')
 			$options += [tuple]::create('Save command with &Kubernetes secret(s)', 'Save the setup script using k8s secret(s) for password/key script parameters')
@@ -156,10 +156,11 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 		}
 
 		$runNow = ([MultipleChoiceQuestion]$question).choice -eq 0
-		$usePd = -not $this.config.useHelmOperator -and ([MultipleChoiceQuestion]$question).choice -eq 2
+		$useGitOps = $this.config.UseFluxGitOps()
+		$usePd = -not $useGitOps -and ([MultipleChoiceQuestion]$question).choice -eq 2
 
-		if ($this.config.useHelmOperator) {
-			'useHelmOperator','skipSealedSecrets' | ForEach-Object {
+		if ($useGitOps) {
+			'useHelmOperator','useHelmController','skipSealedSecrets' | ForEach-Object {
 				$this.AddSwitchParameter($sb, $_)
 			}
 			'sealedSecretsNamespace','sealedSecretsControllerName','sealedSecretsPublicKeyPath' | ForEach-Object {

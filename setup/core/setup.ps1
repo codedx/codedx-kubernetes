@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.14.0
+.VERSION 1.15.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -172,6 +172,7 @@ param (
 	[switch]                 $pauseAfterGitClone,
 
 	[switch]                 $useHelmOperator,
+	[switch]                 $useHelmController,
 	[switch]                 $skipSealedSecrets,
 	[string]                 $sealedSecretsNamespace,
 	[string]                 $sealedSecretsControllerName,
@@ -230,7 +231,7 @@ $useNginxIngressController = -not $skipNginxIngressControllerInstall
 $useLocalDatabase = -not $skipDatabase
 $useRootDatabaseUser = -not $skipUseRootDatabaseUser
 
-$useGitOps = $useHelmOperator
+$useGitOps = $useHelmOperator -or $useHelmController
 $useSealedSecrets = $useGitOps -and -not $skipSealedSecrets
 
 $useVelero = $backupType -like 'velero*'
@@ -955,7 +956,8 @@ if ($useGitOps) {
 			-chartRepository 'https://kubernetes.github.io/ingress-nginx' `
 			-chartName 'ingress-nginx' `
 			-chartVersion $nginxHelmChartVersion `
-			-valuesConfigMapNames $nginxSetupValueNames
+			-valuesConfigMapNames $nginxSetupValueNames `
+			-useHelmController:$useHelmController
 	}
 
 	### Optionally Create Let's Encrypt HelmRelease
@@ -971,7 +973,8 @@ if ($useGitOps) {
 			-chartRepository 'https://charts.jetstack.io' `
 			-chartName 'cert-manager' `
 			-chartVersion $letsEncryptHelmChartVersion `
-			-valuesConfigMapNames $letsEncryptSetupValuesName
+			-valuesConfigMapNames $letsEncryptSetupValuesName `
+			-useHelmController:$useHelmController
 	}
 
 	### Create Code Dx HelmRelease
@@ -994,14 +997,16 @@ if ($useGitOps) {
 	New-HelmRelease $codeDxHelmReleaseName `
 		$namespaceCodeDx `
 		$releaseNameCodeDx `
-		-chartGit 'git@github.com:codedx/codedx-kubernetes' `
+		-chartGitName 'codedx-kubernetes' `
+		-chartGit ($useHelmController ? 'https://github.com/codedx/codedx-kubernetes' : 'git@github.com:codedx/codedx-kubernetes') `
 		-chartRef $codedxGitRepoBranch `
 		-chartPath 'setup/core/charts/codedx' `
 		-valuesConfigMapNames $codeDxValuesConfigMapNames `
 		-dockerImageNames @{
 			'codedxTomcatImage' = $imageCodeDxTomcat;
 			'codedxTomcatInitImage' = $imageCodeDxTomcatInit
-		}
+		} `
+		-useHelmController:$useHelmController
 
 	### Optionally Create Tool Orchestration HelmRelease
 	if ($useToolOrchestration) {
@@ -1025,7 +1030,8 @@ if ($useGitOps) {
 		New-HelmRelease $toolOrchestrationHelmReleaseName `
 			$namespaceToolOrchestration `
 			$releaseNameToolOrchestration `
-			-chartGit 'git@github.com:codedx/codedx-kubernetes' `
+			-chartGitName 'codedx-kubernetes' `
+			-chartGit ($useHelmController ? 'https://github.com/codedx/codedx-kubernetes' : 'git@github.com:codedx/codedx-kubernetes') `
 			-chartRef $codedxGitRepoBranch `
 			-chartPath 'setup/core/charts/codedx-tool-orchestration' `
 			-valuesConfigMapNames $toolOrchestrationValuesConfigMapNames `
@@ -1038,7 +1044,8 @@ if ($useGitOps) {
 				'imageNameSendErrorResults' = $imageSendErrorResults;
 				'imageNameHelmPreDelete'    = $imagePreDelete;
 				'toolServiceImageName'      = $imageToolService;
-			}
+			} `
+			-useHelmController:$useHelmController
 	}
 }
 

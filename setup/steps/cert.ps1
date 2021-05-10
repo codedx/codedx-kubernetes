@@ -41,7 +41,7 @@ you should answer No.
 
 	[bool]CanRun() {
 		return (-not $this.config.skipDatabase -or $this.config.externalDatabaseSkipTls) -and
-			(-not $this.config.useHelmOperator -or $this.config.skipTLS)
+			(-not $this.config.UseFluxGitOps() -or $this.config.skipTLS)
 	}
 
 	[void]Reset(){
@@ -81,7 +81,7 @@ link for your java file to locate your Java home directory and cacerts
 	[bool]CanRun() {
 		return -not $this.config.useDefaultCACerts -or 
 			($this.config.skipDatabase -and -not $this.config.externalDatabaseSkipTls) -or
-			($this.config.useHelmOperator -and (-not $this.config.skipTLS))
+			($this.config.UseFluxGitOps() -and (-not $this.config.skipTLS))
 	}
 
 	[void]Reset(){

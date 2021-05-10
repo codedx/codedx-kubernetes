@@ -51,9 +51,8 @@ class UseGitOps : Step {
 
 	static [string] hidden $description = @'
 Code Dx can generate a setup command that you can use to create GitOps 
-outputs for deploying Code Dx on Kubernetes using fluxcd/helm-operator:
-
-https://github.com/fluxcd/helm-operator
+outputs for deploying Code Dx on Kubernetes using either Flux v1 and
+helm-operator or Flux v2 (GitOps Toolkit).
 
 '@
 
@@ -64,21 +63,24 @@ https://github.com/fluxcd/helm-operator
 		[UseGitOps]::description,
 		'Use GitOps?') {}
 
-	[IQuestion]MakeQuestion([string] $prompt) {
-		return new-object YesNoQuestion($prompt, 
-			'Yes, I want to deploy Code Dx using helm-operator', 
-			'No, I don''t want to use GitOps', 1)
+	[IQuestion] MakeQuestion([string] $prompt) {
+		return new-object MultipleChoiceQuestion($prompt, @(
+			[tuple]::create('&No', 'No, I don''t want to use GitOps'),
+			[tuple]::create('&Flux v1', 'Yes, I want to use Flux v1 and helm-operator'),
+			[tuple]::create('Flux v2 (&GitOps Toolkit)', 'Yes, I want to use Flux v2 and helm-controller')), 0)
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
-		$useGitOps = ([YesNoQuestion]$question).choice -eq 0
-		$this.config.useHelmOperator = $useGitOps
+		$useGitOps = ([MultipleChoiceQuestion]$question).choice -ne 0
+		$this.config.useHelmOperator = $useGitOps -and (([MultipleChoiceQuestion]$question).choice -eq 1)
+		$this.config.useHelmController = $useGitOps -and (([MultipleChoiceQuestion]$question).choice -eq 2)
 		$this.config.skipSealedSecrets = -not $useGitOps
 		return $true
 	}
 
 	[void]Reset() {
 		$this.config.useHelmOperator = $false
+		$this.config.useHelmController = $false
 		$this.config.skipSealedSecrets = $true
 	}
 }

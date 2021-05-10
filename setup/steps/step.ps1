@@ -200,6 +200,7 @@ class ConfigInput {
 	[bool]   $useLdap
 
 	[bool]   $useHelmOperator
+	[bool]   $useHelmController
 	[bool]   $skipSealedSecrets
 	[string] $sealedSecretsNamespace
 	[string] $sealedSecretsControllerName
@@ -238,6 +239,10 @@ class ConfigInput {
 
 	[bool]IsUsingVelero() {
 		return $this.backupType -like 'velero*'
+	}
+
+	[bool]UseFluxGitOps() {
+		return $this.useHelmOperator -or $this.useHelmController
 	}
 }
 

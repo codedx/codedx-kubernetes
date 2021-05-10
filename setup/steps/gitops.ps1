@@ -72,21 +72,25 @@ Specify the name of the Sealed Secrets controller you installed.
 
 class SealedSecretsPublicKeyPath : Step {
 
-	static [string] hidden $description = @'
-Specify the public key for your the Sealed Secrets deployment. You can fetch 
-the key with this command: 
-
-kubeseal --controller-name=sealed-secrets --controller-namespace=adm 
-	--fetch-cert > sealed-secrets.pem
-
-'@
-
 	SealedSecretsPublicKeyPath([ConfigInput] $config) : base(
 		[SealedSecretsPublicKeyPath].Name, 
 		$config,
 		'Sealed Secrets Cert',
-		[SealedSecretsPublicKeyPath]::description,
+		'',
 		'Enter the file path for your Sealed Secrets public key') {}
+
+	[string]GetMessage() {
+		return @"
+Specify the public key for your the Sealed Secrets deployment. You can fetch 
+the public key from the sealed-secrets pod log. Look for the pod associated with:
+
+Namespace: $($this.config.sealedSecretsNamespace)
+Deployment: $($this.config.sealedSecretsControllerName)
+
+Save the contents between and including the BEGIN and END certificate lines to 
+a file named sealed-secrets.pem.
+"@
+	}
 
 	[IQuestion]MakeQuestion([string] $prompt) {
 		# Note: CertificateFileQuestion requires a cert with a DN, and the SealedSecrets cert

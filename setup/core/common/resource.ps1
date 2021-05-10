@@ -1,12 +1,16 @@
 <#PSScriptInfo
-.VERSION 1.3.0
+.VERSION 1.4.0
 .GUID 0c9bd537-7359-4ebb-a64c-cf1693ccc4f9
 .AUTHOR Code Dx
 #>
 
+function Get-ResourceDirectoryPath([string] $kind) {
+	return "./GitOps/$kind"
+}
+
 function Set-ResourceDirectory([string] $kind) {
 
-	$directory = "./GitOps/$kind"
+	$directory = Get-ResourceDirectoryPath $kind
 	if (Test-Path $directory -PathType Container) {
 		New-Object IO.DirectoryInfo($directory)
 	} else {
@@ -163,9 +167,123 @@ function New-SealedSecret([io.fileinfo] $secretFileInfo,
 
     if (-not $keepSecretFile) {
         $secretFileInfo.Delete()
+
+		$secretFileDirectory = Get-ResourceDirectoryPath 'Secret'
+		if ((Get-ChildItem $secretFileDirectory).Count -eq 0) {
+			Remove-Item $secretFileDirectory
+		}
     }
 
     Get-ChildItem $sealedSecretPath
+}
+
+function New-HelmOperatorGitSource(
+	[string] $chartGit,
+	[string] $chartRef,
+	[string] $chartPath) {
+
+	return @"
+    git: $chartGit
+    ref: $chartRef
+    path: $chartPath
+"@
+}
+
+function New-HelmOperatorChartSource(
+	[string] $chartRepository,
+	[string] $chartName,
+	[string] $chartVersion) {
+
+	return @"
+    repository: $chartRepository
+    name: $chartName
+    version: $chartVersion
+"@
+}
+
+function New-HelmControllerGitSource(
+	[string] $chartGitName,
+	[string] $chartRef,
+	[string] $chartPath) {
+
+	return @"
+    spec:
+      chart: $chartPath
+      sourceRef:
+        kind: GitRepository
+        name: $chartGitName-$chartRef
+"@
+}
+
+function New-HelmControllerChartSource(
+	[string] $chartName) {
+
+	return @"
+    spec:
+      chart: $chartName
+      sourceRef:
+        kind: HelmRepository
+        name: $chartName
+"@	
+}
+
+function New-HelmOperatorConfigMapValues(
+	[string] $configMapName
+) {
+	return @"
+
+  - configMapKeyRef:
+      name: $_
+"@
+}
+
+function New-HelmControllerConfigMapValues(
+	[string] $configMapName
+) {
+	return @"
+
+  - kind: ConfigMap
+    name: $_
+"@
+}
+
+function New-GitRepository(
+	[string] $name,
+	[string] $namespace,
+	[string] $gitURL,
+	[string] $gitRef
+) {
+
+	return @"
+apiVersion: source.toolkit.fluxcd.io/v1beta1
+kind: GitRepository
+metadata:
+  name: $name-$gitRef
+  namespace: $namespace
+spec:
+  interval: 1m0s
+  ref:
+    tag: $gitRef
+  url: $gitURL
+"@
+}
+
+function New-HelmRepository(
+	[string] $name,
+	[string] $namespace,
+	[string] $chartRepository
+) {
+
+	return @"
+apiVersion: source.toolkit.fluxcd.io/v1beta1
+kind: HelmRepository
+metadata:
+  name: $name
+  namespace: $namespace
+spec:
+  interval: 1m0s
+  url: $chartRepository
+"@
 }
 
 function New-HelmRelease(
@@ -175,6 +293,8 @@ function New-HelmRelease(
 	[string]    $namespace,
 	[Parameter(Position=2)] [Parameter(ParameterSetName='GitChart')] [Parameter(ParameterSetName='RepoChart')]
 	[string]    $releaseName,
+	[Parameter(ParameterSetName='GitChart')]
+	[string]    $chartGitName,
 	[Parameter(ParameterSetName='GitChart')]
 	[string]    $chartGit,
 	[Parameter(ParameterSetName='GitChart')]
@@ -190,39 +310,46 @@ function New-HelmRelease(
 	[Parameter(ParameterSetName='GitChart')] [Parameter(ParameterSetName='RepoChart')]
 	[string[]]  $valuesConfigMapNames,
 	[Parameter(ParameterSetName='GitChart')] [Parameter(ParameterSetName='RepoChart')]
-	[hashtable] $dockerImageNames) {
+	[hashtable] $dockerImageNames,
+	[Parameter(ParameterSetName='GitChart')] [Parameter(ParameterSetName='RepoChart')]
+	[switch]    $useHelmController) {
 
+	$isGitChart = '' -ne $chartGit
 	$chartSource = ''
-    if ('' -ne $chartGit) {
 
-		$chartSource = @"
-    git: $chartGit
-    ref: $chartRef
-    path: $chartPath
-"@	} else {
+	if ($useHelmController) {
 
-		$chartSource = @"
-    repository: $chartRepository
-    name: $chartName
-    version: $chartVersion
-"@	}
+		if ($isGitChart) {
+
+			$gitRepository = New-GitRepository $chartGitName $namespace $chartGit $chartRef
+			New-ResourceFile 'GitRepository' $namespace "$chartGitName-$chartRef" $gitRepository
+
+			$chartSource = New-HelmControllerGitSource $chartGitName $chartRef $chartPath
+		} else {
+
+			$chartRepository = New-HelmRepository $name $namespace $chartRepository
+			New-ResourceFile 'HelmRepository' $namespace $name $chartRepository
+
+			$chartSource = New-HelmControllerChartSource $name $chartName
+		}
+		
+	} else {
+
+		if ($isGitChart) {
+			$chartSource = New-HelmOperatorGitSource $chartGit $chartRef $chartPath
+		} else {
+			$chartSource = New-HelmOperatorChartSource $chartRepository $chartName $chartVersion
+		}
+	}
 	
 	$values = ''
-	$annotations = @'
-  annotations:
-    fluxcd.io/automated: "false"
-'@
 	if ($dockerImageNames.Count -gt 0) {
 
 		$values = @'
   values:
 '@
-		$dockerImageNames.Keys | ForEach-Object {
-			$annotations += @"
+		$dockerImageNames.Keys | Sort-Object | ForEach-Object {
 
-    repository.fluxcd.io/$_`: $_
-    filter.fluxcd.io/$_`: 'glob:*'
-"@
 			$values += @"
 
     $_`: $($dockerImageNames[$_])
@@ -237,28 +364,27 @@ function New-HelmRelease(
   valuesFrom:
 '@
  		$valuesConfigMapNames | ForEach-Object {
-	  
-			$valuesFrom += @"
-
-  - configMapKeyRef:
-      name: $_
-"@		}
+			$valuesFrom += $useHelmController ? (New-HelmControllerConfigMapValues $_) : (New-HelmOperatorConfigMapValues $_)
+		}
 	}
 
     $helmRelease = @'
-apiVersion: helm.fluxcd.io/v1
+apiVersion: {0}
 kind: HelmRelease
 metadata:
-  name: {0}
-  namespace: {1}
-{2}
+  name: {1}
+  namespace: {2}
 spec:
   releaseName: {3}
   chart:
 {4}
 {5}
 {6}
-'@ -f $name,$namespace,$annotations,$releaseName,$chartSource,$valuesFrom,$values
+{7}
+'@ -f 
+	($useHelmController ? 'helm.toolkit.fluxcd.io/v2beta1' : 'helm.fluxcd.io/v1'),
+	$name,$namespace,$releaseName,$chartSource,$valuesFrom,$values,
+	($useHelmController ? '  interval: 1m0s' : '')
 
     New-ResourceFile 'HelmRelease' $namespace $name $helmRelease
 }

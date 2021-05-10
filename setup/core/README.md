@@ -166,6 +166,7 @@ This section describes the setup.ps1 script parameters, which you can specify by
 | `pauseAfterGitClone`                               | whether to pause (for debug purposes) after git clone      |                                                   |
 |                                                    |                                                            |                                                   |
 | `useHelmOperator`                                  | whether to create resources for helm-operator and GitOps   | false                                             |
+| `useHelmController`                                | whether to create resources for helm-controller and GitOps | false                                             |
 | `skipSealedSecrets`                                | whether to skip generating sealed secrets                  | false                                             |
 | `sealedSecretsNamespace`                           | namespace containing the Sealed Secrets application        | adm (example)                                     |
 | `sealedSecretsControllerName`                      | name of the Sealed Secrets controller                      | sealed-secrets (example)                          |

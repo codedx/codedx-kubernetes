@@ -505,4 +505,17 @@ Describe 'Generate Setup Commands' {
 		$expectedParams = "-kubeContextName 'minikube' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -storageClassName 'default' -caCertsFilePath 'cacerts' -codedxAdminPwd 'my-codedx-password' -caCertsFilePwd 'changeit' -skipIngressEnabled -skipIngressAssumesNginx -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 9443 -externalDatabaseHost 'my-external-db-host' -externalDatabaseName 'codedxdb' -externalDatabaseUser 'codedx' -externalDatabasePwd 'codedx-db-password' -skipDatabase -externalDatabasePort 3306 -externalDatabaseServerCert 'db-ca.crt' -skipToolOrchestration -skipNginxIngressControllerInstall -skipLetsEncryptCertManagerInstall"
 		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
 	}
+
+	It '(36) Should generate EKS, GitOps Toolkit setup.ps1 command with AWS Classic Load Balancer' -Tag 'Ingress' {
+	
+		Set-ClassicLoadBalancerIngressGitOpsToolkitPass 1
+
+		New-Mocks
+		. ./guided-setup.ps1
+
+		$runSetupFile = join-path $TestDrive run-setup.ps1
+		$runSetupFile | Should -Exist
+		$expectedParams = "-kubeContextName 'EKS' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -storageClassName 'default' -serviceTypeCodeDx 'LoadBalancer' -caCertsFilePath 'cacerts' -useHelmController -sealedSecretsNamespace 'adm' -sealedSecretsControllerName 'sealed-secrets' -sealedSecretsPublicKeyPath 'sealed-secrets.pem' -codedxAdminPwd 'my-codedx-password' -caCertsFilePwd 'changeit' -codedxDatabaseUserPwd 'my-db-user-password' -skipIngressEnabled -skipIngressAssumesNginx -skipUseRootDatabaseUser -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 443 -dbVolumeSizeGiB 64 -dbSlaveReplicaCount 0 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -skipToolOrchestration -skipNginxIngressControllerInstall -skipLetsEncryptCertManagerInstall -serviceAnnotationsCodeDx @{'service.beta.kubernetes.io/aws-load-balancer-backend-protocol'='https';'service.beta.kubernetes.io/aws-load-balancer-ssl-cert'='arn:value';'service.beta.kubernetes.io/aws-load-balancer-ssl-ports'='https'}"
+		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
+	}
 }

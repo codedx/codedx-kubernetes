@@ -5,7 +5,7 @@ function New-Password([string] $pwdValue) {
 function Set-DefaultPass([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(0) # choose minikube env
@@ -44,7 +44,7 @@ function Set-DefaultPass([int] $saveOption) {
 function Set-UseToolOrchestrationAndSubordinateDatabasePass([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(0) # choose minikube env
@@ -90,7 +90,7 @@ function Set-UseToolOrchestrationAndSubordinateDatabasePass([int] $saveOption) {
 function Set-ExternalDatabasePass([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(0) # choose minikube env
@@ -135,7 +135,7 @@ function Set-ExternalDatabasePass([int] $saveOption) {
 function Set-ExternalDatabasePassWithDefaults([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(0) # choose minikube env
@@ -178,7 +178,7 @@ function Set-ExternalDatabasePassWithDefaults([int] $saveOption) {
 function Set-ClassicLoadBalancerIngressPass([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(2) # choose EKS env
@@ -220,7 +220,55 @@ function Set-ClassicLoadBalancerIngressPass([int] $saveOption) {
 function Set-ClassicLoadBalancerIngressGitOpsPass([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(0)     # skip GitOps
+	$global:inputs.enqueue(1)     # use GitOps (Flux v1)
+	$global:inputs.enqueue(0)     # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(2) # choose EKS env
+	$global:inputs.enqueue(1) # choose EKS context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue('adm')                # specify sealed-secrets namespace
+	$global:inputs.enqueue('sealed-secrets')     # specify sealed-secrets controller
+	$global:inputs.enqueue('sealed-secrets.pem') # specify sealed-secrets cert
+	$global:inputs.enqueue(1) # skip tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # skip backup
+	$global:inputs.enqueue(0) # choose default deployment options
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
+	$global:inputs.enqueue(0) # specify db replicas
+	$global:inputs.enqueue('cacerts') # specify cacerts file
+	$global:inputs.enqueue((New-Password 'changeit')) # specify cacerts file password
+	$global:inputs.enqueue(1) # skip changing cacerts password
+	$global:inputs.enqueue(1) # skip extra certificates
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(0) # choose default Docker images
+	$global:inputs.enqueue(6) # choose AWS Classic Load Balancer ingress
+	$global:inputs.enqueue('arn:value') # specify AWS Certificate ARN
+	$global:inputs.enqueue(0) # use local accounts
+	$global:inputs.enqueue(1) # skip cpu reservation
+	$global:inputs.enqueue(1) # skip memory reservation
+	$global:inputs.enqueue(1) # skip storage reservation
+	$global:inputs.enqueue(0) # use default volume sizes
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue(1) # skip node selectors
+	$global:inputs.enqueue(1) # skip pod tolerations
+	$global:inputs.enqueue($saveOption) # next step save option
+}
+
+function Set-ClassicLoadBalancerIngressGitOpsToolkitPass([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue(2)     # use Flux v2 (GitOps Toolkit)
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(2) # choose EKS env
@@ -268,7 +316,7 @@ function Set-ClassicLoadBalancerIngressGitOpsPass([int] $saveOption) {
 function Set-ClassicLoadBalancerIngressGitOpsNoTLSPass([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(0)     # skip GitOps
+	$global:inputs.enqueue(1)     # use GitOps (Flux v1)
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(2) # choose EKS env
@@ -315,7 +363,7 @@ function Set-ClassicLoadBalancerIngressGitOpsNoTLSPass([int] $saveOption) {
 function Set-NodeSelectorAndPodTolerationsPass([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(2) # choose EKS env
@@ -365,7 +413,7 @@ function Set-NodeSelectorAndPodTolerationsPass([int] $saveOption) {
 function Set-RecommendedResourcesPass([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(0) # choose minikube env
@@ -404,7 +452,7 @@ function Set-RecommendedResourcesPass([int] $saveOption) {
 function Set-AllNodeSelectorAndPodTolerationsPass([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(2) # choose EKS env
@@ -481,7 +529,7 @@ function Set-AllNodeSelectorAndPodTolerationsPass([int] $saveOption) {
 function Set-NginxLetsEncryptWithLoadBalancerIpPass([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(1) # choose AKS env
@@ -535,7 +583,7 @@ function Set-NginxLetsEncryptWithLoadBalancerIpPass([int] $saveOption) {
 function Set-NginxLetsEncryptWithoutLoadBalancerIpPass([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(1) # choose AKS env
@@ -588,7 +636,7 @@ function Set-NginxLetsEncryptWithoutLoadBalancerIpPass([int] $saveOption) {
 function Set-DockerImageNamesAndPrivateRegistryPass([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(0) # choose minikube env
@@ -653,7 +701,7 @@ function Set-DockerImageNamesAndPrivateRegistryPass([int] $saveOption) {
 function Set-ConfigCertsPass([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(0) # choose minikube env
@@ -704,7 +752,7 @@ function Set-ConfigCertsPass([int] $saveOption) {
 function Set-UseCustomResourcesPass([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(0) # choose minikube env
@@ -772,7 +820,7 @@ function Set-UseCustomResourcesPass([int] $saveOption) {
 function Set-UseSamlPass([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(0) # choose minikube env
@@ -819,7 +867,7 @@ function Set-UseSamlPass([int] $saveOption) {
 function Set-SomeDockerImageNames([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(0) # choose minikube env
@@ -880,7 +928,7 @@ function Set-SomeDockerImageNames([int] $saveOption) {
 function Set-PassWithDefaultResourceReservations([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(0) # choose minikube env
@@ -926,7 +974,7 @@ function Set-PassWithDefaultResourceReservations([int] $saveOption) {
 function Set-PassWithCustomAcceptingDefaultResourceReservations([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(0) # choose minikube env
@@ -1008,7 +1056,7 @@ function Set-PassWithCustomAcceptingDefaultResourceReservations([int] $saveOptio
 function Set-DefaultPassWithVelero([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(0) # choose minikube env
@@ -1051,7 +1099,7 @@ function Set-DefaultPassWithVelero([int] $saveOption) {
 function Set-DefaultPassWithVeleroRestic([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(0) # choose minikube env
@@ -1095,7 +1143,7 @@ function Set-OpenShiftPass([int] $saveOption) {
 
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(3) # choose OpenShift env
@@ -1140,7 +1188,7 @@ function Set-OpenShiftPass([int] $saveOption) {
 function Set-LoadBalancerIngressPass([int] $saveOption, [switch] $useClassicLoadBalancer, [switch] $useTls) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(2) # choose EKS env
@@ -1198,7 +1246,7 @@ function Set-LoadBalancerIngressPass([int] $saveOption, [switch] $useClassicLoad
 function Set-DockerImageNamesDatabaseNoOrchestration([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(0) # choose minikube env
@@ -1240,7 +1288,7 @@ function Set-DockerImageNamesDatabaseNoOrchestration([int] $saveOption) {
 function Set-DockerImageNamesNoDatabaseNoOrchestration([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(0) # choose minikube env
@@ -1285,7 +1333,7 @@ function Set-DockerImageNamesNoDatabaseNoOrchestration([int] $saveOption) {
 function Set-DockerImageNamesNoDatabaseOrchestration([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(0) # choose minikube env
@@ -1348,7 +1396,7 @@ function Set-DockerImageNamesNoDatabaseOrchestration([int] $saveOption) {
 function Set-DockerImageRedirect([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(0) # choose minikube env
@@ -1388,7 +1436,7 @@ function Set-DockerImageRedirect([int] $saveOption) {
 function Set-DockerImagePrivateRedirect([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(0) # choose minikube env
@@ -1433,7 +1481,7 @@ function Set-RequiresPnsPass([int] $saveOption) {
 
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(5) # choose Other non-Docker env
@@ -1480,7 +1528,7 @@ function Set-OtherDockerPass([int] $saveOption) {
 
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # skip GitOps
+	$global:inputs.enqueue(0)     # skip GitOps
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(4) # choose Other Docker env

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.2.0
+.VERSION 1.2.1
 .GUID 5614d5a5-d33b-4a86-a7bb-ccc91c3f9bb3
 .AUTHOR Code Dx
 #>
@@ -439,31 +439,15 @@ function Set-NonNamespacedResource([string] $jsonPath, [string] $kind, [switch] 
 	}
 }
 
-function Get-ResourceName([string] $jsonPath) {
-	(get-content $jsonPath | ConvertFrom-Json).metadata.name
-}
+function New-NamespacedResource([string] $namespace, [string] $kind, [string] $resourceName, [string] $yamlPath) {
 
-function Get-ResourceKind([string] $jsonPath) {
-	(get-content $jsonPath | ConvertFrom-Json).kind
-}
-
-function New-NamespacedResource([string] $namespace, [string] $jsonPath, [switch] $dryRun) {
-
-	$kind = Get-ResourceKind $jsonPath
-	$resourceName = Get-ResourceName $jsonPath
-
-	if (-not $dryRun) {
-		if (Test-NamespacedResource $namespace $kind $resourceName) {
-			Remove-NamespacedResource $namespace $kind $resourceName
-		}
+	if (Test-NamespacedResource $namespace $kind $resourceName) {
+		Remove-NamespacedResource $namespace $kind $resourceName
 	}
 
-	$output = $dryRun ? 'yaml' : 'name'
-	$dryRunParam = $dryRun ? (Get-KubectlDryRunParam) : ''
-
-	kubectl -n $namespace apply -f $jsonPath -o $output $dryRunParam
+	kubectl -n $namespace apply -f $yamlPath -o 'name'
 	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to create $kind resource with name $name from $jsonPath, kubectl exited with code $LASTEXITCODE."
+		throw "Unable to create $kind resource from $yamlPath, kubectl exited with code $LASTEXITCODE."
 	}
 }
 

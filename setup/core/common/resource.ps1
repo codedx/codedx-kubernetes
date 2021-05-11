@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.4.0
+.VERSION 1.4.1
 .GUID 0c9bd537-7359-4ebb-a64c-cf1693ccc4f9
 .AUTHOR Code Dx
 #>
@@ -130,17 +130,15 @@ function New-ConfigMapResource([string] $namespace, [string] $name, [hashtable] 
 	New-ResourceFile 'ConfigMap' $namespace $name $cm
 }
 
-function New-NamespacedResourceFromJson([string] $namespace, [string] $jsonPath,
+function New-NamespacedResourceFromYaml([string] $namespace, [string] $resourceKind, [string] $resourceName, [string] $yamlPath,
 	[switch] $useGitOps) {
 
-	$resource = New-NamespacedResource $namespace $jsonPath -dryRun:$useGitOps
-	if (-not $useGitOps) {
-		return $resource
+	if ($useGitOps) {
+		$resource = Get-Content $yamlPath
+		return New-ResourceFile $resourceKind $namespace $resourceName $resource
 	}
 
-	$resourceKind = Get-ResourceKind $jsonPath
-	$resourceName = Get-ResourceName $jsonPath
-	New-ResourceFile $resourceKind $namespace $resourceName $resource
+	New-NamespacedResource $namespace $resourceKind $resourceName $yamlPath
 }
 
 function Set-CustomResourceDefinitionResource([string] $name, [string] $path,
@@ -216,14 +214,17 @@ function New-HelmControllerGitSource(
 }
 
 function New-HelmControllerChartSource(
-	[string] $chartName) {
+	[string] $name,
+	[string] $chartName,
+	[string] $chartVersion) {
 
 	return @"
     spec:
       chart: $chartName
       sourceRef:
         kind: HelmRepository
-        name: $chartName
+        name: $name
+      version: '$chartVersion'
 "@	
 }
 
@@ -330,7 +331,7 @@ function New-HelmRelease(
 			$chartRepository = New-HelmRepository $name $namespace $chartRepository
 			New-ResourceFile 'HelmRepository' $namespace $name $chartRepository
 
-			$chartSource = New-HelmControllerChartSource $name $chartName
+			$chartSource = New-HelmControllerChartSource $name $chartName $chartVersion
 		}
 		
 	} else {

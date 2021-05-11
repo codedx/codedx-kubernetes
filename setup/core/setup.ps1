@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.15.0
+.VERSION 1.15.1
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -634,11 +634,10 @@ if ($useLetsEncryptCertManager) {
 		Wait-Deployment 'Add cert-manager (cert-manager-webhook)' $waitTimeSeconds $letsEncryptCertManagerNamespace 'cert-manager-webhook' 1
 	}
 	
-	$stagingIssuerFile = New-LetsEncryptCertManagerIssuerFile 'letsencrypt-staging' $letsEncryptCertManagerRegistrationEmailAddress 'staging-issuer.yaml' -useStaging
-	$prodIssuerFile = New-LetsEncryptCertManagerIssuerFile 'letsencrypt-prod' $letsEncryptCertManagerRegistrationEmailAddress 'production-issuer.yaml'
-	
-	$stagingIssuerFile,$prodIssuerFile | ForEach-Object {
-		New-NamespacedResourceFromJson $namespaceCodeDx $_ -useGitOps:$useGitOps
+	[tuple]::create('letsencrypt-staging','staging-issuer.yaml',    'https://acme-staging-v02.api.letsencrypt.org/directory'),
+	[tuple]::create('letsencrypt-prod',   'production-issuer.yaml', 'https://acme-v02.api.letsencrypt.org/directory') | ForEach-Object {
+		$issuerFile = New-LetsEncryptCertManagerIssuerFile $namespaceCodeDx $_.Item1 $letsEncryptCertManagerRegistrationEmailAddress $_.Item2 $_.Item3
+		New-NamespacedResourceFromYaml $namespaceCodeDx 'Issuer' $_.Item1 $issuerFile -useGitOps:$useGitOps	
 	}
 
 	$ingressAnnotationsCodeDx['kubernetes.io/tls-acme'] = 'true'

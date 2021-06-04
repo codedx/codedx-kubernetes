@@ -30,7 +30,7 @@ data:
   tomcat.env: |-
     CATALINA_OPTS='{{ include "codedx.props.params.combined" . }}'
     CATALINA_OPTS="$CATALINA_OPTS {{ default "" .Values.codedxJavaOpts }}"
-    CATALINA_OPTS="$CATALINA_OPTS -Djavax.net.ssl.keystorepassword=$KEYSTORE_KEY"
+    CATALINA_OPTS="$CATALINA_OPTS -Djavax.net.ssl.keystorepassword=$KEYSTORE_KEY -Dcodedx.autoupdate=true"
 
   codedx-ml.props: |-
     codedx.external-url = {{ include "codedx.serviceurl" . | quote }}

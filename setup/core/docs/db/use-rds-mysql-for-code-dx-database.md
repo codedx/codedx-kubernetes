@@ -12,6 +12,6 @@ Code Dx recommends using an RDS database instance with the [MariaDB database eng
 
 >Note: When editing a parameter value, the column to the right of the edit box shows the allowable values (not the current values).
 
-The log_bin_trust_function_creators parameter is required when using MariaDB SQL replication, which is enabled by default with the AWS MariaDB Production template.
+The log_bin_trust_function_creators parameter is required when using replication, which is enabled by default with the AWS MySQL Production template.
 
 2) Provision a new Amazon RDS MySQL database instance with the codedx-mysql-recommendation DB Parameter Group by following the [installation instructions](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html).

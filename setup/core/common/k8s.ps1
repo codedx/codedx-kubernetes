@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.2.1
+.VERSION 1.2.2
 .GUID 5614d5a5-d33b-4a86-a7bb-ccc91c3f9bb3
 .AUTHOR Code Dx
 #>

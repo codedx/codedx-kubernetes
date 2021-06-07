@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.8.1
+.VERSION 1.8.2
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -862,8 +862,9 @@ function New-SamlConfigPropsFile([string] $samlKeystorePwd,
 	[string] $samlPropsFile) {
 
 	@"
-auth.saml2.keystorePassword = $samlKeystorePwd
-auth.saml2.privateKeyPassword = $samlPrivateKeyPwd
+# Note: This file uses the Human-Optimized Config Object Notation (HOCON) format.
+auth.saml2.keystorePassword = """$samlKeystorePwd"""
+auth.saml2.privateKeyPassword = """$samlPrivateKeyPwd"""
 "@ | out-file $samlPropsFile -Encoding ascii -Force
 
 	Get-ChildItem $samlPropsFile
@@ -876,8 +877,9 @@ function New-DatabaseConfigPropsFile([string] $namespace,
 	[string] $dbConnectionFile) {
 
 	@"
-swa.db.user = $databaseUsername
-swa.db.password = $databasePwd
+# Note: This file uses the Human-Optimized Config Object Notation (HOCON) format.
+swa.db.user = """$databaseUsername"""
+swa.db.password = """$databasePwd"""
 "@ | out-file $dbConnectionFile -Encoding ascii -Force
 
 	Get-ChildItem $dbConnectionFile

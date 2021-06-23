@@ -683,7 +683,7 @@ function Get-CodeDxKeystore([string] $namespace, [string] $imageCodeDxTomcat, [s
 
 	$overrides = ''
 	if ('' -ne $imagePullSecretName) {
-		$overrides = '--overrides={ ""apiVersion"": ""v1"", ""spec"": {""imagePullSecrets"": [{""name"": ""' + $imagePullSecretName + '""}]} }'
+		$overrides = "--overrides=$('{"apiVersion":"v1","spec":{"imagePullSecrets":[{"name":"' + $imagePullSecretName + '"}]}}' | convertto-json)"
 	}
 
 	kubectl -n $namespace run $podName --image=$imageCodeDxTomcat --restart=Never $overrides -- sleep "$($waitSeconds)s"

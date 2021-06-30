@@ -338,7 +338,12 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 
 	$pairs = @()
 	$keyValues.Keys | ForEach-Object {
-		$pairs += "--from-literal=$_=$($keyValues[$_])"
+
+		# apply escapes required when running from pwsh
+		$value = ($keyValues[$_]) -replace "'","''"
+		$value = $value -replace '"','\"'
+
+		$pairs += "--from-literal=$_='$value'"
 	}
 	$fileKeyValues.Keys | ForEach-Object {
 		$pairs += "--from-file=$_=$($fileKeyValues[$_])"

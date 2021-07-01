@@ -339,11 +339,11 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 	$pairs = @()
 	$keyValues.Keys | ForEach-Object {
 
-		# apply escapes required when running from pwsh
-		$value = ($keyValues[$_]) -replace "'","''"
+		# apply escape required when running from pwsh
+		$value = $keyValues[$_]
 		$value = $value -replace '"','\"'
 
-		$pairs += "--from-literal=$_='$value'"
+		$pairs += "--from-literal=$_=$value"
 	}
 	$fileKeyValues.Keys | ForEach-Object {
 		$pairs += "--from-file=$_=$($fileKeyValues[$_])"
@@ -410,7 +410,12 @@ function New-ConfigMap([string] $namespace, [string] $name, [hashtable] $keyValu
 
 	$pairs = @()
 	$keyValues.Keys | ForEach-Object {
-		$pairs += "--from-literal=$_=$($keyValues[$_])"
+
+		# apply escape required when running from pwsh
+		$value = $keyValues[$_]
+		$value = $value -replace '"','\"'
+
+		$pairs += "--from-literal=$_=$value"
 	}
 	$fileKeyValues.Keys | ForEach-Object {
 		$pairs += "--from-file=$_=$($fileKeyValues[$_])"

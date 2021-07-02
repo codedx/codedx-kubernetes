@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.15.2
+.VERSION 1.16.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -375,12 +375,16 @@ if ($skipDatabase) {
 }
 else {
 
+	$mariadbRootPwdPrompt = 'Enter a password for the MariaDB root user'
+	$mariadbReplicatorPwdPrompt = 'Enter a password for the MariaDB replicator user'
+	$invalidMariaDbPasswordCharacters = @("'")
+
 	if ($mariadbRootPwd -eq '') { 
 		if (-not $useGitOps) {
 			$mariadbRootPwd = Get-DatabaseRootPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
 		}
 		if ('' -eq $mariadbRootPwd) {
-			$mariadbRootPwd = Read-HostSecureText 'Enter a password for the MariaDB root user' 
+			$mariadbRootPwd = Read-HostSecureText $mariadbRootPwdPrompt -blacklist $invalidMariaDbPasswordCharacters
 		}
 	}
 	if ($mariadbReplicatorPwd -eq '') { 
@@ -388,9 +392,17 @@ else {
 			$mariadbReplicatorPwd = Get-DatabaseReplicationPasswordFromPd $namespaceCodeDx $releaseNameCodeDx
 		}
 		if ('' -eq $mariadbReplicatorPwd) {
-			$mariadbReplicatorPwd = Read-HostSecureText 'Enter a password for the MariaDB replicator user' 
+			$mariadbReplicatorPwd = Read-HostSecureText $mariadbReplicatorPwdPrompt -blacklist $invalidMariaDbPasswordCharacters
 		}
 	}
+
+	if (Test-IsBlacklisted $mariadbRootPwd $invalidMariaDbPasswordCharacters) {
+		$mariadbRootPwd = Read-HostSecureText $mariadbRootPwdPrompt -blacklist $invalidMariaDbPasswordCharacters
+	}
+	if (Test-IsBlacklisted $mariadbReplicatorPwd $invalidMariaDbPasswordCharacters) {
+		$mariadbReplicatorPwd = Read-HostSecureText $mariadbReplicatorPwdPrompt -blacklist $invalidMariaDbPasswordCharacters
+	}
+
 	if ($skipUseRootDatabaseUser -and $codedxDatabaseUserPwd -eq '') {
 		if (-not $useGitOps) {
 			$codedxDatabaseUserPwd = Get-DatabaseUserDbPasswordFromPd $namespaceCodeDx $releaseNameCodeDx

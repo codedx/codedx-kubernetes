@@ -476,7 +476,7 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 
 		$parameterValue = ($this.config | select-object -property $parameterName).$parameterName
 		if ($null -ne $parameterValue -and '' -ne $parameterValue) {
-			$sb.appendformat(" -{0} '{1}'", $parameterName, $parameterValue)
+			$sb.appendformat(" -{0} '{1}'", $parameterName, ($parameterValue -replace "'","''"))
 		}
 	}
 

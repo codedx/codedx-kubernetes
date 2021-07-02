@@ -28,6 +28,8 @@ class Question : IQuestion {
 	[int]    $minimumLength
 	[int]    $maximumLength
 
+	[string[]] $blacklist
+
 	[bool]   $allowEmptyResponse
 	[string] $emptyResponseLabel = 'Accept Default'
 	[string] $emptyResponseHelp = 'Use default value by providing no response'
@@ -44,7 +46,7 @@ class Question : IQuestion {
 		[string] $result = ''
 		while ($true) {
 
-			$result = Read-HostText $this.promptText $this.minimumLength $this.maximumLength @() $this.isSecure $this.validationExpr $this.validationHelp -allowBlankEntry
+			$result = Read-HostText $this.promptText $this.minimumLength $this.maximumLength $this.blacklist $this.isSecure $this.validationExpr $this.validationHelp -allowBlankEntry
 			if ($result -ne '') {
 				break
 			}

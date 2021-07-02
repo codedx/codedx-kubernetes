@@ -312,6 +312,7 @@ will create when provisioning the MariaDB database.
 	[IQuestion]MakeQuestion([string] $prompt) {
 		$question = new-object ConfirmationQuestion($prompt)
 		$question.isSecure = $true
+		$question.blacklist = @("'")
 		return $question
 	}
 
@@ -342,6 +343,7 @@ will create when provisioning the MariaDB database.
 	[IQuestion]MakeQuestion([string] $prompt) {
 		$question = new-object ConfirmationQuestion($prompt)
 		$question.isSecure = $true
+		$question.blacklist = @("'")
 		return $question
 	}
 

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.15.1
+.VERSION 1.15.2
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -844,7 +844,8 @@ $toolServiceApiKeySecretName = ''
 if ($useToolOrchestration) {
 	
 	$toolServiceApiKeySecretName = 'codedx-orchestration-key-props'
-	New-GenericSecretResource $namespaceCodeDx $toolServiceApiKeySecretName @{$toolServiceApiKeySecretName = "tws.api-key = ""$toolServiceApiKey"""} @{} -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+	# Code Dx will read this data in Human-Optimized Config Object Notation (HOCON) format.
+	New-GenericSecretResource $namespaceCodeDx $toolServiceApiKeySecretName @{$toolServiceApiKeySecretName = "tws.api-key = """"""$toolServiceApiKey"""""""} @{} -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
 
 	$protocol = 'http'
 	if ($useTLS) {

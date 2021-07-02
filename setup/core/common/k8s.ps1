@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.2.1
+.VERSION 1.2.2
 .GUID 5614d5a5-d33b-4a86-a7bb-ccc91c3f9bb3
 .AUTHOR Code Dx
 #>
@@ -338,7 +338,12 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 
 	$pairs = @()
 	$keyValues.Keys | ForEach-Object {
-		$pairs += "--from-literal=$_=$($keyValues[$_])"
+
+		# apply escape required when running from pwsh
+		$value = $keyValues[$_]
+		$value = $value -replace '"','\"'
+
+		$pairs += "--from-literal=$_=$value"
 	}
 	$fileKeyValues.Keys | ForEach-Object {
 		$pairs += "--from-file=$_=$($fileKeyValues[$_])"
@@ -405,7 +410,12 @@ function New-ConfigMap([string] $namespace, [string] $name, [hashtable] $keyValu
 
 	$pairs = @()
 	$keyValues.Keys | ForEach-Object {
-		$pairs += "--from-literal=$_=$($keyValues[$_])"
+
+		# apply escape required when running from pwsh
+		$value = $keyValues[$_]
+		$value = $value -replace '"','\"'
+
+		$pairs += "--from-literal=$_=$value"
 	}
 	$fileKeyValues.Keys | ForEach-Object {
 		$pairs += "--from-file=$_=$($fileKeyValues[$_])"

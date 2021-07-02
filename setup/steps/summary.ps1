@@ -99,7 +99,12 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 
 	$pairs = @()
 	$keyValues.Keys | ForEach-Object {
-		$pairs += "--from-literal=$_=$($keyValues[$_])"
+
+		# apply escape required when running from pwsh
+		$value = $keyValues[$_]
+		$value = $value -replace '"','\"'
+
+		$pairs += "--from-literal=$_=$value"
 	}
 
 	kubectl -n $namespace create secret generic $name $pairs

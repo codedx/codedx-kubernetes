@@ -16,7 +16,7 @@ Here are the steps required to use Code Dx with an external database:
 4) Grant required privileges on the Code Dx database to the database user you created. The
    following statements grant permissions to the codedx database user.
 
-   GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, REFERENCES, INDEX, DROP, TRIGGER ON codedxdb.* to 'codedx'@'%';
+   GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, CREATE TEMPORARY TABLES, ALTER, REFERENCES, INDEX, DROP, TRIGGER ON codedxdb.* to 'codedx'@'%';
    FLUSH PRIVILEGES;
 
 5) Set the following MariaDB variables. Failure to complete this step will negatively affect Code Dx performance or functionality.

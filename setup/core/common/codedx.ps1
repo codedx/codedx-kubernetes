@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.8.2
+.VERSION 1.8.3
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -224,7 +224,7 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
           # Drop default privileges granted to user
           REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'codedx';
           # Grant privileges required for codedx database user
-          GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, REFERENCES, INDEX, DROP, TRIGGER ON codedx.* to 'codedx'@'%';
+          GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, CREATE TEMPORARY TABLES, ALTER, REFERENCES, INDEX, DROP, TRIGGER ON codedx.* to 'codedx'@'%';
           FLUSH PRIVILEGES;
         END IF;
       END^

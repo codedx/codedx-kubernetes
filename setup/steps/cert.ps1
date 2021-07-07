@@ -173,6 +173,8 @@ Specify the new password for your Java cacerts file.
 	[IQuestion]MakeQuestion([string] $prompt) {
 		$question = new-object ConfirmationQuestion($prompt)
 		$question.isSecure = $true
+		$question.minimumLength = 6
+		$question.blacklist = @("'")
 		return $question
 	}
 

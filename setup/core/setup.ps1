@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.16.0
+.VERSION 1.16.1
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -322,8 +322,9 @@ if ($caCertsFileNewPwd -eq '') {
 	}
 }
 
-if ($caCertsFileNewPwd -ne '' -and $caCertsFileNewPwd.length -lt 6) { 
-	$caCertsFileNewPwd = Read-HostSecureText 'Enter a password to protect the cacerts file' 6 
+$invalidCacertPasswordCharacters = @("'")
+if ($caCertsFileNewPwd -ne '' -and (($caCertsFileNewPwd.length -lt 6) -or (Test-IsBlacklisted $caCertsFileNewPwd $invalidCacertPasswordCharacters))) { 
+	$caCertsFileNewPwd = Read-HostSecureText 'Enter a password to protect the cacerts file' 6 -blacklist $invalidCacertPasswordCharacters
 }
 
 if ($samlKeystorePwd -eq '') {

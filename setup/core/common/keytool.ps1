@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.1
+.VERSION 1.0.2
 .GUID a0b1e49c-0f56-43fa-bd1d-ae211ac63c2a
 .AUTHOR Code Dx
 #>
@@ -9,10 +9,13 @@
 This script includes functions for keytool-related tasks.
 #>
 
+function Get-KeystorePasswordEscaped([string] $pwd) {
+	$pwd.Replace('"','\"')
+}
 
 function Test-KeystorePassword([string] $keystorePath, [string] $keystorePwd) {
 
-	keytool -list -keystore $keystorePath -storepass $keystorePwd | out-null
+	keytool -list -keystore $keystorePath -storepass (Get-KeystorePasswordEscaped $keystorePwd) | out-null
 	$LASTEXITCODE -eq 0
 }
 
@@ -25,7 +28,7 @@ function Set-KeystorePassword([string] $keystorePath, [string] $keystorePwd, [st
 		throw "Unable to change keystore password because the specified old keystore password is invalid for file '$keystorePath'"
 	}
 
-	keytool -storepasswd -keystore $keystorePath -storepass $keystorePwd -new $newKeystorePwd
+	keytool -storepasswd -keystore $keystorePath -storepass (Get-KeystorePasswordEscaped $keystorePwd) -new (Get-KeystorePasswordEscaped $newKeystorePwd)
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to change keystore password, keytool exited with code $LASTEXITCODE."
 	}
@@ -33,12 +36,12 @@ function Set-KeystorePassword([string] $keystorePath, [string] $keystorePwd, [st
 
 function Remove-KeystoreAlias([string] $keystorePath, [string] $keystorePwd, [string] $aliasName) {
 
-	keytool -delete -alias $aliasName -keystore $keystorePath -storepass $keystorePwd
+	keytool -delete -alias $aliasName -keystore $keystorePath -storepass (Get-KeystorePasswordEscaped $keystorePwd)
 }
 
 function Add-KeystoreAlias([string] $keystorePath, [string] $keystorePwd, [string] $aliasName, [string] $certFile) {
 
-	keytool -import -trustcacerts -keystore $keystorePath -file $certFile -alias $aliasName -noprompt -storepass $keystorePwd
+	keytool -import -trustcacerts -keystore $keystorePath -file $certFile -alias $aliasName -noprompt -storepass (Get-KeystorePasswordEscaped $keystorePwd)
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to import certificate '$certFile' into keystore, keytool exited with code $LASTEXITCODE."
 	}

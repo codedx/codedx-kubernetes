@@ -56,9 +56,9 @@ param (
 	[string]                 $workflowEphemeralStorageReservation,
 	[string]                 $nginxEphemeralStorageReservation,
 
-	[string]                 $imageCodeDxTomcat       = 'codedx/codedx-tomcat:v5.4.6',
-	[string]                 $imageCodeDxTools        = 'codedx/codedx-tools:v5.4.6',
-	[string]                 $imageCodeDxToolsMono    = 'codedx/codedx-toolsmono:v5.4.6',
+	[string]                 $imageCodeDxTomcat       = 'codedx/codedx-tomcat:v5.4.7',
+	[string]                 $imageCodeDxTools        = 'codedx/codedx-tools:v5.4.7',
+	[string]                 $imageCodeDxToolsMono    = 'codedx/codedx-toolsmono:v5.4.7',
 
 	[string]                 $imagePrepare            = 'codedx/codedx-prepare:v1.9.1',
 	[string]                 $imageNewAnalysis        = 'codedx/codedx-newanalysis:v1.9.1',

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.2
+.VERSION 1.0.3
 .GUID a0b1e49c-0f56-43fa-bd1d-ae211ac63c2a
 .AUTHOR Code Dx
 #>
@@ -15,7 +15,9 @@ function Get-KeystorePasswordEscaped([string] $pwd) {
 
 function Test-KeystorePassword([string] $keystorePath, [string] $keystorePwd) {
 
-	keytool -list -keystore $keystorePath -storepass (Get-KeystorePasswordEscaped $keystorePwd) | out-null
+	$Local:ErrorActionPreference = 'SilentlyContinue'
+	$keystorePwd = Get-KeystorePasswordEscaped $keystorePwd
+	keytool -list -keystore $keystorePath -storepass $keystorePwd *>&1 | out-null
 	$LASTEXITCODE -eq 0
 }
 

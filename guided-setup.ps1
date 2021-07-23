@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.6.0
+.VERSION 1.6.1
 .GUID e917c41a-260f-4ea4-980d-db00f8baef1b
 .AUTHOR Code Dx
 #>
@@ -289,6 +289,8 @@ try {
 		}
 		$v = $next
 	}
+} catch {
+	Write-Host "`n`nAn unexpected error occurred: $_`n"
 } finally {
 
 	$workDir = $config.workDir ?? './'

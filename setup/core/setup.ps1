@@ -76,6 +76,9 @@ param (
 	[int]                    $toolServiceReplicas = 3,
 
 	[switch]                 $skipTLS,
+	[string]                 $csrSignerNameCodeDx            = 'kubernetes.io/legacy-unknown',
+	[string]                 $csrSignerNameToolOrchestration = 'kubernetes.io/legacy-unknown',
+
 	[switch]                 $skipPSPs,
 	[switch]                 $skipNetworkPolicies,
 
@@ -240,8 +243,15 @@ $useVelero = $backupType -like 'velero*'
 ### Check Prerequisites
 Write-Verbose 'Checking prerequisites...'
 $prereqMessages = @()
-if (-not (Test-SetupPreqs ([ref]$prereqMessages) -useSealedSecrets:$useSealedSecrets)) {
+if (-not (Test-SetupPreqs ([ref]$prereqMessages) -useSealedSecrets:$useSealedSecrets $kubeContextName -checkKubectlVersion)) {
 	Write-ErrorMessageAndExit ([string]::join("`n", $prereqMessages))
+}
+
+$csrSignerNameLegacyUnknown = Get-CsrSignerNameLegacyUnknown
+$isBetaCsrRequired = $csrSignerNameCodeDx -eq $csrSignerNameLegacyUnknown -or $csrSignerNameToolOrchestration -eq $csrSignerNameLegacyUnknown
+if ($isBetaCsrRequired -and -not (Test-CertificateSigningRequestV1Beta1)) {
+	# the v1 stable CSR API no longer supports the legacy-unknown signer name
+	Write-ErrorMessageAndExit "Unable to continue because the $csrSignerNameLegacyUnknown signer name requires the unsupported v1beta1 CSR API version."
 }
 
 ### Validate Parameters
@@ -687,7 +697,7 @@ if ($useTLS) {
 
 	# NOTE: New-Certificate uses kubectl to create and approve a CertificateSigningRequest, so this next line requires cluster access
 	$tlsFiles += $tlsCertFile
-	New-Certificate $clusterCertificateAuthorityCertPath $codeDxChartFullName $codeDxChartFullName $tlsCertFile $tlsKeyFile $namespaceCodeDx @()
+	New-Certificate $csrSignerNameCodeDx $clusterCertificateAuthorityCertPath $codeDxChartFullName $codeDxChartFullName $tlsCertFile $tlsKeyFile $namespaceCodeDx @()
 
 	$tlsSecretNameCodeDx = "$codeDxChartFullName-tls"
 	New-CertificateSecretResource $namespaceCodeDx $tlsSecretNameCodeDx $tlsCertFile $tlsKeyFile -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
@@ -699,7 +709,7 @@ if ($useTLS) {
 		# NOTE: New-Certificate uses kubectl to create and approve a CertificateSigningRequest, so this next line requires cluster access
 		$masterDatabaseCertFile = "$masterDatabaseServiceName.pem"
 		$tlsFiles += $masterDatabaseCertFile
-		New-Certificate $clusterCertificateAuthorityCertPath $masterDatabaseServiceName $masterDatabaseServiceName $masterDatabaseCertFile "$masterDatabaseServiceName.key" $namespaceCodeDx @()
+		New-Certificate $csrSignerNameCodeDx $clusterCertificateAuthorityCertPath $masterDatabaseServiceName $masterDatabaseServiceName $masterDatabaseCertFile "$masterDatabaseServiceName.key" $namespaceCodeDx @()
 
 		$tlsSecretNameMasterDatabase = "$masterDatabaseServiceName-tls"
 		New-CertificateSecretResource $namespaceCodeDx $tlsSecretNameMasterDatabase $masterDatabaseCertFile "$masterDatabaseServiceName.key" -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
@@ -722,7 +732,7 @@ if ($useTLS -and $useToolOrchestration) {
 	# NOTE: New-Certificate uses kubectl to create and approve a CertificateSigningRequest, so it requires cluster access
 	$minioPublicKeyFile = 'minio.pem'; $minioPrivateKeyFile = 'minio.key'
 	$tlsFiles += $minioPublicKeyFile
-	New-Certificate $clusterCertificateAuthorityCertPath $minioFullName $minioFullName $minioPublicKeyFile $minioPrivateKeyFile $namespaceToolOrchestration @()
+	New-Certificate $csrSignerNameToolOrchestration $clusterCertificateAuthorityCertPath $minioFullName $minioFullName $minioPublicKeyFile $minioPrivateKeyFile $namespaceToolOrchestration @()
 
 	$tlsMinioCertSecretName = '{0}-minio-tls' -f $toolOrchestrationFullName
 	New-CertificateSecretResource $namespaceToolOrchestration $tlsMinioCertSecretName $minioPublicKeyFile $minioPrivateKeyFile -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
@@ -733,7 +743,7 @@ if ($useTLS -and $useToolOrchestration) {
 	# NOTE: New-Certificate uses kubectl to create and approve a CertificateSigningRequest, so it requires cluster access
 	$toolServicePublicKeyFile = 'toolsvc.pem'; $toolServicePrivateKeyFile = 'toolsvc.key'
 	$tlsFiles += $toolServicePublicKeyFile
-	New-Certificate $clusterCertificateAuthorityCertPath $toolOrchestrationFullName $toolOrchestrationFullName $toolServicePublicKeyFile $toolServicePrivateKeyFile $namespaceToolOrchestration @()
+	New-Certificate $csrSignerNameToolOrchestration $clusterCertificateAuthorityCertPath $toolOrchestrationFullName $toolOrchestrationFullName $toolServicePublicKeyFile $toolServicePrivateKeyFile $namespaceToolOrchestration @()
 
 	$tlsToolServiceCertSecretName = '{0}-tls' -f $toolOrchestrationFullName
 	New-CertificateSecretResource $namespaceToolOrchestration $tlsToolServiceCertSecretName $toolServicePublicKeyFile $toolServicePrivateKeyFile -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath

@@ -39,8 +39,10 @@ class ConfigInput {
 	static [int]   $kubeApiTargetPortDefault = 443
 	static [int]   $externalDatabasePortDefault = 3306
 
+	static [string] $legacyUnknownSignerName = 'kubernetes.io/legacy-unknown'
+
 	[bool]         $prereqsSatisified
-	[string]       $missingPrereqs
+	[string[]]     $missingPrereqs
 
 	[string]       $workDir
 	[ProviderType] $k8sProvider
@@ -116,7 +118,10 @@ class ConfigInput {
 	[bool]         $useDefaultOptions
 	[bool]         $skipPSPs
 	[bool]         $skipNetworkPolicies
+
 	[bool]         $skipTLS
+	[string]       $csrSignerNameCodeDx
+	[string]       $csrSignerNameToolOrchestration
 
 	[string]       $serviceTypeCodeDx
 	[hashtable]    $serviceAnnotationsCodeDx
@@ -215,7 +220,7 @@ class ConfigInput {
 	[bool]   $usePnsContainerRuntimeExecutor
 	[int]    $workflowStepMinimumRunTimeSeconds
 	[bool]   $createSCCs
-	
+
 	[hashtable]  $notes = @{}
 
 	ConfigInput() {

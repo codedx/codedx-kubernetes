@@ -6,7 +6,7 @@ Download the [Code Dx Deployment Diagram](https://github.com/codedx/codedx-kuber
 
 ## Prerequisites
 
-Code Dx supports a minimum Kubernetes version of 1.14 if you're not using AWS EKS; otherwise, the minimum Kubernetes version is 1.16.
+Code Dx supports a minimum Kubernetes version of 1.19.
 
 The Code Dx Kubernetes deployment has been tested on AKS, EKS, Minikube, Rancher K3s, Rancher RKE, and OpenShift 4. If you are using another Kubernetes provider, you can try choosing either 'Other Docker' or 'Other Non-Docker' from the Guided Setup's Kubernetes Environment screen.
 

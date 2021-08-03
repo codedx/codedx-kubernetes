@@ -105,7 +105,8 @@ function Get-KubernetesPort() {
 
 function Set-KubectlContext([string] $contextName) {
 
-	kubectl config use-context $contextName
+	$Local:ErrorActionPreference = 'Continue'
+	kubectl config use-context $contextName *>&1 | out-null
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to change kubectl context, kubectl exited with code $LASTEXITCODE."
 	}
@@ -126,7 +127,7 @@ function Test-ClusterInfo([string] $profileName) {
 	0 -eq $LASTEXITCODE
 }
 
-function New-Certificate([string] $caCertPath, [string] $resourceName, [string] $dnsName, [string] $certPublicKeyFile, [string] $certPrivateKeyFile, [string] $namespace, [string[]] $alternativeNames){
+function New-Certificate([string] $csrSignerName, [string] $caCertPath, [string] $resourceName, [string] $dnsName, [string] $certPublicKeyFile, [string] $certPrivateKeyFile, [string] $namespace, [string[]] $alternativeNames){
 
 	$altNames = @()
 	$altNames = $altNames + "$dnsName.$namespace" + "$dnsName.$namespace.svc.cluster.local" + $alternativeNames
@@ -137,12 +138,28 @@ function New-Certificate([string] $caCertPath, [string] $resourceName, [string] 
 		"$dnsName.csr" `
 		$certPrivateKeyFile
 
-	New-CsrResource $resourceName "$dnsName.csr" "$dnsName.csrr"
-	New-CsrApproval $resourceName
+	$attempt = 0
+	while ($true) {
+		try {
+			$attempt++
 
-	$certText = Get-Certificate $resourceName
-	$caCertText = [io.file]::ReadAllText($caCertPath)
-	"$certText`n$caCertText" | out-file $certPublicKeyFile -Encoding ascii -Force
+			New-CsrResource $csrSignerName $resourceName "$dnsName.csr" "$dnsName.csrr" $namespace
+			New-CsrApproval $resourceName
+	
+			$certText = Get-Certificate $resourceName
+			$caCertText = [io.file]::ReadAllText($caCertPath)
+			"$certText`n$caCertText" | out-file $certPublicKeyFile -Encoding ascii -Force
+
+			break
+		} catch {
+
+			if ($attempt -gt 3) {
+				throw $_
+			}
+			Write-Verbose "Error: $_`n`nRetrying certificate request..."
+			Start-Sleep 60s
+		}
+	}
 }
 
 function New-Csr([string] $subjectName, [string[]] $subjectAlternativeNames, [string] $requestFile, [string] $csrFile, [string] $keyFile) {
@@ -221,26 +238,45 @@ function Remove-CsrResource([string] $resourceName) {
 	}
 }
 
-function New-CsrResource([string] $resourceName, [string] $csrFile, [string] $csrResourceFile) {
+function Get-CsrSignerNameLegacyUnknown {
+	'kubernetes.io/legacy-unknown'
+}
+
+function New-CsrResource([string] $csrSignerName, [string] $resourceName, [string] $csrFile, [string] $csrResourceFile) {
+
+	$csrSignerNameLegacyUnknown = Get-CsrSignerNameLegacyUnknown
+	$isBetaCsrRequired = $csrSignerName -eq $csrSignerNameLegacyUnknown
+
+	$apiVersion = 'certificates.k8s.io/v1'
+	if ($isBetaCsrRequired) {
+
+		if (-not (Test-CertificateSigningRequestV1Beta1)) {
+			throw "CSR signerName $csrSignerName is invalid because $csrSignerNameLegacyUnknown requires the CSR API version v1beta1"
+		}
+
+		$apiVersion = 'certificates.k8s.io/v1beta1'
+	}
 
 	if (Test-CsrResource $resourceName) {
 		Remove-CsrResource $resourceName
 	}
 
+
 	$resourceRequest = @'
-apiVersion: certificates.k8s.io/v1beta1
+apiVersion: {0}
 kind: CertificateSigningRequest
 metadata:
-  name: {0}
+  name: {1}
 spec:
   groups:
   - system:authenticated
-  request: {1}
+  request: {2}
+  signerName: {3}
   usages:
   - digital signature
   - key encipherment
   - server auth
-'@ -f $resourceName, (Convert-Base64 $csrFile)
+'@ -f $apiVersion, $resourceName, (Convert-Base64 $csrFile), $csrSignerName
 
 	$resourceRequest | out-file  $csrResourceFile -Encoding ascii -Force
 
@@ -321,7 +357,7 @@ function Get-SecretFieldValue([string] $namespace, [string] $name, [string] $fie
 
 function Remove-Secret([string] $namespace, [string] $name) {
 
-	$Local:ErrorActionPreference = 'SilentlyContinue'
+	$Local:ErrorActionPreference = 'Continue'
 	kubectl -n $namespace delete secret $name *>&1 | out-null
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to delete secret named $name, kubectl exited with code $LASTEXITCODE."
@@ -386,7 +422,7 @@ function Test-ConfigMap([string] $namespace, [string] $name) {
 
 function Remove-ConfigMap([string] $namespace, [string] $name) {
 
-	$Local:ErrorActionPreference = 'SilentlyContinue'
+	$Local:ErrorActionPreference = 'Continue'
 	kubectl -n $namespace delete configmap $name *>&1 | out-null
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to delete configmap named $name, kubectl exited with code $LASTEXITCODE."
@@ -648,7 +684,7 @@ function Test-PriorityClass([string] $name) {
 
 function Remove-PriorityClass([string] $name) {
 
-	$Local:ErrorActionPreference = 'SilentlyContinue'
+	$Local:ErrorActionPreference = 'Continue'
 	kubectl delete priorityclass $name *>&1 | out-null
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to delete priority class named $name, kubectl exited with code $LASTEXITCODE."
@@ -870,4 +906,16 @@ function Test-KubectlUsesDryRunBool {
 
 function Get-KubectlDryRunParam {
 	(Test-KubectlUsesDryRunBool) ? '--dry-run=true' : '--dry-run=client'
+}
+
+function Test-ResourceApiVersion([string] $resource, [string] $apiVersion) {
+
+	$Local:ErrorActionPreference = 'SilentlyContinue'
+	kubectl explain $resource --api-version $apiVersion *>&1 | out-null
+	0 -eq $LASTEXITCODE
+}
+
+function Test-CertificateSigningRequestV1Beta1 {
+
+	Test-ResourceApiVersion 'CertificateSigningRequest' 'certificates.k8s.io/v1beta1'
 }

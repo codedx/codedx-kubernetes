@@ -153,7 +153,8 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 		'storageClassName',
 		'serviceTypeCodeDx',
 		'caCertsFilePath',
-		'backupType','namespaceVelero','backupScheduleCronExpression' | ForEach-Object {
+		'backupType','namespaceVelero','backupScheduleCronExpression',
+		'csrSignerNameCodeDx','csrSignerNameToolOrchestration' | ForEach-Object {
 			$this.AddParameter($sb, $_)
 		}
 		'backupDatabaseTimeoutMinutes','backupTimeToLiveHours','workflowStepMinimumRunTimeSeconds' | ForEach-Object {

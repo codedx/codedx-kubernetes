@@ -132,6 +132,37 @@ Note: Press Enter to use the example release name.
 	}
 }
 
+class ToolOrchestrationSignerName : Step {
+
+	static [string] hidden $description = @'
+Specify the signerName for the CertificateSigningRequests (CSR) required for 
+components in the Code Dx Tool Orchestration namespace.
+
+Note: If your CSR signer is not namespace scoped, you can enter the same 
+name for the Code Dx CSR signer.
+'@
+
+	ToolOrchestrationSignerName([ConfigInput] $config) : base(
+		[ToolOrchestrationSignerName].Name, 
+		$config,
+		'Code Dx Tool Orchestration CSR Signer',
+		[ToolOrchestrationSignerName]::description,
+		'Enter the Code Dx Tool Orchestration components CSR signerName') {}
+
+	[bool]HandleResponse([IQuestion] $question) {
+		$this.config.csrSignerNameToolOrchestration = ([Question]$question).GetResponse([ToolOrchestrationSignerName]::default)
+		return $true
+	}
+
+	[void]Reset(){
+		$this.config.csrSignerNameToolOrchestration = ''
+	}
+
+	[bool]CanRun() {
+		return -not $this.config.skipToolOrchestration
+	}
+}
+
 class ToolServiceKey : Step {
 
 	static [string] hidden $description = @'

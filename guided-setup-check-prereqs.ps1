@@ -20,10 +20,10 @@ Set-PSDebug -Strict
 
 $yes    = New-Object Management.Automation.Host.ChoiceDescription('&Yes', 'Yes, I plan to use Bitnami''s Sealed Secrets.')
 $no     = New-Object Management.Automation.Host.ChoiceDescription('&No',  'No, I do not plan to use Bitnami''s Sealed Secrets.')
-$choice = (Get-Host).UI.PromptForChoice('Code Dx Requirements','Do you plan to use Helm Operator with Sealed Secrets to support GitOps?',($yes,$no),0)
+$choice = (Get-Host).UI.PromptForChoice('Code Dx Requirements','Do you plan to deploy Code Dx using GitOps and Bitnami''s Sealed Secrets?',($yes,$no),0)
 
 $prereqMessages = @()
-if (-not (Test-SetupPreqs ([ref]$prereqMessages) -useSealedSecrets:($choice -eq 0))) {
+if (-not (Test-SetupPreqs ([ref]$prereqMessages) -useSealedSecrets:($choice -eq 0) -checkKubectlVersion)) {
 	Write-Host "`nYour system does not meet the Guided Setup prerequisites:`n"
 	$prereqMessages | ForEach-Object {
 		Write-Host "* $_`n"

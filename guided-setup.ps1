@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.6.1
+.VERSION 1.7.0
 .GUID e917c41a-260f-4ea4-980d-db00f8baef1b
 .AUTHOR Code Dx
 #>
@@ -84,7 +84,8 @@ $s = @{}
 [GetKubernetesPort],
 [UseToolOrchestration],[UseExternalDatabase],
 [BackupType],[VeleroNamespace],[BackupSchedule],[BackupDatabaseTimeout],[BackupTimeToLive],
-[UseDefaultOptions],[UsePodSecurityPolicyOption],[UseNetworkPolicyOption],[UseTlsOption],[CertsCAPath],
+[UseDefaultOptions],[UsePodSecurityPolicyOption],[UseNetworkPolicyOption],[UseTlsOption],
+[UseLegacyUnknownSigner],[CertsCAPath],[CodeDxSignerName],[ToolOrchestrationSignerName],[LegacyUnknownCertsPath],
 [CodeDxNamespace],[CodeDxReleaseName],
 [ToolOrchestrationNamespace],[ToolOrchestrationReleaseName],
 [ExternalDatabaseHost],[ExternalDatabasePort],[ExternalDatabaseName],[ExternalDatabaseUser], [ExternalDatabasePwd],[ExternalDatabaseOneWayAuth],[ExternalDatabaseCert],
@@ -117,16 +118,23 @@ Add-StepTransitions $graph $s[[UseGitOps]] $s[[Prerequisites]],$s[[PrequisitesNo
 Add-StepTransitions $graph $s[[UseGitOps]] $s[[Prerequisites]],$s[[WorkDir]],$s[[ChooseEnvironment]],$s[[ChooseContext]]
 
 Add-StepTransitions $graph $s[[ChooseContext]] $s[[HandleNoContext]],$s[[Abort]]
+Add-StepTransitions $graph $s[[ChooseContext]] $s[[SelectContext]],$s[[PrequisitesNotMet]],$s[[Abort]]
 Add-StepTransitions $graph $s[[ChooseContext]] $s[[SelectContext]],$s[[GetKubernetesPort]]
 
 Add-StepTransitions $graph $s[[GetKubernetesPort]] $s[[SealedSecretsNamespace]],$s[[SealedSecretsControllerName]],$s[[SealedSecretsPublicKeyPath]],$s[[UseToolOrchestration]]
 Add-StepTransitions $graph $s[[GetKubernetesPort]] $s[[UseToolOrchestration]],$s[[UseExternalDatabase]],$s[[BackupType]],$s[[VeleroNamespace]],$s[[BackupSchedule]],$s[[BackupDatabaseTimeout]],$s[[BackupTimeToLive]],$s[[UseDefaultOptions]]
 Add-StepTransitions $graph $s[[BackupType]] $s[[UseDefaultOptions]]
 
-Add-StepTransitions $graph $s[[UseDefaultOptions]] $s[[UsePodSecurityPolicyOption]],$s[[UseNetworkPolicyOption]],$s[[UseTlsOption]],$s[[CertsCaPath]],$s[[CodeDxNamespace]]
-Add-StepTransitions $graph $s[[UseTlsOption]] $s[[CodeDxNamespace]]
-Add-StepTransitions $graph $s[[UseDefaultOptions]] $s[[CertsCaPath]],$s[[CodeDxNamespace]]
+Add-StepTransitions $graph $s[[UseDefaultOptions]] $s[[UsePodSecurityPolicyOption]],$s[[UseNetworkPolicyOption]],$s[[UseTlsOption]]
+Add-StepTransitions $graph $s[[UseDefaultOptions]] $s[[UseLegacyUnknownSigner]]
+Add-StepTransitions $graph $s[[UseDefaultOptions]] $s[[CertsCAPath]]
 Add-StepTransitions $graph $s[[UseDefaultOptions]] $s[[CodeDxNamespace]]
+
+Add-StepTransitions $graph $s[[UseTlsOption]] $s[[UseLegacyUnknownSigner]],$s[[LegacyUnknownCertsPath]],$s[[CodeDxNamespace]]
+Add-StepTransitions $graph $s[[UseTlsOption]] $s[[UseLegacyUnknownSigner]],$s[[CertsCAPath]]
+Add-StepTransitions $graph $s[[UseTlsOption]] $s[[CertsCAPath]],$s[[CodeDxSignerName]],$s[[ToolOrchestrationSignerName]],$s[[CodeDxNamespace]]
+Add-StepTransitions $graph $s[[UseTlsOption]] $s[[CertsCAPath]],$s[[CodeDxSignerName]],$s[[CodeDxNamespace]]
+Add-StepTransitions $graph $s[[UseTlsOption]] $s[[CodeDxNamespace]]
 
 Add-StepTransitions $graph $s[[CodeDxNamespace]] $s[[CodeDxReleaseName]],$s[[ToolOrchestrationNamespace]],$s[[ToolOrchestrationReleaseName]],$s[[ExternalDatabaseHost]]
 Add-StepTransitions $graph $s[[CodeDxNamespace]] $s[[CodeDxReleaseName]],$s[[ToolOrchestrationNamespace]],$s[[ToolOrchestrationReleaseName]],$s[[DatabaseRootPwd]]

@@ -28,7 +28,11 @@ function New-Mocks() {
 	}
 
 	Mock Test-SetupPreqs {
-		-not $global:missingPrereqs
+		-not $global:prereqsSatisified
+	}
+
+	Mock Test-SetupKubernetesVersion {
+		-not $global:prereqsSatisified
 	}
 
 	Mock Test-KeystorePassword {
@@ -47,5 +51,9 @@ function New-Mocks() {
 	}
 
 	Mock Write-StepGraph {
+	}
+
+	Mock Test-CertificateSigningRequestV1Beta1 {
+		$global:csrSupportsV1Beta1
 	}
 }

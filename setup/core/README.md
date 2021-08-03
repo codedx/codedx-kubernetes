@@ -73,6 +73,9 @@ This section describes the setup.ps1 script parameters, which you can specify by
 | `toolServiceReplicas`                              | number of tool service copies to run concurrently          | `3`                                               |
 |                                                    |                                                            |                                                   |
 | `skipTLS`                                          | whether Code Dx endpoints use TLS                          | `$false`                                          |
+| `csrSignerNameCodeDx`                              | signerName for Code Dx namespace component CSRs            | `kubernetes.io/legacy-unknown`                    |
+| `csrSignerNameToolOrchestration`                   | signerName for Tool Orchestration namespace component CSRs | `kubernetes.io/legacy-unknown`                    |
+|                                                    |                                                            |                                                   |
 | `skipPSPs`                                         | whether to create pod security policies                    | `$false`                                          |
 | `skipNetworkPolicies`                              | whether to skip creating network policies                  | `$false`                                          |
 |                                                    |                                                            |                                                   |

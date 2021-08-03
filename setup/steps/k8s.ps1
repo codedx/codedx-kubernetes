@@ -20,8 +20,6 @@ available for your type of Kubernetes cluster.
 If your Kubernetes provider is not listed below, choose either 'Other Docker' 
 or 'Other Non-Docker' based on whether your k8s environment uses a Docker 
 container runtime.
-
-Note: Running Code Dx on AWS EKS requires a minimum Kubernetes version of 1.16.
 '@
 
 	ChooseEnvironment([ConfigInput] $config) : base(
@@ -52,7 +50,8 @@ Note: Running Code Dx on AWS EKS requires a minimum Kubernetes version of 1.16.
 		}
 
 		$usingOpenShift = $this.config.k8sProvider -eq [ProviderType]::OpenShift
-		$usingNonDockerRuntime = $usingOpenShift -or $this.config.k8sProvider -eq [ProviderType]::OtherNonDocker
+		$usingNonDockerRuntime = $usingOpenShift -or $this.config.k8sProvider -eq [ProviderType]::OtherNonDocker -or `
+			$this.config.k8sProvider -eq [ProviderType]::Aks # AKS v1.19+ does not use Dockershim
 
 		$this.config.usePnsContainerRuntimeExecutor = $usingNonDockerRuntime
 		$this.config.workflowStepMinimumRunTimeSeconds = $usingNonDockerRuntime ? 3 : 0
@@ -149,10 +148,18 @@ class SelectContext: Step {
 		Write-HostSection 'Select Kubectl Context' 'Selecting kubectl context...'
 		Set-KubectlContext $this.config.kubeContextName
 
+		# retest k8s version prereqs using selected context
+		$messages = @()
+		$this.config.prereqsSatisified = Test-SetupKubernetesVersion ([ref]$messages)
+		if (-not $this.config.prereqsSatisified) {
+			$this.config.missingPrereqs = $messages
+			return $true
+		}
+		
 		$question = new-object YesNoQuestion("Continue with selected '$($this.config.kubeContextName)' context?",
 			"Yes, continue with this context.",
 			"No, select another context.", 0)
-		
+
 		$question.Prompt()
 		if (-not $question.hasResponse) {
 			return $false
@@ -224,7 +231,55 @@ class GetKubernetesPort: Step {
 	}
 }
 
-class CertsCAPath : Step {
+class UseLegacyUnknownSigner : Step {
+
+	static [string] hidden $description = @'
+Specify whether you want to configure TLS using Certificate Signing Requests 
+and the legacy-unknown signer. The legacy-unknown signer has been deprecated 
+in the stable CertificateSigningRequest API and will be removed in a future 
+K8s version.
+
+Alternatively, you can configure your own signer to issue certificates using 
+the stable CertificateSigningRequest API. To use cert-manager, refer to the 
+following URL: https://cert-manager.io/docs/usage/kube-csr/
+'@
+
+	UseLegacyUnknownSigner([ConfigInput] $config) : base(
+		[UseLegacyUnknownSigner].Name, 
+		$config,
+		'Legacy Unknown Signer',
+		[UseLegacyUnknownSigner]::description,
+		'Do you want to use the legacy-unknown CSR signer?') {}
+
+	[IQuestion]MakeQuestion([string] $prompt) {
+		return new-object YesNoQuestion($prompt,
+			'Yes, I want to use the legacy-unknown signer.',
+			'No, I want to use a CSR signer that I will configure separately', 0)
+	}
+
+	[bool]HandleResponse([IQuestion] $question) {
+		$this.config.csrSignerNameCodeDx = ''
+		$this.config.csrSignerNameToolOrchestration = ''
+
+		if (([YesNoQuestion]$question).choice -eq 0) {
+			$this.config.csrSignerNameCodeDx = [ConfigInput]::legacyUnknownSignerName
+			$this.config.csrSignerNameToolOrchestration = [ConfigInput]::legacyUnknownSignerName
+		}
+		return $true
+	}
+
+	[bool]CanRun() {
+		# the stable API version does not permit signerName=kubernetes.io/legacy-unknown
+		return (Test-CertificateSigningRequestV1Beta1) -and (-not $this.config.skipTLS)
+	}
+
+	[void]Reset(){
+		$this.config.csrSignerNameCodeDx = ''
+		$this.config.csrSignerNameToolOrchestration = ''
+	}
+}
+
+class LegacyUnknownCertsPath : Step {
 
 	static [string] hidden $description = @'
 Specify a path to the CA (PEM format) associated with your Kubernetes 
@@ -282,8 +337,8 @@ For Minikube clusters, you can find the CA file in the .minikube directory
 under your home profile folder 
 '@
 
-	CertsCAPath([ConfigInput] $config) : base(
-		[CertsCAPath].Name, 
+	LegacyUnknownCertsPath([ConfigInput] $config) : base(
+		[LegacyUnknownCertsPath].Name, 
 		$config,
 		'Kubernetes Certificates API CA',
 		'',
@@ -299,12 +354,12 @@ under your home profile folder
 	}
 
 	[string]GetMessage() {
-		$message = [CertsCAPath]::description + "`n`n"
+		$message = [LegacyUnknownCertsPath]::description + "`n`n"
 		switch ([int]$this.config.k8sProvider) {
-			0 { $message += [CertsCAPath]::minikubeDescription + "($($env:HOME)/.minikube/ca.crt)." }
-			1 { $message += [CertsCAPath]::aksDescription }
-			2 { $message += [CertsCAPath]::eksDescription }
-			3 { $message += [CertsCAPath]::openshiftDescription }
+			0 { $message += [LegacyUnknownCertsPath]::minikubeDescription + "($($env:HOME)/.minikube/ca.crt)." }
+			1 { $message += [LegacyUnknownCertsPath]::aksDescription }
+			2 { $message += [LegacyUnknownCertsPath]::eksDescription }
+			3 { $message += [LegacyUnknownCertsPath]::openshiftDescription }
 		}
 		return $message
 	}
@@ -314,7 +369,43 @@ under your home profile folder
 	}
 
 	[bool]CanRun() {
-		return -not $this.config.skipTLS
+		return (-not $this.config.skipTLS) -and $this.config.csrSignerNameCodeDx -eq [ConfigInput]::legacyUnknownSignerName -and $this.config.csrSignerNameToolOrchestration -eq [ConfigInput]::legacyUnknownSignerName
+	}
+}
+
+class CertsCAPath : Step {
+
+	static [string] hidden $description = @'
+Specify a path to the CA (PEM format) associated with the Kubernetes 
+Certificates API (certificates.k8s.io API) signer(s) you plan to use.
+
+Note: If you plan to use one signer for components in the Code Dx 
+namespace and another signer for components in the Tool Orchestration 
+namespace, make sure that both signers use the same root CA.
+'@
+
+	CertsCAPath([ConfigInput] $config) : base(
+		[CertsCAPath].Name, 
+		$config,
+		'Kubernetes Certificates API CA',
+		[CertsCAPath]::description,
+		'Enter the file path for your Kubernetes CA cert') {}
+
+	[IQuestion]MakeQuestion([string] $prompt) {
+		return new-object CertificateFileQuestion($prompt, $false)
+	}
+
+	[bool]HandleResponse([IQuestion] $question) {
+		$this.config.clusterCertificateAuthorityCertPath = ([CertificateFileQuestion]$question).response
+		return $true
+	}
+
+	[void]Reset() {
+		$this.config.clusterCertificateAuthorityCertPath = ''
+	}
+
+	[bool]CanRun() {
+		return -not $this.config.skipTLS -and $this.config.csrSignerNameCodeDx -ne [ConfigInput]::legacyUnknownSignerName -and $this.config.csrSignerNameToolOrchestration -ne [ConfigInput]::legacyUnknownSignerName
 	}
 }
 

@@ -118,22 +118,14 @@ Your system must meet these prerequisites to run the Code Dx setup scripts:
 		}
 		Write-HostSection 'Prerequisites' $prereqDescription
 
-		Write-Host 'Checking prerequisites...' -NoNewline; ([Step]$this).Delay()
+		Write-Host 'Checking prerequisites...'; ([Step]$this).Delay()
 
 		$prereqMessages = @()
-		$this.config.prereqsSatisified = Test-SetupPreqs ([ref]$prereqMessages) -useSealedSecrets:$useSealedSecrets
+		$this.config.prereqsSatisified = Test-SetupPreqs ([ref]$prereqMessages) -useSealedSecrets:$useSealedSecrets -checkKubectlVersion:$false
 
 		if (-not $this.config.prereqsSatisified) {
-
-			Write-Host "The following issues were detected:`n"
-			foreach ($prereqMessage in $prereqMessages) {
-				Write-Host $prereqMessage
-			}
-			$this.config.missingPrereqs = [string]::Join("; ", $prereqMessages)
-			
-			Write-Host "`nFix the above issue(s) and restart this script`n"
-			Read-HostEnter 'Press Enter to end...'
-
+			$this.config.missingPrereqs = $prereqMessages
+			Read-HostEnter "`nPress Enter to view missing prerequisites..."
 			return $true
 		}
 		Write-Host 'Done'
@@ -156,7 +148,7 @@ class PrequisitesNotMet : Step {
 
 	static [string] hidden $description = @'
 Your system does not meet the prerequisites. Rerun this script after 
-updating your system to meet the following prerequisites:
+updating your system/environment.
 
 '@
 
@@ -169,7 +161,13 @@ updating your system to meet the following prerequisites:
 
 	[bool]Run() {
 		Write-HostSection 'Prequisites Not Met' ([PrequisitesNotMet]::description)
-		Write-Host $this.config.missingPrereqs
+
+		Write-Host "The following issues were detected:`n"
+		foreach ($prereqMessage in $this.config.missingPrereqs) {
+			Write-Host $prereqMessage
+		}
+
+		Read-HostEnter "`nPress Enter to abort..."
 		return $true
 	}
 

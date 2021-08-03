@@ -235,6 +235,30 @@ Note: Press Enter to use the example release name.
 	}
 }
 
+class CodeDxSignerName : Step {
+
+	static [string] hidden $description = @'
+Specify the signerName for the CertificateSigningRequests (CSR) required for 
+components in the Code Dx namespace.
+'@
+
+	CodeDxSignerName([ConfigInput] $config) : base(
+		[CodeDxSignerName].Name, 
+		$config,
+		'Code Dx CSR Signer',
+		[CodeDxSignerName]::description,
+		'Enter the Code Dx components CSR signerName') {}
+
+	[bool]HandleResponse([IQuestion] $question) {
+		$this.config.csrSignerNameCodeDx = ([Question]$question).GetResponse([CodeDxSignerName]::default)
+		return $true
+	}
+
+	[void]Reset(){
+		$this.config.csrSignerNameCodeDx = ''
+	}
+}
+
 class CodeDxPassword : Step {
 
 	static [string] hidden $description = @'

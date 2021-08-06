@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.1.0
+.VERSION 1.2.0
 .GUID c191448b-25fd-4ec2-980e-e7a8ba85e693
 .AUTHOR Code Dx
 #>
@@ -99,6 +99,37 @@ function Get-HelmVersionMajorMinor() {
 	[double]$versionMatch.Matches.Groups[1].Value
 }
 
+function Get-KeytoolJavaSettings() {
+
+	$keytoolPath = Get-AppCommandPath 'keytool' | Select-Object -First 1
+	if ($null -eq $keytoolPath) {
+		return $null
+	}
+
+	$javaSettings = $null
+	$local:ErrorActionPreference = 'Continue'
+
+	Push-Location (Split-Path $keytoolPath)
+	if ((Test-Path java -PathType Leaf) -or (Test-Path java.exe -PathType Leaf)) {
+		$javaSettings = ./java -XshowSettings:all -version 2>&1
+	}
+	Pop-Location
+
+	$javaSettings
+}
+
+function Get-KeytoolJavaSpec() {
+
+	$javaSettings = Get-KeytoolJavaSettings
+	if ($null -eq $javaSettings) {
+		return $null
+	}
+	if (-not ($javaSettings | select-string  'java.vm.specification.version' | ForEach-Object { $_ -match 'java.vm.specification.version\s=\s(?<version>.+)' })) {
+		return $null
+	}
+	$matches['version']
+}
+
 function Test-SetupKubernetesVersion([ref] $messages) {
 
 	$messages.Value = @()
@@ -173,6 +204,14 @@ function Test-SetupPreqs([ref] $messages, [switch] $useSealedSecrets, [string] $
 			$messages.Value += $k8sMessages
 			$messages.Value += "Note: The prerequisite check used kubectl context '$context'"
 		}
+	}
+
+	$keytoolJavaSpec = Get-KeytoolJavaSpec
+	if ($null -eq $keytoolJavaSpec) {
+		$keytoolJavaSpec = '?'
+	}
+	if ('1.8' -ne $keytoolJavaSpec) {
+		$messages.Value += "keytool application is associated with an unsupported java.vm.specification version ($keytoolJavaSpec), update your PATH to run the Java 8 version of the keytool application"
 	}
 
 	$messages.Value.count -eq 0

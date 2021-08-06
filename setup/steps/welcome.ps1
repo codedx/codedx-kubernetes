@@ -95,7 +95,7 @@ Your system must meet these prerequisites to run the Code Dx setup scripts:
 	- kubectl (https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 	- openssl (https://www.openssl.org/)
 	- git (https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-	- keytool (Java JRE - https://adoptopenjdk.net/)
+	- keytool (Java 8 JRE - https://adoptopenjdk.net/)
 '@
 	static [string] hidden $kubesealDescription = @'
 

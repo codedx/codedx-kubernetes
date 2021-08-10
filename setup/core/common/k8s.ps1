@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.2.2
+.VERSION 1.3.0
 .GUID 5614d5a5-d33b-4a86-a7bb-ccc91c3f9bb3
 .AUTHOR Code Dx
 #>
@@ -373,26 +373,32 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 	}
 
 	$pairs = @()
-	$keyValues.Keys | ForEach-Object {
+	$tmpPaths = @()
+	try {
+		$keyValues.Keys | ForEach-Object {
 
-		# apply escape required when running from pwsh
-		$value = $keyValues[$_]
-		$value = $value -replace '"','\"'
+			# apply escape required when running from pwsh
+			$value = $keyValues[$_]
+			$value = $value -replace '"','\"'
 
-		$pairs += "--from-literal=$_=$value"
-	}
-	$fileKeyValues.Keys | ForEach-Object {
-		$pairs += "--from-file=$_=$($fileKeyValues[$_])"
-	}
-	if ($pairs.Length -eq 0) {
-		throw "Unable to create secret named $name with no data."
-	}
+			$pairs += "--from-literal=$_=$value"
+		}
+		$fileKeyValues.Keys | ForEach-Object {
+			$fromFilePath = Set-KubectlFromFilePath $fileKeyValues[$_] ([ref]$tmpPaths)
+			$pairs += "--from-file=$_=$fromFilePath"
+		}
+		if ($pairs.Length -eq 0) {
+			throw "Unable to create secret named $name with no data."
+		}
 
-	$output = $dryRun ? 'yaml' : 'name'
-	$dryRunParam = $dryRun ? (Get-KubectlDryRunParam) : ''
-	kubectl -n $namespace create secret generic $name $pairs -o $output $dryRunParam
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to create secret named $name, kubectl exited with code $LASTEXITCODE."
+		$output = $dryRun ? 'yaml' : 'name'
+		$dryRunParam = $dryRun ? (Get-KubectlDryRunParam) : ''
+		kubectl -n $namespace create secret generic $name $pairs -o $output $dryRunParam
+		if ($LASTEXITCODE -ne 0) {
+			throw "Unable to create secret named $name, kubectl exited with code $LASTEXITCODE."
+		}
+	} finally {
+		$tmpPaths | ForEach-Object { Write-Verbose "Removing temporary file '$_'"; Remove-Item $_ -Force }
 	}
 }
 
@@ -436,6 +442,19 @@ function New-CertificateConfigMap([string] $namespace, [string] $name, [string] 
 	New-ConfigMap $namespace $name @{} @{$certFilenameInConfigMap = $certFile} -dryRun:$dryRun
 }
 
+function Set-KubectlFromFilePath([string] $fromFilePath, [ref] $tmpPaths) {
+	if ($fromFilePath.Contains(',')) {
+		$newFromFilePath = New-TemporaryFile
+		$tmpPaths.Value += $newFromFilePath.FullName
+
+		Write-Verbose "Created file '$($newFromFilePath.FullName)' for file '$fromFilePath'"
+		Copy-Item -LiteralPath $fromFilePath -Destination $newFromFilePath.FullName
+
+		$fromFilePath = $newFromFilePath.FullName
+	}
+	$fromFilePath
+}
+
 function New-ConfigMap([string] $namespace, [string] $name, [hashtable] $keyValues = @{}, [hashtable] $fileKeyValues = @{}, [switch] $dryRun) {
 	
 	if (-not $dryRun) {
@@ -445,26 +464,32 @@ function New-ConfigMap([string] $namespace, [string] $name, [hashtable] $keyValu
 	}
 
 	$pairs = @()
-	$keyValues.Keys | ForEach-Object {
+	$tmpPaths = @()
+	try {
+		$keyValues.Keys | ForEach-Object {
 
-		# apply escape required when running from pwsh
-		$value = $keyValues[$_]
-		$value = $value -replace '"','\"'
+			# apply escape required when running from pwsh
+			$value = $keyValues[$_]
+			$value = $value -replace '"','\"'
 
-		$pairs += "--from-literal=$_=$value"
-	}
-	$fileKeyValues.Keys | ForEach-Object {
-		$pairs += "--from-file=$_=$($fileKeyValues[$_])"
-	}
-	if ($pairs.Length -eq 0) {
-		throw "Unable to create configmap named $name with no data."
-	}
+			$pairs += "--from-literal=$_=$value"
+		}
+		$fileKeyValues.Keys | ForEach-Object {
+			$fromFilePath = Set-KubectlFromFilePath $fileKeyValues[$_] ([ref]$tmpPaths)
+			$pairs += "--from-file=$_=$fromFilePath"
+		}
+		if ($pairs.Length -eq 0) {
+			throw "Unable to create configmap named $name with no data."
+		}
 
-	$output = $dryRun ? 'yaml' : 'name'
-	$dryRunParam = $dryRun ? (Get-KubectlDryRunParam) : ''
-	kubectl -n $namespace create configmap $name $pairs -o $output $dryRunParam
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to create configmap named $name, kubectl exited with code $LASTEXITCODE."
+		$output = $dryRun ? 'yaml' : 'name'
+		$dryRunParam = $dryRun ? (Get-KubectlDryRunParam) : ''
+		kubectl -n $namespace create configmap $name $pairs -o $output $dryRunParam
+		if ($LASTEXITCODE -ne 0) {
+			throw "Unable to create configmap named $name, kubectl exited with code $LASTEXITCODE."
+		}
+	} finally {
+		$tmpPaths | ForEach-Object { Write-Verbose "Removing temporary file '$_'"; Remove-Item $_ -Force }
 	}
 }
 

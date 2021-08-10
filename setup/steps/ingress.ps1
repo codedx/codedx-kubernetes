@@ -65,6 +65,7 @@ you plan to use routes, configure your routes after installing Code Dx.
 		if ($this.config.k8sProvider -eq [ProviderType]::Eks) {
 			$choices += [tuple]::create('AWS Classic Load Balancer with Certificate Manager', 'Use AWS Classic Load Balancer')
 			$choices += [tuple]::create('AWS Network Load Balancer with Certificate Manager', 'Use AWS Network Load Balancer')
+			$choices += [tuple]::create('Internal AWS Classic Load Balancer with Certificate Manager', 'Use Internal AWS Classic Load Balancer')
 		}
 
 		return new-object MultipleChoiceQuestion($prompt, $choices, -1)
@@ -80,6 +81,7 @@ you plan to use routes, configure your routes after installing Code Dx.
 			5 { $this.config.ingressType = [IngressType]::NginxLetsEncryptWithLoadBalancerIP }
 			6 { $this.config.ingressType = [IngressType]::ClassicElb }
 			7 { $this.config.ingressType = [IngressType]::NetworkElb }
+			8 { $this.config.ingressType = [IngressType]::InternalClassicElb }
 		}
 
 		$this.config.skipNginxIngressControllerInstall = -not $this.config.HasNginxIngress()
@@ -88,10 +90,11 @@ you plan to use routes, configure your routes after installing Code Dx.
 		$this.config.skipIngressEnabled = $this.config.skipNginxIngressControllerInstall -and $this.config.ingressType -ne [IngressType]::ExternalIngressController -and $this.config.ingressType -ne [IngressType]::ExternalNginxIngressController
 		$this.config.skipIngressAssumesNginx = $this.config.skipNginxIngressControllerInstall -and $this.config.ingressType -ne [IngressType]::ExternalNginxIngressController
 		
+		$isElb = $this.config.IsElbIngress()
+
 		$this.config.ingressAnnotationsCodeDx = @{}
-		$this.config.serviceTypeCodeDx = ($this.config.ingressType -eq [IngressType]::LoadBalancer -or $this.config.ingressType -eq [IngressType]::ClassicElb -or $this.config.ingressType -eq [IngressType]::NetworkElb) ? 'LoadBalancer' : ''
-		
-		if ($this.config.ingressType -eq [IngressType]::ClassicElb -or $this.config.ingressType -eq [IngressType]::NetworkElb) {
+		$this.config.serviceTypeCodeDx = ($this.config.ingressType -eq [IngressType]::LoadBalancer -or $isElb) ? 'LoadBalancer' : ''
+		if ($isElb) {
 			$this.config.codeDxTlsServicePortNumber = 443
 		}
 		
@@ -291,18 +294,24 @@ AWS Certificates console.
 		
 		$certArn = ([Question]$question).response
 
+		$isNetworkElb = $this.config.ingressType -eq [IngressType]::NetworkElb
+
 		$backendProtocol = 'http'
 		if (-not $this.config.skipTLS) {
-			$backendProtocol = $this.config.ingressType -eq [IngressType]::NetworkElb ? 'ssl' : 'https'
+			$backendProtocol = $isNetworkElb ? 'ssl' : 'https'
 		}
 		$this.config.serviceAnnotationsCodeDx = @{
 			'service.beta.kubernetes.io/aws-load-balancer-backend-protocol' = $backendProtocol
-    		'service.beta.kubernetes.io/aws-load-balancer-ssl-ports' = 'https'
-    		'service.beta.kubernetes.io/aws-load-balancer-ssl-cert' = $certArn
+			'service.beta.kubernetes.io/aws-load-balancer-ssl-ports' = 'https'
+			'service.beta.kubernetes.io/aws-load-balancer-ssl-cert' = $certArn
 		}
-		if ($this.config.ingressType -eq [IngressType]::NetworkElb) {
+		if ($isNetworkElb) {
 			$this.config.serviceAnnotationsCodeDx['service.beta.kubernetes.io/aws-load-balancer-type'] = 'nlb'
 		}
+		if ($this.config.IsElbInternalIngress()) {
+			$this.config.serviceAnnotationsCodeDx['service.beta.kubernetes.io/aws-load-balancer-internal'] = 'true'
+		}
+
 		return $true
 	}
 
@@ -311,7 +320,7 @@ AWS Certificates console.
 	}
 
 	[bool]CanRun() {
-		return ($this.config.ingressType -eq [IngressType]::ClassicElb -or $this.config.ingressType -eq [IngressType]::NetworkElb)
+		return $this.config.IsElbIngress()
 	}
 }
 

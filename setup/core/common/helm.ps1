@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.1
+.VERSION 1.1.0
 .GUID 031ba6fc-042c-4c0d-853c-52afb79ce7ea
 .AUTHOR Code Dx
 #>
@@ -94,30 +94,36 @@ function Invoke-HelmSingleDeployment([string] $message,
 	}
 
 	$values = @()
-	$valuesPaths | ForEach-Object {
-		$values = $values + "--values"
-		$values = $values + ('"{0}"' -f $_)
-	}
+	$tmpPaths = @()
+	try {
+		$valuesPaths | ForEach-Object {
+			$values = $values + "--values"
+			$valuesFilePath = Set-KubectlFromFilePath $_ ([ref]$tmpPaths)
+			$values = $values + ('"{0}"' -f $valuesFilePath)
+		}
 
-	$versionParam = @()
-	if ('' -ne $version) {
-		$versionParam = $versionParam + "--version"
-		$versionParam = $versionParam + "$version"
-	}
-	
-	Write-Verbose "Running Helm Upgrade: $message..."
+		$versionParam = @()
+		if ('' -ne $version) {
+			$versionParam = $versionParam + "--version"
+			$versionParam = $versionParam + "$version"
+		}
+		
+		Write-Verbose "Running Helm Upgrade: $message..."
 
-	$dryRunParam = $dryRun ? '--dry-run' : ''
-	$debugParam = $dryRun ? '--debug' : ''
+		$dryRunParam = $dryRun ? '--dry-run' : ''
+		$debugParam = $dryRun ? '--debug' : ''
 
-	$valuesParam = '--reset-values' # merge $values with the latest, default chart values
-	if ($reuseValues) {
-		$valuesParam = '--reuse-values' # merge $values used with the last upgrade
-	}
+		$valuesParam = '--reset-values' # merge $values with the latest, default chart values
+		if ($reuseValues) {
+			$valuesParam = '--reuse-values' # merge $values used with the last upgrade
+		}
 
-	helm upgrade --namespace $namespace --install $valuesParam $releaseName @($values) $chartReference @($versionParam) $dryRunParam $debugParam
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to run helm upgrade/install, helm exited with code $LASTEXITCODE."
+		helm upgrade --namespace $namespace --install $valuesParam $releaseName @($values) $chartReference @($versionParam) $dryRunParam $debugParam
+		if ($LASTEXITCODE -ne 0) {
+			throw "Unable to run helm upgrade/install, helm exited with code $LASTEXITCODE."
+		}
+	} finally {
+		$tmpPaths | ForEach-Object { Write-Verbose "Removing temporary file '$_'"; Remove-Item $_ -Force }
 	}
 
 	if (-not $dryRun) {

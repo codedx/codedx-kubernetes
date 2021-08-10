@@ -29,6 +29,7 @@ enum IngressType {
 	ExternalNginxIngressController
 	ClassicElb
 	NetworkElb
+	InternalClassicElb
 }
 
 class ConfigInput {
@@ -248,6 +249,16 @@ class ConfigInput {
 
 	[bool]UseFluxGitOps() {
 		return $this.useHelmOperator -or $this.useHelmController
+	}
+
+	[bool]IsElbIngress() {
+		return $this.ingressType -eq [IngressType]::ClassicElb -or `
+			$this.ingressType -eq [IngressType]::NetworkElb -or `
+			$this.ingressType -eq [IngressType]::InternalClassicElb
+	}
+
+	[bool]IsElbInternalIngress() {
+		return $this.ingressType -eq [IngressType]::InternalClassicElb
 	}
 }
 

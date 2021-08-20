@@ -61,9 +61,9 @@ spec:
 '@ -f $namespace, $podName, $storageClassName, $pvcName
 
 Write-Host "Testing for pod $podName in namespace $namespace."
-if (Test-KubernetesPod $namespace $podName) {
+if (Test-Pod $namespace $podName) {
     Write-Host "Removing pod $podName in namespace $namespace."
-    Remove-KubernetesPod $namespace $podName
+    Remove-Pod $namespace $podName
 }
 
 $file = [io.path]::GetTempFileName()
@@ -74,7 +74,7 @@ New-NamespacedResource $namespace 'pod' $podName $file
 Remove-Item -path $file
 
 Write-Host "Removing pod $podName in namespace $namespace."
-Remove-KubernetesPod $namespace $podName
+Remove-Pod $namespace $podName
 Write-Host "Removing pvc $pvcName in namespace $namespace."
 Remove-KubernetesPvc $namespace $pvcName
 

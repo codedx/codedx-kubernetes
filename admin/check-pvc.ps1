@@ -19,6 +19,8 @@ param (
 $ErrorActionPreference = 'Stop'
 Set-PSDebug -Strict
 
+$VerbosePreference = 'Continue'
+
 '../setup/core/common/k8s.ps1' | ForEach-Object {
 	$path = join-path $PSScriptRoot $_
 	if (-not (Test-Path $path)) {
@@ -72,6 +74,8 @@ $yaml | out-file $file -Encoding ascii
 Write-Host "Creating pod $podName in namespace $namespace."
 New-NamespacedResource $namespace 'pod' $podName $file
 Remove-Item -path $file
+
+Wait-RunningPod "Waiting for pod $podName in namespace $namespace." 300 $namespace $podName
 
 Write-Host "Removing pod $podName in namespace $namespace."
 Remove-Pod $namespace $podName

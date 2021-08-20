@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.3.0
+.VERSION 1.4.0
 .GUID 5614d5a5-d33b-4a86-a7bb-ccc91c3f9bb3
 .AUTHOR Code Dx
 #>
@@ -862,6 +862,31 @@ function Remove-KubernetesJob([string] $namespace,
 	}
 }
 
+function Test-KubernetesPod([string] $namespace,
+	[string] $resourceName) {
+
+	$Local:ErrorActionPreference = 'SilentlyContinue'
+	kubectl -n $namespace get pod $resourceName *>&1 | out-null
+	$LASTEXITCODE -eq 0
+}
+
+function Remove-KubernetesPod([string] $namespace,
+	[string] $resourceName) {
+	
+	kubectl delete -n $namespace pod $resourceName
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to delete pod, kubectl exited with code $LASTEXITCODE."
+	}
+}
+
+function Remove-KubernetesPvc([string] $namespace,
+	[string] $resourceName) {
+	
+	kubectl delete -n $namespace pvc $resourceName
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to delete pvc, kubectl exited with code $LASTEXITCODE."
+	}
+}
 
 function Edit-ResourceJsonPath([string] $namespace, [string] $resourceKind, [string] $resourceName, [string] $jsonPatch) {
 

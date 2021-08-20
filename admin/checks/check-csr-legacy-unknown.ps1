@@ -20,7 +20,7 @@ Set-PSDebug -Strict
 
 $VerbosePreference = 'Continue'
 
-'../setup/core/common/k8s.ps1' | ForEach-Object {
+'../../setup/core/common/k8s.ps1' | ForEach-Object {
 	$path = join-path $PSScriptRoot $_
 	if (-not (Test-Path $path)) {
 		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."

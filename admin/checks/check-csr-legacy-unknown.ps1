@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.0
+.VERSION 1.0.1
 .GUID 5c50ce4e-b948-4b48-bcf1-c003954a988b
 .AUTHOR Code Dx
 #>
@@ -10,7 +10,7 @@ This script runs a test using a CSR and the kubernetes.io/legacy-unknown signer.
 #>
 
 param (
-	[string] $namespace = 'default',
+  [string] $namespace = 'default',
   [string] $podName = 'code-dx-test-pod-csr',
   [string] $certFilename = 'ca.crt'
 )
@@ -21,11 +21,11 @@ Set-PSDebug -Strict
 $VerbosePreference = 'Continue'
 
 '../../setup/core/common/k8s.ps1' | ForEach-Object {
-	$path = join-path $PSScriptRoot $_
-	if (-not (Test-Path $path)) {
-		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
-	}
-	. $path
+  $path = join-path $PSScriptRoot $_
+  if (-not (Test-Path $path)) {
+    Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
+  }
+  . $path
 }
 
 Write-Host 'Checking for kubernetes.io/legacy-unknown signer support...'
@@ -40,7 +40,8 @@ if (Test-Pod $namespace $podName) {
 }
 
 Write-Host "Running pod $podName in namespace $namespace."
-kubectl -n $namespace run $podName --image=busybox --restart=Never -- sleep '300s'
+$overrides = "--overrides=$('{"apiVersion":"v1","spec":{"automountServiceAccountToken":true}}' | convertto-json)"
+kubectl -n $namespace run $podName --image=busybox --restart=Never $overrides -- sleep '300s'
 if ($LASTEXITCODE -ne 0) {
   throw "Unable to start pod $podName to fetch certificate, kubectl exited with code $LASTEXITCODE."
 }
@@ -71,4 +72,4 @@ New-Certificate 'kubernetes.io/legacy-unknown' "./$certFilename" $resourceName '
 Write-Host "Remove CSR $resourceName..."
 Remove-CsrResource $resourceName
 
-Write-Host 'Done'
+Write-Host "Done (used cert ./$certFilename)"

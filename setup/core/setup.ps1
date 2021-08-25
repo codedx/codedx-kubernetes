@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.16.2
+.VERSION 1.17.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -56,7 +56,7 @@ param (
 	[string]                 $workflowEphemeralStorageReservation,
 	[string]                 $nginxEphemeralStorageReservation,
 
-	[string]                 $imageCodeDxTomcat       = 'codedx/codedx-tomcat:v5.4.13',
+	[string]                 $imageCodeDxTomcat       = 'codedx/codedx-tomcat:v5.4.13-tomcat-9',
 	[string]                 $imageCodeDxTools        = 'codedx/codedx-tools:v5.4.13',
 	[string]                 $imageCodeDxToolsMono    = 'codedx/codedx-toolsmono:v5.4.13',
 

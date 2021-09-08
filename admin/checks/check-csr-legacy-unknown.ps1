@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.1
+.VERSION 1.1.0
 .GUID 5c50ce4e-b948-4b48-bcf1-c003954a988b
 .AUTHOR Code Dx
 #>
@@ -20,12 +20,18 @@ Set-PSDebug -Strict
 
 $VerbosePreference = 'Continue'
 
-'../../setup/core/common/k8s.ps1' | ForEach-Object {
+'../../setup/core/common/k8s.ps1','../../setup/core/common/utils.ps1' | ForEach-Object {
   $path = join-path $PSScriptRoot $_
   if (-not (Test-Path $path)) {
     Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
   }
   . $path
+}
+
+Write-Host 'Testing for openssl...'
+$opensslPath = Get-AppCommandPath 'openssl' | Select-Object -First 1
+if ($null -eq $opensslPath) {
+		Write-Error "Unable to continue because openssl is not in your PATH."
 }
 
 Write-Host 'Checking for kubernetes.io/legacy-unknown signer support...'
@@ -71,5 +77,12 @@ New-Certificate 'kubernetes.io/legacy-unknown' "./$certFilename" $resourceName '
 
 Write-Host "Remove CSR $resourceName..."
 Remove-CsrResource $resourceName
+
+$subject  = (openssl x509 -noout -subject -in ./$certFilename).replace('subject=','')
+$issuer = (openssl x509 -noout -issuer  -in ./codedx.public.key).replace('issuer=','')
+
+if ($subject -ne $issuer) {
+  throw "Certificate issuer ($issuer) is unexpected because it does not match subject ($subject)."
+}
 
 Write-Host "Done (used cert ./$certFilename)"

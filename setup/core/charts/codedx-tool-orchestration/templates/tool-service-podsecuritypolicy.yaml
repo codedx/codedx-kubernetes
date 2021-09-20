@@ -62,6 +62,10 @@ spec:
   allowedHostPaths:
   - pathPrefix: /var/run/docker.sock
     readOnly: false
+  
+  allowedCapabilities:
+  - SYS_PTRACE
+  - SYS_CHROOT
 
   hostNetwork: false
   hostIPC: false

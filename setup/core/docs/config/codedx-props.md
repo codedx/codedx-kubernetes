@@ -1,10 +1,10 @@
 # Configure Code Dx Properties
 
-Here are the steps to specify values for properties in the `codedx.props` file described in the [Code Dx Install Guide](https://codedx.com/Documentation/InstallGuide.html). There are two types of property values you may want to configure. Private property values are those with values that should be protected such as passwords, and they get stored in a Kubernetes Secret. Public property values are loaded from a Kubernetes ConfigMap.
+Here are the steps to specify values for properties in the `codedx.props` file described in the [Code Dx Install Guide](https://community.synopsys.com/s/document-item?bundleId=codedx&topicId=all_conditional_1.html&_LANG=enus). There are two types of property values you may want to configure. Private property values are those with values that should be protected such as passwords, and they get stored in a Kubernetes Secret. Public property values are loaded from a Kubernetes ConfigMap.
 
 ## Proxy Server Example
 
-The following steps will configure a [proxy server](https://codedx.com/Documentation/InstallGuide.html#Proxies) for Code Dx using both public and private property values.
+The following steps will configure a [proxy server](https://community.synopsys.com/s/document-item?bundleId=codedx&topicId=install_guide%2FCodeDxConfiguration%2Fproxy.html&_LANG=enus) for Code Dx using both public and private property values.
 
 If you have not yet run the guided setup to determine the setup command(s) for deploying Code Dx on your Kubernetes cluster, do so now and end the guided setup by using one of the options to save your setup command to a file.
 

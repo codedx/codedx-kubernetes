@@ -338,7 +338,7 @@ You can configure a node selector for specific projects and/or tools by
 adding the nodeSelectorKey and nodeSelectorValue fields to a Code Dx 
 Resource Requirement - browse to the following URL for more details:
 
-https://codedx.com/Documentation/UserGuide.html#ResourceRequirements
+https://community.synopsys.com/s/document-item?bundleId=codedx&topicId=user_guide%2FAnalysis%2Ftool-orchestration.html&_LANG=enus
 
 Note: You can use the same node selector key and value for multiple workloads.
 '@

@@ -92,7 +92,7 @@ function Get-KubernetesPort() {
 
 	$info = kubectl cluster-info
 	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to get kubectl context, kubectl exited with code $LASTEXITCODE."
+		throw "Unable to get kubectl cluster info, kubectl exited with code $LASTEXITCODE."
 	}
 
 	$urlMatch = $info[0] | select-string '(?<url>http[A-Z0-9a-z:/\.\-]+)'
@@ -101,6 +101,21 @@ function Get-KubernetesPort() {
 	}
 	$url = $urlMatch.Matches.Groups[1].Value
 	([Uri]$url).Port
+}
+
+function Get-KubernetesEndpointsPort() {
+
+	$json = kubectl get endpoints/kubernetes -o json | convertfrom-json
+	if ($LASTEXITCODE -ne 0) {
+		throw "Unable to get kubernetes endpoints, kubectl exited with code $LASTEXITCODE."
+	}
+
+	$port = $null
+	$portInfo = $json.subsets.ports | select-object -First 1
+	if ($null -ne $portInfo) {
+		$port = $portInfo | select-object -ExpandProperty port
+	}
+	$port
 }
 
 function Set-KubectlContext([string] $contextName) {

@@ -188,7 +188,11 @@ class GetKubernetesPort: Step {
 		while ($true) {
 			try {
 				Write-Host "Determining Kubernetes port using '$($this.config.kubeContextName)' kubectl context...`n"
-				$this.config.kubeApiTargetPort = Get-KubernetesPort
+				$kubeApiTargetPort = Get-KubernetesEndpointsPort
+				if ($null -eq $kubeApiTargetPort) {
+					throw 'Failed to fetch endpoints/kubernetes port'
+				}
+				$this.config.kubeApiTargetPort = $kubeApiTargetPort
 				break
 			} catch {
 				Write-Host "ERROR: Unable to read port from cluster (is the cluster up and running?):`n$_`n"

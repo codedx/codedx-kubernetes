@@ -19,6 +19,10 @@ function New-Mocks() {
 		return $global:k8sport
 	}
 
+	Mock Get-KubernetesEndpointsPort {
+		return $global:k8sport
+	}
+
 	Mock Get-KubectlContexts {
 		$global:kubeContexts
 	}

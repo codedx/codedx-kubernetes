@@ -4,8 +4,8 @@
 .AUTHOR Code Dx
 #>
 
-<# 
-.DESCRIPTION 
+<#
+.DESCRIPTION
 This script includes functions for the deployment of Code Dx and Code Dx Orchestration.
 #>
 
@@ -66,7 +66,7 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 	[int]      $dbVolumeSizeGiB,
 	[int]      $dbSlaveReplicaCount,
 	[int]      $dbSlaveVolumeSizeGiB,
-	[int]      $codeDxVolumeSizeGiB,	
+	[int]      $codeDxVolumeSizeGiB,
 	[string]   $appDataStorageClassName,
 	[string]   $dbStorageClassName,
 	[string]   $codeDxMemoryLimit,
@@ -113,7 +113,7 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 	[string]   $valuesFile,
 	[switch]   $createSCCs,
 	[switch]   $useCodeDxDbUser) {
- 
+
 	$imagePullSecretYaml   = $imagePullSecretName -eq '' ? '[]' : "[ {name: '$imagePullSecretName'} ]"
 	$mariaDbPullSecretYaml = $imagePullSecretName -eq '' ? '[]' : "[ '$imagePullSecretName' ]"
 
@@ -149,7 +149,7 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 '@ -f $toolOrchestrationNamespace
 		}
 	}
-	
+
 	$toolOrchestrationValues = ''
 	if (-not $skipToolOrchestration) {
 		$toolOrchestrationValues = @'
@@ -198,7 +198,7 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 		$replicaDbPodAnnotations['backup.velero.io/backup-volumes-excludes'] = 'data'
 	}
 
-	
+
 	$masterDatabaseTlsConfig = ''
 	if ('' -ne $dbMasterTlsSecretName) {
 		$masterDatabaseTlsConfig = @'
@@ -206,7 +206,7 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
       ssl_key=/bitnami/mariadb/tls/cert/tls.key
 '@
 	}
-	
+
 	$masterDatabaseTlsCaConfig = ''
 	if ('' -ne $dbMasterTlsCaConfigMapName) {
 		$masterDatabaseTlsCaConfig = @'
@@ -268,8 +268,10 @@ ingress:
 podSecurityPolicy:
   codedx:
     create: {3}
+    bind: {3}
   mariadb:
     create: {3}
+    bind: {3}
 networkPolicy:
   codedx:
     create: {4}
@@ -459,10 +461,10 @@ function New-ToolOrchestrationValuesFile([string]   $codedxNamespace,
 	[string]   $workflowMemoryLimit,
 	[string]   $toolServiceCPULimit,
 	[string]   $minioCPULimit,
-	[string]   $workflowCPULimit,	
+	[string]   $workflowCPULimit,
 	[string]   $toolServiceEphemeralStorageLimit,
 	[string]   $minioEphemeralStorageLimit,
-	[string]   $workflowEphemeralStorageLimit,	
+	[string]   $workflowEphemeralStorageLimit,
 	[int]      $kubeApiTargetPort,
 	[string]   $toolOrchestrationExistingSecret,
 	[string]   $minioExistingSecretName,
@@ -495,7 +497,7 @@ function New-ToolOrchestrationValuesFile([string]   $codedxNamespace,
 	$protocol = 'http'
 	$codedxPort = $codeDxTomcatPortNumber
 	$tlsConfig = $configureTls.ToString().ToLower()
-	
+
 	if ($configureTls) {
 		$protocol = 'https'
 		$codedxPort = $codeDxTlsTomcatPortNumber
@@ -570,12 +572,16 @@ minioTlsTrust:
 podSecurityPolicy:
   tws:
     create: {15}
+    bind: {15}
   twsWorkflows:
     create: {15}
+    bind: {15}
   argo:
     create: {15}
+    bind: {15}
   minio:
     create: {15}
+    bind: {15}
 
 numReplicas: {11}
 
@@ -776,7 +782,7 @@ defaultBackend:
 podSecurityPolicy:
   enabled: {2}
 '@ -f $priorityClassName,(Format-ResourceLimitRequest -limitMemory $memoryLimit -limitCPU $cpuLimit -limitEphemeralStorage $ephemeralStorageLimit -indent 2),$usePSP | out-file $ingressValuesFile -Encoding ascii -Force
-	
+
 	Get-ChildItem $ingressValuesFile
 }
 
@@ -788,7 +794,7 @@ global:
   podSecurityPolicy:
     enabled: {0}
 '@ -f $podSecurityPolicyEnabled.ToString().ToLower() | out-file $letsEncryptValuesFile -Encoding ascii -Force
-	
+
 	Get-ChildItem $letsEncryptValuesFile
 }
 

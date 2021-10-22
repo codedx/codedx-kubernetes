@@ -249,7 +249,7 @@ if (-not (Test-SetupPreqs ([ref]$prereqMessages) -useSealedSecrets:$useSealedSec
 
 $csrSignerNameLegacyUnknown = Get-CsrSignerNameLegacyUnknown
 $isBetaCsrRequired = $csrSignerNameCodeDx -eq $csrSignerNameLegacyUnknown -or $csrSignerNameToolOrchestration -eq $csrSignerNameLegacyUnknown
-if ($isBetaCsrRequired -and -not (Test-CertificateSigningRequestV1Beta1)) {
+if (-not $skipTLS -and $isBetaCsrRequired -and -not (Test-CertificateSigningRequestV1Beta1)) {
 	# the v1 stable CSR API no longer supports the legacy-unknown signer name
 	Write-ErrorMessageAndExit "Unable to continue because the $csrSignerNameLegacyUnknown signer name requires the unsupported v1beta1 CSR API version."
 }

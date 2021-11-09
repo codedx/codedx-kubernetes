@@ -5,16 +5,16 @@ codedxTls:
     enabled: false
     caConfigMap: 
 
-imageNameCodeDxTools: 'codedx/codedx-tools:v5.5.2'
-imageNameCodeDxToolsMono: 'codedx/codedx-toolsmono:v5.5.2'
-imageNamePrepare: 'codedx/codedx-prepare:v1.9.1'
-imageNameNewAnalysis: 'codedx/codedx-newanalysis:v1.9.1'
-imageNameSendResults: 'codedx/codedx-results:v1.9.1'
-imageNameSendErrorResults: 'codedx/codedx-error-results:v1.9.1'
-imageNameHelmPreDelete: 'codedx/codedx-cleanup:v1.9.1'
+imageNameCodeDxTools: 'codedx/codedx-tools:v5.5.3'
+imageNameCodeDxToolsMono: 'codedx/codedx-toolsmono:v5.5.3'
+imageNamePrepare: 'codedx/codedx-prepare:v1.10.0'
+imageNameNewAnalysis: 'codedx/codedx-newanalysis:v1.10.0'
+imageNameSendResults: 'codedx/codedx-results:v1.10.0'
+imageNameSendErrorResults: 'codedx/codedx-error-results:v1.10.0'
+imageNameHelmPreDelete: 'codedx/codedx-cleanup:v1.10.0'
 imagePullSecretKey: ""
 
-toolServiceImageName: 'codedx/codedx-tool-service:v1.9.1'
+toolServiceImageName: 'codedx/codedx-tool-service:v1.10.0'
 toolServiceImagePullSecrets: []
 toolServicePort: 3333
 

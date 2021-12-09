@@ -135,12 +135,14 @@ function Test-SetupKubernetesVersion([ref] $messages) {
 	$messages.Value = @()
 	$k8sRequiredMajorVersion = 1
 	$k8sMinimumMinorVersion  = 19
+	$k8sMaximumMinorVersion  = 21
 
 	if ((Get-KubectlServerVersionMajor) -ne $k8sRequiredMajorVersion) {
 		$messages.Value += "Unable to continue because the version of the selected Kubernetes cluster is unsupported (the kubectl server major version is not $k8sRequiredMajorVersion)."
 	} else {
-		if ((Get-KubectlServerVersionMinor) -lt $k8sMinimumMinorVersion) {
-			$messages.Value += "Unable to continue because the version of the selected Kubernetes cluster is unsupported (the kubectl server minor version is less than $k8sMinimumMinorVersion)."
+		$serverVersionMinor = Get-KubectlServerVersionMinor
+		if ($serverVersionMinor -lt $k8sMinimumMinorVersion -or $serverVersionMinor -gt $k8sMaximumMinorVersion) {
+			$messages.Value += "Unable to continue because the version of the selected Kubernetes cluster ($serverVersionMinor) is unsupported (the kubectl server minor version must be between $k8sMinimumMinorVersion and $k8sMaximumMinorVersion)."
 		} else {
 			$clientVersion = Get-KubectlClientVersion
 			$serverVersion = Get-KubectlServerVersion

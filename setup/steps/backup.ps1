@@ -16,7 +16,8 @@ Restic integration. Refer to https://velero.io/docs for Velero installation
 instructions. Code Dx has been tested with Velero 1.3, 1.4, and 1.5.
 
 If you choose to use Velero, a new Schedule resource will get created from 
-the information you provide.
+the information you provide, so you must install and configure Velero before 
+deploying Code Dx.
 '@
 
 	static [string] hidden $externalDatabaseDescription = @'

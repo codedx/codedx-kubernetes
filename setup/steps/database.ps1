@@ -21,7 +21,10 @@ secure the communication between Code Dx and your database (recommended).
 To use AWS RDS with MariaDB engine, follow these instructions:
 https://github.com/codedx/codedx-kubernetes/blob/master/setup/core/docs/db/use-rds-for-code-dx-database.md
 
-Once you have a database server, follow these instructions to create your Code Dx database:
+To use Azure Database for MariaDB, follow these instructions:
+https://github.com/codedx/codedx-kubernetes/blob/master/setup/core/docs/db/use-azure-db-for-code-dx-database.md
+
+Otherwise, follow these instructions to create your Code Dx database:
 https://github.com/codedx/codedx-kubernetes/blob/master/setup/core/docs/db/use-external-database.md
 '@
 
@@ -116,8 +119,8 @@ class ExternalDatabaseName : Step {
 
 	static [string] hidden $description = @'
 Specify the name of the Code Dx database you previously created on your 
-external database server. For example, enter codedx if you previously ran 
-a CREATE DATABASE statement with that name during Step 3 of the Code Dx
+external database server. For example, enter codedxdb if you previously ran 
+a CREATE DATABASE statement with that name during the Code Dx external 
 database setup instructions.
 '@
 
@@ -154,7 +157,7 @@ class ExternalDatabaseUser : Step {
 	static [string] hidden $description = @'
 Specify the username for the user with access to your Code Dx database. For 
 example, enter codedx if you previously ran a CREATE USER statement with that 
-name during Step 1 of the Code Dx database setup instructions.
+name during the Code Dx external database setup instructions.
 '@
 
 	ExternalDatabaseUser([ConfigInput] $config) : base(
@@ -190,7 +193,7 @@ class ExternalDatabasePwd : Step {
 	static [string] hidden $description = @'
 Specify the password for the user with access to your Code Dx database. Enter
 the password you specified with the IDENTIFIED BY portion of the CREATE USER 
-statement you ran during Step 1 of the Code Dx database setup instructions.
+statement you ran during the Code Dx external database setup instructions.
 '@
 
 	ExternalDatabasePwd([ConfigInput] $config) : base(
@@ -228,9 +231,7 @@ certificate authentication so that you can protect the communicaitons
 between Code Dx and your database server.
 
 Note: To enable this option, you must have access to the certificate 
-associated with your database CA. If you're using an AWS RDS database 
-you can download the root certificate from the following URL:
-https://s3.amazonaws.com/rds-downloads/rds-ca-2019-root.pem 
+associated with your database CA.
 '@
 
 	ExternalDatabaseOneWayAuth([ConfigInput] $config) : base(
@@ -265,9 +266,13 @@ class ExternalDatabaseCert : Step {
 	static [string] hidden $description = @'
 Specify a file path to the CA associated with your database host.
 
-Note: If you're using an AWS RDS database you can download the 
+If you're using an AWS RDS database, you can download the 
 root certificate from the following URL:
-https://s3.amazonaws.com/rds-downloads/rds-ca-2019-root.pem 
+https://s3.amazonaws.com/rds-downloads/rds-ca-2019-root.pem. 
+
+If you're using an Azure Database, use the following URL to locate 
+the certificate download link:
+https://docs.microsoft.com/en-us/azure/mariadb/concepts-ssl-connection-security#default-settings
 '@
 
 	ExternalDatabaseCert([ConfigInput] $config) : base(

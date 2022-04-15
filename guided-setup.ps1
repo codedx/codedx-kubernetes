@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.7.0
+.VERSION 1.8.0
 .GUID e917c41a-260f-4ea4-980d-db00f8baef1b
 .AUTHOR Code Dx
 #>
@@ -78,7 +78,7 @@ $graph = New-Object Graph($true)
 
 $s = @{}
 [Welcome],
-[UseGitOps],[SealedSecretsNamespace],[SealedSecretsControllerName],[SealedSecretsPublicKeyPath],
+[UseGitOps],[HelmManifestWarning],[SealedSecretsNamespace],[SealedSecretsControllerName],[SealedSecretsPublicKeyPath],
 [Prerequisites],[PrequisitesNotMet],[WorkDir],[ChooseEnvironment],
 [ChooseContext],[SelectContext],[HandleNoContext],
 [GetKubernetesPort],
@@ -114,7 +114,7 @@ $s = @{}
 
 Add-StepTransitions $graph $s[[Welcome]] $s[[UseGitOps]]
 
-Add-StepTransitions $graph $s[[UseGitOps]] $s[[Prerequisites]],$s[[PrequisitesNotMet]],$s[[Abort]]
+Add-StepTransitions $graph $s[[UseGitOps]] $s[[HelmManifestWarning]],$s[[Prerequisites]],$s[[PrequisitesNotMet]],$s[[Abort]]
 Add-StepTransitions $graph $s[[UseGitOps]] $s[[Prerequisites]],$s[[WorkDir]],$s[[ChooseEnvironment]],$s[[ChooseContext]]
 
 Add-StepTransitions $graph $s[[ChooseContext]] $s[[HandleNoContext]],$s[[Abort]]

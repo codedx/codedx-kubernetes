@@ -207,6 +207,7 @@ class ConfigInput {
 
 	[bool]   $useHelmOperator
 	[bool]   $useHelmController
+	[bool]   $useHelmManifest
 	[bool]   $skipSealedSecrets
 	[string] $sealedSecretsNamespace
 	[string] $sealedSecretsControllerName
@@ -247,8 +248,8 @@ class ConfigInput {
 		return $this.backupType -like 'velero*'
 	}
 
-	[bool]UseFluxGitOps() {
-		return $this.useHelmOperator -or $this.useHelmController
+	[bool]UseGitOps() {
+		return $this.useHelmOperator -or $this.useHelmController -or $this.useHelmManifest
 	}
 
 	[bool]IsElbIngress() {

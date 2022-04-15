@@ -68,7 +68,7 @@ if you plan to use LDAPS:
 	[string]GetMessage() {
 
 		$message = [LdapInstructions]::description
-		if ($this.config.UseFluxGitOps()) {
+		if ($this.config.UseGitOps()) {
 			$message += [LdapInstructions]::gitOpsUrl
 		} else {
 			$message += [LdapInstructions]::nonGitOpsUrl

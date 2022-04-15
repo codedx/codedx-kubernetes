@@ -52,7 +52,8 @@ class UseGitOps : Step {
 	static [string] hidden $description = @'
 Code Dx can generate a setup command that you can use to create GitOps 
 outputs for deploying Code Dx on Kubernetes using either Flux v1 and
-helm-operator or Flux v2 (GitOps Toolkit).
+helm-operator or Flux v2 (GitOps Toolkit). Alternatively, you can 
+generate a setup command that uses helm to render YAML files.
 
 '@
 
@@ -67,21 +68,69 @@ helm-operator or Flux v2 (GitOps Toolkit).
 		return new-object MultipleChoiceQuestion($prompt, @(
 			[tuple]::create('&No', 'No, I don''t want to use GitOps'),
 			[tuple]::create('&Flux v1', 'Yes, I want to use Flux v1 and helm-operator'),
-			[tuple]::create('Flux v2 (&GitOps Toolkit)', 'Yes, I want to use Flux v2 and helm-controller')), 0)
+			[tuple]::create('Flux v2 (&GitOps Toolkit)', 'Yes, I want to use Flux v2 and helm-controller'),
+			[tuple]::create('&Helm Manifest', 'Yes, I want to generate a manifest with helm dry-run'),
+			[tuple]::create('Helm Manifest with &Sealed Secrets', 'Yes, I want to generate a manifest with helm dry-run and use Bitnami''s Sealed Secrets')), 0)
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
-		$useGitOps = ([MultipleChoiceQuestion]$question).choice -ne 0
-		$this.config.useHelmOperator = $useGitOps -and (([MultipleChoiceQuestion]$question).choice -eq 1)
-		$this.config.useHelmController = $useGitOps -and (([MultipleChoiceQuestion]$question).choice -eq 2)
-		$this.config.skipSealedSecrets = -not $useGitOps
+		$this.config.useHelmOperator = ([MultipleChoiceQuestion]$question).choice -eq 1
+		$this.config.useHelmController = ([MultipleChoiceQuestion]$question).choice -eq 2
+		$this.config.useHelmManifest = 3,4 -contains ([MultipleChoiceQuestion]$question).choice
+		$this.config.skipSealedSecrets = 0,3 -contains ([MultipleChoiceQuestion]$question).choice
 		return $true
 	}
 
 	[void]Reset() {
 		$this.config.useHelmOperator = $false
 		$this.config.useHelmController = $false
+		$this.config.useHelmManifest = $false
 		$this.config.skipSealedSecrets = $true
+	}
+}
+
+class HelmManifestWarning : Step {
+
+	static [string] hidden $description = @'
+The Code Dx deployment depends on Helm. The Code Dx deployment script 
+can invoke helm on your behalf or generate resources for the Flux or
+GitOps Toolkit helm operator.
+
+The Helm Manifest deployment option lets you use helm to render the YAML 
+resources helm would produce during initial deployment. This option 
+will not work on a cluster where you previously deployed Code Dx by 
+applying helm-generated YAML. 
+
+Warning: Upgrades must be performed by rerunning the deployment script 
+on a cluster where Code Dx does not exist and manually merging the 
+resulting YAML with previously generated YAML.
+
+'@
+
+	HelmManifestWarning([ConfigInput] $config) : base(
+		[HelmManifestWarning].Name, 
+		$config,
+		'Helm Manifest Warning',
+		[HelmManifestWarning]::description,
+		'Do you understand the upgrade warning and want to continue?') {}
+
+	[IQuestion] MakeQuestion([string] $prompt) {
+		return new-object MultipleChoiceQuestion($prompt, @(
+			[tuple]::create('&Yes', 'Yes, I want to continue'),
+			[tuple]::create('&No', 'No, I want to go back to the previous step')), 1)
+	}
+
+	[bool]Run() {
+		Write-HostSection $this.title ($this.GetMessage())
+
+		$question = $this.MakeQuestion($this.prompt)
+		$question.Prompt()
+
+		return $question.choice -eq 0
+	}
+
+	[bool]CanRun() {
+		return $this.config.useHelmManifest
 	}
 }
 

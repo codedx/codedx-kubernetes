@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.17.0
+.VERSION 1.19.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -176,6 +176,7 @@ param (
 
 	[switch]                 $useHelmOperator,
 	[switch]                 $useHelmController,
+	[switch]                 $useHelmManifest,
 	[switch]                 $skipSealedSecrets,
 	[string]                 $sealedSecretsNamespace,
 	[string]                 $sealedSecretsControllerName,
@@ -234,7 +235,7 @@ $useNginxIngressController = -not $skipNginxIngressControllerInstall
 $useLocalDatabase = -not $skipDatabase
 $useRootDatabaseUser = -not $skipUseRootDatabaseUser
 
-$useGitOps = $useHelmOperator -or $useHelmController
+$useGitOps = $useHelmOperator -or $useHelmController -or $useHelmManifest
 $useSealedSecrets = $useGitOps -and -not $skipSealedSecrets
 
 $useVelero = $backupType -like 'velero*'
@@ -541,6 +542,11 @@ if ($kubeContextName -ne '') {
 	Write-Verbose "Using kubeconfig context entry named $(Get-KubectlContext)"
 }
 
+### Check whether this is an unsupported upgrade scenario
+if ($useHelmManifest -and (Test-CodeDxDeployment $namespaceCodeDx)) {
+	Write-ErrorMessageAndExit "Code Dx appears to be installed already in the $namespaceCodeDx namespace. When using the -useHelmManifest parameter, upgrades must be performed by rerunning the deployment script on a cluster where Code Dx does not exist and manually merging the resulting YAML with previously generated YAML."
+}
+
 ### Create Work Directory
 $workDir = join-path $workDir "$releaseNameCodeDx-$releaseNameToolOrchestration"
 Write-Verbose "Creating directory $workDir..."
@@ -602,7 +608,7 @@ if ($useNginxIngressController) {
 
 	Add-HelmRepo 'ingress-nginx' 'https://kubernetes.github.io/ingress-nginx'
 	Add-HelmRepo 'stable' 'https://charts.helm.sh/stable'
-	Invoke-HelmSingleDeployment 'ingress-nginx' `
+	$helmResult = Invoke-HelmSingleDeployment 'ingress-nginx' `
 		$waitTimeSeconds $nginxIngressControllerNamespace `
 		$nginxReleaseName `
 		'ingress-nginx/ingress-nginx' `
@@ -612,6 +618,10 @@ if ($useNginxIngressController) {
 		$nginxValuesFile `
 		$nginxHelmChartVersion `
 		-dryRun:$useGitOps
+
+	if ($useHelmManifest) {
+		New-ResourceFile 'HelmManifest' $nginxIngressControllerNamespace $nginxReleaseName $helmResult
+	}
 	
 	$ingressAnnotationsCodeDx['nginx.ingress.kubernetes.io/proxy-read-timeout'] = '3600'
 	$ingressAnnotationsCodeDx['nginx.ingress.kubernetes.io/proxy-body-size'] = '0'
@@ -640,7 +650,7 @@ if ($useLetsEncryptCertManager) {
 	$letsEncryptSetupValuesFile = (New-LetsEncryptValuesFile -podSecurityPolicyEnabled:$usePSPs 'letsencrypt-values.yaml').FullName
 
 	Add-HelmRepo jetstack https://charts.jetstack.io
-	Invoke-HelmSingleDeployment 'cert-manager' `
+	$helmResult = Invoke-HelmSingleDeployment 'cert-manager' `
 		$waitTimeSeconds $letsEncryptCertManagerNamespace `
 		$letsEncryptReleaseName `
 		jetstack/cert-manager `
@@ -650,6 +660,10 @@ if ($useLetsEncryptCertManager) {
 		@() `
 		$letsEncryptHelmChartVersion `
 		-dryRun:$useGitOps
+
+	if ($useHelmManifest) {
+		New-ResourceFile 'HelmManifest' $letsEncryptCertManagerNamespace $letsEncryptReleaseName $helmResult
+	}
 
 	if (-not $useGitOps) {
 		Wait-Deployment 'Add cert-manager' $waitTimeSeconds $letsEncryptCertManagerNamespace 'cert-manager' 1
@@ -809,7 +823,7 @@ if ($useToolOrchestration) {
 
 	Write-Verbose 'Deploying Tool Orchestration...'
 	$chartFolder = join-path $workDir .repo/setup/core/charts/codedx-tool-orchestration
-	Invoke-HelmSingleDeployment 'Tool Orchestration' `
+	$helmResult = Invoke-HelmSingleDeployment 'Tool Orchestration' `
 		$waitTimeSeconds $namespaceToolOrchestration `
 		$releaseNameToolOrchestration `
 		$chartFolder `
@@ -818,6 +832,10 @@ if ($useToolOrchestration) {
 		$toolServiceReplicas `
 		$extraToolOrchestrationValuesPath `
 		-dryRun:$useGitOps
+
+	if ($useHelmManifest) {
+		New-ResourceFile 'HelmManifest' $namespaceToolOrchestration $releaseNameToolOrchestration $helmResult
+	}
 }
 
 New-CodeDxPdSecret $namespaceCodeDx $releaseNameCodeDx $codedxAdminPwd $caCertsFilePwd $externalDatabaseUser $externalDatabasePwd $dockerRegistryPwd $caCertsFileNewPwd $samlKeystorePwd $samlPrivateKeyPwd -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
@@ -918,7 +936,7 @@ $codeDxDeploymentValuesFile = New-CodeDxDeploymentValuesFile $codeDxDnsName $cod
 ### Deploy Code Dx
 Write-Verbose 'Deploying Code Dx...'
 $codeDxChartFolder = join-path $workDir .repo/setup/core/charts/codedx
-Invoke-HelmSingleDeployment 'Code Dx' `
+$helmResult = Invoke-HelmSingleDeployment 'Code Dx' `
 	$waitTimeSeconds $namespaceCodeDx `
 	$releaseNameCodeDx `
 	$codeDxChartFolder `
@@ -927,6 +945,10 @@ Invoke-HelmSingleDeployment 'Code Dx' `
 	1 `
 	$extraCodeDxValuesPaths `
 	-dryRun:$useGitOps
+
+if ($useHelmManifest) {
+	New-ResourceFile 'HelmManifest' $namespaceCodeDx $releaseNameCodeDx $helmResult
+}
 
 if ($useVelero) {
 
@@ -955,7 +977,7 @@ if ($useVelero) {
 	}
 }
 
-if ($useGitOps) {
+if ($useGitOps -and (-not $useHelmManifest)) {
 
 	### Optionally Create NGINX HelmRelease
 	if ($useNginxIngressController) {
@@ -1072,10 +1094,11 @@ if ($useGitOps) {
 	}
 }
 
+$crdsDirectory = join-path $repoDirectory 'setup/core/crds'
+
 if ($null -ne $currentToolOrchestrationAppVersion) {
 
 	Write-Verbose "Tool Orchestration upgraded from version $currentToolOrchestrationAppVersion. Checking for CRDs to apply..."
-	$crdsDirectory = join-path $repoDirectory 'setup/core/crds'
 	$versions = Get-ChildItem $crdsDirectory -Directory | ForEach-Object { new-object Management.Automation.SemanticVersion($_.Name) } | Sort-Object -Descending
 	$versions | ForEach-Object {
 		if ($_ -gt $currentToolOrchestrationAppVersion) {
@@ -1086,6 +1109,14 @@ if ($null -ne $currentToolOrchestrationAppVersion) {
 			}
 			break
 		}
+	}
+}
+
+if ($useToolOrchestration -and $useHelmManifest) {
+
+	Write-Verbose 'Copying CRDs...'
+	Get-ChildItem $crdsDirectory -File | ForEach-Object {
+		New-ResourceFile 'CRD' $namespaceToolOrchestration $_.Name (Get-Content $_)
 	}
 }
 

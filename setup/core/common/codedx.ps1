@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.9.0
+.VERSION 1.10.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -894,4 +894,8 @@ swa.db.password = """$databasePwd"""
 function New-BackupAnnotation([string] $backupType) {
 
 	@{'backup.codedx.io/type' = $backupType}
+}
+
+function Test-CodeDxDeployment([string] $namespace) {
+	Test-DeploymentLabel $namespace 'app' 'codedx'
 }

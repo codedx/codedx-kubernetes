@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.4.1
+.VERSION 1.5.0
 .GUID 5614d5a5-d33b-4a86-a7bb-ccc91c3f9bb3
 .AUTHOR Code Dx
 #>
@@ -966,4 +966,15 @@ function Test-ResourceApiVersion([string] $resource, [string] $apiVersion) {
 function Test-CertificateSigningRequestV1Beta1 {
 
 	Test-ResourceApiVersion 'CertificateSigningRequest' 'certificates.k8s.io/v1beta1'
+}
+
+function Test-DeploymentLabel([string] $namespace, [string] $labelName, [string] $labelValue) {
+
+	if (-not (Test-Namespace($namespace))) {
+		return $false
+	}
+
+	$Local:ErrorActionPreference = 'SilentlyContinue'
+	$deployments = kubectl -n $namespace get deployment -l "$labelName=$labelValue" -o json | convertfrom-json
+	$deployments.items.length -ne 0
 }

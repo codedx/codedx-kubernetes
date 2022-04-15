@@ -125,7 +125,7 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 
 		$options = @([tuple]::create('&Run now', 'Run the setup script without saving the script command a file'))
 
-		if ($this.config.UseFluxGitOps()) {
+		if ($this.config.UseGitOps()) {
 			$options += [tuple]::create('Save &GitOps command', 'Save a command to generate GitOps outputs')
 		} else {
 			$options += [tuple]::create('&Save command', 'Save the setup script using password/key script parameters')
@@ -162,11 +162,11 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 		}
 
 		$runNow = ([MultipleChoiceQuestion]$question).choice -eq 0
-		$useGitOps = $this.config.UseFluxGitOps()
+		$useGitOps = $this.config.UseGitOps()
 		$usePd = -not $useGitOps -and ([MultipleChoiceQuestion]$question).choice -eq 2
 
 		if ($useGitOps) {
-			'useHelmOperator','useHelmController','skipSealedSecrets' | ForEach-Object {
+			'useHelmOperator','useHelmController','useHelmManifest','skipSealedSecrets' | ForEach-Object {
 				$this.AddSwitchParameter($sb, $_)
 			}
 			'sealedSecretsNamespace','sealedSecretsControllerName','sealedSecretsPublicKeyPath' | ForEach-Object {

@@ -69,7 +69,9 @@ kubectl get clusterissuer ca-issuer -o wide
 -clusterCertificateAuthorityCertPath '/path/to/ca.crt'
 ```
 
-7) Stop your Code Dx deployments and statefulsets before rerunning your run-setup.ps1 script:
+7) Rerun your run-setup.ps1 script. If the deployment gets stuck while switching to alternate certificates, restart the deployments/statefulsets with the commands in the next step and restart run-setup.ps1 as needed until the script completes successfully.
+
+8) When run-setup.ps1 completes, restart the deployments/statefulsets with these commands to ensure pods run with the latest certificates:
 
 ```
 kubectl -n cdx-app scale --replicas=0 deployment/codedx
@@ -79,8 +81,12 @@ kubectl -n cdx-app scale --replicas=0 statefulset/codedx-mariadb-master
 kubectl -n cdx-svc scale --replicas=0 deployment/codedx-tool-orchestration
 kubectl -n cdx-svc scale --replicas=0 deployment/codedx-tool-orchestration-minio
 
+kubectl -n cdx-svc scale --replicas=1 deployment/codedx-tool-orchestration-minio
+kubectl -n cdx-svc scale --replicas=1 deployment/codedx-tool-orchestration
+
+kubectl -n cdx-app scale --replicas=1 statefulset/codedx-mariadb-master
+kubectl -n cdx-app scale --replicas=1 statefulset/codedx-mariadb-slave
+kubectl -n cdx-app scale --replicas=1 deployment/codedx
 ```
 
 >Note: If you use alternate namespaces or a different replica count for the codedx-tool-orchestration deployment, adjust the above commands. Ignore the cdx-svc commands if you're not using the Tool Orchestration feature.
-
-8) When the Code Dx deployments and statefulsets stop, rerun your run-setup.ps1 script to provision certificates using a cert-manager CSR signer.

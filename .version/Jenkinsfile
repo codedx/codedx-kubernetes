@@ -177,13 +177,15 @@ pipeline {
 							sh 'git config user.name \'Code Dx Build\' && git config user.email support@codedx.com'
 							sh "git checkout ${scm.branches[0]}"
 
-							if (hasDockerChanges) {
+							script {
+								if (hasDockerChanges) {
 
-								// note: this optionally applies minor version update to chart(s)
-								// chart version(s) should be adjusted manually when hasNextVersion=true and hasDockerChanges=false
-								sh "pwsh ./.version/version.ps1 '$codeDxVersion' '$codeDxTomcatInitVersion' '$mariaDBVersion' '$toolOrchestrationVersion' '$workflowVersion' '$restoreDBVersion'"
-								sh 'git add .'
-								sh "git commit -m 'feat: update to latest Docker image versions' -m 'Code Dx: $codeDxVersion' -m 'Tomcat Init: $codeDxTomcatInitVersion' -m 'MariaDB: $mariaDBVersion' -m 'Tool Orchestration: $toolOrchestrationVersion' -m 'Workflow: $workflowVersion' -m 'RestoreDB: $restoreDBVersion'"
+									// note: this optionally applies minor version update to chart(s)
+									// chart version(s) should be adjusted manually when hasNextVersion=true and hasDockerChanges=false
+									sh "pwsh ./.version/version.ps1 '$codeDxVersion' '$codeDxTomcatInitVersion' '$mariaDBVersion' '$toolOrchestrationVersion' '$workflowVersion' '$restoreDBVersion'"
+									sh 'git add .'
+									sh "git commit -m 'feat: update to latest Docker image versions' -m 'Code Dx: $codeDxVersion' -m 'Tomcat Init: $codeDxTomcatInitVersion' -m 'MariaDB: $mariaDBVersion' -m 'Tool Orchestration: $toolOrchestrationVersion' -m 'Workflow: $workflowVersion' -m 'RestoreDB: $restoreDBVersion'"
+								}
 							}
 
 							withCredentials([usernamePassword(credentialsId: 'codedx-build-github', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_TOKEN')]){
@@ -192,26 +194,28 @@ pipeline {
 									git config --local credential.helper "!helper() { echo username=\\$GIT_USERNAME; echo password=\\$GIT_TOKEN; }; helper"
 								''')
 
-								if (hasDockerChanges) {
+								script {
+									if (hasDockerChanges) {
 
-									// note: pipeline requires 'Suppress automatic SCM triggering' behavior
-									sh 'git push'
+										// note: pipeline requires 'Suppress automatic SCM triggering' behavior
+										sh "git push --set-upstream origin ${scm.branches[0]}"
+									}
+
+									chartTag = "charts-$nextVersion"
+									setupScriptPath = './setup/core/setup.ps1'
 								}
-
-								chartTag = "charts-$nextVersion"
-								setupScriptPath = './setup/core/setup.ps1'
 
 								sh "git tag $chartTag"
 
 								// note: pipeline requires 'Suppress automatic SCM triggering' behavior
-								sh 'git push --tags'
+								sh "git push --set-upstream origin ${scm.branches[0]} --tags"
 
 								sh "pwsh -command \"&{ . ./.version/common.ps1; Set-SetupScriptChartsReference '$setupScriptPath' '$chartTag' }\""
 								sh "git add $setupScriptPath"
 								sh "git commit -m 'chore: set chart reference to $chartTag'"
 
 								// note: pipeline requires 'Suppress automatic SCM triggering' behavior
-								sh 'git push'
+								sh "git push --set-upstream origin ${scm.branches[0]}"
 							}
 						}
 					}

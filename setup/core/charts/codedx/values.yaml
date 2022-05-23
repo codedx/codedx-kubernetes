@@ -25,8 +25,7 @@ codedxTomcatImagePullSecrets: []
 #
 codedxTomcatPort: 9090
 
-# codedxTlsTomcatPort determines the TLS port that the Code Dx Service will be exposed on. This
-# gets ignored when codedxTls.enabled=false.
+# codedxTlsTomcatPort determines the TLS port that the Code Dx Service will be exposed on.
 #
 codedxTlsTomcatPort: 9443
 
@@ -177,15 +176,6 @@ networkPolicy:
     #
     toolServiceSelectors: []
 
-    # networkPolicy.codedx.ingressSelectors is an optional list of selectors to attach to Code Dx
-    # ingress rules. Pods matched here will be allowed to connect to Code Dx over HTTP (port 8080).
-    # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.11/#networkpolicypeer-v1-networking-k8s-io
-    #
-    ingressSelectors: []
-    # - podSelector:
-    #     matchLabels:
-    #       abc: "def"
-
   # NetworkPolicies for MariaDB pods will allow Ingress from only Code Dx and other MariaDB pods. Egress is
   # allowed to other MariaDB instances. If metrics are enabled, the NetworkPolicies will also allow Ingress
   # on port 9090 from any source.
@@ -246,6 +236,9 @@ ingress:
   #
   enabled: false
 
+  # class name associated with the ingress controller
+  className: nginx
+
   # Use ingress.annotations to attach extra annotations to each generated Ingress resource.
   #
   annotations:
@@ -253,10 +246,6 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
     # Remove file size limit, Code Dx enforces this internally
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
-
-  # Assume nginx ingress controller when configuring ingress annotations
-  #
-  assumeNginxIngressController: true
 
   # Use ingress.hosts to specify the set of hosts to create Ingress resources for.
   #
@@ -480,10 +469,13 @@ tolerations: {}
 # communicating with Code Dx.
 #
 codedxTls:
-  # 'codedxTls.enabled' determines whether or not to enable TLS support directly within Code Dx.
+  # 'codedxTls.componentEnabled' determines whether or not to enable TLS support directly within Code Dx.
   # A secret must be created beforehand to store the certificate data.
   #
-  enabled: false
+  componentEnabled: false
+  # 'codedxTls.serviceEnabled' determines whether or not communication with the Code Dx service happens over HTTPS (when true).
+  #
+  serviceEnabled: false
   # 'codedxTls.secret' is the name of the secret containing the certificate for Code Dx to use
   # when accepting requests over HTTPS.
   #

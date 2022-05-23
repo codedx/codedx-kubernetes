@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.8.0
+.VERSION 2.0.0
 .GUID e917c41a-260f-4ea4-980d-db00f8baef1b
 .AUTHOR Code Dx
 #>
@@ -82,6 +82,7 @@ $s = @{}
 [Prerequisites],[PrequisitesNotMet],[WorkDir],[ChooseEnvironment],
 [ChooseContext],[SelectContext],[HandleNoContext],
 [GetKubernetesPort],
+[UseTriageAssistant],
 [UseToolOrchestration],[UseExternalDatabase],
 [BackupType],[VeleroNamespace],[BackupSchedule],[BackupDatabaseTimeout],[BackupTimeToLive],
 [UseDefaultOptions],[UsePodSecurityPolicyOption],[UseNetworkPolicyOption],[UseTlsOption],
@@ -95,13 +96,13 @@ $s = @{}
 [UseDefaultDockerImages],[PublicRedirect],
 [CodeDxTomcatDockerImage],[CodeDxToolsDockerImage],[CodeDxToolsMonoDockerImage],[CodeDxToolServiceDockerImage],[CodeDxSendResultsDockerImage],[CodeDxSendErrorResultsDockerImage],[CodeDxNewAnalysisDockerImage],[CodeDxPrepareDockerImage],[CodeDxPreDeleteDockerImage],
 [CodeDxTomcatInitDockerImage],[CodeDxMariaDBDockerImage],[MinioDockerImage],[CodeDxWorkflowControllerDockerImage],[CodeDxWorkflowExecutorDockerImage],
-[IngressKind],[NginxIngressNamespace],[NginxIngressAddress],
-[LetsEncryptNamespace],[LetsEncryptIssuer],[LetsEncryptEmail],[IngressCertificateArn],
+[IngressKind],[CertManagerIssuerType],[CertManagerIssuer],[IngressCertificateArn],
+[NginxTLS],[NginxTLSSecretName],
 [DnsName],
 [AuthenticationType],[LdapInstructions],[SamlAuthenticationDnsName],[SamlIdpMetadata],[SamlAppName],[SamlKeystorePwd],[SamlPrivateKeyPwd],[SamlExtraConfig],
-[DefaultCPU],[NginxCPU],[CodeDxCPU],[MasterDatabaseCPU],[SubordinateDatabaseCPU],[ToolServiceCPU],[MinIOCPU],[WorkflowCPU],
-[DefaultMemory],[NginxMemory],[CodeDxMemory],[MasterDatabaseMemory],[SubordinateDatabaseMemory],[ToolServiceMemory],[MinIOMemory],[WorkflowMemory],
-[DefaultEphemeralStorage],[NginxEphemeralStorage],[CodeDxEphemeralStorage],[MasterDatabaseEphemeralStorage],[SubordinateDatabaseEphemeralStorage],[ToolServiceEphemeralStorage],[MinIOEphemeralStorage],[WorkflowEphemeralStorage],
+[DefaultCPU],[CodeDxCPU],[MasterDatabaseCPU],[SubordinateDatabaseCPU],[ToolServiceCPU],[MinIOCPU],[WorkflowCPU],
+[DefaultMemory],[CodeDxMemory],[MasterDatabaseMemory],[SubordinateDatabaseMemory],[ToolServiceMemory],[MinIOMemory],[WorkflowMemory],
+[DefaultEphemeralStorage],[CodeDxEphemeralStorage],[MasterDatabaseEphemeralStorage],[SubordinateDatabaseEphemeralStorage],[ToolServiceEphemeralStorage],[MinIOEphemeralStorage],[WorkflowEphemeralStorage],
 [DefaultVolumeSize],[CodeDxVolumeSize],[MasterDatabaseVolumeSize],[SubordinateDatabaseVolumeSize],[MinIOVolumeSize],[StorageClassName],
 [UseDefaultCACerts],[CACertsFile],[CACertsFilePassword],[CACertsChangePassword],[CACertsFileNewPassword],[AddExtraCertificates],[ExtraCertificates],
 [UseNodeSelectors],[CodeDxNodeSelector],[MasterDatabaseNodeSelector],[SubordinateDatabaseNodeSelector],[ToolServiceNodeSelector],[MinIONodeSelector],[WorkflowControllerNodeSelector],[ToolNodeSelector],
@@ -121,8 +122,8 @@ Add-StepTransitions $graph $s[[ChooseContext]] $s[[HandleNoContext]],$s[[Abort]]
 Add-StepTransitions $graph $s[[ChooseContext]] $s[[SelectContext]],$s[[PrequisitesNotMet]],$s[[Abort]]
 Add-StepTransitions $graph $s[[ChooseContext]] $s[[SelectContext]],$s[[GetKubernetesPort]]
 
-Add-StepTransitions $graph $s[[GetKubernetesPort]] $s[[SealedSecretsNamespace]],$s[[SealedSecretsControllerName]],$s[[SealedSecretsPublicKeyPath]],$s[[UseToolOrchestration]]
-Add-StepTransitions $graph $s[[GetKubernetesPort]] $s[[UseToolOrchestration]],$s[[UseExternalDatabase]],$s[[BackupType]],$s[[VeleroNamespace]],$s[[BackupSchedule]],$s[[BackupDatabaseTimeout]],$s[[BackupTimeToLive]],$s[[UseDefaultOptions]]
+Add-StepTransitions $graph $s[[GetKubernetesPort]] $s[[SealedSecretsNamespace]],$s[[SealedSecretsControllerName]],$s[[SealedSecretsPublicKeyPath]],$s[[UseTriageAssistant]]
+Add-StepTransitions $graph $s[[GetKubernetesPort]] $s[[UseTriageAssistant]],$s[[UseToolOrchestration]],$s[[UseExternalDatabase]],$s[[BackupType]],$s[[VeleroNamespace]],$s[[BackupSchedule]],$s[[BackupDatabaseTimeout]],$s[[BackupTimeToLive]],$s[[UseDefaultOptions]]
 Add-StepTransitions $graph $s[[BackupType]] $s[[UseDefaultOptions]]
 
 Add-StepTransitions $graph $s[[UseDefaultOptions]] $s[[UsePodSecurityPolicyOption]],$s[[UseNetworkPolicyOption]],$s[[UseTlsOption]]
@@ -171,21 +172,18 @@ Add-StepTransitions $graph $s[[UseDefaultDockerImages]] $s[[CodeDxTomcatDockerIm
 
 Add-StepTransitions $graph $s[[UseDefaultDockerImages]] $s[[IngressKind]]
 
-Add-StepTransitions $graph $s[[IngressKind]] $s[[NginxIngressNamespace]],$s[[NginxIngressAddress]],$s[[LetsEncryptNamespace]]
-Add-StepTransitions $graph $s[[IngressKind]] $s[[NginxIngressNamespace]],$s[[LetsEncryptNamespace]],$s[[LetsEncryptIssuer]],$s[[LetsEncryptEmail]]
-Add-StepTransitions $graph $s[[IngressKind]] $s[[IngressCertificateArn]]
+Add-StepTransitions $graph $s[[IngressKind]] $s[[NginxTLS]],$s[[CertManagerIssuerType]],$s[[CertManagerIssuer]],$s[[DnsName]]
+Add-StepTransitions $graph $s[[IngressKind]] $s[[NginxTLS]],$s[[NginxTLSSecretName]],$s[[DnsName]]
+Add-StepTransitions $graph $s[[IngressKind]] $s[[NginxTLS]],$s[[DnsName]]
+Add-StepTransitions $graph $s[[IngressKind]] $s[[IngressCertificateArn]],$s[[AuthenticationType]]
 Add-StepTransitions $graph $s[[IngressKind]] $s[[DnsName]],$s[[AuthenticationType]]
 Add-StepTransitions $graph $s[[IngressKind]] $s[[AuthenticationType]]
-
-Add-StepTransitions $graph $s[[LetsEncryptEmail]] $s[[DnsName]],$s[[AuthenticationType]]
-Add-StepTransitions $graph $s[[IngressCertificateArn]] $s[[AuthenticationType]]
 
 Add-StepTransitions $graph $s[[AuthenticationType]] $s[[LdapInstructions]],$s[[DefaultCPU]]
 Add-StepTransitions $graph $s[[AuthenticationType]] $s[[SamlAuthenticationDnsName]],$s[[SamlIdpMetadata]],$s[[SamlAppName]],$s[[SamlKeystorePwd]],$s[[SamlPrivateKeyPwd]],$s[[SamlExtraConfig]],$s[[DefaultCPU]]
 Add-StepTransitions $graph $s[[AuthenticationType]] $s[[SamlIdpMetadata]]
 Add-StepTransitions $graph $s[[AuthenticationType]] $s[[DefaultCPU]]
 
-Add-StepTransitions $graph $s[[DefaultCPU]] $s[[NginxCPU]],$s[[CodeDxCPU]]
 Add-StepTransitions $graph $s[[DefaultCPU]] $s[[CodeDxCPU]]
 Add-StepTransitions $graph $s[[DefaultCPU]] $s[[DefaultMemory]]
 
@@ -196,7 +194,6 @@ Add-StepTransitions $graph $s[[CodeDxCPU]] $s[[ToolServiceCPU]],$s[[MinIOCPU]],$
 Add-StepTransitions $graph $s[[CodeDxCPU]] $s[[MasterDatabaseCPU]],$s[[SubordinateDatabaseCPU]],$s[[DefaultMemory]]
 Add-StepTransitions $graph $s[[CodeDxCPU]] $s[[DefaultMemory]]
 
-Add-StepTransitions $graph $s[[DefaultMemory]] $s[[NginxMemory]],$s[[CodeDxMemory]]
 Add-StepTransitions $graph $s[[DefaultMemory]] $s[[CodeDxMemory]]
 Add-StepTransitions $graph $s[[DefaultMemory]] $s[[DefaultEphemeralStorage]]
 
@@ -207,7 +204,6 @@ Add-StepTransitions $graph $s[[CodeDxMemory]] $s[[ToolServiceMemory]],$s[[MinIOM
 Add-StepTransitions $graph $s[[CodeDxMemory]] $s[[MasterDatabaseMemory]],$s[[SubordinateDatabaseMemory]],$s[[DefaultEphemeralStorage]]
 Add-StepTransitions $graph $s[[CodeDxMemory]] $s[[DefaultEphemeralStorage]]
 
-Add-StepTransitions $graph $s[[DefaultEphemeralStorage]] $s[[NginxEphemeralStorage]],$s[[CodeDxEphemeralStorage]]
 Add-StepTransitions $graph $s[[DefaultEphemeralStorage]] $s[[CodeDxEphemeralStorage]]
 Add-StepTransitions $graph $s[[DefaultEphemeralStorage]] $s[[DefaultVolumeSize]]
 

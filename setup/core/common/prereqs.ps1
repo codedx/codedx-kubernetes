@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.2.0
+.VERSION 1.3.0
 .GUID c191448b-25fd-4ec2-980e-e7a8ba85e693
 .AUTHOR Code Dx
 #>
@@ -135,7 +135,7 @@ function Test-SetupKubernetesVersion([ref] $messages) {
 	$messages.Value = @()
 	$k8sRequiredMajorVersion = 1
 	$k8sMinimumMinorVersion  = 19
-	$k8sMaximumMinorVersion  = 21
+	$k8sMaximumMinorVersion  = 24
 
 	if ((Get-KubectlServerVersionMajor) -ne $k8sRequiredMajorVersion) {
 		$messages.Value += "Unable to continue because the version of the selected Kubernetes cluster is unsupported (the kubectl server major version is not $k8sRequiredMajorVersion)."
@@ -149,10 +149,9 @@ function Test-SetupKubernetesVersion([ref] $messages) {
 			if ($clientVersion -ne $serverVersion) {
 				$messages.Value += "Unable to continue because the kubectl client version ($clientVersion) does not match the Kubernetes cluster version ($serverVersion)."
 			}
-			return $true
 		}
 	}
-	return $false
+	return $messages.Value.Length -eq 0
 }
 
 function Test-SetupPreqs([ref] $messages, [switch] $useSealedSecrets, [string] $context, [switch] $checkKubectlVersion) {

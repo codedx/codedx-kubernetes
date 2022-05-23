@@ -67,8 +67,8 @@ generate a setup command that uses helm to render YAML files.
 	[IQuestion] MakeQuestion([string] $prompt) {
 		return new-object MultipleChoiceQuestion($prompt, @(
 			[tuple]::create('&No', 'No, I don''t want to use GitOps'),
-			[tuple]::create('&Flux v1', 'Yes, I want to use Flux v1 and helm-operator'),
-			[tuple]::create('Flux v2 (&GitOps Toolkit)', 'Yes, I want to use Flux v2 and helm-controller'),
+			[tuple]::create('&Flux v1', 'Yes, I want to use Flux v1, helm-operator, and Bitnami''s Sealed Secrets'),
+			[tuple]::create('Flux v2/&GitOps Toolkit', 'Yes, I want to use Flux v2, helm-controller, and Bitnami''s Sealed Secrets'),
 			[tuple]::create('&Helm Manifest', 'Yes, I want to generate a manifest with helm dry-run'),
 			[tuple]::create('Helm Manifest with &Sealed Secrets', 'Yes, I want to generate a manifest with helm dry-run and use Bitnami''s Sealed Secrets')), 0)
 	}

@@ -26,22 +26,21 @@ resource types for them to be active in your Kubernetes environment.
 		$config,
 		'Deployment Options',
 		[UseDefaultOptions]::description,
-		'Do you want to install Pod Security Policies, Network Policies, and use TLS (where available)?') {}
+		'What options do you want to enable?') {}
 
 	[IQuestion]MakeQuestion([string] $prompt) {
 		return new-object MultipleChoiceQuestion($prompt, @(
-			[tuple]::create('&All', 'Use enable PSPs, Network Policies, and use TLS component connections where available'),
-			[tuple]::create('&Skip Network Policy', 'Use PSPs and TLS only'),
-			[tuple]::create('&Other', 'Enable/disable each option individually')), -1)
+			[tuple]::create('&Pod Security Policy and Network Policy', 'Enable PSPs and Network Policies'),
+			[tuple]::create('&Other', 'Enable/disable each option individually')), 0)
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
 
 		$choice = ([MultipleChoiceQuestion]$question).choice
 
-		$this.config.useDefaultOptions = $choice -ne 2
-		$this.config.skipPSPs = $choice -eq 2
-		$this.config.skipTLS  = $choice -eq 2
+		$this.config.useDefaultOptions = $choice -eq 0
+		$this.config.skipPSPs = $choice -eq 1
+		$this.config.skipTLS  = $choice -eq 0
 		$this.config.skipNetworkPolicies = $choice -eq 1
 		return $true
 	}
@@ -135,7 +134,7 @@ Specify whether you want to enable TLS between communications that support TLS.
 		$config,
 		'Configure TLS',
 		[UseTlsOption]::description,
-		'Protect component communications using TLS  (where available)?') {}
+		'Protect component communications using TLS (where available)?') {}
 
 	[IQuestion] MakeQuestion([string] $prompt) {
 		return new-object YesNoQuestion($prompt,
@@ -154,6 +153,36 @@ Specify whether you want to enable TLS between communications that support TLS.
 
 	[bool]CanRun() {
 		return -not $this.config.useDefaultOptions
+	}
+}
+
+class UseTriageAssistant : Step {
+
+	static [string] hidden $description = @'
+Do you plan to enable the Code Dx Triage Assistant? The Machine Learning 
+Triage Assistant requires additional CPU and memory.
+'@
+
+	UseTriageAssistant([ConfigInput] $config) : base(
+		[UseTriageAssistant].Name, 
+		$config,
+		'Use Triage Assistant',
+		[UseTriageAssistant]::description,
+		'Will your Code Dx deployment include the Triage Assistant?') {}
+
+	[IQuestion] MakeQuestion([string] $prompt) {
+		return new-object YesNoQuestion($prompt,
+			'Yes, I plan to enable the Code Dx Triage Assistant',
+			'No, I don''t plan to enable the Code Dx Triage Assistant', -1)
+	}
+
+	[bool]HandleResponse([IQuestion] $question) {
+		$this.config.useTriageAssistant = ([YesNoQuestion]$question).choice -eq 0
+		return $true
+	}
+
+	[void]Reset(){
+		$this.config.useTriageAssistant = $false
 	}
 }
 

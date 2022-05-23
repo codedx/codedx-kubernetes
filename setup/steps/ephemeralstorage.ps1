@@ -32,7 +32,6 @@ will cause Code Dx pods to get stuck in a Pending state.
 	[IQuestion] MakeQuestion([string] $prompt) {
 		return new-object MultipleChoiceQuestion($prompt, @(
 			[tuple]::create('&Use Recommended', 'Use recommended reservations'),
-			[tuple]::create('&Skip Reservations', 'Do not make reservations'),
 			[tuple]::create('&Custom', 'Make reservations on a per-component basis')), 0)
 	}
 
@@ -45,7 +44,7 @@ will cause Code Dx pods to get stuck in a Pending state.
 				$_.ApplyDefault()
 			}
 		}
-		$this.config.useEphemeralStorageDefaults = $applyDefaults -or $mq.choice -eq 1
+		$this.config.useEphemeralStorageDefaults = $applyDefaults
 		return $true
 	}
 
@@ -56,7 +55,7 @@ will cause Code Dx pods to get stuck in a Pending state.
 	[Step[]] GetSteps() {
 
 		$steps = @()
-		[NginxEphemeralStorage],[CodeDxEphemeralStorage],[MasterDatabaseEphemeralStorage],[SubordinateDatabaseEphemeralStorage],[ToolServiceEphemeralStorage],[MinIOEphemeralStorage],[WorkflowEphemeralStorage] | ForEach-Object {
+		[CodeDxEphemeralStorage],[MasterDatabaseEphemeralStorage],[SubordinateDatabaseEphemeralStorage],[ToolServiceEphemeralStorage],[MinIOEphemeralStorage],[WorkflowEphemeralStorage] | ForEach-Object {
 			$step = new-object -type $_ -args $this.config
 			if ($step.CanRun()) {
 				$steps += $step
@@ -139,31 +138,6 @@ Note: You can skip making a reservation by accepting the default value.
 
 	[bool]CanRun() {
 		return -not $this.config.useEphemeralStorageDefaults
-	}
-}
-
-class NginxEphemeralStorage : EphemeralStorageStep {
-
-	NginxEphemeralStorage([ConfigInput] $config) : base(
-		[NginxEphemeralStorage].Name, 
-		'NGINX Ephemeral Storage Reservation', 
-		$config) {}
-
-	[bool]HandleStorageResponse([string] $storage) {
-		$this.config.nginxEphemeralStorageReservation = $storage
-		return $true
-	}
-
-	[void]Reset(){
-		$this.config.nginxEphemeralStorageReservation = ''
-	}
-
-	[void]ApplyDefault() {
-		$this.config.nginxEphemeralStorageReservation = $this.GetDefault()
-	}
-
-	[bool]CanRun() {
-		return ([EphemeralStorageStep]$this).CanRun() -and $this.config.HasNginxIngress()
 	}
 }
 

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.4.1
+.VERSION 2.0.0
 .GUID 0c9bd537-7359-4ebb-a64c-cf1693ccc4f9
 .AUTHOR Code Dx
 #>
@@ -369,6 +369,13 @@ function New-HelmRelease(
 		}
 	}
 
+	# We want to skip CRD deployment on install (deployment skipped by default on upgrade). Flux v2 deprecates
+	# the skipCRDs property, so use CRD policy for v2.
+	#
+	# Flux v1: https://fluxcd.io/legacy/helm-operator/references/helmrelease-custom-resource/#helm.fluxcd.io/v1.HelmReleaseSpec
+	# Flux v2: https://fluxcd.io/docs/components/helm/api/#helm.toolkit.fluxcd.io/v2beta1.HelmReleaseSpec
+	#
+
     $helmRelease = @'
 apiVersion: {0}
 kind: HelmRelease
@@ -382,10 +389,13 @@ spec:
 {5}
 {6}
 {7}
+  install:
+    {8}
 '@ -f 
 	($useHelmController ? 'helm.toolkit.fluxcd.io/v2beta1' : 'helm.fluxcd.io/v1'),
 	$name,$namespace,$releaseName,$chartSource,$valuesFrom,$values,
-	($useHelmController ? '  interval: 1m0s' : '')
+	($useHelmController ? '  interval: 1m0s' : ''),
+	($useHelmController ? "skipCRDs: true" : "crds: 'Skip'")
 
     New-ResourceFile 'HelmRelease' $namespace $name $helmRelease
 }

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.19.0
+.VERSION 2.0.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -38,7 +38,6 @@ param (
 	[string]                 $toolServiceMemoryReservation,
 	[string]                 $minioMemoryReservation,
 	[string]                 $workflowMemoryReservation,
-	[string]                 $nginxMemoryReservation,
 
 	[string]                 $codeDxCPUReservation,
 	[string]                 $dbMasterCPUReservation,
@@ -46,7 +45,6 @@ param (
 	[string]                 $toolServiceCPUReservation,
 	[string]                 $minioCPUReservation,
 	[string]                 $workflowCPUReservation,
-	[string]                 $nginxCPUReservation,
 
 	[string]                 $codeDxEphemeralStorageReservation = '2Gi',
 	[string]                 $dbMasterEphemeralStorageReservation,
@@ -54,7 +52,6 @@ param (
 	[string]                 $toolServiceEphemeralStorageReservation,
 	[string]                 $minioEphemeralStorageReservation,
 	[string]                 $workflowEphemeralStorageReservation,
-	[string]                 $nginxEphemeralStorageReservation,
 
 	[string]                 $imageCodeDxTomcat       = 'codedx/codedx-tomcat:v2022.4.3',
 	[string]                 $imageCodeDxTools        = 'codedx/codedx-tools:v2022.4.3',
@@ -76,6 +73,7 @@ param (
 	[int]                    $toolServiceReplicas = 3,
 
 	[switch]                 $skipTLS,
+	[switch]                 $skipServiceTLS,
 	[string]                 $csrSignerNameCodeDx            = 'kubernetes.io/legacy-unknown',
 	[string]                 $csrSignerNameToolOrchestration = 'kubernetes.io/legacy-unknown',
 
@@ -84,20 +82,12 @@ param (
 
 	[int]                    $proxyPort,
 
-	[switch]                 $skipNginxIngressControllerInstall,
-	[string]                 $nginxIngressControllerLoadBalancerIP,
-	[string]                 $nginxIngressControllerNamespace = 'nginx',
-
-	[switch]                 $skipLetsEncryptCertManagerInstall,
-	[string]                 $letsEncryptCertManagerRegistrationEmailAddress,
-	[string]                 $letsEncryptCertManagerIssuer = 'letsencrypt-staging',
-	[string]                 $letsEncryptCertManagerNamespace = 'cert-manager',
-
 	[string]                 $serviceTypeCodeDx,
 	[hashtable]              $serviceAnnotationsCodeDx = @{},
 
 	[switch]                 $skipIngressEnabled,
-	[switch]                 $skipIngressAssumesNginx,
+	[string]                 $ingressClassNameCodeDx = 'nginx',
+	[string]                 $ingressTlsSecretNameCodeDx = 'ingress-tls-secret',
 	[hashtable]              $ingressAnnotationsCodeDx = @{},
 
 	[string]                 $namespaceToolOrchestration = 'cdx-svc',
@@ -188,8 +178,7 @@ param (
 	[int]                    $backupDatabaseTimeoutMinutes = 30,
 	[int]                    $backupTimeToLiveHours = 720,
 
-	[switch]                 $usePnsContainerRuntimeExecutor,
-	[int]                    $workflowStepMinimumRunTimeSeconds,
+	[int]                    $workflowStepMinimumRunTimeSeconds = 3,
 	[switch]                 $createSCCs
 )
 
@@ -225,13 +214,11 @@ function Get-DockerImageName([string] $dockerRegistryRedirect, [string] $imageNa
 }
 
 $useTLS = -not $skipTLS
+$useServiceTLS = -not $skipServiceTLS
 $usePSPs = -not $skipPSPs
 $useToolOrchestration = -not $skipToolOrchestration
 $useNetworkPolicies = -not $skipNetworkPolicies
 $useIngress = -not $skipIngressEnabled
-$useIngressAssumesNginx = -not $skipIngressAssumesNginx
-$useLetsEncryptCertManager = -not $skipLetsEncryptCertManagerInstall
-$useNginxIngressController = -not $skipNginxIngressControllerInstall
 $useLocalDatabase = -not $skipDatabase
 $useRootDatabaseUser = -not $skipUseRootDatabaseUser
 
@@ -252,10 +239,14 @@ $csrSignerNameLegacyUnknown = Get-CsrSignerNameLegacyUnknown
 $isBetaCsrRequired = $csrSignerNameCodeDx -eq $csrSignerNameLegacyUnknown -or $csrSignerNameToolOrchestration -eq $csrSignerNameLegacyUnknown
 if (-not $skipTLS -and $isBetaCsrRequired -and -not (Test-CertificateSigningRequestV1Beta1)) {
 	# the v1 stable CSR API no longer supports the legacy-unknown signer name
-	Write-ErrorMessageAndExit "Unable to continue because the $csrSignerNameLegacyUnknown signer name requires the unsupported v1beta1 CSR API version."
+	Write-ErrorMessageAndExit "Unable to continue because you previously enabled the TLS deployment option with the 'kubernetes.io/legacy-unknown' signer name. That signer requires the v1beta1 version of the Certificate Request Signer (CSR) resource, unavailable in this Kubernetes version. You must either disable the TLS deployment option by using the -skipTLS deployment script parameter or switch to an alternate Certificate Request Signer. For an example of enabling the TLS deployment option with cert-manager (https://cert-manager.io/docs/usage/kube-csr/), refer to https://github.com/codedx/codedx-kubernetes/blob/master/setup/core/docs/config/cert-manager-csr-upgrade.md."
 }
 
 ### Validate Parameters
+if ($useToolOrchestration -and $workflowStepMinimumRunTimeSeconds -le 0) {
+	Write-ErrorMessageAndExit "Using the PNS executor requires workflow steps to run for a minimum amount of time. The value for -workflowStepMinimumRunTimeSeconds ($workflowStepMinimumRunTimeSeconds), which must be greater than 0."
+}
+
 $dns1123SubdomainExpr = '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
 if ($useIngress -and -not (Test-IsValidParameterValue $codeDxDnsName $dns1123SubdomainExpr)) { 
 	$codeDxDnsName = Read-HostText 'Enter Code Dx domain name (e.g., www.codedx.io)' -validationExpr $dns1123SubdomainExpr 
@@ -425,16 +416,6 @@ else {
 	}
 }
 
-if ($useLetsEncryptCertManager){
-
-	if ($letsEncryptCertManagerRegistrationEmailAddress -eq '') { 
-		$letsEncryptCertManagerRegistrationEmailAddress = Read-HostText 'Enter an email address for the Let''s Encrypt registration' 
-	}
-	if ($letsEncryptCertManagerIssuer -eq '') { 
-		$letsEncryptCertManagerIssuer = Read-HostText 'Enter a issuer name for Let''s Encrypt' 
-	}
-}
-
 if ($dockerImagePullSecretName -ne '') {
 	
 	if ($dockerRegistry -eq '') {
@@ -491,10 +472,6 @@ if ($useGitOps -and $useSealedSecrets -and $sealedSecretsControllerName -eq '') 
 
 if ($useGitOps -and $useSealedSecrets -and $sealedSecretsPublicKeyPath -eq '') { 
 	$sealedSecretsPublicKeyPath = Read-Host -Prompt 'Enter the path of the public key generated by the Sealed Secrets software'
-}
-
-if ($skipNginxIngressControllerInstall) {
-	$nginxIngressControllerNamespace = ''
 }
 
 $codeDxMustTrustCerts = -not (0 -eq $extraCodeDxTrustedCaCertPaths.Length -and '' -eq $clusterCertificateAuthorityCertPath)
@@ -566,7 +543,7 @@ if (Test-Path $gitOpsDir -PathType Container) {
 if (-not $useGitOps) {
 
 	Write-Verbose 'Waiting for running pods...'
-	$namespaceCodeDx,$nginxIngressControllerNamespace,$letsEncryptCertManagerNamespace | ForEach-Object {
+	$namespaceCodeDx | ForEach-Object {
 		if (Test-Namespace $_) {
 			Wait-AllRunningPods "Cluster Ready (namespace $_)" $waitTimeSeconds $_	
 		}
@@ -585,102 +562,9 @@ if ($useToolOrchestration) {
 	$currentToolOrchestrationAppVersion = Get-HelmReleaseAppVersion $namespaceToolOrchestration $releaseNameToolOrchestration
 }
 
-### Optionally Deploy NGINX
-$nginxValuesFile = ''
-$nginxLoadBalancerValuesFile = ''
-$nginxHelmChartVersion = '3.6.0'
-if ($useNginxIngressController) {
-
-	$nginxReleaseName = 'nginx'
-
-	Write-Verbose 'Adding nginx Ingress...'
-	if ($nginxIngressControllerLoadBalancerIP -ne '') {
-		$nginxLoadBalancerValuesFile = (New-NginxIngressLoadBalancerIPValuesFile $nginxIngressControllerLoadBalancerIP 'nginx-load-balancer-values.yaml').FullName
-	}
-
-	Write-Verbose "Creating namespace $nginxIngressControllerNamespace..."
-	New-NamespaceResource $nginxIngressControllerNamespace ([Tuple]::Create('name', $nginxIngressControllerNamespace)) -useGitOps:$useGitOps
-
-	$priorityClassName = Get-CommonName "$nginxReleaseName-nginx-pc"
-	New-PriorityClassResource $priorityClassName 20000 -useGitOps:$useGitOps
-
-	$nginxValuesFile = (New-NginxIngressValuesFile $nginxCPUReservation $nginxMemoryReservation $nginxEphemeralStorageReservation 'nginx-values.yaml' -enablePSPs:$usePSPs).FullName
-
-	Add-HelmRepo 'ingress-nginx' 'https://kubernetes.github.io/ingress-nginx'
-	Add-HelmRepo 'stable' 'https://charts.helm.sh/stable'
-	$helmResult = Invoke-HelmSingleDeployment 'ingress-nginx' `
-		$waitTimeSeconds $nginxIngressControllerNamespace `
-		$nginxReleaseName `
-		'ingress-nginx/ingress-nginx' `
-		$nginxLoadBalancerValuesFile `
-		'nginx-ingress-nginx-controller' `
-		1 `
-		$nginxValuesFile `
-		$nginxHelmChartVersion `
-		-dryRun:$useGitOps
-
-	if ($useHelmManifest) {
-		New-ResourceFile 'HelmManifest' $nginxIngressControllerNamespace $nginxReleaseName $helmResult
-	}
-	
-	$ingressAnnotationsCodeDx['nginx.ingress.kubernetes.io/proxy-read-timeout'] = '3600'
-	$ingressAnnotationsCodeDx['nginx.ingress.kubernetes.io/proxy-body-size'] = '0'
-}
-
 ### Create Code Dx Namespace
 Write-Verbose "Creating namespace $namespaceCodeDx..."
 New-NamespaceResource $namespaceCodeDx ([Tuple]::Create('name', $namespaceCodeDx)) -useGitOps:$useGitOps
-
-### Optionally Deploy Let's Encrypt Cert Manager
-$letsEncryptSetupValuesFile = ''
-$letsEncryptHelmChartVersion = 'v0.13.0'
-if ($useLetsEncryptCertManager) {
-
-	Write-Verbose 'Adding Let''s Encrypt Cert Manager...'
-	$letsEncryptReleaseName = 'cert-manager'
-
-	$letsEncryptCRDs = Add-LetsEncryptCertManagerCRDs -dryRun:$useGitOps
-	if ($useGitOps) {
-		New-ResourceFile 'CRD' $letsEncryptCertManagerNamespace 'letsencryptcrds' $letsEncryptCRDs
-	}
-
-	Write-Verbose "Creating namespace $letsEncryptCertManagerNamespace..."
-	New-NamespaceResource $letsEncryptCertManagerNamespace ([Tuple]::Create('name', $letsEncryptCertManagerNamespace)) -useGitOps:$useGitOps
-
-	$letsEncryptSetupValuesFile = (New-LetsEncryptValuesFile -podSecurityPolicyEnabled:$usePSPs 'letsencrypt-values.yaml').FullName
-
-	Add-HelmRepo jetstack https://charts.jetstack.io
-	$helmResult = Invoke-HelmSingleDeployment 'cert-manager' `
-		$waitTimeSeconds $letsEncryptCertManagerNamespace `
-		$letsEncryptReleaseName `
-		jetstack/cert-manager `
-		$letsEncryptSetupValuesFile `
-		'cert-manager' `
-		1 `
-		@() `
-		$letsEncryptHelmChartVersion `
-		-dryRun:$useGitOps
-
-	if ($useHelmManifest) {
-		New-ResourceFile 'HelmManifest' $letsEncryptCertManagerNamespace $letsEncryptReleaseName $helmResult
-	}
-
-	if (-not $useGitOps) {
-		Wait-Deployment 'Add cert-manager' $waitTimeSeconds $letsEncryptCertManagerNamespace 'cert-manager' 1
-		Wait-Deployment 'Add cert-manager (cert-manager-cainjector)' $waitTimeSeconds $letsEncryptCertManagerNamespace 'cert-manager-cainjector' 1
-		Wait-Deployment 'Add cert-manager (cert-manager-webhook)' $waitTimeSeconds $letsEncryptCertManagerNamespace 'cert-manager-webhook' 1
-	}
-	
-	[tuple]::create('letsencrypt-staging','staging-issuer.yaml',    'https://acme-staging-v02.api.letsencrypt.org/directory'),
-	[tuple]::create('letsencrypt-prod',   'production-issuer.yaml', 'https://acme-v02.api.letsencrypt.org/directory') | ForEach-Object {
-		$issuerFile = New-LetsEncryptCertManagerIssuerFile $namespaceCodeDx $_.Item1 $letsEncryptCertManagerRegistrationEmailAddress $_.Item2 $_.Item3
-		New-NamespacedResourceFromYaml $namespaceCodeDx 'Issuer' $_.Item1 $issuerFile -useGitOps:$useGitOps	
-	}
-
-	$ingressAnnotationsCodeDx['kubernetes.io/tls-acme'] = 'true'
-	$ingressAnnotationsCodeDx['cert-manager.io/issuer'] = $letsEncryptCertManagerIssuer
-}
-
 
 ### Optionally Configure Docker Image Pull Secret
 if ('' -ne $dockerImagePullSecretName) {
@@ -783,6 +667,8 @@ if ($pauseAfterGitClone) {
 Write-Verbose 'Adding Helm repository...'
 Add-HelmRepo 'codedx' $codedxHelmRepo
 
+
+
 ### Optionally Deploy Code Dx Orchestration
 if ($useToolOrchestration) {
 
@@ -815,11 +701,23 @@ if ($useToolOrchestration) {
 		$toolServiceNodeSelector $minioNodeSelector $workflowControllerNodeSelector $toolNodeSelector `
 		$toolServiceNoScheduleExecuteToleration $minioNoScheduleExecuteToleration $workflowControllerNoScheduleExecuteToleration $toolNoScheduleExecuteToleration `
 		$backupType `
-		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS `
+		-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -configureServiceTls:$useServiceTLS `
 		'./toolsvc-values.yaml' `
-		-usePnsExecutor:$usePnsContainerRuntimeExecutor `
+		-usePnsExecutor:$true `
 		$workflowStepMinimumRunTimeSeconds `
 		-createSCCs:$createSCCs
+
+	Write-Verbose 'Creating CRDs...'
+	$crdDirectory = (Test-CertificateSigningRequestV1Beta1) ? 'v1beta1' : 'v1'
+	Get-ChildItem (join-path $repoDirectory 'setup/core/crds' $crdDirectory) -File | ForEach-Object {
+		if ($useGitOps) {
+			Write-Verbose "Creating resource file for $($_.Name) with $_..."
+			New-ResourceFile 'CRD' $namespaceToolOrchestration $_.Name (Get-Content $_)
+		} else {
+			Write-Verbose "Deploying resource $($_.Name) with $_..."
+			Set-K8sResource $_
+		}
+	}
 
 	Write-Verbose 'Deploying Tool Orchestration...'
 	$chartFolder = join-path $workDir .repo/setup/core/charts/codedx-tool-orchestration
@@ -831,7 +729,8 @@ if ($useToolOrchestration) {
 		$toolOrchestrationFullName `
 		$toolServiceReplicas `
 		$extraToolOrchestrationValuesPath `
-		-dryRun:$useGitOps
+		-dryRun:$useGitOps `
+		-skipCRDs
 
 	if ($useHelmManifest) {
 		New-ResourceFile 'HelmManifest' $namespaceToolOrchestration $releaseNameToolOrchestration $helmResult
@@ -910,8 +809,7 @@ $codeDxDeploymentValuesFile = New-CodeDxDeploymentValuesFile $codeDxDnsName $cod
 	$codeDxCPUReservation $dbMasterCPUReservation $dbSlaveCPUReservation `
 	$codeDxEphemeralStorageReservation $dbMasterEphemeralStorageReservation $dbSlaveEphemeralStorageReservation `
 	$serviceTypeCodeDx $serviceAnnotationsCodeDx `
-	$nginxIngressControllerNamespace `
-	$ingressAnnotationsCodeDx `
+	$ingressClassNameCodeDx $ingressTlsSecretNameCodeDx $ingressAnnotationsCodeDx `
 	$caCertsSecretName `
 	$externalDatabaseUrl `
 	$samlAppName $samlIdpXmlFileConfigMapName $samlSecretName `
@@ -921,8 +819,8 @@ $codeDxDeploymentValuesFile = New-CodeDxDeploymentValuesFile $codeDxDnsName $cod
 	$codeDxNoScheduleExecuteToleration $masterDatabaseNoScheduleExecuteToleration $subordinateDatabaseNoScheduleExecuteToleration `
 	$backupType `
 	-useSaml:$useSaml `
-	-ingressEnabled:$useIngress -ingressAssumesNginx:$useIngressAssumesNginx `
-	-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -skipDatabase:$skipDatabase `
+	-ingressEnabled:$useIngress `
+	-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -configureServiceTls:$useServiceTLS -skipDatabase:$skipDatabase `
 	$proxyPort `
 	-skipToolOrchestration:$skipToolOrchestration `
 	$namespaceToolOrchestration `
@@ -944,7 +842,8 @@ $helmResult = Invoke-HelmSingleDeployment 'Code Dx' `
 	$codeDxChartFullName `
 	1 `
 	$extraCodeDxValuesPaths `
-	-dryRun:$useGitOps
+	-dryRun:$useGitOps `
+	-skipCRDs
 
 if ($useHelmManifest) {
 	New-ResourceFile 'HelmManifest' $namespaceCodeDx $releaseNameCodeDx $helmResult
@@ -978,49 +877,6 @@ if ($useVelero) {
 }
 
 if ($useGitOps -and (-not $useHelmManifest)) {
-
-	### Optionally Create NGINX HelmRelease
-	if ($useNginxIngressController) {
-
-		$nginxHelmReleaseName = 'nginx'
-		
-		$nginxSetupValueNames = @()
-		if ('' -ne $nginxLoadBalancerValuesFile) {
-			$nginxLoadBalancerSetupValuesName = 'nginx-loadbalancer-setup-values'
-			New-ConfigMapResource $nginxIngressControllerNamespace $nginxLoadBalancerSetupValuesName @{} @{'values.yaml' = $nginxLoadBalancerValuesFile} -useGitOps
-			$nginxSetupValueNames += $nginxLoadBalancerSetupValuesName
-		}
-
-		$nginxSetupValuesName = 'nginx-setup-values'
-		New-ConfigMapResource $nginxIngressControllerNamespace $nginxSetupValuesName @{} @{'values.yaml' = $nginxValuesFile} -useGitOps
-		$nginxSetupValueNames += $nginxSetupValuesName
-
-		New-HelmRelease $nginxHelmReleaseName `
-			$nginxIngressControllerNamespace `
-			$nginxReleaseName `
-			-chartRepository 'https://kubernetes.github.io/ingress-nginx' `
-			-chartName 'ingress-nginx' `
-			-chartVersion $nginxHelmChartVersion `
-			-valuesConfigMapNames $nginxSetupValueNames `
-			-useHelmController:$useHelmController
-	}
-
-	### Optionally Create Let's Encrypt HelmRelease
-	if ($useLetsEncryptCertManager) {
-		$letsEncryptHelmReleaseName = 'letsencrypt'
-		$letsEncryptSetupValuesName = 'letsencrypt-setup-values'
-
-		New-ConfigMapResource $letsEncryptCertManagerNamespace $letsEncryptSetupValuesName @{} @{'values.yaml' = $letsEncryptSetupValuesFile} -useGitOps
-
-		New-HelmRelease $letsEncryptHelmReleaseName `
-			$letsEncryptCertManagerNamespace `
-			$letsEncryptReleaseName `
-			-chartRepository 'https://charts.jetstack.io' `
-			-chartName 'cert-manager' `
-			-chartVersion $letsEncryptHelmChartVersion `
-			-valuesConfigMapNames $letsEncryptSetupValuesName `
-			-useHelmController:$useHelmController
-	}
 
 	### Create Code Dx HelmRelease
 	$codeDxValuesConfigMapNames = @()
@@ -1091,32 +947,6 @@ if ($useGitOps -and (-not $useHelmManifest)) {
 				'toolServiceImageName'      = $imageToolService;
 			} `
 			-useHelmController:$useHelmController
-	}
-}
-
-$crdsDirectory = join-path $repoDirectory 'setup/core/crds'
-
-if ($null -ne $currentToolOrchestrationAppVersion) {
-
-	Write-Verbose "Tool Orchestration upgraded from version $currentToolOrchestrationAppVersion. Checking for CRDs to apply..."
-	$versions = Get-ChildItem $crdsDirectory -Directory | ForEach-Object { new-object Management.Automation.SemanticVersion($_.Name) } | Sort-Object -Descending
-	$versions | ForEach-Object {
-		if ($_ -gt $currentToolOrchestrationAppVersion) {
-			Get-ChildItem (join-path $crdsDirectory ($_.ToString())) -File | ForEach-Object {
-				Write-Verbose "Applying $($_.FullName)..."
-				# Note: This will not remove CRD, which would remove related resources
-				Set-CustomResourceDefinitionResource $_.Name $_.FullName -useGitOps:$useGitOps
-			}
-			break
-		}
-	}
-}
-
-if ($useToolOrchestration -and $useHelmManifest) {
-
-	Write-Verbose 'Copying CRDs...'
-	Get-ChildItem $crdsDirectory -File | ForEach-Object {
-		New-ResourceFile 'CRD' $namespaceToolOrchestration $_.Name (Get-Content $_)
 	}
 }
 

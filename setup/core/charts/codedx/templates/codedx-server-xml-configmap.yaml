@@ -1,4 +1,4 @@
-{{- if .Values.codedxTls.enabled -}}
+{{- if .Values.codedxTls.componentEnabled -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:

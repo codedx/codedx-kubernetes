@@ -10,17 +10,19 @@ metadata:
 spec:
   type: {{ include "codedx.servicetype" . }}
   ports:
-  {{- if .Values.codedxTls.enabled }}
-  - name: https
-    port: {{ .Values.codedxTlsTomcatPort }}
-    protocol: TCP
+  - protocol: TCP
+  {{- if .Values.codedxTls.componentEnabled }}
     targetPort: 8443
   {{- else }}
-  - name: http
-    port: {{ .Values.codedxTomcatPort }}
-    protocol: TCP
     targetPort: 8080
-  {{- end }}  
+  {{- end }}
+  {{- if .Values.codedxTls.serviceEnabled }}
+    name: https
+    port: {{ .Values.codedxTlsTomcatPort }}
+  {{- else }}
+    name: http
+    port: {{ .Values.codedxTomcatPort }}
+  {{- end }}
   selector:
     app: {{ include "codedx.name" . | quote }}
     release: {{ .Release.Name | quote }}

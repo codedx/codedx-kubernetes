@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.2.0
+.VERSION 1.3.0
 .GUID 031ba6fc-042c-4c0d-853c-52afb79ce7ea
 .AUTHOR Code Dx
 #>
@@ -68,7 +68,8 @@ function Invoke-HelmSingleDeployment([string] $message,
 	[string[]] $extraValuesPaths, 
 	[string]   $version, 
 	[switch]   $reuseValues,
-	[switch]   $dryRun) {
+	[switch]   $dryRun,
+	[switch]   $skipCRDs) {
 
 	if (-not $dryRun) {
 		if (-not (Test-Namespace $namespace)) {
@@ -120,7 +121,8 @@ function Invoke-HelmSingleDeployment([string] $message,
 			$valuesParam = '--reuse-values' # merge $values used with the last upgrade
 		}
 
-		$helmOutput = helm upgrade --namespace $namespace --install $valuesParam $releaseName @($values) $chartReference @($versionParam) $dryRunParam $debugParam
+		$crdAction = $skipCRDs ? '--skip-crds' : ''
+		$helmOutput = helm upgrade --namespace $namespace --install $valuesParam $releaseName @($values) $chartReference @($versionParam) $crdAction $dryRunParam $debugParam
 		if ($LASTEXITCODE -ne 0) {
 			throw "Unable to run helm upgrade/install, helm exited with code $LASTEXITCODE."
 		}

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.10.0
+.VERSION 2.0.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -80,7 +80,8 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 	[string]   $dbSlaveEphemeralStorageLimit,
 	[string]   $serviceTypeCodeDx,
 	[hashtable]$serviceAnnotationsCodeDx,
-	[string]   $ingressControllerNamespace,
+	[string]   $ingressClassName,
+	[string]   $ingressTlsSecretName,
 	[hashtable]$ingressAnnotations,
 	[string]   $caCertsSecretName,
 	[string]   $externalDbUrl,
@@ -99,10 +100,10 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 	[string]   $backupType,
 	[switch]   $useSaml,
 	[switch]   $ingressEnabled,
-	[switch]   $ingressAssumesNginx,
 	[switch]   $enablePSPs,
 	[switch]   $enableNetworkPolicies,
 	[switch]   $configureTls,
+	[switch]   $configureServiceTls,
 	[switch]   $skipDatabase,
 	[int]      $proxyPort,
 	[switch]   $skipToolOrchestration,
@@ -122,32 +123,19 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 	$enableDb = (-not $skipDatabase).ToString().ToLower()
 
 	$tlsEnabled = $configureTls.ToString().ToLower()
+	$tlsServiceEnabled = $configureServiceTls.ToString().ToLower()
 
 	$ingress = $ingressEnabled.ToString().ToLower()
-	$ingressNginxAssumption = $ingressAssumesNginx.ToString().ToLower()
 
-	$ingressNamespaceSelector = ''
 	$toolServiceSelector = ''
-	if ($enableNetworkPolicies) {
-
-		if ('' -ne $ingressControllerNamespace) {
-			$ingressNamespaceSelector = @'
-    ingressSelectors:
-    - namespaceSelector:
-        matchLabels:
-          name: {0}
-'@ -f $ingressControllerNamespace
-		}
-
-		if (-not $skipToolOrchestration) {
-			$toolServiceSelector = @'
+	if ($enableNetworkPolicies -and -not $skipToolOrchestration) {
+		$toolServiceSelector = @'
     toolService: true
     toolServiceSelectors:
     - namespaceSelector:
         matchLabels:
           name: {0}
 '@ -f $toolOrchestrationNamespace
-		}
 	}
 
 	$toolOrchestrationValues = ''
@@ -176,7 +164,7 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 	if ($useSaml) {
 
 		$protocol = 'https'
-		if (-not $tlsEnabled) {
+		if (-not $ingressEnabled -and -not $tlsServiceEnabled) { # ingress will always use TLS
 			$protocol = 'http'
 		}
 		$hostBasePath = "$protocol`://$codeDxDnsName/codedx"
@@ -249,7 +237,8 @@ persistence:
   size: {11}Gi
   storageClass: {17}
 codedxTls:
-  enabled: {5}
+  componentEnabled: {5}
+  serviceEnabled: {61}
   secret: {6}
   certFile: {7}
   keyFile: {8}
@@ -259,12 +248,13 @@ service:
   annotations: {25}
 ingress:
   enabled: {13}
+  className: {62}
   annotations: {20}
-  assumeNginxIngressController: {27}
+{27}
   hosts:
   - name: '{12}'
     tls: true
-    tlsSecret: ingress-tls-secret
+    tlsSecret: {63}
 podSecurityPolicy:
   codedx:
     create: {3}
@@ -407,14 +397,14 @@ $psp, $networkPolicy,
 $tlsEnabled, $tlsSecretName, 'tls.crt', 'tls.key',
 (Get-DatabasePdSecretName $releaseName),
 $dbVolumeSizeGiB, $codeDxVolumeSizeGiB, $codeDxDnsName, $ingress,
-$dbSlaveVolumeSizeGiB, $dbSlaveReplicaCount, $ingressNamespaceSelector, $appDataStorageClassName,
+$dbSlaveVolumeSizeGiB, $dbSlaveReplicaCount, '', $appDataStorageClassName,
 (Format-ResourceLimitRequest -limitMemory $codeDxMemoryLimit -limitCPU $codeDxCPULimit -limitEphemeralStorage $codeDxEphemeralStorageLimit),
 (Format-ResourceLimitRequest -limitMemory $dbMasterMemoryLimit -limitCPU $dbMasterCPULimit -limitEphemeralStorage $dbMasterEphemeralStorageLimit -indent 4),
 (ConvertTo-YamlMap $ingressAnnotations),
 (Format-ResourceLimitRequest -limitMemory $dbSlaveMemoryLimit -limitCPU $dbSlaveCPULimit -limitEphemeralStorage $dbSlaveEphemeralStorageLimit -indent 4),
 $codeDxTomcatPortNumber, $codeDxTlsTomcatPortNumber,
 $serviceTypeCodeDx, (ConvertTo-YamlMap $serviceAnnotationsCodeDx),
-$enableDb, $ingressNginxAssumption,
+$enableDb, '',
 $externalDb, $caCertsSecretName, $offlineMode.ToString().ToLower(),
 (Format-NodeSelector $codeDxNodeSelector), (Format-NodeSelector $masterDatabaseNodeSelector), (Format-NodeSelector $subordinateDatabaseNodeSelector),
 (Format-PodTolerationNoScheduleNoExecute $codeDxNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $masterDatabaseNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $subordinateDatabaseNoScheduleExecuteToleration),
@@ -431,7 +421,8 @@ $tomcatInitImage,
 $mariaDbDockerImageParts[0], $mariaDbDockerImageParts[1], $mariaDbDockerImageParts[2],
 $mariaDbPullSecretYaml,
 $codeDxDbUserConfig,
-($proxyPort -ne 0 ? " $proxyPort" : '')
+($proxyPort -ne 0 ? " $proxyPort" : ''),
+$tlsServiceEnabled, $ingressClassName, $ingressTlsSecretName
 
 	$values | out-file $valuesFile -Encoding ascii -Force
 	Get-ChildItem $valuesFile
@@ -489,19 +480,24 @@ function New-ToolOrchestrationValuesFile([string]   $codedxNamespace,
 	[switch]   $enablePSPs,
 	[switch]   $enableNetworkPolicies,
 	[switch]   $configureTls,
+	[switch]   $configureServiceTls,
 	[string]   $valuesFile,
 	[switch]   $usePnsExecutor,
 	[int]      $stepMinimumRunTimeSeconds,
 	[switch]   $createSCCs) {
 
 	$protocol = 'http'
-	$codedxPort = $codeDxTomcatPortNumber
-	$tlsConfig = $configureTls.ToString().ToLower()
-
 	if ($configureTls) {
 		$protocol = 'https'
+	}
+
+	$codedxPort = $codeDxTomcatPortNumber
+	if ($configureServiceTls) {
 		$codedxPort = $codeDxTlsTomcatPortNumber
 	}
+
+	$tlsConfig = $configureTls.ToString().ToLower()
+
 	$codeDxOrchestrationFullName = Get-CodeDxChartFullName $codedxReleaseName
 	$codedxBaseUrl = '{0}://{1}.{2}.svc.cluster.local:{3}/codedx' -f $protocol,$codeDxOrchestrationFullName,$codedxNamespace,$codedxPort
 
@@ -708,94 +704,6 @@ function Get-CodeDxKeystore([string] $namespace, [string] $imageCodeDxTomcat, [s
 	Remove-Pod $namespace $podName -force
 
 	Get-ChildItem $outPath
-}
-
-function Add-LetsEncryptCertManagerCRDs([switch] $dryRun) {
-
-	$crdURL = 'https://raw.githubusercontent.com/jetstack/cert-manager/v0.13.0/deploy/manifests/00-crds.yaml'
-	if ($dryRun) {
-		(Invoke-WebRequest $crdURL).Content
-		return
-	}
-
-	kubectl apply --validate=false -f $crdURL
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to add cert-manager CRDs, helm exited with code $LASTEXITCODE."
-	}
-}
-
-function New-LetsEncryptCertManagerIssuerFile([string] $namespace,
-	[string] $name,
-	[string] $registrationEmailAddress,
-	[string] $issuerFile,
-	[string] $endpoint) {
-
-	@'
-apiVersion: cert-manager.io/v1alpha2
-kind: Issuer
-metadata:
-  name: "{1}"
-  namespace: "{3}"
-spec:
-  acme:
-    server: "{2}"
-    email: "{0}"
-    privateKeySecretRef:
-      name: "{1}"
-    solvers:
-    - http01:
-        ingress:
-          class: nginx
-'@ -f $registrationEmailAddress,$name,$endpoint,$namespace | out-file $issuerFile -Encoding ascii -Force
-
-	Get-ChildItem $issuerFile
-}
-
-function New-NginxIngressLoadBalancerIPValuesFile([string] $loadBalancerIP, [string] $nginxFile) {
-
-	@'
-controller:
-  service:
-    loadBalancerIP: {0}
-'@ -f $loadBalancerIP | out-file $nginxFile -Encoding ascii -Force
-
-	Get-ChildItem $nginxFile
-}
-
-function New-NginxIngressValuesFile([string] $cpuLimit,
-	[string] $memoryLimit,
-	[string] $ephemeralStorageLimit,
-	[switch] $enablePSPs,
-	[string] $ingressValuesFile) {
-
-	$usePSP = $enablePSPs.ToString().ToLower()
-
-	@'
-controller:
-  priorityClassName: {0}
-{1}
-  admissionWebhooks:
-    patch:
-      priorityClassName: {0}
-defaultBackend:
-  priorityClassName: {0}
-podSecurityPolicy:
-  enabled: {2}
-'@ -f $priorityClassName,(Format-ResourceLimitRequest -limitMemory $memoryLimit -limitCPU $cpuLimit -limitEphemeralStorage $ephemeralStorageLimit -indent 2),$usePSP | out-file $ingressValuesFile -Encoding ascii -Force
-
-	Get-ChildItem $ingressValuesFile
-}
-
-function New-LetsEncryptValuesFile([switch] $podSecurityPolicyEnabled,
-	[string] $letsEncryptValuesFile) {
-
-	@'
-global:
-  podSecurityPolicy:
-    enabled: {0}
-'@ -f $podSecurityPolicyEnabled.ToString().ToLower() | out-file $letsEncryptValuesFile -Encoding ascii -Force
-
-	Get-ChildItem $letsEncryptValuesFile
 }
 
 function Get-CodeDxChartFullName([string] $releaseName) {

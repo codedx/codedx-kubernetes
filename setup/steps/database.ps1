@@ -401,9 +401,12 @@ class DatabaseReplicaCount : Step {
 Specify the number of subordinate, read-only databases that will use MariaDB 
 data replication to store a copy of the MariaDB master database.
 
-Note: You must specify at least one replica to configure Code Dx backups 
+You must specify at least one replica to configure Code Dx backups 
 later on. Otherwise, you must back up the Code Dx database on your own at a 
-time that's compatible with the Code Dx backup schedule.
+time that's compatible with the Code Dx backup schedule. 
+
+Note: If you are not planning to back up this Code Dx deployment, set the 
+number of database replicas to 0.
 '@
 
 	DatabaseReplicaCount([ConfigInput] $config) : base(

@@ -32,7 +32,6 @@ will cause Code Dx pods to get stuck in a Pending state.
 	[IQuestion] MakeQuestion([string] $prompt) {
 		return new-object MultipleChoiceQuestion($prompt, @(
 			[tuple]::create('&Use Recommended', 'Use recommended reservations'),
-			[tuple]::create('&Skip Reservations', 'Do not make reservations'),
 			[tuple]::create('&Custom', 'Make reservations on a per-component basis')), 0)
 	}
 
@@ -45,7 +44,7 @@ will cause Code Dx pods to get stuck in a Pending state.
 				$_.ApplyDefault()
 			}
 		}
-		$this.config.useMemoryDefaults = $applyDefaults -or $mq.choice -eq 1
+		$this.config.useMemoryDefaults = $applyDefaults
 		return $true
 	}
 
@@ -56,7 +55,7 @@ will cause Code Dx pods to get stuck in a Pending state.
 	[Step[]] GetSteps() {
 
 		$steps = @()
-		[NginxMemory],[CodeDxMemory],[MasterDatabaseMemory],[SubordinateDatabaseMemory],[ToolServiceMemory],[MinIOMemory],[WorkflowMemory] | ForEach-Object {
+		[CodeDxMemory],[MasterDatabaseMemory],[SubordinateDatabaseMemory],[ToolServiceMemory],[MinIOMemory],[WorkflowMemory] | ForEach-Object {
 			$step = new-object -type $_ -args $this.config
 			if ($step.CanRun()) {
 				$steps += $step
@@ -134,35 +133,6 @@ Note: You can skip making a reservation by accepting the default value.
 	}
 }
 
-class NginxMemory : MemoryStep {
-
-	NginxMemory([ConfigInput] $config) : base(
-		[NginxMemory].Name, 
-		'NGINX Memory Reservation', 
-		$config) {}
-
-	[bool]HandleMemoryResponse([string] $memory) {
-		$this.config.nginxMemoryReservation = $memory
-		return $true
-	}
-
-	[void]Reset(){
-		$this.config.nginxMemoryReservation = ''
-	}
-
-	[void]ApplyDefault() {
-		$this.config.nginxMemoryReservation = $this.GetDefault()
-	}
-
-	[bool]CanRun() {
-		return ([MemoryStep]$this).CanRun() -and $this.config.HasNginxIngress()
-	}
-
-	[string]GetDefault() {
-		return '500Mi'
-	}
-}
-
 class CodeDxMemory : MemoryStep {
 
 	CodeDxMemory([ConfigInput] $config) : base(
@@ -184,7 +154,7 @@ class CodeDxMemory : MemoryStep {
 	}
 
 	[string]GetDefault() {
-		return '8192Mi'
+		return $this.config.useTriageAssistant ? '16384Mi' : '8192Mi'
 	}
 }
 

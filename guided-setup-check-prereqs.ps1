@@ -1,8 +1,13 @@
 <#PSScriptInfo
-.VERSION 1.1.0
+.VERSION 1.2.0
 .GUID ec9b62b9-a404-4d72-bf90-92f5b1d9975f
 .AUTHOR Code Dx
 #>
+
+param (
+	[switch] $gitOpsBitnamiDeploy,
+	[switch] $silent
+)
 
 $ErrorActionPreference = 'Stop'
 $VerbosePreference = 'Continue'
@@ -18,9 +23,18 @@ Set-PSDebug -Strict
 	. $path | out-null
 }
 
-$yes    = New-Object Management.Automation.Host.ChoiceDescription('&Yes', 'Yes, I plan to use Bitnami''s Sealed Secrets.')
-$no     = New-Object Management.Automation.Host.ChoiceDescription('&No',  'No, I do not plan to use Bitnami''s Sealed Secrets.')
-$choice = (Get-Host).UI.PromptForChoice('Code Dx Requirements','Do you plan to deploy Code Dx using GitOps and Bitnami''s Sealed Secrets?',($yes,$no),0)
+if ($silent) {
+	# avoid ternary operator that's unsupported in pwsh v6
+	if ($gitOpsBitnamiDeploy) {
+		$choice = 0
+	} else {
+		$choice = 1
+	}
+} else {
+	$yes    = New-Object Management.Automation.Host.ChoiceDescription('&Yes', 'Yes, I plan to use Bitnami''s Sealed Secrets.')
+	$no     = New-Object Management.Automation.Host.ChoiceDescription('&No',  'No, I do not plan to use Bitnami''s Sealed Secrets.')
+	$choice = (Get-Host).UI.PromptForChoice('Code Dx Requirements','Do you plan to deploy Code Dx using GitOps and Bitnami''s Sealed Secrets?',($yes,$no),0)
+}
 
 $prereqMessages = @()
 if (-not (Test-SetupPreqs ([ref]$prereqMessages) -useSealedSecrets:($choice -eq 0) -checkKubectlVersion)) {

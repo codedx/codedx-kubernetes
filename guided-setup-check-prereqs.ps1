@@ -42,6 +42,6 @@ if (-not (Test-SetupPreqs ([ref]$prereqMessages) -useSealedSecrets:($choice -eq 
 	$prereqMessages | ForEach-Object {
 		Write-Host "* $_`n"
 	}
-	return
+	exit 1
 }
 Write-Host "`n`nYour system meets the Guided Setup prerequisites.`n"

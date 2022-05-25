@@ -169,7 +169,7 @@ For more details, refer to this URL:
 https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
 
 The command to create the Kubernetes TLS Secret resource will look like this:
-kubectl -n cdx-namespace create tls name --cert=cert.pem --key=key.pem
+kubectl -n cdx-namespace create secret tls name --cert=cert.pem --key=key.pem
 
 Note: Your Kubernetes TLS Secret resource must already exist in the
 Code Dx namespace. Otherwise, the ingress controller may use a 

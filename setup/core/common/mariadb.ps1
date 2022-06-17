@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.1.0
+.VERSION 1.2.0
 .GUID d7edc525-a26e-4f80-b65b-262a0e56422e
 .AUTHOR Code Dx
 #>
@@ -24,10 +24,15 @@ function Copy-DBBackupFiles([string] $namespace,
 		Write-Error "Unable to create directory to store backup files, kubectl exited with exit code $LASTEXITCODE."
 	}
 
-	kubectl -n $namespace cp   -c $containerName $backupFiles $podName`:$destinationPath
+	$backupFilesParent = Split-Path $backupFiles -Parent
+	Push-Location $backupFilesParent
+
+	$sourcePath = Split-Path $backupFiles -Leaf
+	kubectl -n $namespace cp   -c $containerName $sourcePath $podName`:$destinationPath
 	if (0 -ne $LASTEXITCODE) {
 		Write-Error "Unable to copy backup files to pod, kubectl exited with exit code $LASTEXITCODE."
 	}
+	Pop-Location
 }
 
 function Stop-SlaveDB([string] $namespace, 

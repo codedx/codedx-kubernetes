@@ -53,9 +53,9 @@ param (
 	[string]                 $minioEphemeralStorageReservation,
 	[string]                 $workflowEphemeralStorageReservation,
 
-	[string]                 $imageCodeDxTomcat       = 'codedx/codedx-tomcat:v2022.4.4',
-	[string]                 $imageCodeDxTools        = 'codedx/codedx-tools:v2022.4.4',
-	[string]                 $imageCodeDxToolsMono    = 'codedx/codedx-toolsmono:v2022.4.4',
+	[string]                 $imageCodeDxTomcat       = 'codedx/codedx-tomcat:v2022.4.5',
+	[string]                 $imageCodeDxTools        = 'codedx/codedx-tools:v2022.4.5',
+	[string]                 $imageCodeDxToolsMono    = 'codedx/codedx-toolsmono:v2022.4.5',
 
 	[string]                 $imagePrepare            = 'codedx/codedx-prepare:v1.15.0',
 	[string]                 $imageNewAnalysis        = 'codedx/codedx-newanalysis:v1.15.0',

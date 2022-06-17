@@ -16,7 +16,7 @@ If you changed the default values, substitute your namespace and resource names 
 kubectl -n cdx-app exec -it codedx-mariadb-slave-0 -- sh /bitnami/mariadb/scripts/backup.sh
 ```
 
-Before continuing, verify that you see "completed OK message" in the backup output. Note the backup name (e.g., 20220616-162928-Full), which you will reference in subsequent steps. 
+Before continuing, verify that you see "completed OK message" in the backup output. Note the backup name (e.g., 20220616-162928-Full), which you will reference in subsequent steps.
 
 2) Create a new local directory to store the database backup you created, replace backup-name with the name of your backup (e.g., 20220616-162928-Full). If you are using an external database, you can ignore this step.
 
@@ -25,6 +25,30 @@ cd /path/to/my/working/directory
 mkdir db-backup
 cd db-backup
 kubectl -n cdx-app cp codedx-mariadb-slave-0:/bitnami/mariadb/backup/data/backup-name .
+```
+
+Verify that you see output similar to what's below in your db-backup directory:
+
+```
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d----           6/17/2022    10:56                codedx
+d----           6/17/2022    10:56                mysql
+d----           6/17/2022    10:56                performance_schema
+d----           6/17/2022    10:56                test
+-a---           6/17/2022    10:56             52 aria_log_control
+-a---           6/17/2022    10:56          16384 aria_log.00000001
+-a---           6/17/2022    10:56            324 backup-my.cnf
+-a---           6/17/2022    10:56              0 done
+-a---           6/17/2022    10:56            976 ib_buffer_pool
+-a---           6/17/2022    10:56           2560 ib_logfile0
+-a---           6/17/2022    10:56       79691776 ibdata1
+-a---           6/17/2022    10:56           1311 mysql-bin.000001
+-a---           6/17/2022    10:56       63044202 mysql-bin.000002
+-a---           6/17/2022    10:56            417 mysql-bin.000003
+-a---           6/17/2022    10:56             85 xtrabackup_binlog_info
+-a---           6/17/2022    10:56             79 xtrabackup_checkpoints
+-a---           6/17/2022    10:56            681 xtrabackup_info
 ```
 
 3) Set the Code Dx replica count to 0.
@@ -48,6 +72,8 @@ kubectl -n cdx-app delete pvc/backup-codedx-mariadb-slave-0
 ```
 kubectl get pv
 ```
+
+>Note: It may take some time for the MariaDB volumes to disappear. Do not proceed if they still show in the above command's output.
 
 6) Edit your run-setup.ps1 script by updating the volume-related Code Dx deployment script parameters (those with a `VolumeSizeGiB` suffix).
 

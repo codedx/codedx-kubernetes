@@ -106,7 +106,6 @@ pipeline {
 								script {
 
 									outputPreview = release.runSemanticRelease(GIT_TOKEN, true)
-									println(outputPreview)
 
 									nextVersion = release.getNextVersion(outputPreview)
 									hasNextVersion = nextVersion != ''
@@ -201,6 +200,10 @@ pipeline {
 
 										// note: pipeline requires 'Suppress automatic SCM triggering' behavior
 										sh "git push --set-upstream origin ${scm.branches[0]}"
+
+										// Commit for Docker-related changes will alter next version number
+										outputPreview = release.runSemanticRelease(GIT_TOKEN, true)
+										nextVersion = release.getNextVersion(outputPreview)
 									}
 
 									chartTag = "charts-$nextVersion"

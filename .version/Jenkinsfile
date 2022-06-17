@@ -106,6 +106,8 @@ pipeline {
 								script {
 
 									outputPreview = release.runSemanticRelease(GIT_TOKEN, true)
+									println(outputPreview)
+
 									nextVersion = release.getNextVersion(outputPreview)
 									hasNextVersion = nextVersion != ''
 

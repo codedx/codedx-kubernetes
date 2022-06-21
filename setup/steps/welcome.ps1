@@ -47,37 +47,47 @@ class Welcome : Step {
 	}
 }
 
-class UseGitOps : Step {
+class DeploymentMethod : Step {
 
 	static [string] hidden $description = @'
-Code Dx can generate a setup command that you can use to create GitOps 
-outputs for deploying Code Dx on Kubernetes using either Flux v1 and
-helm-operator or Flux v2 (GitOps Toolkit). Alternatively, you can 
-generate a setup command that uses helm to render YAML files.
+The Guided Setup will help you specify the Code Dx deployment script 
+parameters based on your desired configuration and deployment method.
 
+The deployment script supports the following deployment methods:
+
+- Automated Helm Deployment (default)
+- Flux v1 and Bitnami's Sealed Secrets
+- Flux v2/GitOps Toolkit and Sealed Secrets
+- Helm Manifest
+- Helm Manifest with Sealed Secrets
+- Manual Helm Deployment
+
+Note: Use the help feature to learn more about each method.
 '@
 
-	UseGitOps([ConfigInput] $config) : base(
-		[UseGitOps].Name, 
+	DeploymentMethod([ConfigInput] $config) : base(
+		[DeploymentMethod].Name, 
 		$config,
-		'GitOps',
-		[UseGitOps]::description,
-		'Use GitOps?') {}
+		'Deployment Method',
+		[DeploymentMethod]::description,
+		'How would you like to deploy Code Dx?') {}
 
 	[IQuestion] MakeQuestion([string] $prompt) {
 		return new-object MultipleChoiceQuestion($prompt, @(
-			[tuple]::create('&No', 'No, I don''t want to use GitOps'),
-			[tuple]::create('&Flux v1', 'Yes, I want to use Flux v1, helm-operator, and Bitnami''s Sealed Secrets'),
-			[tuple]::create('Flux v2/&GitOps Toolkit', 'Yes, I want to use Flux v2, helm-controller, and Bitnami''s Sealed Secrets'),
-			[tuple]::create('&Helm Manifest', 'Yes, I want to generate a manifest with helm dry-run'),
-			[tuple]::create('Helm Manifest with &Sealed Secrets', 'Yes, I want to generate a manifest with helm dry-run and use Bitnami''s Sealed Secrets')), 0)
+			[tuple]::create('&Automated Helm', 'Deployment script will automate running helm with required resources'),
+			[tuple]::create('&Flux v1', 'Deployment script will generate artifacts for use with Flux v1, helm-operator, and Bitnami''s Sealed Secrets'),
+			[tuple]::create('Flux v2/&GitOps Toolkit', 'Deployment script will generate artifacts for use with Flux v2, helm-controller, and Bitnami''s Sealed Secrets'),
+			[tuple]::create('&Helm Manifest', 'Deployment script will generate YAML resources using helm dry-run'),
+			[tuple]::create('Helm Manifest with &Sealed Secrets', 'Deployment script will generate YAML resources using helm dry-run and Bitnami''s Sealed Secrets'),
+			[tuple]::create('&Manual Helm Deployment', 'Deployment script will generate required resources, values file(s), and helm command(s) to run manually')), 0)
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.useHelmOperator = ([MultipleChoiceQuestion]$question).choice -eq 1
 		$this.config.useHelmController = ([MultipleChoiceQuestion]$question).choice -eq 2
 		$this.config.useHelmManifest = 3,4 -contains ([MultipleChoiceQuestion]$question).choice
-		$this.config.skipSealedSecrets = 0,3 -contains ([MultipleChoiceQuestion]$question).choice
+		$this.config.skipSealedSecrets = 0,3,5 -contains ([MultipleChoiceQuestion]$question).choice
+		$this.config.useHelmCommand = ([MultipleChoiceQuestion]$question).choice -eq 5
 		return $true
 	}
 
@@ -86,6 +96,7 @@ generate a setup command that uses helm to render YAML files.
 		$this.config.useHelmController = $false
 		$this.config.useHelmManifest = $false
 		$this.config.skipSealedSecrets = $true
+		$this.config.useHelmCommand = $false
 	}
 }
 
@@ -93,8 +104,10 @@ class HelmManifestWarning : Step {
 
 	static [string] hidden $description = @'
 The Code Dx deployment depends on Helm. The Code Dx deployment script 
-can invoke helm on your behalf or generate resources for the Flux or
-GitOps Toolkit helm operator.
+can invoke helm on your behalf, generate resources for the Flux or
+GitOps Toolkit helm operator, or generate a helm command that you can
+run manually. This deployment method should only be used when you want to
+deploy Code Dx using YAML files.
 
 The Helm Manifest deployment option lets you use helm to render the YAML 
 resources helm would produce during initial deployment. This option 

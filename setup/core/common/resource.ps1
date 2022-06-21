@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.0.0
+.VERSION 2.1.0
 .GUID 0c9bd537-7359-4ebb-a64c-cf1693ccc4f9
 .AUTHOR Code Dx
 #>
@@ -398,4 +398,39 @@ spec:
 	($useHelmController ? "skipCRDs: true" : "crds: 'Skip'")
 
     New-ResourceFile 'HelmRelease' $namespace $name $helmRelease
+}
+
+
+function New-HelmCommand(
+	[string]    $name,
+	[string]    $namespace,
+	[string]    $releaseName,
+	[string]    $chartRootPath,
+	[string[]]  $valuesPaths,
+	[hashtable] $dockerImageNames) {
+
+	$crdAction = '--skip-crds'
+	$valuesParam = '--reset-values' # merge $values with the latest, default chart values
+
+	$values = @()
+	$valuesPaths | ForEach-Object {
+		$values += $_
+	}
+
+	$dockerImageNamesFileContent = ''
+	$dockerImageNames.Keys | ForEach-Object {
+		$dockerImageNamesFileContent += "$_`: $($dockerImageNames[$_])`n"
+	}
+
+	$helmValuesPath = New-ResourceFile 'HelmCommand' $namespace "values-docker-$releaseName" $dockerImageNamesFileContent
+	$values += $helmValuesPath
+
+	$helmOutput = "helm upgrade --namespace $namespace --install $crdAction $valuesParam "
+	$values | ForEach-Object {
+		$helmOutput += "--values ""$_"" "
+	}
+	$helmOutput += "$releaseName $chartRootPath"
+
+	$helmCommandDirectory = Get-ResourceDirectoryPath 'HelmCommand'
+	$helmOutput | Out-File (join-path $helmCommandDirectory "helmcommand-install-$releaseName") -Encoding utf8
 }

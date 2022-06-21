@@ -2254,3 +2254,53 @@ function Set-NGINXCertManagerIngressPass([int] $saveOption, [bool] $useTLS, [boo
 	$global:inputs.enqueue(1) # skip pod tolerations
 	$global:inputs.enqueue($saveOption) # next step save option
 }
+
+function Set-ClassicLoadBalancerIngressHelmCommandPass([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue(5)     # use HelmCommand
+	$global:inputs.enqueue(0)     # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(2) # choose EKS env
+	$global:inputs.enqueue(1) # choose EKS context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(1) # skip triage assistant
+	$global:inputs.enqueue(1) # skip tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # skip backup
+	$global:inputs.enqueue(1) # choose deployment options (via other)
+	$global:inputs.enqueue(0) # choose PSP
+	$global:inputs.enqueue(0) # choose Network Policy
+	$global:inputs.enqueue(0) # choose TLS
+	$global:inputs.enqueue(0) # choose kubernetes.io/legacy-unknown signer
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
+	$global:inputs.enqueue(0) # specify db replicas
+	$global:inputs.enqueue('cacerts') # specify cacerts file
+	$global:inputs.enqueue((New-Password 'changeit')) # specify cacerts file password
+	$global:inputs.enqueue(1) # skip changing cacerts password
+	$global:inputs.enqueue(1) # skip extra certificates
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(0) # choose default Docker images
+	$global:inputs.enqueue(4) # choose AWS Classic Load Balancer ingress
+	$global:inputs.enqueue('arn:value') # specify AWS Certificate ARN
+	$global:inputs.enqueue(0) # use local accounts
+	$global:inputs.enqueue(0) # use default cpu reservation
+	$global:inputs.enqueue(0) # use default memory reservation
+	$global:inputs.enqueue(0) # use default storage reservation
+	$global:inputs.enqueue(0) # use default volume sizes
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue(1) # skip node selectors
+	$global:inputs.enqueue(1) # skip pod tolerations
+	$global:inputs.enqueue($saveOption) # next step save option
+}

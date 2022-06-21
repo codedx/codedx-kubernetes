@@ -959,3 +959,23 @@ Describe 'Generate Setup Command from IngressWithTLSPass' -Tag 'NGINXTLSIngressP
 		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
 	}
 }
+
+Describe 'Generate Setup Command from Classic Load Balancer Ingress HelmCommand Pass' -Tag 'ClassicLoadBalancerIngressHelmCommandPass' {
+
+	BeforeEach {
+		Set-TestDefaults
+	}
+
+	It '(51) Should generate EKS, HelmCommand setup.ps1 command with AWS Classic Load Balancer' {
+	
+		Set-ClassicLoadBalancerIngressHelmCommandPass 1
+
+		New-Mocks
+		. ./guided-setup.ps1
+
+		$runSetupFile = join-path $TestDrive run-setup.ps1
+		$runSetupFile | Should -Exist
+		$expectedParams = "-kubeContextName 'EKS' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -codeDxMemoryReservation '8192Mi' -dbMasterMemoryReservation '8192Mi' -codeDxCPUReservation '2000m' -dbMasterCPUReservation '2000m' -codeDxEphemeralStorageReservation '2048Mi' -storageClassName 'default' -serviceTypeCodeDx 'LoadBalancer' -caCertsFilePath 'cacerts' -csrSignerNameCodeDx 'kubernetes.io/legacy-unknown' -csrSignerNameToolOrchestration 'kubernetes.io/legacy-unknown' -useHelmCommand -skipSealedSecrets -codedxAdminPwd 'my-codedx-password' -caCertsFilePwd 'changeit' -codedxDatabaseUserPwd 'my-db-user-password' -skipIngressEnabled -skipUseRootDatabaseUser -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 443 -dbVolumeSizeGiB 64 -dbSlaveReplicaCount 0 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -skipToolOrchestration -serviceAnnotationsCodeDx @{'service.beta.kubernetes.io/aws-load-balancer-backend-protocol'='https';'service.beta.kubernetes.io/aws-load-balancer-ssl-cert'='arn:value';'service.beta.kubernetes.io/aws-load-balancer-ssl-ports'='https'}"
+		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
+	}
+}

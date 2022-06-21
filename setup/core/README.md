@@ -161,6 +161,7 @@ This section describes the setup.ps1 script parameters, which you can specify by
 | `useHelmOperator`                                  | whether to create resources for helm-operator and GitOps   | false                                             |
 | `useHelmController`                                | whether to create resources for helm-controller and GitOps | false                                             |
 | `useHelmManifest`                                  | whether to create resources via helm dry-run               | false                                             |
+| `useHelmCommand`                                   | whether to create helm values files and required resources | false                                             |
 | `skipSealedSecrets`                                | whether to skip generating sealed secrets                  | false                                             |
 | `sealedSecretsNamespace`                           | namespace containing the Sealed Secrets application        | adm (example)                                     |
 | `sealedSecretsControllerName`                      | name of the Sealed Secrets controller                      | sealed-secrets (example)                          |

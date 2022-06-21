@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.0.0
+.VERSION 2.1.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -167,6 +167,7 @@ param (
 	[switch]                 $useHelmOperator,
 	[switch]                 $useHelmController,
 	[switch]                 $useHelmManifest,
+	[switch]                 $useHelmCommand,
 	[switch]                 $skipSealedSecrets,
 	[string]                 $sealedSecretsNamespace,
 	[string]                 $sealedSecretsControllerName,
@@ -222,7 +223,7 @@ $useIngress = -not $skipIngressEnabled
 $useLocalDatabase = -not $skipDatabase
 $useRootDatabaseUser = -not $skipUseRootDatabaseUser
 
-$useGitOps = $useHelmOperator -or $useHelmController -or $useHelmManifest
+$useGitOps = $useHelmOperator -or $useHelmController -or $useHelmManifest -or $useHelmCommand
 $useSealedSecrets = $useGitOps -and -not $skipSealedSecrets
 
 $useVelero = $backupType -like 'velero*'
@@ -878,75 +879,124 @@ if ($useVelero) {
 
 if ($useGitOps -and (-not $useHelmManifest)) {
 
-	### Create Code Dx HelmRelease
-	$codeDxValuesConfigMapNames = @()
+	$useHelmRelease = $useHelmController -or $useHelmOperator
 
+	### Create Code Dx HelmRelease
+	$codeDxValuesPaths = @()
+	$codeDxValuesConfigMapNames = @()
 	$codeDxSetupValuesName = 'codedx-setup-values'
-	New-ConfigMapResource $namespaceCodeDx $codeDxSetupValuesName @{} @{'values.yaml' = $codeDxDeploymentValuesFile.FullName} -useGitOps
-	$codeDxValuesConfigMapNames += $codeDxSetupValuesName
+
+	if ($useHelmRelease) {
+		New-ConfigMapResource $namespaceCodeDx $codeDxSetupValuesName @{} @{'values.yaml' = $codeDxDeploymentValuesFile.FullName} -useGitOps
+		$codeDxValuesConfigMapNames += $codeDxSetupValuesName
+	} else {
+		$codeDxValuesPaths += $codeDxDeploymentValuesFile.FullName
+	}
 
 	$codeDxFileNumber = 0
 	$codeDxUserValuesNameTemplate = 'codedx-user-values-{0}'
 	$extraCodeDxValuesPaths | ForEach-Object {
+
 		$codeDxUserValuesName = $codeDxUserValuesNameTemplate -f $codeDxFileNumber
-		New-ConfigMapResource $namespaceCodeDx $codeDxUserValuesName @{} @{'values.yaml' = $_} -useGitOps
-		$codeDxValuesConfigMapNames += $codeDxUserValuesName
+
+		if ($useHelmRelease) {
+			New-ConfigMapResource $namespaceCodeDx $codeDxUserValuesName @{} @{'values.yaml' = $_} -useGitOps
+			$codeDxValuesConfigMapNames += $codeDxUserValuesName
+		} else {
+			$codeDxValuesPaths += $_
+		}
+		
 		$codeDxFileNumber++
 	}
 
+	$codeDxDockerImageNames = @{
+		'codedxTomcatImage' = $imageCodeDxTomcat;
+		'codedxTomcatInitImage' = $imageCodeDxTomcatInit
+	}
+
 	$codeDxHelmReleaseName = 'codedx'
-	New-HelmRelease $codeDxHelmReleaseName `
-		$namespaceCodeDx `
-		$releaseNameCodeDx `
-		-chartGitName 'codedx-kubernetes' `
-		-chartGit ($useHelmController ? 'https://github.com/codedx/codedx-kubernetes' : 'git@github.com:codedx/codedx-kubernetes') `
-		-chartRef $codedxGitRepoBranch `
-		-chartPath 'setup/core/charts/codedx' `
-		-valuesConfigMapNames $codeDxValuesConfigMapNames `
-		-dockerImageNames @{
-			'codedxTomcatImage' = $imageCodeDxTomcat;
-			'codedxTomcatInitImage' = $imageCodeDxTomcatInit
-		} `
-		-useHelmController:$useHelmController
+	if ($useHelmRelease) {
+		New-HelmRelease $codeDxHelmReleaseName `
+			$namespaceCodeDx `
+			$releaseNameCodeDx `
+			-chartGitName 'codedx-kubernetes' `
+			-chartGit ($useHelmController ? 'https://github.com/codedx/codedx-kubernetes' : 'git@github.com:codedx/codedx-kubernetes') `
+			-chartRef $codedxGitRepoBranch `
+			-chartPath 'setup/core/charts/codedx' `
+			-valuesConfigMapNames $codeDxValuesConfigMapNames `
+			-dockerImageNames $codeDxDockerImageNames `
+			-useHelmController:$useHelmController
+	} else {
+		New-HelmCommand $codeDxHelmReleaseName `
+			$namespaceCodeDx `
+			$releaseNameCodeDx `
+			(join-path $workDir .repo/setup/core/charts/codedx) `
+			$codeDxValuesPaths `
+			$codeDxDockerImageNames
+	}
 
 	### Optionally Create Tool Orchestration HelmRelease
 	if ($useToolOrchestration) {
-		
+
+		$toolOrchestrationValuesPaths = @()
 		$toolOrchestrationValuesConfigMapNames = @()
 
 		$toolOrchestrationSetupValuesName = 'codedx-tool-orchestration-setup-values'
-		New-ConfigMapResource $namespaceToolOrchestration $toolOrchestrationSetupValuesName @{} @{'values.yaml' = $toolOrchestrationValuesFile.FullName} -useGitOps
-		$toolOrchestrationValuesConfigMapNames += $toolOrchestrationSetupValuesName
-	
+
+		if ($useHelmRelease) {
+			New-ConfigMapResource $namespaceToolOrchestration $toolOrchestrationSetupValuesName @{} @{'values.yaml' = $toolOrchestrationValuesFile.FullName} -useGitOps
+			$toolOrchestrationValuesConfigMapNames += $toolOrchestrationSetupValuesName
+		} else {
+			$toolOrchestrationValuesPaths += $toolOrchestrationValuesFile.FullName
+		}
+
 		$toolOrchestrationFileNumber = 0
 		$toolOrchestrationUserValuesNameTemplate = 'codedx-tool-orchestration-user-values-{0}'
 		$extraToolOrchestrationValuesPath | ForEach-Object {
 			$toolOrchestrationUserValuesName = $toolOrchestrationUserValuesNameTemplate -f $toolOrchestrationFileNumber
-			New-ConfigMapResource $namespaceToolOrchestration $toolOrchestrationUserValuesName @{} @{'values.yaml' = $_} -useGitOps
-			$toolOrchestrationValuesConfigMapNames += $toolOrchestrationUserValuesName
+
+			if ($useHelmRelease) {
+				New-ConfigMapResource $namespaceToolOrchestration $toolOrchestrationUserValuesName @{} @{'values.yaml' = $_} -useGitOps
+				$toolOrchestrationValuesConfigMapNames += $toolOrchestrationUserValuesName
+			} else {
+				$toolOrchestrationValuesPaths += $_
+			}
+			
 			$toolOrchestrationFileNumber++
 		}
-	
+
+		$toolOrchestrationDockerImages = @{
+			'imageNameCodeDxTools'      = $imageCodeDxTools;
+			'imageNameCodeDxToolsMono'  = $imageCodeDxToolsMono;
+			'imageNamePrepare'          = $imagePrepare;
+			'imageNameNewAnalysis'      = $imageNewAnalysis;
+			'imageNameSendResults'      = $imageSendResults;
+			'imageNameSendErrorResults' = $imageSendErrorResults;
+			'imageNameHelmPreDelete'    = $imagePreDelete;
+			'toolServiceImageName'      = $imageToolService;
+		}
+
 		$toolOrchestrationHelmReleaseName = 'codedx-tool-orchestration'
-		New-HelmRelease $toolOrchestrationHelmReleaseName `
-			$namespaceToolOrchestration `
-			$releaseNameToolOrchestration `
-			-chartGitName 'codedx-kubernetes' `
-			-chartGit ($useHelmController ? 'https://github.com/codedx/codedx-kubernetes' : 'git@github.com:codedx/codedx-kubernetes') `
-			-chartRef $codedxGitRepoBranch `
-			-chartPath 'setup/core/charts/codedx-tool-orchestration' `
-			-valuesConfigMapNames $toolOrchestrationValuesConfigMapNames `
-			-dockerImageNames @{
-				'imageNameCodeDxTools'      = $imageCodeDxTools;
-				'imageNameCodeDxToolsMono'  = $imageCodeDxToolsMono;
-				'imageNamePrepare'          = $imagePrepare;
-				'imageNameNewAnalysis'      = $imageNewAnalysis;
-				'imageNameSendResults'      = $imageSendResults;
-				'imageNameSendErrorResults' = $imageSendErrorResults;
-				'imageNameHelmPreDelete'    = $imagePreDelete;
-				'toolServiceImageName'      = $imageToolService;
-			} `
-			-useHelmController:$useHelmController
+		if ($useHelmRelease) {
+
+			New-HelmRelease $toolOrchestrationHelmReleaseName `
+				$namespaceToolOrchestration `
+				$releaseNameToolOrchestration `
+				-chartGitName 'codedx-kubernetes' `
+				-chartGit ($useHelmController ? 'https://github.com/codedx/codedx-kubernetes' : 'git@github.com:codedx/codedx-kubernetes') `
+				-chartRef $codedxGitRepoBranch `
+				-chartPath 'setup/core/charts/codedx-tool-orchestration' `
+				-valuesConfigMapNames $toolOrchestrationValuesConfigMapNames `
+				-dockerImageNames $toolOrchestrationDockerImages `
+				-useHelmController:$useHelmController
+		} else {
+			New-HelmCommand $toolOrchestrationHelmReleaseName `
+				$namespaceToolOrchestration `
+				$releaseNameToolOrchestration `
+				(join-path $workDir .repo/setup/core/charts/codedx-tool-orchestration) `
+				$toolOrchestrationValuesPaths `
+				$toolOrchestrationDockerImages
+		}
 	}
 }
 

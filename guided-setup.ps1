@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.0.0
+.VERSION 2.1.0
 .GUID e917c41a-260f-4ea4-980d-db00f8baef1b
 .AUTHOR Code Dx
 #>
@@ -78,7 +78,7 @@ $graph = New-Object Graph($true)
 
 $s = @{}
 [Welcome],
-[UseGitOps],[HelmManifestWarning],[SealedSecretsNamespace],[SealedSecretsControllerName],[SealedSecretsPublicKeyPath],
+[DeploymentMethod],[HelmManifestWarning],[SealedSecretsNamespace],[SealedSecretsControllerName],[SealedSecretsPublicKeyPath],
 [Prerequisites],[PrequisitesNotMet],[WorkDir],[ChooseEnvironment],
 [ChooseContext],[SelectContext],[HandleNoContext],
 [GetKubernetesPort],
@@ -113,10 +113,10 @@ $s = @{}
 	Add-Step $graph $s[$_]
 }
 
-Add-StepTransitions $graph $s[[Welcome]] $s[[UseGitOps]]
+Add-StepTransitions $graph $s[[Welcome]] $s[[DeploymentMethod]]
 
-Add-StepTransitions $graph $s[[UseGitOps]] $s[[HelmManifestWarning]],$s[[Prerequisites]],$s[[PrequisitesNotMet]],$s[[Abort]]
-Add-StepTransitions $graph $s[[UseGitOps]] $s[[Prerequisites]],$s[[WorkDir]],$s[[ChooseEnvironment]],$s[[ChooseContext]]
+Add-StepTransitions $graph $s[[DeploymentMethod]] $s[[HelmManifestWarning]],$s[[Prerequisites]],$s[[PrequisitesNotMet]],$s[[Abort]]
+Add-StepTransitions $graph $s[[DeploymentMethod]] $s[[Prerequisites]],$s[[WorkDir]],$s[[ChooseEnvironment]],$s[[ChooseContext]]
 
 Add-StepTransitions $graph $s[[ChooseContext]] $s[[HandleNoContext]],$s[[Abort]]
 Add-StepTransitions $graph $s[[ChooseContext]] $s[[SelectContext]],$s[[PrequisitesNotMet]],$s[[Abort]]

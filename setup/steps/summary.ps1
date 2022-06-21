@@ -167,7 +167,7 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 		$usePd = -not $useGitOps -and ([MultipleChoiceQuestion]$question).choice -eq 2
 
 		if ($useGitOps) {
-			'useHelmOperator','useHelmController','useHelmManifest','skipSealedSecrets' | ForEach-Object {
+			'useHelmOperator','useHelmController','useHelmCommand','useHelmManifest','skipSealedSecrets' | ForEach-Object {
 				$this.AddSwitchParameter($sb, $_)
 			}
 			'sealedSecretsNamespace','sealedSecretsControllerName','sealedSecretsPublicKeyPath' | ForEach-Object {

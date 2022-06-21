@@ -31,9 +31,9 @@ if ($silent) {
 		$choice = 1
 	}
 } else {
-	$yes    = New-Object Management.Automation.Host.ChoiceDescription('&Yes', 'Yes, I plan to use Bitnami''s Sealed Secrets.')
-	$no     = New-Object Management.Automation.Host.ChoiceDescription('&No',  'No, I do not plan to use Bitnami''s Sealed Secrets.')
-	$choice = (Get-Host).UI.PromptForChoice('Code Dx Requirements','Do you plan to deploy Code Dx using GitOps and Bitnami''s Sealed Secrets?',($yes,$no),0)
+	$yes    = New-Object Management.Automation.Host.ChoiceDescription('&Yes', 'Yes, I plan to use Flux and Bitnami''s Sealed Secrets.')
+	$no     = New-Object Management.Automation.Host.ChoiceDescription('&No',  'No, I do not plan to use Flux and Bitnami''s Sealed Secrets.')
+	$choice = (Get-Host).UI.PromptForChoice('Code Dx Requirements','Do you plan to deploy Code Dx using Flux and Bitnami''s Sealed Secrets?',($yes,$no),0)
 }
 
 $prereqMessages = @()

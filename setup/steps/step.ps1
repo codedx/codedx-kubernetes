@@ -206,6 +206,7 @@ class ConfigInput {
 	[bool]   $useHelmOperator
 	[bool]   $useHelmController
 	[bool]   $useHelmManifest
+	[bool]   $useHelmCommand
 	[bool]   $skipSealedSecrets
 	[string] $sealedSecretsNamespace
 	[string] $sealedSecretsControllerName
@@ -242,7 +243,7 @@ class ConfigInput {
 	}
 
 	[bool]UseGitOps() {
-		return $this.useHelmOperator -or $this.useHelmController -or $this.useHelmManifest
+		return $this.useHelmOperator -or $this.useHelmController -or $this.useHelmManifest -or $this.useHelmCommand
 	}
 
 	[bool]IsElbIngress() {

@@ -6,7 +6,7 @@ These steps assume that you are using a [storage class configured for volume exp
 
 These steps also assume that you deployed Code Dx using default Kubernetes (K8s) namespaces and Helm release names. 
 
-If you changed the default values, substitute your namespace and resource names as required. If you are using an external database or you did not install Tool Orchestration, ignore related commands. 
+If you changed the default values, substitute your namespace and resource names as required. If you are using an external database, ignore related commands.
 
 1) Set the Code Dx replica count to 0.
 

@@ -32,8 +32,8 @@ If your Kubernetes provider is not listed below, try the 'Other' option.
 			[tuple]::create('&Minikube',  'Use Minikube for eval/test/dev purposes with a Docker container runtime'),
 			[tuple]::create('&AKS',       'Use Microsoft''s Azure Kubernetes Service (AKS) with a Docker container runtime'),
 			[tuple]::create('&EKS',       'Use Amazon''s Elastic Kubernetes Service (EKS) with a Docker container runtime'),
-			[tuple]::create('&OpenShift', 'Use OpenShift 4'),
-			[tuple]::create('O&ther',     'Use a different Kubernetes provider')), -1)
+			[tuple]::create('Open&Shift', 'Use OpenShift 4'),
+			[tuple]::create('&Other',     'Use a different Kubernetes provider')), -1)
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {

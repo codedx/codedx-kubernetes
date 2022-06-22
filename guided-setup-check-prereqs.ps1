@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.2.0
+.VERSION 1.2.1
 .GUID ec9b62b9-a404-4d72-bf90-92f5b1d9975f
 .AUTHOR Code Dx
 #>
@@ -31,9 +31,9 @@ if ($silent) {
 		$choice = 1
 	}
 } else {
-	$yes    = New-Object Management.Automation.Host.ChoiceDescription('&Yes', 'Yes, I plan to use Flux and Bitnami''s Sealed Secrets.')
-	$no     = New-Object Management.Automation.Host.ChoiceDescription('&No',  'No, I do not plan to use Flux and Bitnami''s Sealed Secrets.')
-	$choice = (Get-Host).UI.PromptForChoice('Code Dx Requirements','Do you plan to deploy Code Dx using Flux and Bitnami''s Sealed Secrets?',($yes,$no),0)
+	$yes    = New-Object Management.Automation.Host.ChoiceDescription('&Yes', 'Yes, I plan to use Flux or Bitnami''s Sealed Secrets.')
+	$no     = New-Object Management.Automation.Host.ChoiceDescription('&No',  'No, I do not plan to use Flux or Bitnami''s Sealed Secrets.')
+	$choice = (Get-Host).UI.PromptForChoice('Code Dx Requirements','Do you plan to deploy Code Dx using Flux or Bitnami''s Sealed Secrets?',($yes,$no),0)
 }
 
 $prereqMessages = @()

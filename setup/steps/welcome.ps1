@@ -56,13 +56,13 @@ parameters based on your desired configuration and deployment method.
 The deployment script supports the following deployment methods:
 
 - Automated Helm Deployment (default)
+- Manual Helm Deployment
 - Flux v1 and Bitnami's Sealed Secrets
 - Flux v2/GitOps Toolkit and Sealed Secrets
 - Helm Manifest
 - Helm Manifest with Sealed Secrets
-- Manual Helm Deployment
 
-Note: Use the help feature to learn more about each method.
+Note: Enter '?' for deployment method descriptions.
 '@
 
 	DeploymentMethod([ConfigInput] $config) : base(
@@ -75,19 +75,19 @@ Note: Use the help feature to learn more about each method.
 	[IQuestion] MakeQuestion([string] $prompt) {
 		return new-object MultipleChoiceQuestion($prompt, @(
 			[tuple]::create('&Automated Helm', 'Deployment script will automate running helm with required resources'),
+			[tuple]::create('&Manual Helm Deployment', 'Deployment script will generate required resources, values file(s), and helm command(s) to run manually'),
 			[tuple]::create('&Flux v1', 'Deployment script will generate artifacts for use with Flux v1, helm-operator, and Bitnami''s Sealed Secrets'),
 			[tuple]::create('Flux v2/&GitOps Toolkit', 'Deployment script will generate artifacts for use with Flux v2, helm-controller, and Bitnami''s Sealed Secrets'),
 			[tuple]::create('&Helm Manifest', 'Deployment script will generate YAML resources using helm dry-run'),
-			[tuple]::create('Helm Manifest with &Sealed Secrets', 'Deployment script will generate YAML resources using helm dry-run and Bitnami''s Sealed Secrets'),
-			[tuple]::create('&Manual Helm Deployment', 'Deployment script will generate required resources, values file(s), and helm command(s) to run manually')), 0)
+			[tuple]::create('Helm Manifest with &Sealed Secrets', 'Deployment script will generate YAML resources using helm dry-run and Bitnami''s Sealed Secrets')), 0)
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
-		$this.config.useHelmOperator = ([MultipleChoiceQuestion]$question).choice -eq 1
-		$this.config.useHelmController = ([MultipleChoiceQuestion]$question).choice -eq 2
-		$this.config.useHelmManifest = 3,4 -contains ([MultipleChoiceQuestion]$question).choice
-		$this.config.skipSealedSecrets = 0,3,5 -contains ([MultipleChoiceQuestion]$question).choice
-		$this.config.useHelmCommand = ([MultipleChoiceQuestion]$question).choice -eq 5
+		$this.config.useHelmOperator = ([MultipleChoiceQuestion]$question).choice -eq 2
+		$this.config.useHelmController = ([MultipleChoiceQuestion]$question).choice -eq 3
+		$this.config.useHelmManifest = 4,5 -contains ([MultipleChoiceQuestion]$question).choice
+		$this.config.skipSealedSecrets = 0,1,4 -contains ([MultipleChoiceQuestion]$question).choice
+		$this.config.useHelmCommand = ([MultipleChoiceQuestion]$question).choice -eq 1
 		return $true
 	}
 

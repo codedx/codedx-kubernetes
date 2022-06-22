@@ -245,7 +245,7 @@ function Set-ClassicLoadBalancerIngressPass([int] $saveOption) {
 function Set-ClassicLoadBalancerIngressGitOpsPass([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # use GitOps (Flux v1)
+	$global:inputs.enqueue(2)     # use GitOps (Flux v1)
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(2) # choose EKS env
@@ -298,7 +298,7 @@ function Set-ClassicLoadBalancerIngressGitOpsPass([int] $saveOption) {
 function Set-ClassicLoadBalancerIngressGitOpsToolkitPass([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(2)     # use Flux v2 (GitOps Toolkit)
+	$global:inputs.enqueue(3)     # use Flux v2 (GitOps Toolkit)
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(2) # choose EKS env
@@ -351,7 +351,7 @@ function Set-ClassicLoadBalancerIngressGitOpsToolkitPass([int] $saveOption) {
 function Set-ClassicLoadBalancerIngressGitOpsNoTLSPass([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(1)     # use GitOps (Flux v1)
+	$global:inputs.enqueue(2)     # use GitOps (Flux v1)
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(2) # choose EKS env
@@ -1902,7 +1902,7 @@ function Set-ClassicLoadBalancerInternalIngressPass([int] $saveOption) {
 function Set-ClassicLoadBalancerIngressHelmManifestPass() {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(3)     # choose Helm Manifest
+	$global:inputs.enqueue(4)     # choose Helm Manifest
 	$global:inputs.enqueue(0)     # agree to Helm Manifest warning
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
@@ -1955,7 +1955,7 @@ function Set-ClassicLoadBalancerIngressHelmManifestWithSealedSecretsPass() {
 	$global:inputs.enqueue($null) # welcome
 	$global:inputs.enqueue(4)     # choose Helm Manifest with Sealed Secrets
 	$global:inputs.enqueue(1)     # do not agree to Helm Manifest warning
-	$global:inputs.enqueue(4)     # choose Helm Manifest with Sealed Secrets
+	$global:inputs.enqueue(5)     # choose Helm Manifest with Sealed Secrets
 	$global:inputs.enqueue(0)     # agree to Helm Manifest warning
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
@@ -2258,7 +2258,7 @@ function Set-NGINXCertManagerIngressPass([int] $saveOption, [bool] $useTLS, [boo
 function Set-ClassicLoadBalancerIngressHelmCommandPass([int] $saveOption) {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
-	$global:inputs.enqueue(5)     # use HelmCommand
+	$global:inputs.enqueue(1)     # use HelmCommand
 	$global:inputs.enqueue(0)     # prereqs
 	$global:inputs.enqueue($TestDrive) # workdir
 	$global:inputs.enqueue(2) # choose EKS env

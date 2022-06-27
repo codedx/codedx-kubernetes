@@ -14,14 +14,16 @@ If you changed the default values, substitute your namespace and resource names 
 kubectl -n cdx-app scale --replicas=0 deployment/codedx
 ```
 
-2) Delete the MariaDB statefulset resources (do *not* delete the related PVC resources). If you are using an external database, you can ignore this step.
+2) Delete the MariaDB statefulset resources (do *not* delete the related PVC resources). If you are using an external database or are not planning to expand the database volumes, you can ignore this step.
 
 ```
 kubectl -n cdx-app delete statefulset/codedx-mariadb-master
 kubectl -n cdx-app delete statefulset/codedx-mariadb-slave
 ```
 
-3) Manually edit the MariaDB PVCs by specifying the new storage size for spec.resources.requests.storage. If you are using an external database, you can ignore this step.
+>Note: Verify that the related MariaDB pods have terminated before moving on to Step 3.
+
+3) Manually edit the MariaDB PVCs by specifying the new storage size for spec.resources.requests.storage. If you are using an external database or are not planning to expand the database volumes, you can ignore this step.
 
 ```
 kubectl -n cdx-app edit pvc data-codedx-mariadb-master-0
@@ -29,9 +31,9 @@ kubectl -n cdx-app edit pvc data-codedx-mariadb-slave-0
 kubectl -n cdx-app edit pvc backup-codedx-mariadb-slave-0
 ```
 
->Note: Afterward, the PVC YAML status field will show a pending resize.
+>Note: Afterward, the PVC YAML status field will show a pending resize. Wait for the resize to complete before moving on to the next step.
 
-4) Edit your run-setup.ps1 script by updating the volume-related Code Dx deployment script parameters (those with a `VolumeSizeGiB` suffix). The volume size script parameters must match any edits you applied in the previous step.
+4) Edit your run-setup.ps1 script by updating the volume-related Code Dx deployment script parameters (those with a `VolumeSizeGiB` suffix). The volume size script parameters must match any edits you applied in the previous step. Note that the backup and subordinate database volumes share the same volume size parameter.
 
 5) Rerun run-setup.ps1 to expand your expandable volumes.
 

@@ -33,7 +33,6 @@ spec:
       {{- toYaml .Values.codedxTomcatImagePullSecrets | nindent 6 }}
       {{- end }}
       serviceAccountName: {{ include "codedx.serviceAccountName" . | quote }}
-      serviceAccount: {{ include "codedx.serviceAccountName" . | quote }}
       securityContext:
         fsGroup: 1000
         runAsUser: 1000

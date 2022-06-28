@@ -22,7 +22,6 @@ spec:
       {{- toYaml .Values.toolServiceImagePullSecrets | nindent 6 }}
       {{- end }}
       serviceAccountName: {{ include "codedx-tool-orchestration.serviceAccountName" . | quote }}
-      serviceAccount: {{ include "codedx-tool-orchestration.serviceAccountName" . | quote }}
       securityContext:
         fsGroup: 1000
         runAsUser: 1000

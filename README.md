@@ -17,8 +17,8 @@ You must run guided-setup.ps1 from a system with administrative access to your c
 - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) (a version that matches the major.minor version of your k8s cluster)
 - [openssl](https://www.openssl.org/)
 - [helm v3.1+](https://github.com/helm/helm/releases/tag/v3.2.4) - Download the Helm release for your platform and extract helm (or helm.exe).
-- [keytool](https://adoptopenjdk.net/) - The keytool application is bundled with the Java 8 JRE.
-  If your Code Dx deployment requires specifying a path to a cacerts file, use the cacerts file from a Java 8 JRE install.
+- [keytool](https://adoptopenjdk.net/) - The keytool application is bundled with the Java 11 JRE.
+  If your Code Dx deployment requires specifying a path to a cacerts file, use the cacerts file from a Java 11 JRE install.
 - [kubeseal](https://github.com/bitnami-labs/sealed-secrets/releases) - Required when using GitOps and Bitnami's Sealed Secrets.
 >Note: On Windows, make sure that you can run PowerShell Core scripts by switching your [PowerShell Execution Policy](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies) to RemoteSigned (recommended) or Unrestricted. You must run the `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned` command from an elevated/administrator Command Prompt.
 

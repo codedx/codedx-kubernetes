@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.3.0
+.VERSION 1.4.0
 .GUID c191448b-25fd-4ec2-980e-e7a8ba85e693
 .AUTHOR Code Dx
 #>
@@ -211,8 +211,9 @@ function Test-SetupPreqs([ref] $messages, [switch] $useSealedSecrets, [string] $
 	if ($null -eq $keytoolJavaSpec) {
 		$keytoolJavaSpec = '?'
 	}
-	if ('1.8' -ne $keytoolJavaSpec) {
-		$messages.Value += "keytool application is associated with an unsupported java.vm.specification version ($keytoolJavaSpec), update your PATH to run the Java 8 version of the keytool application"
+	$requiredJavaSpec = '11'
+	if ($requiredJavaSpec -ne $keytoolJavaSpec) {
+		$messages.Value += "keytool application is associated with an unsupported java.vm.specification version ($keytoolJavaSpec), update your PATH to run the Java $requiredJavaSpec version of the keytool application"
 	}
 
 	$messages.Value.count -eq 0

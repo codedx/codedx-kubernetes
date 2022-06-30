@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.0.0
+.VERSION 2.1.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -694,10 +694,22 @@ function Get-CodeDxKeystore([string] $namespace, [string] $imageCodeDxTomcat, [s
 	}
 	Wait-RunningPod 'copy-cacerts' $waitTimeSeconds $namespace $podName
 
+	if (Test-Path $outPath -PathType 'Leaf') {
+		Write-Verbose "Removing $outPath..."
+		Remove-Item -LiteralPath $outPath -Force
+	}
 	Write-Verbose "Copying cacerts from $podName to $outPath..."
-	kubectl -n $namespace cp $podName`:/opt/java/openjdk/jre/lib/security/cacerts $outPath
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to copy cacerts file from $podName to $outPath, kubectl exited with code $LASTEXITCODE."
+
+	'/opt/java/openjdk/jre/lib/security/cacerts', # Java 8
+	'/opt/java/openjdk/lib/security/cacerts'      # Java 11
+	| ForEach-Object {
+		if (-not (Test-Path $outPath -PathType 'Leaf')) {
+			Write-Verbose "Trying to copy $_..."
+			kubectl -n $namespace cp $podName`:$_ $outPath
+			if ($LASTEXITCODE -ne 0) {
+				throw "Unable to copy cacerts file from $podName to $outPath, kubectl exited with code $LASTEXITCODE."
+			}
+		}
 	}
 
 	Write-Verbose "Deleting pod $podName..."

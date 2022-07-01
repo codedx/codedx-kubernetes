@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.1.0
+.VERSION 2.2.0
 .GUID 0c9bd537-7359-4ebb-a64c-cf1693ccc4f9
 .AUTHOR Code Dx
 #>
@@ -22,6 +22,8 @@ function New-ResourceFile([string] $kind, [string] $namespace, [string] $name, [
 
 	$directory = Set-ResourceDirectory $kind
 	$kind = $kind.ToLower()
+	
+	$name = $name -replace '[/\\]','-' # replace any path characters
 	$filename = $namespace -eq '' ? "$kind-$name.yaml" : "$kind-$namespace-$name.yaml"
 	$resourcePath = join-path $directory $filename
 

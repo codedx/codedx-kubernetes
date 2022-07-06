@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.1.0
+.VERSION 2.2.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -316,6 +316,7 @@ mariadb:
       lower_case_table_names=1
       innodb_flush_log_at_trx_commit=0
       log_bin_trust_function_creators=1
+      expire_logs_days=5
 {50}
 {51}
 
@@ -356,6 +357,7 @@ mariadb:
       lower_case_table_names=1
       innodb_flush_log_at_trx_commit=0
       log_bin_trust_function_creators=1
+      expire_logs_days=5
 
       [client]
       port=3306

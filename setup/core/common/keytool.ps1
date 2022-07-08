@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.3
+.VERSION 1.0.4
 .GUID a0b1e49c-0f56-43fa-bd1d-ae211ac63c2a
 .AUTHOR Code Dx
 #>
@@ -86,6 +86,7 @@ function Import-TrustedCaCerts([string] $keystorePath, [string] $keystorePwd, [s
 
 function Test-Certificate([string] $path) {
 
-	keytool -printcert -file $path | out-null
+	$Local:ErrorActionPreference = 'SilentlyContinue'
+	keytool -printcert -file $path *>&1 | out-null
 	$LASTEXITCODE -eq 0
 }

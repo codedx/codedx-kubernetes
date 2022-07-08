@@ -73,7 +73,7 @@ spec:
   {{- end }}
   # ML Service
   - ports:
-    {{- if .Values.codedxTls.enabled }}
+    {{- if .Values.codedxTls.componentEnabled }}
     - port: 8443
     {{- else }}
     - port: 8080
@@ -86,17 +86,13 @@ spec:
           release: {{ .Release.Name | quote }}
   ingress:
   - ports:
-    {{- if .Values.codedxTls.enabled }}
+    {{- if .Values.codedxTls.componentEnabled }}
     - port: 8443
     {{- else }}
     - port: 8080
     {{- end }}
-    {{- if .Values.networkPolicy.codedx.ingressSelectors }}
-    from:
-{{ toYaml .Values.networkPolicy.codedx.ingressSelectors | indent 4 -}}
-    {{- end }}
   - ports:
-    {{- if .Values.codedxTls.enabled }}
+    {{- if .Values.codedxTls.componentEnabled }}
     - port: 8443
     {{- else }}
     - port: 8080

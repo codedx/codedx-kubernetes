@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.4.1
+.VERSION 2.1.0
 .GUID 0c9bd537-7359-4ebb-a64c-cf1693ccc4f9
 .AUTHOR Code Dx
 #>
@@ -369,6 +369,13 @@ function New-HelmRelease(
 		}
 	}
 
+	# We want to skip CRD deployment on install (deployment skipped by default on upgrade). Flux v2 deprecates
+	# the skipCRDs property, so use CRD policy for v2.
+	#
+	# Flux v1: https://fluxcd.io/legacy/helm-operator/references/helmrelease-custom-resource/#helm.fluxcd.io/v1.HelmReleaseSpec
+	# Flux v2: https://fluxcd.io/docs/components/helm/api/#helm.toolkit.fluxcd.io/v2beta1.HelmReleaseSpec
+	#
+
     $helmRelease = @'
 apiVersion: {0}
 kind: HelmRelease
@@ -382,10 +389,48 @@ spec:
 {5}
 {6}
 {7}
+  install:
+    {8}
 '@ -f 
 	($useHelmController ? 'helm.toolkit.fluxcd.io/v2beta1' : 'helm.fluxcd.io/v1'),
 	$name,$namespace,$releaseName,$chartSource,$valuesFrom,$values,
-	($useHelmController ? '  interval: 1m0s' : '')
+	($useHelmController ? '  interval: 1m0s' : ''),
+	($useHelmController ? "skipCRDs: true" : "crds: 'Skip'")
 
     New-ResourceFile 'HelmRelease' $namespace $name $helmRelease
+}
+
+
+function New-HelmCommand(
+	[string]    $name,
+	[string]    $namespace,
+	[string]    $releaseName,
+	[string]    $chartRootPath,
+	[string[]]  $valuesPaths,
+	[hashtable] $dockerImageNames) {
+
+	$crdAction = '--skip-crds'
+	$valuesParam = '--reset-values' # merge $values with the latest, default chart values
+
+	$values = @()
+	$valuesPaths | ForEach-Object {
+		$values += $_
+	}
+
+	$dockerImageNamesFileContent = ''
+	$dockerImageNames.Keys | ForEach-Object {
+		$dockerImageNamesFileContent += "$_`: $($dockerImageNames[$_])`n"
+	}
+
+	$helmValuesPath = New-ResourceFile 'HelmCommand' $namespace "values-docker-$releaseName" $dockerImageNamesFileContent
+	$values += $helmValuesPath
+
+	$helmOutput = "helm upgrade --namespace $namespace --install $crdAction $valuesParam "
+	$values | ForEach-Object {
+		$helmOutput += "--values ""$_"" "
+	}
+	$helmOutput += "$releaseName $chartRootPath"
+
+	$helmCommandDirectory = Get-ResourceDirectoryPath 'HelmCommand'
+	$helmOutput | Out-File (join-path $helmCommandDirectory "helmcommand-install-$releaseName") -Encoding utf8
 }

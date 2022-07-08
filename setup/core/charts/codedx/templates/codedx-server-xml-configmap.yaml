@@ -1,8 +1,9 @@
-{{- if .Values.codedxTls.enabled -}}
+{{- if .Values.codedxTls.componentEnabled -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name:  {{ include "codedx.serverXmlName" . | quote }}
+  namespace: {{ .Release.Namespace | quote }}
 data:
   server.xml: |
     <?xml version="1.0" encoding="UTF-8"?>

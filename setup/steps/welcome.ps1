@@ -47,41 +47,103 @@ class Welcome : Step {
 	}
 }
 
-class UseGitOps : Step {
+class DeploymentMethod : Step {
 
 	static [string] hidden $description = @'
-Code Dx can generate a setup command that you can use to create GitOps 
-outputs for deploying Code Dx on Kubernetes using either Flux v1 and
-helm-operator or Flux v2 (GitOps Toolkit).
+The Guided Setup will help you specify the Code Dx deployment script 
+parameters based on your desired configuration and deployment method.
 
+The deployment script supports the following deployment methods:
+
+- Automated Helm Deployment (default)
+- Manual Helm Deployment
+- Flux v1 and Bitnami's Sealed Secrets
+- Flux v2/GitOps Toolkit and Sealed Secrets
+- Helm Manifest
+- Helm Manifest with Sealed Secrets
+
+Note: Enter '?' for deployment method descriptions.
 '@
 
-	UseGitOps([ConfigInput] $config) : base(
-		[UseGitOps].Name, 
+	DeploymentMethod([ConfigInput] $config) : base(
+		[DeploymentMethod].Name, 
 		$config,
-		'GitOps',
-		[UseGitOps]::description,
-		'Use GitOps?') {}
+		'Deployment Method',
+		[DeploymentMethod]::description,
+		'How would you like to deploy Code Dx?') {}
 
 	[IQuestion] MakeQuestion([string] $prompt) {
 		return new-object MultipleChoiceQuestion($prompt, @(
-			[tuple]::create('&No', 'No, I don''t want to use GitOps'),
-			[tuple]::create('&Flux v1', 'Yes, I want to use Flux v1 and helm-operator'),
-			[tuple]::create('Flux v2 (&GitOps Toolkit)', 'Yes, I want to use Flux v2 and helm-controller')), 0)
+			[tuple]::create('&Automated Helm', 'Deployment script will automate running helm with required resources'),
+			[tuple]::create('&Manual Helm Deployment', 'Deployment script will generate required resources, values file(s), and helm command(s) to run manually'),
+			[tuple]::create('&Flux v1', 'Deployment script will generate artifacts for use with Flux v1, helm-operator, and Bitnami''s Sealed Secrets'),
+			[tuple]::create('Flux v2/&GitOps Toolkit', 'Deployment script will generate artifacts for use with Flux v2, helm-controller, and Bitnami''s Sealed Secrets'),
+			[tuple]::create('&Helm Manifest', 'Deployment script will generate YAML resources using helm dry-run'),
+			[tuple]::create('Helm Manifest with &Sealed Secrets', 'Deployment script will generate YAML resources using helm dry-run and Bitnami''s Sealed Secrets')), 0)
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
-		$useGitOps = ([MultipleChoiceQuestion]$question).choice -ne 0
-		$this.config.useHelmOperator = $useGitOps -and (([MultipleChoiceQuestion]$question).choice -eq 1)
-		$this.config.useHelmController = $useGitOps -and (([MultipleChoiceQuestion]$question).choice -eq 2)
-		$this.config.skipSealedSecrets = -not $useGitOps
+		$this.config.useHelmOperator = ([MultipleChoiceQuestion]$question).choice -eq 2
+		$this.config.useHelmController = ([MultipleChoiceQuestion]$question).choice -eq 3
+		$this.config.useHelmManifest = 4,5 -contains ([MultipleChoiceQuestion]$question).choice
+		$this.config.skipSealedSecrets = 0,1,4 -contains ([MultipleChoiceQuestion]$question).choice
+		$this.config.useHelmCommand = ([MultipleChoiceQuestion]$question).choice -eq 1
 		return $true
 	}
 
 	[void]Reset() {
 		$this.config.useHelmOperator = $false
 		$this.config.useHelmController = $false
+		$this.config.useHelmManifest = $false
 		$this.config.skipSealedSecrets = $true
+		$this.config.useHelmCommand = $false
+	}
+}
+
+class HelmManifestWarning : Step {
+
+	static [string] hidden $description = @'
+The Code Dx deployment depends on Helm. The Code Dx deployment script 
+can invoke helm on your behalf, generate resources for the Flux or
+GitOps Toolkit helm operator, or generate a helm command that you can
+run manually. This deployment method should only be used when you want to
+deploy Code Dx using YAML files.
+
+The Helm Manifest deployment option lets you use helm to render the YAML 
+resources helm would produce during initial deployment. This option 
+will not work on a cluster where you previously deployed Code Dx by 
+applying helm-generated YAML. 
+
+Warning: Upgrades must be performed by rerunning the deployment script 
+on a cluster where Code Dx does not exist and manually merging the 
+resulting YAML with previously generated YAML.
+
+'@
+
+	HelmManifestWarning([ConfigInput] $config) : base(
+		[HelmManifestWarning].Name, 
+		$config,
+		'Helm Manifest Warning',
+		[HelmManifestWarning]::description,
+		'Do you understand the upgrade warning and want to continue?') {}
+
+	[IQuestion] MakeQuestion([string] $prompt) {
+		return new-object MultipleChoiceQuestion($prompt, @(
+			[tuple]::create('&Yes', 'Yes, I want to continue'),
+			[tuple]::create('&No', 'No, I want to go back to the previous step')), 1)
+	}
+
+	[bool]Run() {
+		Write-HostSection $this.title ($this.GetMessage())
+
+		$question = $this.MakeQuestion($this.prompt)
+		$question.Prompt()
+
+		return $question.choice -eq 0
+	}
+
+	[bool]CanRun() {
+		return $this.config.useHelmManifest
 	}
 }
 

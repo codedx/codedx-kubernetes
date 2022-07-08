@@ -96,9 +96,11 @@ Determine the URL of the Code Dx service.
 */}}
 {{- define "codedx.serviceurl" -}}
 {{- $protocol := "http" }}
-{{- $port := .Values.codedxTomcatPort -}}
-{{- if .Values.codedxTls.enabled -}}
+{{- if .Values.codedxTls.componentEnabled -}}
 {{- $protocol = "https" -}}
+{{- end -}}
+{{- $port := .Values.codedxTomcatPort -}}
+{{- if .Values.codedxTls.serviceEnabled -}}
 {{- $port = .Values.codedxTlsTomcatPort -}}
 {{- end -}}
 {{- $protocol -}}://{{- include "codedx.servicename" . -}}:{{- $port -}}/codedx

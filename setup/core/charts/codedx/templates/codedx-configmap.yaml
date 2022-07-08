@@ -18,11 +18,11 @@ data:
   {{-   $dbUrl = (printf "%s&" $dbUrl) -}}
   {{- else -}}
   {{-   $dbUrl = (printf "%s?" $dbUrl) -}}
-  {{- end -}}  
+  {{- end -}}
 
   {{- $sessionVariables := "sessionVariables=sql_mode='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'" -}}
   {{- $dbUrl = (printf "%s%s" $dbUrl $sessionVariables) }}
-  
+
   codedx.props: |-
     swa.db.url = {{ $dbUrl }}
     swa.db.driver = com.mysql.jdbc.Driver
@@ -46,6 +46,8 @@ data:
             <!-- or whenever the file size reaches 100MB -->
             <maxFileSize>100MB</maxFileSize>
           </timeBasedFileNamingAndTriggeringPolicy>
+          <!-- keep 7 days worth of history -->
+          <maxHistory>7</maxHistory>
         </rollingPolicy>
         <encoder>
           <pattern>%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %logger{36} - %msg%n</pattern>

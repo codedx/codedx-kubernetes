@@ -2,7 +2,7 @@ FROM alpine:3.15.4
 
 # Install curl, git, jre, openssl
 RUN  apk update && \
-	apk add --no-cache curl git openjdk8-jre openssl
+	apk add --no-cache curl git openjdk11-jre openssl
 
 # Install helm
 RUN  mkdir -p /opt/helm && \

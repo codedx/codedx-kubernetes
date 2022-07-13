@@ -48,6 +48,7 @@ data:
           </timeBasedFileNamingAndTriggeringPolicy>
           <!-- keep 7 days worth of history -->
           <maxHistory>7</maxHistory>
+          <cleanHistoryOnStart>true</cleanHistoryOnStart>
         </rollingPolicy>
         <encoder>
           <pattern>%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %logger{36} - %msg%n</pattern>

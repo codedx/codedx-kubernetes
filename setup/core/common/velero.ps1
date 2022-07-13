@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.2.0
+.VERSION 1.2.1
 .GUID d65a6b13-910d-4220-8cfb-5de8cdd52011
 .AUTHOR Code Dx
 #>
@@ -23,7 +23,8 @@ Set-PSDebug -Strict
 
 function Test-VeleroBackupSchedule([string] $namespace, [string] $name) {
 
-	kubectl -n $namespace get "schedule/$name" | Out-Null
+	$Local:ErrorActionPreference = 'SilentlyContinue'
+	kubectl -n $namespace get "schedule/$name" *>&1 | Out-Null
 	$LASTEXITCODE -eq 0
 }
 

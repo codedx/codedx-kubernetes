@@ -1,18 +1,25 @@
 
+function Get-QueuedInput {
+
+	$val = $global:inputs.dequeue()
+	if ($null -ne $val) {
+		$val
+		Write-Debug "'$val' dequeued"
+	} else {
+		Write-Debug 'null dequeued'
+	}
+}
+
 function New-Mocks() {
 
 	Mock Read-HostChoice {
-		$val = $global:inputs.dequeue()
-		if ($null -ne $val) {
-			$val
-		}
+		Write-Host $args
+		Get-QueuedInput
 	}
 	
 	Mock Read-Host {
-		$val = $global:inputs.dequeue()
-		if ($null -ne $val) {
-			$val
-		}
+		Write-Host $args
+		Get-QueuedInput
 	}
 
 	Mock Get-KubernetesPort {

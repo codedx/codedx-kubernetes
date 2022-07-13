@@ -35,7 +35,6 @@ This section describes the setup.ps1 script parameters, which you can specify by
 | `toolServiceMemoryReservation`                     | memory request and limit for the tool service              | `16Gi` (example)                                  |
 | `minioMemoryReservation`                           | memory request and limit for MinIO                         | `16Gi` (example)                                  |
 | `workflowMemoryReservation`                        | memory request and limit for workflow controller           | `16Gi` (example)                                  |
-| `nginxMemoryReservation`                           | memory request and limit for nginx                         |                                                   |
 |                                                    |                                                            |                                                   |
 | `codeDxCPUReservation`                             | CPU request and limit for Code Dx                          | `2` (example)                                     |
 | `dbMasterCPUReservation`                           | CPU request and limit for the master database              | `2` (example)                                     |
@@ -43,7 +42,6 @@ This section describes the setup.ps1 script parameters, which you can specify by
 | `toolServiceCPUReservation`                        | CPU request and limit for the tool service                 | `2` (example)                                     |
 | `minioCPUReservation`                              | CPU request and limit for MinIO                            | `2` (example)                                     |
 | `workflowCPUReservation`                           | CPU request and limit for workflow controller              | `2` (example)                                     |
-| `nginxCPUReservation`                              | CPU request and limit for nginx                            | `2` (example)                                     |
 |                                                    |                                                            |                                                   |
 | `codeDxEphemeralStorageReservation`                | storage request and limit for Code Dx                      | `2Gi`                                             |
 | `dbMasterEphemeralStorageReservation`              | storage request and limit for the master database          | `2Gi` (example)                                   |
@@ -51,7 +49,6 @@ This section describes the setup.ps1 script parameters, which you can specify by
 | `toolServiceEphemeralStorageReservation`           | storage request and limit for the tool service             | `2Gi` (example)                                   |
 | `minioEphemeralStorageReservation`                 | storage request and limit for MinIO                        | `2Gi` (example)                                   |
 | `workflowEphemeralStorageReservation`              | storage request and limit for workflow controller          | `2Gi` (example)                                   |
-| `nginxEphemeralStorageReservation`                 | storage request and limit for nginx                        | `2Gi` (example)                                   |
 |                                                    |                                                            |                                                   |
 | `imageCodeDxTomcat`                                | Code Dx Tomcat Docker image name                           | `latest version`                                  |
 | `imageCodeDxTools`                                 | Code Dx Tools Docker image name                            | `latest version`                                  |
@@ -72,31 +69,24 @@ This section describes the setup.ps1 script parameters, which you can specify by
 |                                                    |                                                            |                                                   |
 | `toolServiceReplicas`                              | number of tool service copies to run concurrently          | `3`                                               |
 |                                                    |                                                            |                                                   |
-| `skipTLS`                                          | whether Code Dx endpoints use TLS                          | `$false`                                          |
+| `skipTLS`                                          | whether Code Dx endpoints skip TLS                         | `$false`                                          |
+| `skipServiceTLS`                                   | use codeDxServicePortNumber or codeDxTlsServicePortNumber  | `$false`                                          |
 | `csrSignerNameCodeDx`                              | signerName for Code Dx namespace component CSRs            | `kubernetes.io/legacy-unknown`                    |
 | `csrSignerNameToolOrchestration`                   | signerName for Tool Orchestration namespace component CSRs | `kubernetes.io/legacy-unknown`                    |
 |                                                    |                                                            |                                                   |
 | `skipPSPs`                                         | whether to create pod security policies                    | `$false`                                          |
 | `skipNetworkPolicies`                              | whether to skip creating network policies                  | `$false`                                          |
 |                                                    |                                                            |                                                   |
-| `skipNginxIngressControllerInstall`                | whether to install the NGINX ingress controller            | `$false`                                          |
-| `nginxIngressControllerLoadBalancerIP`             | optional static IP for the NGINX ingress service           | `10.0.0.5` (example)                              |
-|                                                    |                                                            |                                                   |
-| `skipLetsEncryptCertManagerInstall`                | whether to install a Let's Encrypt Cert Manager            | `$false`                                          |
-| `letsEncryptCertManagerRegistrationEmailAddress`   | email address for Let's Encrypt registration               | `me@codedx.com` (example)                         |
-| `letsEncryptCertManagerIssuer`              | certificate issuer (letsencrypt-staging or letsencrypt-prod)   | `letsencrypt-staging`                             |
-| `letsEncryptCertManagerNamespace`                  | namespace for Cert Manager components                      | `cert-manager`                                    |
-|                                                    |                                                            |                                                   |
 | `serviceTypeCodeDx`                                | service type for the Code Dx service                       | `LoadBalancer`    (example)                       |
 | `serviceAnnotationsCodeDx`                         | annotations for the Code Dx service                        | `@('key: value')` (example)                       |
 |                                                    |                                                            |                                                   |
 | `skipIngressEnabled`                               | whether to create the Code Dx ingress resource             | `$false`                                          |
-| `skipIngressAssumesNginx`                          | whether the Code Dx ingress has an NGINX annotation        | `$true`                                           |
+| `ingressClassNameCodeDx`                           | class name associated with ingress                         | `nginx`                                           |
+| `ingressTlsSecretNameCodeDx`                       | Kubernetes TLS Secret name for the Code Dx ingress         | `ingress-tls-secret`                              |
 | `ingressAnnotationsCodeDx`                         | annotations for the Code Dx ingress                        | `@('key: value')` (example)                       |
 |                                                    |                                                            |                                                   |
 | `namespaceToolOrchestration`                       | namespace for Code Dx Tool Orchestration components        | `cdx-svc`                                         |
 | `namespaceCodeDx`                                  | namespace for Code Dx application                          | `cdx-app`                                         |
-| `nginxIngressControllerNamespace`                  | namespace for the NGINX Helm chart installation            | `nginx`                                           |
 |                                                    |                                                            |                                                   |
 | `releaseNameCodeDx`                                | name for the Code Dx Helm release                          | `codedx`                                          |
 | `releaseNameToolOrchestration`                     | name for the Code Dx Tool Orchestration Helm release       | `codedx-tool-orchestration`                       |
@@ -170,6 +160,8 @@ This section describes the setup.ps1 script parameters, which you can specify by
 |                                                    |                                                            |                                                   |
 | `useHelmOperator`                                  | whether to create resources for helm-operator and GitOps   | false                                             |
 | `useHelmController`                                | whether to create resources for helm-controller and GitOps | false                                             |
+| `useHelmManifest`                                  | whether to create resources via helm dry-run               | false                                             |
+| `useHelmCommand`                                   | whether to create helm values files and required resources | false                                             |
 | `skipSealedSecrets`                                | whether to skip generating sealed secrets                  | false                                             |
 | `sealedSecretsNamespace`                           | namespace containing the Sealed Secrets application        | adm (example)                                     |
 | `sealedSecretsControllerName`                      | name of the Sealed Secrets controller                      | sealed-secrets (example)                          |
@@ -181,6 +173,5 @@ This section describes the setup.ps1 script parameters, which you can specify by
 | `backupDatabaseTimeoutMinutes`                     | minutes to wait for database backup to complete            | 30                                                |
 | `backupTimeToLiveHours`                            | hours to wait before a backup is eligible for deletion     | 720                                               |
 |                                                    |                                                            |                                                   |
-| `usePnsContainerRuntimeExecutor`                   | whether to use PNS workflow executor (instead of Docker)   | false                                             |
 | `minimumWorkflowStepRunTimeSeconds`                | minimum run time for workflow step (when enforced)         | 0                                                 |
 | `createSCCs`                                       | whether to create Security Context Constraints (OpenShift) | false                                             |

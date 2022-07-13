@@ -16,20 +16,24 @@ enum ProviderType {
 	Aks
 	Eks
 	OpenShift
-	OtherDocker
-	OtherNonDocker
+	Other
 }
 
 enum IngressType {
-	None
-	NginxLetsEncrypt
-	NginxLetsEncryptWithLoadBalancerIP
+	ClusterIP
+	NodePort
 	LoadBalancer
-	ExternalIngressController
-	ExternalNginxIngressController
+	NginxIngress
+	NginxExternalSecretIngress
+	NginxCertManagerIngress
 	ClassicElb
 	NetworkElb
 	InternalClassicElb
+}
+
+enum IssuerType {
+	ClusterIssuer
+	Issuer
 }
 
 class ConfigInput {
@@ -74,7 +78,6 @@ class ConfigInput {
 	[string]       $toolServiceCPUReservation
 	[string]       $minioCPUReservation
 	[string]       $workflowCPUReservation
-	[string]       $nginxCPUReservation
 
 	[bool]         $useMemoryDefaults
 	[string]       $codeDxMemoryReservation
@@ -83,7 +86,6 @@ class ConfigInput {
 	[string]       $toolServiceMemoryReservation
 	[string]       $minioMemoryReservation
 	[string]       $workflowMemoryReservation
-	[string]       $nginxMemoryReservation
 
 	[bool]         $useEphemeralStorageDefaults
 	[string]       $codeDxEphemeralStorageReservation
@@ -92,7 +94,6 @@ class ConfigInput {
 	[string]       $toolServiceEphemeralStorageReservation
 	[string]       $minioEphemeralStorageReservation
 	[string]       $workflowEphemeralStorageReservation
-	[string]       $nginxEphemeralStorageReservation
 
 	[bool]         $useDefaultDockerImages
 	[string]       $imageCodeDxTomcat
@@ -121,25 +122,22 @@ class ConfigInput {
 	[bool]         $skipNetworkPolicies
 
 	[bool]         $skipTLS
+	[bool]         $skipServiceTLS
 	[string]       $csrSignerNameCodeDx
 	[string]       $csrSignerNameToolOrchestration
+
+	[bool]         $useTriageAssistant
 
 	[string]       $serviceTypeCodeDx
 	[hashtable]    $serviceAnnotationsCodeDx
 
 	[IngressType]  $ingressType
-	[bool]         $skipNginxIngressControllerInstall
-	[string]       $nginxIngressControllerLoadBalancerIP
-	[string]       $nginxIngressControllerNamespace
-
-	[bool]         $skipLetsEncryptCertManagerInstall
-	[string]       $letsEncryptCertManagerRegistrationEmailAddress
-	[string]       $letsEncryptCertManagerIssuer
-	[string]       $letsEncryptCertManagerNamespace
 
 	[bool]         $skipIngressEnabled
-	[bool]         $skipIngressAssumesNginx
+	[string]       $ingressTlsSecretNameCodeDx
 	[hashtable]    $ingressAnnotationsCodeDx
+
+	[IssuerType]   $certManagerIssuerType
 
 	[string]       $toolServiceApiKey
       
@@ -207,6 +205,8 @@ class ConfigInput {
 
 	[bool]   $useHelmOperator
 	[bool]   $useHelmController
+	[bool]   $useHelmManifest
+	[bool]   $useHelmCommand
 	[bool]   $skipSealedSecrets
 	[string] $sealedSecretsNamespace
 	[string] $sealedSecretsControllerName
@@ -218,8 +218,6 @@ class ConfigInput {
 	[int]    $backupDatabaseTimeoutMinutes
 	[int]    $backupTimeToLiveHours
 
-	[bool]   $usePnsContainerRuntimeExecutor
-	[int]    $workflowStepMinimumRunTimeSeconds
 	[bool]   $createSCCs
 
 	[hashtable]  $notes = @{}
@@ -233,22 +231,19 @@ class ConfigInput {
 		$this.toolServiceReplicas = [ConfigInput]::toolServiceReplicasDefault
 		$this.kubeApiTargetPort = [ConfigInput]::kubeApiTargetPortDefault
 		$this.externalDatabasePort = [ConfigInput]::externalDatabasePortDefault
+		$this.certManagerIssuerType = [IssuerType]::ClusterIssuer
 	}
 
 	[bool]HasContext() {
 		return $this.kubeContextName -ne ''
 	}
 
-	[bool]HasNginxIngress() {
-		return $this.ingressType -eq [IngressType]::NginxLetsEncrypt -or $this.ingressType -eq [IngressType]::NginxLetsEncryptWithLoadBalancerIP
-	}
-
 	[bool]IsUsingVelero() {
 		return $this.backupType -like 'velero*'
 	}
 
-	[bool]UseFluxGitOps() {
-		return $this.useHelmOperator -or $this.useHelmController
+	[bool]UseGitOps() {
+		return $this.useHelmOperator -or $this.useHelmController -or $this.useHelmManifest -or $this.useHelmCommand
 	}
 
 	[bool]IsElbIngress() {
@@ -259,6 +254,12 @@ class ConfigInput {
 
 	[bool]IsElbInternalIngress() {
 		return $this.ingressType -eq [IngressType]::InternalClassicElb
+	}
+
+	[bool]IsNGINXIngress() {
+		return $this.ingressType -eq [IngressType]::NginxIngress -or `
+			$this.ingressType -eq [IngressType]::NginxCertManagerIngress -or `
+			$this.ingressType -eq [IngressType]::NginxExternalSecretIngress
 	}
 }
 

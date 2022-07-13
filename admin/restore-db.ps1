@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.3.0
+.VERSION 1.4.0
 .GUID 89d3b6a9-4f1b-4df9-8706-b6dbb7ec27b2
 .AUTHOR Code Dx
 #>
@@ -19,7 +19,7 @@ param (
 	[string] $namespaceCodeDx = 'cdx-app',
 	[string] $releaseNameCodeDx = 'codedx',
 	[int]    $waitSeconds = 600,
-	[string] $imageDatabaseRestore = 'codedx/codedx-dbrestore:v1.3.0',
+	[string] $imageDatabaseRestore = 'codedx/codedx-dbrestore:v1.4.0',
 	[string] $dockerImagePullSecretName,
 	[switch] $skipCodeDxRestart
 )
@@ -104,6 +104,7 @@ Write-Verbose "Testing for work directory '$workDirectory'"
 if (-not (Test-Path $workDirectory -PathType Container)) {
 	Write-Error "Unable to find specified directory ($workDirectory). Does it exist?"
 }
+$workDirectory = (Resolve-Path $workDirectory).path
 
 $workDirectory = join-path $workDirectory 'backup-files'
 Write-Verbose "Testing for directory at '$workDirectory'"

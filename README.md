@@ -6,9 +6,9 @@ Download the [Code Dx Deployment Diagram](https://github.com/codedx/codedx-kuber
 
 ## Prerequisites
 
-Code Dx supports a minimum Kubernetes version of 1.19.
+Code Dx supports Kubernetes versions 1.19 through 1.24.
 
-The Code Dx Kubernetes deployment has been tested on AKS, EKS, Minikube, Rancher K3s, Rancher RKE, and OpenShift 4. If you are using another Kubernetes provider, you can try choosing either 'Other Docker' or 'Other Non-Docker' from the Guided Setup's Kubernetes Environment screen.
+The Code Dx Kubernetes deployment has been tested on AKS, EKS, Minikube, Rancher K3s, Rancher RKE, and OpenShift 4. If you are using another Kubernetes provider, choose 'Other' from the Guided Setup's Kubernetes Environment screen.
 
 You must run guided-setup.ps1 from a system with administrative access to your cluster. Copy the following prerequisite programs to directories that are included in your PATH environment variable:
 
@@ -17,10 +17,24 @@ You must run guided-setup.ps1 from a system with administrative access to your c
 - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) (a version that matches the major.minor version of your k8s cluster)
 - [openssl](https://www.openssl.org/)
 - [helm v3.1+](https://github.com/helm/helm/releases/tag/v3.2.4) - Download the Helm release for your platform and extract helm (or helm.exe).
-- [keytool](https://adoptopenjdk.net/) - The keytool application is bundled with the Java 8 JRE.
-  If your Code Dx deployment requires specifying a path to a cacerts file, use the cacerts file from a Java 8 JRE install.
+- [keytool](https://adoptopenjdk.net/) - The keytool application is bundled with the Java 11 JRE.
+  If your Code Dx deployment requires specifying a path to a cacerts file, use the cacerts file from a Java 11 JRE install.
 - [kubeseal](https://github.com/bitnami-labs/sealed-secrets/releases) - Required when using GitOps and Bitnami's Sealed Secrets.
 >Note: On Windows, make sure that you can run PowerShell Core scripts by switching your [PowerShell Execution Policy](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies) to RemoteSigned (recommended) or Unrestricted. You must run the `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned` command from an elevated/administrator Command Prompt.
+
+## Upgrading to Kubernetes v1.22
+
+You can ignore this section if you previously deployed Code Dx without the TLS Deployment Option.
+
+>Note: Your run-setup.ps1 file will include the `-skipTLS` parameter if your Code Dx deployment does not use the TLS Deployment Option.
+
+The latest version of the Code Dx deployment script supports Kubernetes v1.22. The TLS Deployment Option uses Kubernetes Certificate Signing Request (CSR) resources. Starting with Kubernetes v1.22, the `kubernetes.io/legacy-unknown` CSR signer is no longer available, so you may see this message when you rerun your run-setup.ps1 file:
+
+```
+Unable to continue because you previously enabled the TLS deployment option with the 'kubernetes.io/legacy-unknown' signer name. That signer requires the v1beta1 version of the Certificate Request Signer (CSR) resource, unavailable in this Kubernetes version. You must either disable the TLS deployment option by using the -skipTLS deployment script parameter or switch to an alternate Certificate Request Signer. For an example of enabling the TLS deployment option with cert-manager (https://cert-manager.io/docs/usage/kube-csr/), refer to https://github.com/codedx/codedx-kubernetes/blob/master/setup/core/docs/config/cert-manager-csr-upgrade.md.
+```
+
+Appending the -skipTLS parameter to your run-setup.ps1 file will disable the TLS Deployment Option, which uses TLS for connections between Code Dx components. Alternatively, you can configure a different CSR signer. You can find an example of using cert-manager as a CSR signer and how to update your run-setup.ps1 file [here](https://github.com/codedx/codedx-kubernetes/blob/master/setup/core/docs/config/cert-manager-csr-upgrade.md).
 
 ## Pod Resources
 
@@ -31,7 +45,6 @@ Below are the default CPU, memory, ephemeral storage, and volume requirements yo
 | Web              | 2000m | 8192Mi | 2048Mi            | 64Gi        |
 | DB (master)      | 2000m | 8192Mi | -                 | 64Gi        |
 | DB (subordinate) | 1000m | 8192Mi | -                 | 64Gi        |
-| Nginx            | -     | 500Mi  | -                 | -           |
 | Tool Service     | -     | 500Mi  | -                 | -           |
 | MinIO            | 2000m | 500Mi  | -                 | 64Gi        |
 | Workflow         | -     | 500Mi  | -                 | -           |

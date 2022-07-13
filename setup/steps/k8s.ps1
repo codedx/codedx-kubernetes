@@ -17,9 +17,7 @@ class ChooseEnvironment : Step {
 Specify your Kubernetes provider so that the setup script can make options 
 available for your type of Kubernetes cluster. 
 
-If your Kubernetes provider is not listed below, choose either 'Other Docker' 
-or 'Other Non-Docker' based on whether your k8s environment uses a Docker 
-container runtime.
+If your Kubernetes provider is not listed below, try the 'Other' option.
 '@
 
 	ChooseEnvironment([ConfigInput] $config) : base(
@@ -31,12 +29,11 @@ container runtime.
 
 	[IQuestion]MakeQuestion([string] $prompt) {
 		return new-object MultipleChoiceQuestion($prompt, @(
-			[tuple]::create('&Minikube',         'Use Minikube for eval/test/dev purposes with a Docker container runtime'),
-			[tuple]::create('&AKS',              'Use Microsoft''s Azure Kubernetes Service (AKS) with a Docker container runtime'),
-			[tuple]::create('&EKS',              'Use Amazon''s Elastic Kubernetes Service (EKS) with a Docker container runtime'),
-			[tuple]::create('&OpenShift',        'Use OpenShift 4'),
-			[tuple]::create('Other &Docker',     'Use a different Kubernetes provider with a Docker container runtime'),
-			[tuple]::create('Other &Non-Docker', 'Use a different Kubernetes provider without a Docker container runtime')), -1)
+			[tuple]::create('&Minikube',  'Use Minikube for eval/test/dev purposes with a Docker container runtime'),
+			[tuple]::create('&AKS',       'Use Microsoft''s Azure Kubernetes Service (AKS) with a Docker container runtime'),
+			[tuple]::create('&EKS',       'Use Amazon''s Elastic Kubernetes Service (EKS) with a Docker container runtime'),
+			[tuple]::create('Open&Shift', 'Use OpenShift 4'),
+			[tuple]::create('&Other',     'Use a different Kubernetes provider')), -1)
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
@@ -45,25 +42,17 @@ container runtime.
 			1 { $this.config.k8sProvider = [ProviderType]::Aks }
 			2 { $this.config.k8sProvider = [ProviderType]::Eks }
 			3 { $this.config.k8sProvider = [ProviderType]::OpenShift }
-			4 { $this.config.k8sProvider = [ProviderType]::OtherDocker }
-			5 { $this.config.k8sProvider = [ProviderType]::OtherNonDocker }
+			4 { $this.config.k8sProvider = [ProviderType]::Other }
 		}
 
 		$usingOpenShift = $this.config.k8sProvider -eq [ProviderType]::OpenShift
-		$usingNonDockerRuntime = $usingOpenShift -or $this.config.k8sProvider -eq [ProviderType]::OtherNonDocker -or `
-			$this.config.k8sProvider -eq [ProviderType]::Aks # AKS v1.19+ does not use Dockershim
-
-		$this.config.usePnsContainerRuntimeExecutor = $usingNonDockerRuntime
-		$this.config.workflowStepMinimumRunTimeSeconds = $usingNonDockerRuntime ? 3 : 0
 		$this.config.createSCCs = $usingOpenShift
 
 		return $true
 	}
 
 	[void]Reset(){
-		$this.config.k8sProvider = [ProviderType]::OtherDocker
-		$this.config.usePnsContainerRuntimeExecutor = $false
-		$this.config.workflowStepMinimumRunTimeSeconds = 0
+		$this.config.k8sProvider = [ProviderType]::Other
 		$this.config.createSCCs = $false
 	}
 }
@@ -383,8 +372,13 @@ class CertsCAPath : Step {
 Specify a path to the CA (PEM format) associated with the Kubernetes 
 Certificates API (certificates.k8s.io API) signer(s) you plan to use.
 
+For instructions on how to use cert-manager as a signer for Certificate 
+Signing Request Kubernetes resources, refer to the following URL:
+
+https://github.com/codedx/codedx-kubernetes/blob/master/setup/core/docs/config/cert-manager-csr.md
+
 Note: If you plan to use one signer for components in the Code Dx 
-namespace and another signer for components in the Tool Orchestration 
+namespace and another for components in the Tool Orchestration 
 namespace, make sure that both signers use the same root CA.
 '@
 

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.2.0
+.VERSION 1.4.0
 .GUID c191448b-25fd-4ec2-980e-e7a8ba85e693
 .AUTHOR Code Dx
 #>
@@ -135,22 +135,23 @@ function Test-SetupKubernetesVersion([ref] $messages) {
 	$messages.Value = @()
 	$k8sRequiredMajorVersion = 1
 	$k8sMinimumMinorVersion  = 19
+	$k8sMaximumMinorVersion  = 24
 
 	if ((Get-KubectlServerVersionMajor) -ne $k8sRequiredMajorVersion) {
 		$messages.Value += "Unable to continue because the version of the selected Kubernetes cluster is unsupported (the kubectl server major version is not $k8sRequiredMajorVersion)."
 	} else {
-		if ((Get-KubectlServerVersionMinor) -lt $k8sMinimumMinorVersion) {
-			$messages.Value += "Unable to continue because the version of the selected Kubernetes cluster is unsupported (the kubectl server minor version is less than $k8sMinimumMinorVersion)."
+		$serverVersionMinor = Get-KubectlServerVersionMinor
+		if ($serverVersionMinor -lt $k8sMinimumMinorVersion -or $serverVersionMinor -gt $k8sMaximumMinorVersion) {
+			$messages.Value += "Unable to continue because the version of the selected Kubernetes cluster ($serverVersionMinor) is unsupported (the kubectl server minor version must be between $k8sMinimumMinorVersion and $k8sMaximumMinorVersion)."
 		} else {
 			$clientVersion = Get-KubectlClientVersion
 			$serverVersion = Get-KubectlServerVersion
 			if ($clientVersion -ne $serverVersion) {
 				$messages.Value += "Unable to continue because the kubectl client version ($clientVersion) does not match the Kubernetes cluster version ($serverVersion)."
 			}
-			return $true
 		}
 	}
-	return $false
+	return $messages.Value.Length -eq 0
 }
 
 function Test-SetupPreqs([ref] $messages, [switch] $useSealedSecrets, [string] $context, [switch] $checkKubectlVersion) {
@@ -210,8 +211,9 @@ function Test-SetupPreqs([ref] $messages, [switch] $useSealedSecrets, [string] $
 	if ($null -eq $keytoolJavaSpec) {
 		$keytoolJavaSpec = '?'
 	}
-	if ('1.8' -ne $keytoolJavaSpec) {
-		$messages.Value += "keytool application is associated with an unsupported java.vm.specification version ($keytoolJavaSpec), update your PATH to run the Java 8 version of the keytool application"
+	$requiredJavaSpec = '11'
+	if ($requiredJavaSpec -ne $keytoolJavaSpec) {
+		$messages.Value += "keytool application is associated with an unsupported java.vm.specification version ($keytoolJavaSpec), update your PATH to run the Java $requiredJavaSpec version of the keytool application"
 	}
 
 	$messages.Value.count -eq 0

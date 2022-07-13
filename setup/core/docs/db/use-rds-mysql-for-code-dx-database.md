@@ -15,3 +15,20 @@ Code Dx recommends using an RDS database instance with the [MariaDB database eng
 The log_bin_trust_function_creators parameter is required when using replication, which is enabled by default with the AWS MySQL Production template.
 
 2) Provision a new Amazon RDS MySQL database instance with the codedx-mysql-recommendation DB Parameter Group by following the [installation instructions](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html).
+
+3) Connect to your RDS MySQL database instance.
+
+4) Create a database user for Code Dx. You can customize the following statement to create
+   a Code Dx database user named codedx (remove 'REQUIRE SSL' when not using TLS).
+
+   CREATE USER 'codedx'@'%' IDENTIFIED BY 'enter-a-password-here' REQUIRE SSL;
+
+5) Create a Code Dx database. The following statement creates a Code Dx database named codedxdb.
+
+   CREATE DATABASE codedxdb;
+
+6) Grant required privileges on the Code Dx database to the database user you created. The
+   following statements grant permissions to the codedx database user.
+
+   GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, CREATE TEMPORARY TABLES, ALTER, REFERENCES, INDEX, DROP, TRIGGER ON codedxdb.* to 'codedx'@'%';
+   FLUSH PRIVILEGES;

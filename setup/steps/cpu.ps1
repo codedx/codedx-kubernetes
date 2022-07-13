@@ -33,7 +33,6 @@ will cause Code Dx pods to get stuck in a Pending state.
 	[IQuestion] MakeQuestion([string] $prompt) {
 		return new-object MultipleChoiceQuestion($prompt, @(
 			[tuple]::create('&Use Recommended', 'Use recommended reservations'),
-			[tuple]::create('&Skip Reservations', 'Do not make reservations'),
 			[tuple]::create('&Custom', 'Make reservations on a per-component basis')), 0)
 	}
 
@@ -46,7 +45,7 @@ will cause Code Dx pods to get stuck in a Pending state.
 				$_.ApplyDefault()
 			}
 		}
-		$this.config.useCPUDefaults = $applyDefaults -or $mq.choice -eq 1
+		$this.config.useCPUDefaults = $applyDefaults
 		return $true
 	}
 
@@ -57,7 +56,7 @@ will cause Code Dx pods to get stuck in a Pending state.
 	[Step[]] GetSteps() {
 
 		$steps = @()
-		[NginxCPU],[CodeDxCPU],[MasterDatabaseCPU],[SubordinateDatabaseCPU],[ToolServiceCPU],[MinIOCPU],[WorkflowCPU] | ForEach-Object {
+		[CodeDxCPU],[MasterDatabaseCPU],[SubordinateDatabaseCPU],[ToolServiceCPU],[MinIOCPU],[WorkflowCPU] | ForEach-Object {
 			$step = new-object -type $_ -args $this.config
 			if ($step.CanRun()) {
 				$steps += $step
@@ -137,31 +136,6 @@ Note: You can skip making a reservation by accepting the default value.
 	}
 }
 
-class NginxCPU : CPUStep {
-
-	NginxCPU([ConfigInput] $config) : base(
-		[NginxCPU].Name, 
-		'NGINX CPU Reservation', 
-		$config) {}
-
-	[bool]HandleCpuResponse([string] $cpu) {
-		$this.config.nginxCPUReservation = $cpu
-		return $true
-	}
-
-	[void]Reset(){
-		$this.config.nginxCPUReservation = ''
-	}
-
-	[void]ApplyDefault() {
-		$this.config.nginxCPUReservation = $this.GetDefault()
-	}
-
-	[bool]CanRun() {
-		return ([CPUStep]$this).CanRun() -and $this.config.HasNginxIngress()
-	}
-}
-
 class CodeDxCPU : CPUStep {
 
 	CodeDxCPU([ConfigInput] $config) : base(
@@ -183,7 +157,7 @@ class CodeDxCPU : CPUStep {
 	}
 
 	[string]GetDefault() {
-		return '2000m'
+		return $this.config.useTriageAssistant ? '4000m' : '2000m'
 	}
 }
 

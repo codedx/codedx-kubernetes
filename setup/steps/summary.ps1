@@ -125,7 +125,7 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 
 		$options = @([tuple]::create('&Run now', 'Run the setup script without saving the script command a file'))
 
-		if ($this.config.UseFluxGitOps()) {
+		if ($this.config.UseGitOps()) {
 			$options += [tuple]::create('Save &GitOps command', 'Save a command to generate GitOps outputs')
 		} else {
 			$options += [tuple]::create('&Save command', 'Save the setup script using password/key script parameters')
@@ -143,9 +143,9 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 		'workDir','kubeContextName','kubeApiTargetPort','namespaceCodeDx','releaseNameCodeDx',
 		'codeDxDnsName',
 		'clusterCertificateAuthorityCertPath',
-		'codeDxMemoryReservation','dbMasterMemoryReservation','dbSlaveMemoryReservation','toolServiceMemoryReservation','minioMemoryReservation','workflowMemoryReservation','nginxMemoryReservation',
-		'codeDxCPUReservation','dbMasterCPUReservation','dbSlaveCPUReservation','toolServiceCPUReservation','minioCPUReservation','workflowCPUReservation','nginxCPUReservation',
-		'codeDxEphemeralStorageReservation','dbMasterEphemeralStorageReservation','dbSlaveEphemeralStorageReservation','toolServiceEphemeralStorageReservation','minioEphemeralStorageReservation','workflowEphemeralStorageReservation','nginxEphemeralStorageReservation',
+		'codeDxMemoryReservation','dbMasterMemoryReservation','dbSlaveMemoryReservation','toolServiceMemoryReservation','minioMemoryReservation','workflowMemoryReservation',
+		'codeDxCPUReservation','dbMasterCPUReservation','dbSlaveCPUReservation','toolServiceCPUReservation','minioCPUReservation','workflowCPUReservation',
+		'codeDxEphemeralStorageReservation','dbMasterEphemeralStorageReservation','dbSlaveEphemeralStorageReservation','toolServiceEphemeralStorageReservation','minioEphemeralStorageReservation','workflowEphemeralStorageReservation',
 		'imageCodeDxTomcat','imageCodeDxTools','imageCodeDxToolsMono','imageNewAnalysis','imageSendResults','imageSendErrorResults','imageToolService','imagePrepare','imagePreDelete',
 		'imageCodeDxTomcatInit','imageMariaDB','imageMinio','imageWorkflowController','imageWorkflowExecutor',
 		'dockerImagePullSecretName','dockerRegistry','dockerRegistryUser',
@@ -153,20 +153,21 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 		'storageClassName',
 		'serviceTypeCodeDx',
 		'caCertsFilePath',
+		'ingressTlsSecretNameCodeDx',
 		'backupType','namespaceVelero','backupScheduleCronExpression',
 		'csrSignerNameCodeDx','csrSignerNameToolOrchestration' | ForEach-Object {
 			$this.AddParameter($sb, $_)
 		}
-		'backupDatabaseTimeoutMinutes','backupTimeToLiveHours','workflowStepMinimumRunTimeSeconds' | ForEach-Object {
+		'backupDatabaseTimeoutMinutes','backupTimeToLiveHours' | ForEach-Object {
 			$this.AddPositiveIntParameter($sb, $_)
 		}
 
 		$runNow = ([MultipleChoiceQuestion]$question).choice -eq 0
-		$useGitOps = $this.config.UseFluxGitOps()
+		$useGitOps = $this.config.UseGitOps()
 		$usePd = -not $useGitOps -and ([MultipleChoiceQuestion]$question).choice -eq 2
 
 		if ($useGitOps) {
-			'useHelmOperator','useHelmController','skipSealedSecrets' | ForEach-Object {
+			'useHelmOperator','useHelmController','useHelmCommand','useHelmManifest','skipSealedSecrets' | ForEach-Object {
 				$this.AddSwitchParameter($sb, $_)
 			}
 			'sealedSecretsNamespace','sealedSecretsControllerName','sealedSecretsPublicKeyPath' | ForEach-Object {
@@ -180,7 +181,7 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 			}
 		}
 
-		'skipTLS','skipPSPs','skipNetworkPolicies','skipIngressEnabled','skipIngressAssumesNginx','useSaml','usePnsContainerRuntimeExecutor','createSCCs','skipUseRootDatabaseUser' | ForEach-Object {
+		'skipTLS','skipServiceTLS','skipPSPs','skipNetworkPolicies','skipIngressEnabled','useSaml','createSCCs','skipUseRootDatabaseUser' | ForEach-Object {
 			$this.AddSwitchParameter($sb, $_)
 		}
 
@@ -271,24 +272,6 @@ function New-GenericSecret([string] $namespace, [string] $name, [hashtable] $key
 			}
 		} else {
 			$this.AddSwitchParameter($sb, 'skipToolOrchestration')
-		}
-
-		if (-not $this.config.skipNginxIngressControllerInstall) {
-
-			'nginxIngressControllerNamespace','nginxIngressControllerLoadBalancerIP' | ForEach-Object { 
-				$this.AddParameter($sb, $_)
-			}
-		} else {
-			$this.AddSwitchParameter($sb, 'skipNginxIngressControllerInstall')
-		}
-
-		if (-not $this.config.skipLetsEncryptCertManagerInstall) {
-
-			'letsEncryptCertManagerNamespace','letsEncryptCertManagerIssuer','letsEncryptCertManagerRegistrationEmailAddress' | ForEach-Object {
-				$this.AddParameter($sb, $_)
-			}
-		} else {
-			$this.AddSwitchParameter($sb, 'skipLetsEncryptCertManagerInstall')
 		}
 
 		$this.AddArrayParameter($sb, 'extraCodeDxTrustedCaCertPaths')

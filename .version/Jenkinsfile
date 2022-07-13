@@ -1,6 +1,7 @@
 
-conventionalChangelogConventionalCommitsVersion = 'v4.5.0'
-semanticReleaseVersion = 'v17.3.1'
+nextVersion = ''
+hasNextVersion = false
+hasDockerChanges = false
 
 def getRepo() {
 
@@ -16,36 +17,6 @@ def getRepo() {
 		submoduleCfg: scm.submoduleCfg,
 		userRemoteConfigs: scm.userRemoteConfigs
 	]).GIT_COMMIT
-}
-
-def getNextSemanticReleaseVersion(semanticReleaseOutput) {
-
-	def nextReleasePattern = /(?ms).*The next release version is (?<release>.*?)$.*/
-	def firstReleasePattern = /(?ms).*There is no previous release, the next release version is (?<release>.*?)$.*/
-
-	def version = ''
-	[nextReleasePattern, firstReleasePattern].each { x ->
-		if (version == '') {
-			def releaseMatch = semanticReleaseOutput =~ x
-			if (releaseMatch.matches()) {
-				version = releaseMatch.group('release')
-			}
-		}
-	}
-	version
-}
-
-def runSemanticRelease(token, preview) {
-
-	def dryRun = ''
-	if (preview) {
-		dryRun = '--dry-run'
-	}
-
-	def output = sh(returnStdout: true, script: "export GITHUB_TOKEN=$token; npm install --save-dev conventional-changelog-conventionalcommits@$conventionalChangelogConventionalCommitsVersion; npx semantic-release@$semanticReleaseVersion $dryRun")
-	echo output
-
-	getNextSemanticReleaseVersion(output)
 }
 
 def getLatestGitHubRelease(token, owner, repo) {
@@ -134,6 +105,11 @@ pipeline {
 
 								script {
 
+									outputPreview = release.runSemanticRelease(GIT_TOKEN, true)
+
+									nextVersion = release.getNextVersion(outputPreview)
+									hasNextVersion = nextVersion != ''
+
 									currentVersions = []
 									[GIT_CODEDX_REPO,GIT_TOMCAT_INIT_REPO,GIT_MARIADB_REPO,GIT_TOOL_ORCHESTRATION_REPO,GIT_WORKFLOW_REPO,GIT_RESTOREDB_REPO].each { x ->
 
@@ -153,8 +129,11 @@ pipeline {
 
 									def isCurrentVersion = sh(returnStdout: true, script: "pwsh -command \"&{ . ./.version/common.ps1; Test-CodeDxVersion './setup/core/setup.ps1' './admin/restore-db.ps1' '$codeDxVersion' '$codeDxTomcatInitVersion' '$mariaDBVersion' '$toolOrchestrationVersion' '$workflowVersion' '$restoreDBVersion' }\"")
 
-									if (isCurrentVersion.toBoolean()) {
-										error("unable to continue because the repository already references the latest versions; codeDxVersion=$codeDxVersion; codeDxTomcatInitVersion=$codeDxTomcatInitVersion; mariaDBVersion=$mariaDBVersion; toolOrchestrationVersion=$toolOrchestrationVersion; workflowVersion=$workflowVersion; restoreDBVersion=$restoreDBVersion")
+									hasDockerChanges = !(isCurrentVersion.toBoolean())
+									println("Next version is '$nextVersion' (hasNextVersion='$hasNextVersion' hasDockerChanges='$hasDockerChanges')")
+
+									if (!hasNextVersion && !hasDockerChanges) {
+										error("unable to continue because the repository is up to date with the latest versions; codeDxVersion=$codeDxVersion; codeDxTomcatInitVersion=$codeDxTomcatInitVersion; mariaDBVersion=$mariaDBVersion; toolOrchestrationVersion=$toolOrchestrationVersion; workflowVersion=$workflowVersion; restoreDBVersion=$restoreDBVersion")
 									}
 								}
 							}
@@ -198,37 +177,50 @@ pipeline {
 
 							sh 'git config user.name \'Code Dx Build\' && git config user.email support@codedx.com'
 							sh "git checkout ${scm.branches[0]}"
-							sh "pwsh ./.version/version.ps1 '$codeDxVersion' '$codeDxTomcatInitVersion' '$mariaDBVersion' '$toolOrchestrationVersion' '$workflowVersion' '$restoreDBVersion'"
-							sh 'git add .'
-							sh "git commit -m 'feat: update to latest Docker image versions' -m 'Code Dx: $codeDxVersion' -m 'Tomcat Init: $codeDxTomcatInitVersion' -m 'MariaDB: $mariaDBVersion' -m 'Tool Orchestration: $toolOrchestrationVersion' -m 'Workflow: $workflowVersion' -m 'RestoreDB: $restoreDBVersion'"
+
+							script {
+								if (hasDockerChanges) {
+
+									// note: this optionally applies minor version update to chart(s)
+									// chart version(s) should be adjusted manually when hasNextVersion=true and hasDockerChanges=false
+									sh "pwsh ./.version/version.ps1 '$codeDxVersion' '$codeDxTomcatInitVersion' '$mariaDBVersion' '$toolOrchestrationVersion' '$workflowVersion' '$restoreDBVersion'"
+									sh 'git add .'
+									sh "git commit -m 'feat: update to latest Docker image versions' -m 'Code Dx: $codeDxVersion' -m 'Tomcat Init: $codeDxTomcatInitVersion' -m 'MariaDB: $mariaDBVersion' -m 'Tool Orchestration: $toolOrchestrationVersion' -m 'Workflow: $workflowVersion' -m 'RestoreDB: $restoreDBVersion'"
+								}
+							}
 
 							withCredentials([usernamePassword(credentialsId: 'codedx-build-github', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_TOKEN')]){
 
-								// note: pipeline requires 'Suppress automatic SCM triggering' behavior
 								sh('''
 									git config --local credential.helper "!helper() { echo username=\\$GIT_USERNAME; echo password=\\$GIT_TOKEN; }; helper"
-									git push
 								''')
 
 								script {
+									if (hasDockerChanges) {
 
-									versionToRelease = runSemanticRelease(GIT_TOKEN, true)
-									chartTag = "charts-$versionToRelease"
+										// note: pipeline requires 'Suppress automatic SCM triggering' behavior
+										sh "git push --set-upstream origin ${scm.branches[0]}"
 
+										// Commit for Docker-related changes will alter next version number
+										outputPreview = release.runSemanticRelease(GIT_TOKEN, true)
+										nextVersion = release.getNextVersion(outputPreview)
+									}
+
+									chartTag = "charts-$nextVersion"
 									setupScriptPath = './setup/core/setup.ps1'
 								}
 
 								sh "git tag $chartTag"
 
 								// note: pipeline requires 'Suppress automatic SCM triggering' behavior
-								sh 'git push --tags'
+								sh "git push --set-upstream origin ${scm.branches[0]} --tags"
 
 								sh "pwsh -command \"&{ . ./.version/common.ps1; Set-SetupScriptChartsReference '$setupScriptPath' '$chartTag' }\""
 								sh "git add $setupScriptPath"
 								sh "git commit -m 'chore: set chart reference to $chartTag'"
 
 								// note: pipeline requires 'Suppress automatic SCM triggering' behavior
-								sh 'git push'
+								sh "git push --set-upstream origin ${scm.branches[0]}"
 							}
 						}
 					}
@@ -244,9 +236,10 @@ pipeline {
 
 								script {
 
-									versionReleased = runSemanticRelease(GIT_TOKEN, false)
-									if (versionReleased == '') {
-										error('Build failed because commits since the last version do not require a new release')
+									output = release.runSemanticRelease(GIT_TOKEN, false)
+									versionReleased = release.getNextVersion(output)
+									if (versionReleased != nextVersion) {
+										error("Build failed because released version ($versionReleased) does not match expected version ($nextVersion)")
 									}
 								}
 							}

@@ -11,18 +11,12 @@
 class IngressKind : Step {
 
 	static [string] hidden $description = @'
-Specify the the type of ingress you want to use.
-
-
-'@
-
-	static [string] hidden $nginxDescription = @'
-If you select the 'NGINX and Cert Manager with Let's Encrypt' option, you will 
-install the Let's Encrypt Cert Manager. You should not run more than one copy 
-of Cert Manager on your cluster.
+Specify how you will access Code Dx running on your cluster.
 '@
 
 	static [string] hidden $openshiftDescription = @'
+
+
 The Guided Setup does not include support for creating OpenShift routes. If 
 you plan to use routes, configure your routes after installing Code Dx.
 '@
@@ -40,8 +34,6 @@ you plan to use routes, configure your routes after installing Code Dx.
 
 		if ($this.config.k8sProvider -eq [ProviderType]::OpenShift) {
 			$message += [IngressKind]::openshiftDescription
-		} else {
-			$message += [IngressKind]::nginxDescription
 		}
 		return $message
 	}
@@ -49,229 +41,243 @@ you plan to use routes, configure your routes after installing Code Dx.
 	[IQuestion]MakeQuestion([string] $prompt) {
 
 		$choices = @(
-			[tuple]::create('None', 'Do not configure any type of ingress (use port-forward or something else to access Code Dx)'),
-			[tuple]::create('Load Balancer', 'Configure the Code Dx Kubernetes service as a LoadBalancer service type'),
-			[tuple]::create('External Ingress Controller', 'Create ingress resource for use with an ingress controller you installed separately'),
-			[tuple]::create('External NGINX Ingress Controller', 'Create ingress resource for use with an NGINX ingress controller you installed separately')
+			[tuple]::create('ClusterIP Service', 'Configure the Code Dx Kubernetes service as a ClusterIP service type (use port-forward or something else to access Code Dx)'),
+			[tuple]::create('NodePort Service', 'Configure the Code Dx Kubernetes service as a NodePort service type'),
+			[tuple]::create('LoadBalancer Service', 'Configure the Code Dx Kubernetes service as a LoadBalancer service type'),
+			[tuple]::create('NGINX Ingress', 'Create an ingress resource for use with an NGINX ingress controller you installed separately')
 		)
 
-		if ($this.config.k8sProvider -ne [ProviderType]::OpenShift) {
-			$choices += @(
-				[tuple]::create('NGINX and Let''s Encrypt', 'Install and use NGINX with Let''s Encrypt Cert Manager'),
-				[tuple]::create('NGINX and Let''s Encrypt (with Load Balancer IP)', 'Install and use NGINX with Let''s Encrypt Cert Manager with a specified Load Balancer IP address')	
-			)
-		}
-
 		if ($this.config.k8sProvider -eq [ProviderType]::Eks) {
-			$choices += [tuple]::create('AWS Classic Load Balancer with Certificate Manager', 'Use AWS Classic Load Balancer')
-			$choices += [tuple]::create('AWS Network Load Balancer with Certificate Manager', 'Use AWS Network Load Balancer')
-			$choices += [tuple]::create('Internal AWS Classic Load Balancer with Certificate Manager', 'Use Internal AWS Classic Load Balancer')
+			$choices += [tuple]::create('Classic ELB (HTTPS)', 'Use AWS Classic Load Balancer with Certificate Manager')
+			$choices += [tuple]::create('Network ELB (HTTPS)', 'Use AWS Network Load Balancer with Certificate Manager')
+			$choices += [tuple]::create('Internal Classic ELB (HTTPS)', 'Use Internal AWS Classic Load Balancer')
 		}
 
 		return new-object MultipleChoiceQuestion($prompt, $choices, -1)
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
+
+		$this.config.skipServiceTLS = $this.config.skipTLS # match to improve backward compatibility
+		$this.config.skipIngressEnabled = $true
+		$this.config.serviceTypeCodeDx = 'ClusterIP'
+
 		switch (([MultipleChoiceQuestion]$question).choice) {
-			0 { $this.config.ingressType = [IngressType]::None }
-			1 { $this.config.ingressType = [IngressType]::LoadBalancer }
-			2 { $this.config.ingressType = [IngressType]::ExternalIngressController }
-			3 { $this.config.ingressType = [IngressType]::ExternalNginxIngressController }
-			4 { $this.config.ingressType = [IngressType]::NginxLetsEncrypt }
-			5 { $this.config.ingressType = [IngressType]::NginxLetsEncryptWithLoadBalancerIP }
-			6 { $this.config.ingressType = [IngressType]::ClassicElb }
-			7 { $this.config.ingressType = [IngressType]::NetworkElb }
-			8 { $this.config.ingressType = [IngressType]::InternalClassicElb }
+			0 { $this.config.ingressType = [IngressType]::ClusterIP }
+			1 { $this.config.ingressType = [IngressType]::NodePort; $this.config.serviceTypeCodeDx = 'NodePort' }
+			2 { $this.config.ingressType = [IngressType]::LoadBalancer; $this.config.serviceTypeCodeDx = 'LoadBalancer' }
+			3 { $this.config.ingressType = [IngressType]::NginxIngress; $this.config.skipIngressEnabled = $false;  }
+			4 { $this.config.ingressType = [IngressType]::ClassicElb; $this.config.serviceTypeCodeDx = 'LoadBalancer' }
+			5 { $this.config.ingressType = [IngressType]::NetworkElb; $this.config.serviceTypeCodeDx = 'LoadBalancer' }
+			6 { $this.config.ingressType = [IngressType]::InternalClassicElb; $this.config.serviceTypeCodeDx = 'LoadBalancer' }
 		}
-
-		$this.config.skipNginxIngressControllerInstall = -not $this.config.HasNginxIngress()
-		$this.config.skipLetsEncryptCertManagerInstall = $this.config.skipNginxIngressControllerInstall
-
-		$this.config.skipIngressEnabled = $this.config.skipNginxIngressControllerInstall -and $this.config.ingressType -ne [IngressType]::ExternalIngressController -and $this.config.ingressType -ne [IngressType]::ExternalNginxIngressController
-		$this.config.skipIngressAssumesNginx = $this.config.skipNginxIngressControllerInstall -and $this.config.ingressType -ne [IngressType]::ExternalNginxIngressController
-		
-		$isElb = $this.config.IsElbIngress()
 
 		$this.config.ingressAnnotationsCodeDx = @{}
-		$this.config.serviceTypeCodeDx = ($this.config.ingressType -eq [IngressType]::LoadBalancer -or $isElb) ? 'LoadBalancer' : ''
-		if ($isElb) {
+		if ($this.config.IsElbIngress()) {
+			# always use port 443 for AWS ELB provisioning (if skipTLS is false, service can be accessed w/o ELB via HTTP on 443)
+			$this.config.skipServiceTLS = $false
 			$this.config.codeDxTlsServicePortNumber = 443
 		}
-		
+
+		if ($this.config.IsNGINXIngress()) {
+			$this.config.ingressAnnotationsCodeDx['nginx.ingress.kubernetes.io/proxy-body-size'] = '0'
+			$this.config.ingressAnnotationsCodeDx['nginx.ingress.kubernetes.io/proxy-read-timeout'] = '3600'
+
+			$protocol = 'HTTPS'
+			if ($this.config.skipTLS) {
+				$protocol = 'HTTP'
+			}
+			$this.config.ingressAnnotationsCodeDx['nginx.ingress.kubernetes.io/backend-protocol'] = $protocol
+		}
+
 		return $true
 	}
 
 	[void]Reset(){
-		$this.config.skipNginxIngressControllerInstall = $false
-		$this.config.skipLetsEncryptCertManagerInstall = $false
 		$this.config.skipIngressEnabled = $false
-		$this.config.skipIngressAssumesNginx = $false
 		$this.config.ingressAnnotationsCodeDx = @{}
 		$this.config.serviceTypeCodeDx = ''
 		$this.config.codeDxTlsServicePortNumber = [ConfigInput]::codeDxTlsServicePortNumberDefault
+		$this.config.ingressType = [IngressType]::ClusterIP
 	}
 }
 
-class NginxIngressNamespace : Step {
+class NginxTLS : Step {
 
 	static [string] hidden $description = @'
-Specify the Kubernetes namespace where Nginx components will be installed. 
-For example, to install components in a namespace named 'nginx', enter  
-that name here. The namespace will be created if it does not already exist.
+Specify how you will configure HTTPS for your NGINX ingress.
+
+Using the cert-manager option (e.g., Let's Encrypt ) requires an 
+existing cert-manager deployment with a ClusterIssuer resource or 
+Issuer resource in the Code Dx namespace. For more details, refer to 
+this URL:
+
+https://cert-manager.io/docs/configuration/
+
+To use the External Kubernetes TLS Secret option, you must create 
+a Kubernetes TLS Secret resource in the Code Dx namespace. For more 
+details, refer to this URL:
+
+https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
 '@
 
-	NginxIngressNamespace([ConfigInput] $config) : base(
-		[NginxIngressNamespace].Name, 
+	NginxTLS([ConfigInput] $config) : base(
+		[NginxTLS].Name, 
 		$config,
-		'NGINX Namespace',
-		[NginxIngressNamespace]::description,
-		'Enter namespace') {}
-
-	[bool]HandleResponse([IQuestion] $question) {
-		$this.config.nginxIngressControllerNamespace = ([Question]$question).response
-		return $true
-	}
-
-	[void]Reset(){
-		$this.config.nginxIngressControllerNamespace = 'nginx'
-	}
-
-	[bool]CanRun() {
-		return $this.config.HasNginxIngress()
-	}
-}
-
-class NginxIngressAddress : Step {
-
-	static [string] hidden $description = @'
-Specify an existing IP address to associate with the Code Dx ingress resource.
-'@
-
-	NginxIngressAddress([ConfigInput] $config) : base(
-		[NginxIngressAddress].Name, 
-		$config,
-		'NGINX Ingress IP Address',
-		[NginxIngressAddress]::description,
-		'Enter IP address') {}
+		'NGINX Ingress TLS',
+		[NginxTLS]::description,
+		'How will you configure HTTPS for your NGINX ingress?') {}
 
 	[IQuestion]MakeQuestion([string] $prompt) {
-		$question = new-object Question('Enter IP address')
-		$question.validationExpr = '^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
-		return $question
+
+		$choices = @(
+			[tuple]::create('HTTPS (cert-manager)', 'Access Code Dx using HTTPS and an cert-manager issuer like Let''s Encrypt'),
+			[tuple]::create('HTTPS (External Kubernetes TLS Secret)', 'Access Code Dx using HTTPS and an existing Kubernetes TLS secret')
+		)
+
+		return new-object MultipleChoiceQuestion($prompt, $choices, -1)
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
-		$this.config.nginxIngressControllerLoadBalancerIP = ([Question]$question).response
+
+		$choice = ([MultipleChoiceQuestion]$question).choice
+
+		switch ($choice) {
+			0 { $this.config.ingressType = [IngressType]::NginxCertManagerIngress }
+			1 { $this.config.ingressType = [IngressType]::NginxExternalSecretIngress }
+		}
+
 		return $true
 	}
 
 	[void]Reset(){
-		$this.config.nginxIngressControllerLoadBalancerIP = ''
+		$this.config.ingressType = [IngressType]::NginxIngress
 	}
 
 	[bool]CanRun() {
-		return $this.config.ingressType -eq [IngressType]::NginxLetsEncryptWithLoadBalancerIP
+		return $this.config.IsNGINXIngress()
 	}
 }
 
-class LetsEncryptNamespace : Step {
+class NginxTLSSecretName : Step {
 
 	static [string] hidden $description = @'
-Specify the Kubernetes namespace where the Let's Encrypt components will be 
-installed. For example, to install components in a namespace named 'nginx', 
-enter that name here. The namespace will be created if it does not 
-already exist.
+Specify the name of an existing Kubernetes TLS Secret resource to 
+reference in the TLS section of your NGINX ingress.
+
+For more details, refer to this URL:
+https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
+
+The command to create the Kubernetes TLS Secret resource will look like this:
+kubectl -n cdx-namespace create secret tls name --cert=cert.pem --key=key.pem
+
+Note: Your Kubernetes TLS Secret resource must already exist in the
+Code Dx namespace. Otherwise, the ingress controller may use a 
+fake/invalid certificate. 
 '@
 
-	LetsEncryptNamespace([ConfigInput] $config) : base(
-		[LetsEncryptNamespace].Name, 
+	NginxTLSSecretName([ConfigInput] $config) : base(
+		[NginxTLSSecretName].Name,
 		$config,
-		'Let''s Encrypt Namespace',
-		[LetsEncryptNamespace]::description,
-		'Enter the Let''s Encrypt k8s namespace') {}
+		'NGINX Ingress TLS Secret Name',
+		[NginxTLSSecretName]::description,
+		'Enter the name of your existing Kubernetes TLS Secret name') {}
 
 	[bool]HandleResponse([IQuestion] $question) {
-		$this.config.letsEncryptCertManagerNamespace = ([Question]$question).response
+		$this.config.ingressTlsSecretNameCodeDx = ([Question]$question).response
 		return $true
 	}
 
 	[void]Reset(){
-		$this.config.letsEncryptCertManagerNamespace = 'cert-manager'
+		$this.config.ingressTlsSecretNameCodeDx = ''
 	}
 
 	[bool]CanRun() {
-		return $this.config.HasNginxIngress()
+		return $this.config.ingressType -eq [IngressType]::NginxExternalSecretIngress
 	}
 }
 
-class LetsEncryptIssuer : Step {
+class CertManagerIssuerType : Step {
 
 	static [string] hidden $description = @'
-Specify the name of the Let's Encrypt Issuer you want to use. The 
-setup script will create two Issuer resources, one for staging and 
-one for production use.
+Specify whether you plan to use a cert-manager ClusterIssuer or Issuer 
+resource.
 
-The staging configuration will be generated as a Issuer resource named 
-letsencrypt-staging, and the production issuer will be named letsencrypt-prod. 
-Use the staging version first. When everything is working correctly, run the 
-setup again replacing the letsencrypt-staging parameter with letsencrypt-prod.
+A ClusterIssuer has cluster-wide scope. An Issuer resource must exist in
+the Code Dx namespace you plan to use. If necessary, create the Code Dx 
+namespace now so that you can create your Issuer resource.
 '@
 
-	LetsEncryptIssuer([ConfigInput] $config) : base(
-		[LetsEncryptIssuer].Name, 
+	CertManagerIssuerType([ConfigInput] $config) : base(
+		[CertManagerIssuerType].Name,
 		$config,
-		'Let''s Encrypt Issuer',
-		[LetsEncryptIssuer]::description,
-		'Do you want to use the staging issuer for Let''s Encrypt?') {}
+		'Cert-Manager Issuer Type',
+		[CertManagerIssuerType]::description,
+		'Will you be using a ClusterIssuer instead of an Issuer resource?') {}
 
 	[IQuestion]MakeQuestion([string] $prompt) {
-		return new-object YesNoQuestion($prompt, 
-			'Yes, use the letsencrypt-staging issuer.', 
-			'No, use the letsencrypt-prod issuer.', -1)
+
+		$choices = @(
+			[tuple]::create('Yes', 'Yes, I plan to use a cert-manager ClusterIssuer resource'),
+			[tuple]::create('No', 'No, I plan to use a cert-manager Issuer resource')
+		)
+
+		return new-object MultipleChoiceQuestion($prompt, $choices, -1)
 	}
 
 	[bool]HandleResponse([IQuestion] $question) {
-		$this.config.letsEncryptCertManagerIssuer = ([YesNoQuestion]$question).choice -eq 0 ? 'letsencrypt-staging' : 'letsencrypt-prod'
+
+		$choice = ([MultipleChoiceQuestion]$question).choice
+
+		$this.config.certManagerIssuerType = $choice -eq 0 ? [IssuerType]::ClusterIssuer : [IssuerType]::Issuer
 		return $true
 	}
 
 	[void]Reset(){
-		$this.config.letsEncryptCertManagerNamespace = 'letsencrypt-staging'
+		$this.config.certManagerIssuerType = [IssuerType]::ClusterIssuer
 	}
 
 	[bool]CanRun() {
-		return $this.config.HasNginxIngress()
+		return $this.config.ingressType -eq [IngressType]::NginxCertManagerIngress
 	}
 }
 
-class LetsEncryptEmail : Step {
+class CertManagerIssuer : Step {
 
 	static [string] hidden $description = @'
-Specify an email address to associate with the Let's Encrypt registration.
+Specify the name of the cert-manager issuer you plan to use.
+
+Note: Your cert-manager issuer must already exist.
 '@
 
-	LetsEncryptEmail([ConfigInput] $config) : base(
-		[LetsEncryptEmail].Name, 
-		$config,
-		'Let''s Encrypt Email Contact',
-		[LetsEncryptEmail]::description,
-		'Enter your registration email address') {}
+	static [string] hidden $issuerAnnotationKey = 'cert-manager.io/issuer'
+	static [string] hidden $clusterIssuerAnnotationKey = 'cert-manager.io/cluster-issuer'
 
-	[IQuestion]MakeQuestion([string] $prompt) {
-		return new-object EmailAddressQuestion($prompt, $false)
-	}
+	CertManagerIssuer([ConfigInput] $config) : base(
+		[CertManagerIssuer].Name, 
+		$config,
+		'Cert-Manager Issuer',
+		[CertManagerIssuer]::description,
+		'Enter the name of your cert-manager issuer') {}
 
 	[bool]HandleResponse([IQuestion] $question) {
-		$this.config.letsEncryptCertManagerRegistrationEmailAddress = ([Question]$question).response
+
+		$annotationKey = [CertManagerIssuer]::issuerAnnotationKey
+		if ($this.config.certManagerIssuerType -eq [IssuerType]::ClusterIssuer) {
+			$annotationKey = [CertManagerIssuer]::clusterIssuerAnnotationKey
+		}
+
+		$this.config.ingressAnnotationsCodeDx[$annotationKey] = ([Question]$question).response
 		return $true
 	}
 
 	[void]Reset(){
-		$this.config.letsEncryptCertManagerRegistrationEmailAddress = ''
+		$this.config.ingressAnnotationsCodeDx.Remove([CertManagerIssuer]::issuerAnnotationKey)
+		$this.config.ingressAnnotationsCodeDx.Remove([CertManagerIssuer]::clusterIssuerAnnotationKey)
 	}
 
 	[bool]CanRun() {
-		return $this.config.HasNginxIngress()
+		return $this.config.ingressType -eq [IngressType]::NginxCertManagerIngress
 	}
 }
 

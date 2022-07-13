@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.1.0
+.VERSION 1.3.0
 .GUID 031ba6fc-042c-4c0d-853c-52afb79ce7ea
 .AUTHOR Code Dx
 #>
@@ -68,7 +68,8 @@ function Invoke-HelmSingleDeployment([string] $message,
 	[string[]] $extraValuesPaths, 
 	[string]   $version, 
 	[switch]   $reuseValues,
-	[switch]   $dryRun) {
+	[switch]   $dryRun,
+	[switch]   $skipCRDs) {
 
 	if (-not $dryRun) {
 		if (-not (Test-Namespace $namespace)) {
@@ -77,7 +78,8 @@ function Invoke-HelmSingleDeployment([string] $message,
 	}
 
 	if (test-path $chartReference -pathtype container) {
-		helm dependency update $chartReference
+		Write-Verbose 'Running helm dependency update...'
+		helm dependency update $chartReference | Out-Null
 		if ($LASTEXITCODE -ne 0) {
 			throw "Unable to run dependency update, helm exited with code $LASTEXITCODE."
 		}
@@ -95,6 +97,7 @@ function Invoke-HelmSingleDeployment([string] $message,
 
 	$values = @()
 	$tmpPaths = @()
+	$helmOutput = ''
 	try {
 		$valuesPaths | ForEach-Object {
 			$values = $values + "--values"
@@ -118,9 +121,27 @@ function Invoke-HelmSingleDeployment([string] $message,
 			$valuesParam = '--reuse-values' # merge $values used with the last upgrade
 		}
 
-		helm upgrade --namespace $namespace --install $valuesParam $releaseName @($values) $chartReference @($versionParam) $dryRunParam $debugParam
+		$crdAction = $skipCRDs ? '--skip-crds' : ''
+		$helmOutput = helm upgrade --namespace $namespace --install $valuesParam $releaseName @($values) $chartReference @($versionParam) $crdAction $dryRunParam $debugParam
 		if ($LASTEXITCODE -ne 0) {
 			throw "Unable to run helm upgrade/install, helm exited with code $LASTEXITCODE."
+		}
+
+		$helmOutput = $helmOutput -join [Environment]::NewLine
+		Write-Verbose "Helm output: $helmOutput"
+
+		if ($dryRun) {
+
+			$manifestLabel = 'MANIFEST:'
+			$manifestIndex = $helmOutput.indexof($manifestLabel) + $manifestLabel.length
+
+			$notesIndex = $helmOutput.indexof('NOTES:')
+			if ($notesIndex -eq -1) {
+				$notesIndex = $helmOutput.length - 1
+			}
+
+			# Usable content is between 'MANIFEST:' and 'NOTES:'
+			$helmOutput = $helmOutput.substring($manifestIndex, $notesIndex - $manifestIndex)
 		}
 	} finally {
 		$tmpPaths | ForEach-Object { Write-Verbose "Removing temporary file '$_'"; Remove-Item $_ -Force }
@@ -129,4 +150,6 @@ function Invoke-HelmSingleDeployment([string] $message,
 	if (-not $dryRun) {
 		Wait-Deployment "Helm Upgrade/Install: $message" $waitSeconds $namespace $deploymentName $totalReplicas
 	}
+
+	return $helmOutput
 }

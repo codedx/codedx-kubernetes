@@ -1,8 +1,5 @@
 
-'./step.ps1',
-'../core/common/input.ps1',
-'../core/common/question.ps1',
-'../core/common/k8s.ps1' | ForEach-Object {
+'./step.ps1','../core/common/prereqs.ps1' | ForEach-Object {
 	Write-Debug "'$PSCommandPath' is including file '$_'"
 	$path = join-path $PSScriptRoot $_
 	if (-not (Test-Path $path)) {
@@ -139,7 +136,7 @@ class SelectContext: Step {
 
 		# retest k8s version prereqs using selected context
 		$messages = @()
-		$this.config.prereqsSatisified = Test-SetupKubernetesVersion ([ref]$messages)
+		$this.config.prereqsSatisified = Test-CodeDxSetupKubernetesVersion ([ref]$messages)
 		if (-not $this.config.prereqsSatisified) {
 			$this.config.missingPrereqs = $messages
 			return $true

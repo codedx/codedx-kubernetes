@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.1.0
+.VERSION 2.3.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -188,7 +188,7 @@ $VerbosePreference = 'Continue'
 
 Set-PSDebug -Strict
 
-'./common/helm.ps1','./common/codedx.ps1','./common/prereqs.ps1','./common/mariadb.ps1','./common/velero.ps1','./common/keytool.ps1','./common/resource.ps1' | ForEach-Object {
+'../../.install-guided-setup-module.ps1','./common/codedx.ps1','./common/prereqs.ps1','./common/mariadb.ps1','./common/velero.ps1' | ForEach-Object {
 	$path = join-path $PSScriptRoot $_
 	if (-not (Test-Path $path)) {
 		Write-ErrorMessageAndExit "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
@@ -534,10 +534,10 @@ New-Item -Type Directory $workDir -Force
 Write-Verbose "Switching to directory $workDir..."
 Push-Location $workDir
 
-### Reset GitOps directory
-$gitOpsDir = './GitOps'
+### Reset GitOps/Resources directory
+$gitOpsDir = './Resources'
 if (Test-Path $gitOpsDir -PathType Container) {
-	Remove-Item './GitOps' -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
+	Remove-Item $gitOpsDir -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
 }
 
 ### Wait for Cluster Ready
@@ -555,12 +555,6 @@ if (-not $useGitOps) {
 			Wait-AllRunningPods "Cluster Ready (namespace $namespaceToolOrchestration)" $waitTimeSeconds $namespaceToolOrchestration
 		}
 	}
-}
-
-### Identify current version
-$currentToolOrchestrationAppVersion = $null
-if ($useToolOrchestration) {
-	$currentToolOrchestrationAppVersion = Get-HelmReleaseAppVersion $namespaceToolOrchestration $releaseNameToolOrchestration
 }
 
 ### Create Code Dx Namespace
@@ -722,16 +716,18 @@ if ($useToolOrchestration) {
 
 	Write-Verbose 'Deploying Tool Orchestration...'
 	$chartFolder = join-path $workDir .repo/setup/core/charts/codedx-tool-orchestration
-	$helmResult = Invoke-HelmSingleDeployment 'Tool Orchestration' `
+	$helmResult = Invoke-HelmCommand 'Tool Orchestration' `
 		$waitTimeSeconds $namespaceToolOrchestration `
 		$releaseNameToolOrchestration `
 		$chartFolder `
 		$toolOrchestrationValuesFile.FullName `
-		$toolOrchestrationFullName `
-		$toolServiceReplicas `
 		$extraToolOrchestrationValuesPath `
 		-dryRun:$useGitOps `
 		-skipCRDs
+
+	if (-not $useGitOps) {
+		Wait-Deployment 'Helm Upgrade/Install: Tool Orchestration' $waitTimeSeconds $namespaceToolOrchestration $toolOrchestrationFullName $toolServiceReplicas
+	}
 
 	if ($useHelmManifest) {
 		New-ResourceFile 'HelmManifest' $namespaceToolOrchestration $releaseNameToolOrchestration $helmResult
@@ -835,16 +831,18 @@ $codeDxDeploymentValuesFile = New-CodeDxDeploymentValuesFile $codeDxDnsName $cod
 ### Deploy Code Dx
 Write-Verbose 'Deploying Code Dx...'
 $codeDxChartFolder = join-path $workDir .repo/setup/core/charts/codedx
-$helmResult = Invoke-HelmSingleDeployment 'Code Dx' `
+$helmResult = Invoke-HelmCommand 'Code Dx' `
 	$waitTimeSeconds $namespaceCodeDx `
 	$releaseNameCodeDx `
 	$codeDxChartFolder `
 	$codeDxDeploymentValuesFile.FullName `
-	$codeDxChartFullName `
-	1 `
 	$extraCodeDxValuesPaths `
 	-dryRun:$useGitOps `
 	-skipCRDs
+
+if (-not $useGitOps) {
+	Wait-Deployment 'Helm Upgrade/Install: Code Dx' $waitTimeSeconds $namespaceCodeDx $codeDxChartFullName 1
+}
 
 if ($useHelmManifest) {
 	New-ResourceFile 'HelmManifest' $namespaceCodeDx $releaseNameCodeDx $helmResult
@@ -927,8 +925,7 @@ if ($useGitOps -and (-not $useHelmManifest)) {
 			-dockerImageNames $codeDxDockerImageNames `
 			-useHelmController:$useHelmController
 	} else {
-		New-HelmCommand $codeDxHelmReleaseName `
-			$namespaceCodeDx `
+		New-HelmCommand $namespaceCodeDx `
 			$releaseNameCodeDx `
 			(join-path $workDir .repo/setup/core/charts/codedx) `
 			$codeDxValuesPaths `
@@ -990,8 +987,7 @@ if ($useGitOps -and (-not $useHelmManifest)) {
 				-dockerImageNames $toolOrchestrationDockerImages `
 				-useHelmController:$useHelmController
 		} else {
-			New-HelmCommand $toolOrchestrationHelmReleaseName `
-				$namespaceToolOrchestration `
+			New-HelmCommand $namespaceToolOrchestration `
 				$releaseNameToolOrchestration `
 				(join-path $workDir .repo/setup/core/charts/codedx-tool-orchestration) `
 				$toolOrchestrationValuesPaths `

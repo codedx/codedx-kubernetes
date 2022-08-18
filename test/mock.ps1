@@ -16,14 +16,20 @@ function New-Mocks() {
 		Write-Host $args
 		Get-QueuedInput
 	}
-	
+
+	Mock -ModuleName Guided-Setup Read-HostChoice {
+		Write-Host $args
+		Get-QueuedInput
+	}
+
 	Mock Read-Host {
 		Write-Host $args
 		Get-QueuedInput
 	}
 
-	Mock Get-KubernetesPort {
-		return $global:k8sport
+	Mock -ModuleName Guided-Setup Read-Host {
+		Write-Host $args
+		Get-QueuedInput
 	}
 
 	Mock Get-KubernetesEndpointsPort {
@@ -50,7 +56,11 @@ function New-Mocks() {
 		$global:keystorePasswordValid
 	}
 
-	Mock Test-Certificate {
+	Mock -ModuleName Guided-Setup Test-KeystorePassword {
+		$global:keystorePasswordValid
+	}
+
+	Mock -ModuleName Guided-Setup Test-KeyToolCertificate {
 		$global:caCertCertificateExists
 	} -ParameterFilter { 'ca.crt','db-ca.crt','extra1.pem','extra2.pem' -contains $path }
 
@@ -58,13 +68,21 @@ function New-Mocks() {
 		$global:caCertFileExists
 	} -ParameterFilter { 'ca.crt','db-ca.crt','cacerts','extra1.pem','extra2.pem','idp-metadata.xml','sealed-secrets.pem' -contains $path }
 
-	Mock Start-Sleep {
+	Mock -ModuleName Guided-Setup Test-Path {
+		$global:caCertFileExists
+	} -ParameterFilter { 'ca.crt','db-ca.crt','cacerts','extra1.pem','extra2.pem','idp-metadata.xml','sealed-secrets.pem' -contains $path }
+
+	Mock -ModuleName Guided-Setup Start-Sleep {
 	}
 
 	Mock Write-StepGraph {
 	}
 
 	Mock Test-CertificateSigningRequestV1Beta1 {
+		$global:csrSupportsV1Beta1
+	}
+
+	Mock -ModuleName Guided-Setup Test-CertificateSigningRequestV1Beta1 {
 		$global:csrSupportsV1Beta1
 	}
 }

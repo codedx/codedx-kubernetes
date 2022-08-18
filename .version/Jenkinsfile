@@ -80,6 +80,9 @@ pipeline {
 
 						dir ('repo/.version/test') {
 
+							// install newest guided-setup module, trusting PSGallery
+							sh 'pwsh -command "&{ [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; Install-Module -Name guided-setup -Force }"'
+
 							// note: the -CI parameter sets Run.Exit, but it also creates two files in the working directory
 							sh 'pwsh -command "&{ Import-Module Pester; \\$cfg = [PesterConfiguration]::Default; \\$cfg.Run.Exit = \\$true; \\$cfg.Run.Path = \'./common.tests.ps1\';  Invoke-Pester -Configuration \\$cfg }"'
 							sh 'pwsh -command "&{ Import-Module Pester; \\$cfg = [PesterConfiguration]::Default; \\$cfg.Run.Exit = \\$true; \\$cfg.Run.Path = \'./version.tests.ps1\'; Invoke-Pester -Configuration \\$cfg }"'

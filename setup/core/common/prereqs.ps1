@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.4.0
+.VERSION 1.5.0
 .GUID c191448b-25fd-4ec2-980e-e7a8ba85e693
 .AUTHOR Code Dx
 #>
@@ -11,148 +11,6 @@ This script includes support for testing Code Dx prerequisites.
 Note: Do not use PowerShell Core v7 syntax in this file because
 it will interfere with the PowerShell Core v7 prereq check.
 #>
-
-'utils.ps1' | ForEach-Object {
-	$path = join-path $PSScriptRoot $_
-	if (-not (Test-Path $path)) {
-		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
-	}
-	. $path
-}
-
-function Get-KubectlVersion {
-
-	$Local:ErrorActionPreference = 'Continue'
-	$version = kubectl version -o json
-	if (0 -ne $LASTEXITCODE) {
-		throw "Unable to run 'kubectl version' command, kubectl exited with exit code $LASTEXITCODE. Is your environment connected to your cluster?"
-	}
-	$version | ConvertFrom-Json
-}
-
-function Get-KubectlContext() { # note: copied from k8s.ps1, which uses pwsh v7 syntax
-
-	$Local:ErrorActionPreference = 'Continue'
-	$contextName = kubectl config current-context
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to get kubectl context, kubectl exited with code $LASTEXITCODE."
-	}
-	$contextName
-}
-
-function Set-KubectlContext([string] $contextName) { # note: copied from k8s.ps1, which uses pwsh v7 syntax
-
-	$Local:ErrorActionPreference = 'Continue'
-	kubectl config use-context $contextName *>&1 | out-null
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to change kubectl context, kubectl exited with code $LASTEXITCODE."
-	}
-}
-
-function Get-SemanticVersionComponents([string] $version) {
-
-	if ($version.ToLower().StartsWith('v')) {
-		$version = $version.Substring(1)
-	}
-
-	# Regular Expression from https://semver.org/
-	$semanticVersionRegex = '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'
-	if (-not ($version -match $semanticVersionRegex)) {
-		throw "'$version' is not a semantic version"
-	}
-	$matches
-}
-
-function Get-KubectlClientVersion {
-
-	$versionInfo = Get-KubectlVersion
-	$version = Get-SemanticVersionComponents $versionInfo.clientVersion.gitVersion
-	"$($version[1]).$($version[2])"
-}
-
-function Get-KubectlServerSemanticVersion {
-
-	$versionInfo = Get-KubectlVersion
-	Get-SemanticVersionComponents $versionInfo.serverVersion.gitVersion
-}
-
-function Get-KubectlServerVersion {
-
-	$version = Get-KubectlServerSemanticVersion
-	"$($version[1]).$($version[2])"
-}
-
-function Get-KubectlServerVersionMajor {
-	[int]::Parse(((Get-KubectlServerSemanticVersion)[1]))
-}
-
-function Get-KubectlServerVersionMinor {
-	[int]::Parse(((Get-KubectlServerSemanticVersion)[2]))
-}
-
-function Get-HelmVersionMajorMinor() {
-
-	$versionMatch = helm version -c | select-string 'Version:"v(?<version>\d+\.\d+)'
-	if ($null -eq $versionMatch -or -not $versionMatch.Matches.Success) {
-		return $null
-	}
-	[double]$versionMatch.Matches.Groups[1].Value
-}
-
-function Get-KeytoolJavaSettings() {
-
-	$keytoolPath = Get-AppCommandPath 'keytool' | Select-Object -First 1
-	if ($null -eq $keytoolPath) {
-		return $null
-	}
-
-	$javaSettings = $null
-	$local:ErrorActionPreference = 'Continue'
-
-	Push-Location (Split-Path $keytoolPath)
-	if ((Test-Path java -PathType Leaf) -or (Test-Path java.exe -PathType Leaf)) {
-		$javaSettings = ./java -XshowSettings:all -version 2>&1
-	}
-	Pop-Location
-
-	$javaSettings
-}
-
-function Get-KeytoolJavaSpec() {
-
-	$javaSettings = Get-KeytoolJavaSettings
-	if ($null -eq $javaSettings) {
-		return $null
-	}
-	if (-not ($javaSettings | select-string  'java.vm.specification.version' | ForEach-Object { $_ -match 'java.vm.specification.version\s=\s(?<version>.+)' })) {
-		return $null
-	}
-	$matches['version']
-}
-
-function Test-SetupKubernetesVersion([ref] $messages) {
-
-	$messages.Value = @()
-	$k8sRequiredMajorVersion = 1
-	$k8sMinimumMinorVersion  = 19
-	$k8sMaximumMinorVersion  = 24
-
-	if ((Get-KubectlServerVersionMajor) -ne $k8sRequiredMajorVersion) {
-		$messages.Value += "Unable to continue because the version of the selected Kubernetes cluster is unsupported (the kubectl server major version is not $k8sRequiredMajorVersion)."
-	} else {
-		$serverVersionMinor = Get-KubectlServerVersionMinor
-		if ($serverVersionMinor -lt $k8sMinimumMinorVersion -or $serverVersionMinor -gt $k8sMaximumMinorVersion) {
-			$messages.Value += "Unable to continue because the version of the selected Kubernetes cluster ($serverVersionMinor) is unsupported (the kubectl server minor version must be between $k8sMinimumMinorVersion and $k8sMaximumMinorVersion)."
-		} else {
-			$clientVersion = Get-KubectlClientVersion
-			$serverVersion = Get-KubectlServerVersion
-			if ($clientVersion -ne $serverVersion) {
-				$messages.Value += "Unable to continue because the kubectl client version ($clientVersion) does not match the Kubernetes cluster version ($serverVersion)."
-			}
-		}
-	}
-	return $messages.Value.Length -eq 0
-}
 
 function Test-SetupPreqs([ref] $messages, [switch] $useSealedSecrets, [string] $context, [switch] $checkKubectlVersion) {
 
@@ -201,7 +59,7 @@ function Test-SetupPreqs([ref] $messages, [switch] $useSealedSecrets, [string] $
 		Set-KubectlContext $context
 
 		$k8sMessages = @()
-		if (-not (Test-SetupKubernetesVersion ([ref]$k8sMessages))) {
+		if (-not (Test-CodeDxSetupKubernetesVersion ([ref]$k8sMessages))) {
 			$messages.Value += $k8sMessages
 			$messages.Value += "Note: The prerequisite check used kubectl context '$context'"
 		}
@@ -217,4 +75,12 @@ function Test-SetupPreqs([ref] $messages, [switch] $useSealedSecrets, [string] $
 	}
 
 	$messages.Value.count -eq 0
+}
+
+function Test-CodeDxSetupKubernetesVersion ([ref]$k8sMessages) {
+
+	$k8sRequiredMajorVersion = 1
+	$k8sMinimumMinorVersion = 19
+	$k8sMaximumMinorVersion = 24
+	Test-SetupKubernetesVersion $k8sMessages $k8sRequiredMajorVersion $k8sMinimumMinorVersion $k8sMaximumMinorVersion
 }

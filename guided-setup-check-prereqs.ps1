@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.2.1
+.VERSION 1.3.0
 .GUID ec9b62b9-a404-4d72-bf90-92f5b1d9975f
 .AUTHOR Code Dx
 #>
@@ -14,7 +14,7 @@ $VerbosePreference = 'Continue'
 
 Set-PSDebug -Strict
 
-'./setup/core/common/prereqs.ps1' | ForEach-Object {
+'./.install-guided-setup-module.ps1','./setup/core/common/prereqs.ps1' | ForEach-Object {
 	Write-Debug "'$PSCommandPath' is including file '$_'"
 	$path = join-path $PSScriptRoot $_
 	if (-not (Test-Path $path)) {

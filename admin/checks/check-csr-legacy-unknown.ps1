@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.1.0
+.VERSION 1.2.0
 .GUID 5c50ce4e-b948-4b48-bcf1-c003954a988b
 .AUTHOR Code Dx
 #>
@@ -20,12 +20,12 @@ Set-PSDebug -Strict
 
 $VerbosePreference = 'Continue'
 
-'../../setup/core/common/k8s.ps1','../../setup/core/common/utils.ps1' | ForEach-Object {
-  $path = join-path $PSScriptRoot $_
-  if (-not (Test-Path $path)) {
-    Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
-  }
-  . $path
+'../../.install-guided-setup-module.ps1' | ForEach-Object {
+	$path = join-path $PSScriptRoot $_
+	if (-not (Test-Path $path)) {
+		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
+	}
+	. $path
 }
 
 Write-Host 'Testing for openssl...'

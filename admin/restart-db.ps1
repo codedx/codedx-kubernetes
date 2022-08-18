@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.1
+.VERSION 1.1.0
 .GUID a48bc8e0-dada-4b63-944a-9397ce91f0b3
 .AUTHOR Code Dx
 #>
@@ -8,7 +8,6 @@
 .DESCRIPTION 
 This script automates the process of restarting the MariaDB databases.
 #>
-
 
 param (
 	[string] $namespaceCodeDx = 'cdx-app',
@@ -21,7 +20,7 @@ $VerbosePreference = 'Continue'
 
 Set-PSDebug -Strict
 
-'../setup/core/common/k8s.ps1','../setup/core/common/helm.ps1','../setup/core/common/codedx.ps1' | ForEach-Object {
+'../.install-guided-setup-module.ps1','../setup/core/common/codedx.ps1' | ForEach-Object {
 	$path = join-path $PSScriptRoot $_
 	if (-not (Test-Path $path)) {
 		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."

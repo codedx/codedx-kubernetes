@@ -2,7 +2,7 @@ function New-Password([string] $pwdValue) {
 	(new-object net.NetworkCredential("",$pwdValue)).securepassword
 }
 
-function Set-DefaultPass([int] $saveOption) {
+function Set-DefaultPass() {
 	$global:inputs = new-object collections.queue
 	$global:inputs.enqueue($null) # welcome
 	$global:inputs.enqueue(0)     # skip GitOps
@@ -43,7 +43,7 @@ function Set-DefaultPass([int] $saveOption) {
 	$global:inputs.enqueue(0) # use default storage reservation
 	$global:inputs.enqueue(0) # use default volume sizes
 	$global:inputs.enqueue('default') # storage class name
-	$global:inputs.enqueue($saveOption) # next step save option
+	$global:inputs.enqueue(1) # next step save option
 }
 
 function Set-UseToolOrchestrationAndSubordinateDatabasePass([int] $saveOption) {

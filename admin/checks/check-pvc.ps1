@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.0
+.VERSION 1.1.0
 .GUID 538418ba-21ee-4221-ad23-a3b7e26efcab
 .AUTHOR Code Dx
 #>
@@ -21,7 +21,7 @@ Set-PSDebug -Strict
 
 $VerbosePreference = 'Continue'
 
-'../../setup/core/common/k8s.ps1' | ForEach-Object {
+'../../.install-guided-setup-module.ps1' | ForEach-Object {
 	$path = join-path $PSScriptRoot $_
 	if (-not (Test-Path $path)) {
 		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."

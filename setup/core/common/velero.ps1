@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.2.1
+.VERSION 1.3.0
 .GUID d65a6b13-910d-4220-8cfb-5de8cdd52011
 .AUTHOR Code Dx
 #>
@@ -11,22 +11,6 @@ This script includes functions for Velero-related tasks.
 
 $ErrorActionPreference = 'Stop'
 Set-PSDebug -Strict
-
-'./k8s.ps1' | ForEach-Object {
-	Write-Debug "'$PSCommandPath' is including file '$_'"
-	$path = join-path $PSScriptRoot $_
-	if (-not (Test-Path $path)) {
-		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
-	}
-	. $path
-}
-
-function Test-VeleroBackupSchedule([string] $namespace, [string] $name) {
-
-	$Local:ErrorActionPreference = 'SilentlyContinue'
-	kubectl -n $namespace get "schedule/$name" *>&1 | Out-Null
-	$LASTEXITCODE -eq 0
-}
 
 function New-VeleroBackupSchedule([string] $workDir, 
 	[string] $scheduleName,
@@ -121,13 +105,3 @@ spec:
 		throw "Unable to create the following Velero Schedule resource (kubectl exited with code $LASTEXITCODE):`n$scheduleTemplate"
 	}
 }
-
-function Remove-VeleroBackupSchedule([string] $namespace, [string] $name) {
-
-	kubectl -n $namespace delete schedule $name | out-null
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to delete Velero Schedule named $name, kubectl exited with code $LASTEXITCODE."
-	}
-}
-
-

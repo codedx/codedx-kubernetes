@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.2.0
+.VERSION 2.3.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -9,49 +9,12 @@
 This script includes functions for the deployment of Code Dx and Code Dx Orchestration.
 #>
 
-'utils.ps1',
-'k8s.ps1',
-'helm.ps1',
 'private.ps1' | ForEach-Object {
 	$path = join-path $PSScriptRoot $_
 	if (-not (Test-Path $path)) {
 		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
 	}
 	. $path
-}
-
-function Split-DockerName([string] $dockerImageName, [switch] $name) {
-
-	if (-not ($dockerImageName -match '^(?<name>.+):(?<tag>[^:]+)$')) {
-		throw "Unable to find Docker image name and tag in $dockerImageName"
-	}
-	($matches[$name ? 'name' : 'tag']).trim()
-}
-
-function Split-DockerRepo([string] $dockerName, [switch] $repo) {
-
-	$domain = 'docker.io'
-	$name = $dockerName
-
-	$i = $dockerName.IndexOf('/')
-	if ($i -ne -1) {
-		$str = $dockerName.Substring(0, $i)
-		if ($str.Contains('.') -or $str.Contains(':')) {
-			$domain = $str
-			$name = $dockerName.Substring($i+1)
-		}
-	}
-	return $repo ? $domain : $name
-}
-
-function Get-DockerImageParts([string] $dockerImageName) {
-
-	$repo      = Split-DockerRepo $dockerImageName -repo
-	$remainder = Split-DockerRepo $dockerImageName
-	$name      = Split-DockerName $remainder -name
-	$tag       = Split-DockerName $remainder
-
-	@($repo, $name, $tag)
 }
 
 function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
@@ -658,26 +621,6 @@ $stepMinimumRunTimeSeconds
 	Get-ChildItem $valuesFile
 }
 
-function Get-RunningCodeDxPodName([string] $codedxNamespace) {
-
-	$name = kubectl -n $codedxNamespace get pod -l app=codedx --field-selector=status.phase=Running -o jsonpath='{.items[0].metadata.name}'
-	if (0 -ne $LASTEXITCODE) {
-		throw "Unable to get the name of a running Code Dx pod, kubectl returned exit code $LASTEXITCODE."
-	}
-	$name
-}
-
-function Get-RunningCodeDxKeystore([string] $codedxNamespace, [string] $outPath) {
-
-	$podName = Get-RunningCodeDxPodName $codedxNamespace
-	$podFile = "$podName`:/usr/local/openjdk-8/jre/lib/security/cacerts"
-
-	kubectl -n $codedxNamespace cp $podFile $outPath
-	if ($LASTEXITCODE -ne 0) {
-		throw "Unable to copy out cacerts file from '$podFile', kubectl exited with code $LASTEXITCODE."
-	}
-}
-
 function Get-CodeDxKeystore([string] $namespace, [string] $imageCodeDxTomcat, [string] $imagePullSecretName, [int] $waitSeconds, [string] $outPath) {
 
 	$podName = 'copy-cacerts'
@@ -734,24 +677,6 @@ function Get-MariaDbChartFullName([string] $releaseName) {
 
 function Get-MinIOChartFullName([string] $releaseName) {
 	Get-HelmChartFullname $releaseName 'minio'
-}
-
-function Get-HelmChartFullname([string] $releaseName, [string] $chartName) {
-
-	$fullname = $releaseName
-	if ($releaseName -cne $chartName) {
-		$fullname = "$releaseName-$chartName"
-	}
-	Get-CommonName $fullname
-}
-
-function Get-CommonName([string] $name) {
-
-	# note: matches chart "sanitize" helper
-	if ($name.length -gt 63) {
-		$name = $name.Substring(0, 63)
-	}
-	$name.TrimEnd('-')
 }
 
 function Get-TrustedCaCertsFilePwd([string] $cacertsFilePath, [string] $currentPwd, [string] $newPwd) {

@@ -1,16 +1,4 @@
 
-'../powershell-algorithms/data-structures.ps1',
-'../core/common/question.ps1',
-'../core/common/utils.ps1'
- | ForEach-Object {
-	Write-Debug "'$PSCommandPath' is including file '$_'"
-	$path = join-path $PSScriptRoot $_
-	if (-not (Test-Path $path)) {
-		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
-	}
-	. $path | out-null
-}
-
 enum ProviderType {
 	Minikube
 	Aks
@@ -263,117 +251,18 @@ class ConfigInput {
 	}
 }
 
-class Step : GraphVertex {
+class Step : GuidedSetupStep {
 
-	[string]      $name
 	[ConfigInput] $config
-
-	[string]      $title
-	[string]      $message
-	[string]      $prompt
 
 	Step([string]      $name, 
 		 [ConfigInput] $config,
 		 [string]      $title,
 		 [string]      $message,
-		 [string]      $prompt) : base($name) {
+		 [string]      $prompt) : base($name, $title, $message, $prompt) {
 
-		$this.name = $name
 		$this.config = $config
-		$this.title = $title
-		$this.message = $message
-		$this.prompt = $prompt
-	}
-
-	[bool]CanRun() {
-		return $true
-	}
-
-	[bool]Run() {
-
-		Write-HostSection $this.title ($this.GetMessage())
-
-		while ($true) {
-			$question = $this.MakeQuestion($this.prompt)
-			$question.Prompt()
-			
-			if (-not $question.hasResponse) {
-				return $false
-			}
-	
-			if ($this.HandleResponse($question)) {
-				break
-			}
-		}
-		return $true
-	}
-
-	[IQuestion]MakeQuestion([string]$prompt) {
-		return new-object Question($prompt)
-	}
-
-	[bool]HandleResponse([IQuestion] $question) {
-		throw [NotImplementedException]
-	}
-
-	[string]GetMessage() {
-		return $this.message
-	}
-
-	[void]Reset() {
-		
-	}
-
-	[void]ApplyDefault() {
-		throw [NotImplementedException]
-	}
-
-	[string]GetDefault() {
-		return ''
-	}
-
-	[void]Delay() {
-		Start-Sleep -Seconds 1
-	}
-
-	[object]toString() {
-		return $this.name
 	}
 }
 
-function Write-StepGraph([string] $path, [hashtable] $steps, [collections.stack] $stepsVisited) {
 
-	"# Enter graph at https://dreampuf.github.io/GraphvizOnline (select 'dot' Engine and use Format 'png-image-element')`ndigraph G {`n" | out-file $path -force
-
-	$linksVisited = New-Object Collections.Generic.HashSet[string]
-	
-	$previousStep = $null
-	while ($stepsVisited.count -gt 0) {
-
-		$step = $stepsVisited.pop()
-		"$step [color=blue];" | out-file $path -append
-
-		if ($null -eq $previousStep) {
-			$previousStep = $step
-			continue
-		}
-		
-		$link = "$step -> $previousStep"
-		"$link [color=blue];" | out-file $path -append
-
-		$linksVisited.add($link) | out-null
-		$previousStep = $step
-	}
-
-	$steps.keys | ForEach-Object {
-		$node = $steps[$_]
-		$node.getNeighbors() | ForEach-Object {
-			$link = "$node -> $_"
-			if (-not $linksVisited.Contains($link)) {
-				"$link;" | out-file $path -append
-			}
-		}
-	}
-
-	"}" | out-file $path -append
-}

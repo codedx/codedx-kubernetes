@@ -1,4 +1,4 @@
-
+using module @{ModuleName='guided-setup'; RequiredVersion='1.6.0' }
 
 Import-Module 'pester' -ErrorAction SilentlyContinue
 if (-not $?) {
@@ -11,11 +11,8 @@ push-location ($location)
 
 './test/mock.ps1',
 './test/pass.ps1',
-'./setup/core/common/question.ps1',
-'./setup/core/common/k8s.ps1',
 './setup/core/common/codedx.ps1',
 './setup/core/common/prereqs.ps1',
-'./setup/powershell-algorithms/data-structures.ps1',
 './setup/steps/step.ps1' | ForEach-Object {
 	Write-Debug "'$PSCommandPath' is including file '$_'"
 	$path = join-path $location $_
@@ -57,28 +54,17 @@ Describe 'Generate Setup Command from Default Pass' -Tag 'DefaultPass' {
 
 	It '(01) Should generate run-setup.ps1' {
 	
-		Set-DefaultPass 1 # save w/o prereqs command
+		Set-DefaultPass
 
 		New-Mocks
 		. ./guided-setup.ps1
 		
 		join-path $TestDrive run-setup.ps1 | Should -Exist
-	}
-
-	It '(02) Should generate run-prereqs.ps1 and run-setup.ps1' {
-	
-		Set-DefaultPass 2 # save w/ prereqs command
-
-		New-Mocks
-		. ./guided-setup.ps1
-		
-		join-path $TestDrive run-setup.ps1 | Should -Exist
-		join-path $TestDrive run-prereqs.ps1 | Should -Exist
 	}
 
 	It '(03) Should generate minikube setup.ps1 command without tool orchestration' {
 	
-		Set-DefaultPass 1 # save w/o prereqs command
+		Set-DefaultPass
 
 		New-Mocks
 		. ./guided-setup.ps1

@@ -9,16 +9,6 @@
 This script includes functions for the deployment of Code Dx and Code Dx Orchestration.
 #>
 
-'utils.ps1',
-'k8s.ps1',
-'helm.ps1' | ForEach-Object {
-	$path = join-path $PSScriptRoot $_
-	if (-not (Test-Path $path)) {
-		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
-	}
-	. $path
-}
-
 function Get-CodeDxPdSecretName([string] $releaseName) {
 	"$releaseName-codedx-pd"
 }
@@ -148,10 +138,6 @@ function New-MinioPdSecret([string] $namespace, [string] $releaseName, [string] 
 	New-GenericSecretResource $namespace (Get-MinioPdSecretName $releaseName) @{"access-key"=$minioUsername;"secret-key"=$minioPwd} @{} `
 		-useGitOps:$useGitOps `
 		-useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
-}
-
-function Get-MinioUsernameFromPd([string] $namespace, [string] $releaseName) {
-	Get-SecretFieldValue $namespace (Get-MinioPdSecretName $releaseName) 'access-key'
 }
 
 function Get-MinioPasswordFromPd([string] $namespace, [string] $releaseName) {

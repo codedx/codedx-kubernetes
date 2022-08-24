@@ -44,27 +44,27 @@ Terminal 1 (Subordinate DB):
 >Note: RESET SLAVE deletes relay log files.
 18. Remove old binary log files by running "SHOW BINARY LOGS;" and "PURGE BINARY LOGS TO 'name';"
 >Note: If you previously deleted binary log files (mysql-bin.000*) from the file system, remove the contents of the mysql-bin.index text file.
-18.	CHANGE MASTER TO MASTER_LOG_FILE='mysql-bin.000001', MASTER_LOG_POS=1;
-19.	START SLAVE;
-20.	SHOW SLAVE STATUS \G;
-21.	exit # mysql
-22.	rm /bitnami/mariadb/codedx-dump.sql
-23.	exit # pod
-24.	exit # terminal
+19.	CHANGE MASTER TO MASTER_LOG_FILE='mysql-bin.000001', MASTER_LOG_POS=1;
+20.	START SLAVE;
+21.	SHOW SLAVE STATUS \G;
+22.	exit # mysql
+23.	rm /bitnami/mariadb/codedx-dump.sql
+24.	exit # pod
+25.	exit # terminal
 
 Terminal 2 (Master DB):
 
-25.	exit # mysql
-26.	rm /bitnami/mariadb/codedx-dump.sql
-27.	exit # pod
-28.	exit # terminal
+26.	exit # mysql
+27.	rm /bitnami/mariadb/codedx-dump.sql
+28.	exit # pod
+29.	exit # terminal
 
 Terminal 3 (Master DB):
 
-29.	exit # pod
-30.	exit # terminal
+30.	exit # pod
+31.	exit # terminal
 
 Terminal 4:
 
-31.	exit # terminal
+32.	exit # terminal
 

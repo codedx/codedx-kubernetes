@@ -2,62 +2,65 @@
 
 Here are the steps that use four terminal windows to reset MariaDB database replication (when not using an external database):
 
->Note: The instructions assume two statefulsets named codedx-mariadb-master and codedx-mariadb-slave in the cdx-app namespace with one subordinate database.
+>Note: The instructions assume two statefulsets named codedx-mariadb-master and codedx-mariadb-slave and a deployment named codedx in the cdx-app namespace with one subordinate database. 
 
 Terminal 1 (Subordinate DB):
 
-1.	kubectl -n cdx-app exec -it codedx-mariadb-slave-0 -- bash
-2.	mysql -uroot -p
-3.	STOP SLAVE;
-4.	exit # mysql
+1.	kubectl -n cdx-app scale --replicas=0 deployment/codedx
+2.	kubectl -n cdx-app exec -it codedx-mariadb-slave-0 -- bash
+3.	mysql -uroot -p
+4.	STOP SLAVE;
+5.	exit # mysql
 
 Terminal 2 (Master DB):
 
-5.	kubectl -n cdx-app exec -it codedx-mariadb-master-0 -- bash
-6.	mysql -uroot -p
-7.	RESET MASTER;
-8.	FLUSH TABLES WITH READ LOCK;
+6.	kubectl -n cdx-app exec -it codedx-mariadb-master-0 -- bash
+7.	mysql -uroot -p
+8.	RESET MASTER;
+9.	FLUSH TABLES WITH READ LOCK;
 
 Terminal 3 (Master DB):
 
-9.	kubectl -n cdx-app exec -it codedx-mariadb-master-0 -- bash
-10.	mysqldump -u root -p codedx > /tmp/codedx-dump.sql
+10.	kubectl -n cdx-app exec -it codedx-mariadb-master-0 -- bash
+11.	mysqldump -u root -p codedx > /bitnami/mariadb/codedx-dump.sql
+
+>Note: The above command assumes you have adequate space at /bitnami/mariadb to store your database backup. Use an alternate path as necessary, and adjust paths in subsequent steps accordingly.
 
 Terminal 2 (Master DB)
 
-11.	UNLOCK TABLES;
+12.	UNLOCK TABLES;
 
 Terminal 4:
 
-12.	kubectl -n cdx-app cp codedx-mariadb-master-0:/tmp/codedx-dump.sql ./codedx-dump.sql
-13.	kubectl -n cdx-app cp ./codedx-dump.sql codedx-mariadb-slave-0:/bitnami/mariadb/codedx-dump.sql
+13.	kubectl -n cdx-app cp codedx-mariadb-master-0:/bitnami/mariadb/codedx-dump.sql ./codedx-dump.sql
+14.	kubectl -n cdx-app cp ./codedx-dump.sql codedx-mariadb-slave-0:/bitnami/mariadb/codedx-dump.sql
 
 Terminal 1 (Subordinate DB):
 
-14.	mysql -u root -p codedx < /bitnami/mariadb/codedx-dump.sql
-15.	mysql -uroot -p
-16.	RESET SLAVE;
-17.	CHANGE MASTER TO MASTER_LOG_FILE='mysql-bin.000001', MASTER_LOG_POS=1;
-18.	START SLAVE;
-19.	SHOW SLAVE STATUS \G;
-20.	exit # mysql
-21.	rm /bitnami/mariadb/codedx-dump.sql
-22.	exit # pod
-23.	exit # terminal
+15.	mysql -u root -p codedx < /bitnami/mariadb/codedx-dump.sql
+16.	mysql -uroot -p
+17.	RESET SLAVE;
+18.	CHANGE MASTER TO MASTER_LOG_FILE='mysql-bin.000001', MASTER_LOG_POS=1;
+19.	START SLAVE;
+20.	SHOW SLAVE STATUS \G;
+21.	exit # mysql
+22.	rm /bitnami/mariadb/codedx-dump.sql
+23.	exit # pod
+24.	exit # terminal
 
 Terminal 2 (Master DB):
 
-24.	exit # mysql
-25.	rm /tmp/codedx-dump.sql
-26.	exit # pod
-27.	exit # terminal
+25.	exit # mysql
+26.	rm /bitnami/mariadb/codedx-dump.sql
+27.	exit # pod
+28.	exit # terminal
 
 Terminal 3 (Master DB):
 
-28.	exit # pod
-29.	exit # terminal
+29.	exit # pod
+30.	exit # terminal
 
 Terminal 4:
 
-30.	exit # terminal
+31.	exit # terminal
 

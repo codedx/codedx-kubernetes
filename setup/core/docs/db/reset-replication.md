@@ -2,7 +2,7 @@
 
 Here are the steps that use four terminal windows to reset MariaDB database replication (when not using an external database):
 
->Note: The instructions assume two statefulsets named codedx-mariadb-master and codedx-mariadb-slave and a deployment named codedx in the cdx-app namespace with one subordinate database. 
+>Note: The steps assume two statefulsets named codedx-mariadb-master and codedx-mariadb-slave and a deployment named codedx in the cdx-app namespace with one subordinate database. 
 
 Terminal 1 (Subordinate DB):
 
@@ -17,6 +17,7 @@ Terminal 2 (Master DB):
 6.	kubectl -n cdx-app exec -it codedx-mariadb-master-0 -- bash
 7.	mysql -uroot -p
 8.	RESET MASTER;
+>Note: RESET MASTER deletes previous binary log files, creating a new binary log file.
 9.	FLUSH TABLES WITH READ LOCK;
 
 Terminal 3 (Master DB):
@@ -40,6 +41,9 @@ Terminal 1 (Subordinate DB):
 15.	mysql -u root -p codedx < /bitnami/mariadb/codedx-dump.sql
 16.	mysql -uroot -p
 17.	RESET SLAVE;
+>Note: RESET SLAVE deletes relay log files.
+18. Remove old binary log files by running "SHOW BINARY LOGS;" and "PURGE BINARY LOGS TO 'name';"
+>Note: If you previously deleted binary log files (mysql-bin.000*) from the file system, remove the contents of the mysql-bin.index text file.
 18.	CHANGE MASTER TO MASTER_LOG_FILE='mysql-bin.000001', MASTER_LOG_POS=1;
 19.	START SLAVE;
 20.	SHOW SLAVE STATUS \G;

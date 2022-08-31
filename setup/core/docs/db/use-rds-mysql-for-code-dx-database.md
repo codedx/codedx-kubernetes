@@ -2,6 +2,8 @@
 
 Code Dx recommends using an RDS database instance with the [MariaDB database engine](use-rds-for-code-dx-database.md), but these instructions are here to support those who are unable to use MariaDB.
 
+>Note: Code Dx currently requires [MySQL version 8.0.x](https://dev.mysql.com/doc/relnotes/mysql/8.0/en/).
+
 1) Your new MySQL RDS database instance must use a configuration that's compatible with Code Dx. Follow the [Create a DB Parameter Group instructions](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithParamGroups.html#USER_WorkingWithParamGroups.Creating) to create a new DB Parameter Group named codedx-mysql-recommendation. Then edit the parameters of your new group by using the [Modifying Parameters in a DB Parameter Group instructions](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithParamGroups.html#USER_WorkingWithParamGroups.Modifying) to set the following parameter values:
 
 - optimizer_search_depth=0

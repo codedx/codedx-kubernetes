@@ -175,3 +175,13 @@ This section describes the setup.ps1 script parameters, which you can specify by
 |                                                    |                                                            |                                                   |
 | `minimumWorkflowStepRunTimeSeconds`                | minimum run time for workflow step (when enforced)         | 0                                                 |
 | `createSCCs`                                       | whether to create Security Context Constraints (OpenShift) | false                                             |
+|                                                    |                                                            |                                                   |
+| `connectionPoolEffectiveSpindleCount`              | effective spindle count for computing max pool size        | 1                                                 |
+| `connectionPoolTimeoutMilliseconds`                | timeout for obtaining a connection from the pool           | 30000                                             |
+|                                                    |                                                            |                                                   |
+| `concurrentAnalysisLimit`                          | limit on number of concurrent analyses                     | web vCPU count                                    |
+|                                                    |                                                            |                                                   |
+| `jobsLimitCpu`                                     | swa.jobs.cpu-limit codedx.props setting                    | (web vCPU count) * 1000                           |
+| `jobsLimitMemory`                                  | swa.jobs.memory-limit codedx.props setting                 | (web vCPU count) * 1000                           |
+| `jobsLimitDatabase`                                | swa.jobs.database-limit codedx.props setting               | (web vCPU count) * 1000                           |
+| `jobsLimitDisk`                                    | swa.jobs.disk-limit codedx.props setting                   | (web vCPU count) * 1000                           |

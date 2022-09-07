@@ -183,7 +183,7 @@ param (
 	[switch]                 $createSCCs,
 
 	[int]                    $connectionPoolEffectiveSpindleCount,
-	[int]                    $connectionPoolTimeoutMilliseconds = 60000,
+	[int]                    $connectionPoolTimeoutMilliseconds = 30000,
 	[int]                    $concurrentAnalysisLimit,
 	[int]                    $jobsLimitCpu,
 	[int]                    $jobsLimitMemory,

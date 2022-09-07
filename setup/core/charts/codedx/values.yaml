@@ -303,6 +303,25 @@ service:
 
 codedxProps:
 
+  limits:
+    # https://community.synopsys.com/s/document-item?bundleId=codedx&topicId=install_guide%2FCodeDxConfiguration%2Fanalysis-behavior-props.html&_LANG=enus
+    analysis:
+      # analysis.concurrent-analysis-limit
+      concurrent: 2
+    database:
+      poolSize: 5
+      timeout: 30000
+    # https://community.synopsys.com/s/document-item?bundleId=codedx&topicId=install_guide%2FCodeDxConfiguration%2Fjob-system.html&_LANG=enus
+    jobs:
+      # swa.jobs.cpu-limit
+      cpu: 2000
+      # swa.jobs.memory-limit
+      memory: 2000
+      # swa.jobs.database-limit
+      database: 2000
+      # swa.jobs.disk-limit
+      disk: 2000
+
   dbconnection:
 
     # Use externalDbUrl to specify the database URL of an external MariaDB instance. This value is ignored

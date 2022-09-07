@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.3.0
+.VERSION 2.4.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -76,7 +76,14 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 	[switch]   $offlineMode,
 	[string]   $valuesFile,
 	[switch]   $createSCCs,
-	[switch]   $useCodeDxDbUser) {
+	[switch]   $useCodeDxDbUser,
+	[int]      $concurrentAnalysisLimit,
+	[int]      $connectionPoolMaxSize,
+	[int]      $connectionPoolTimeoutMilliseconds,
+	[int]      $jobsLimitCpu,
+	[int]      $jobsLimitMemory,
+	[int]      $jobsLimitDatabase,
+	[int]      $jobsLimitDisk) {
 
 	$imagePullSecretYaml   = $imagePullSecretName -eq '' ? '[]' : "[ {name: '$imagePullSecretName'} ]"
 	$mariaDbPullSecretYaml = $imagePullSecretName -eq '' ? '[]' : "[ '$imagePullSecretName' ]"
@@ -337,6 +344,17 @@ mariadb:
 {21}
 cacertsSecret: '{29}'
 codedxProps:
+  limits:
+    analysis:
+      concurrent: {64}
+    database:
+      poolSize: {65}
+      timeout: {66}
+    jobs:
+      cpu: {67}
+      memory: {68}
+      database: {69}
+      disk: {70}
   internalExtra:
   - type: values
     key: codedx-offline-props
@@ -387,7 +405,10 @@ $mariaDbDockerImageParts[0], $mariaDbDockerImageParts[1], $mariaDbDockerImagePar
 $mariaDbPullSecretYaml,
 $codeDxDbUserConfig,
 ($proxyPort -ne 0 ? " $proxyPort" : ''),
-$tlsServiceEnabled, $ingressClassName, $ingressTlsSecretName
+$tlsServiceEnabled, $ingressClassName, $ingressTlsSecretName,
+$concurrentAnalysisLimit,
+$connectionPoolMaxSize, $connectionPoolTimeoutMilliseconds,
+$jobsLimitCpu, $jobsLimitMemory, $jobsLimitDatabase, $jobsLimitDisk
 
 	$values | out-file $valuesFile -Encoding ascii -Force
 	Get-ChildItem $valuesFile

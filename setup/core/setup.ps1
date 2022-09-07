@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.3.0
+.VERSION 2.4.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -180,7 +180,15 @@ param (
 	[int]                    $backupTimeToLiveHours = 720,
 
 	[int]                    $workflowStepMinimumRunTimeSeconds = 3,
-	[switch]                 $createSCCs
+	[switch]                 $createSCCs,
+
+	[int]                    $connectionPoolEffectiveSpindleCount,
+	[int]                    $connectionPoolTimeoutMilliseconds = 60000,
+	[int]                    $concurrentAnalysisLimit,
+	[int]                    $jobsLimitCpu,
+	[int]                    $jobsLimitMemory,
+	[int]                    $jobsLimitDatabase,
+	[int]                    $jobsLimitDisk
 )
 
 $ErrorActionPreference = 'Stop'
@@ -507,6 +515,11 @@ if ($useVelero) {
 	}
 }
 
+$codeDxVirtualCpuCount = Get-VirtualCpuCountFromReservation $codeDxCPUReservation
+if ($codeDxVirtualCpuCount -lt 2) {
+	Write-ErrorMessageAndExit "Unable to continue because the Code Dx CPU reservation ($codeDxCPUReservation) is less than the minimum value (2 vCPUs, or 2000m)."
+}
+
 if ($storageClassName -ne '') {
 	$codeDxAppDataStorageClassName = $codeDxAppDataStorageClassName -eq '' ? $storageClassName : $codeDxAppDataStorageClassName
 	$dbStorageClassName            = $dbStorageClassName            -eq '' ? $storageClassName : $dbStorageClassName
@@ -791,6 +804,16 @@ if ($useToolOrchestration) {
 	$toolServiceUrl = "$protocol`://$(Get-CodeDxToolOrchestrationChartFullName $releaseNameToolOrchestration).$namespaceToolOrchestration.svc.cluster.local:3333"
 }
 
+if ($concurrentAnalysisLimit -eq 0) { $concurrentAnalysisLimit = $codeDxVirtualCpuCount }
+if ($jobsLimitCpu -eq 0) { $jobsLimitCpu = 1000 * $codeDxVirtualCpuCount }
+if ($jobsLimitMemory -eq 0) { $jobsLimitMemory = 1000 * $codeDxVirtualCpuCount }
+if ($jobsLimitDatabase -eq 0) { $jobsLimitDatabase = 1000 * $codeDxVirtualCpuCount }
+if ($jobsLimitDisk -eq 0) { $jobsLimitDisk = 1000 * $codeDxVirtualCpuCount }
+if ($connectionPoolEffectiveSpindleCount -eq 0) { $connectionPoolEffectiveSpindleCount = 1 }
+
+# https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing#connections--core_count--2--effective_spindle_count
+$connectionPoolMaxSize = $codeDxVirtualCpuCount * 2 + $connectionPoolEffectiveSpindleCount
+
 ### Create Code Dx Values File
 Write-Verbose 'Creating Code Dx values file...'
 $codeDxDeploymentValuesFile = New-CodeDxDeploymentValuesFile $codeDxDnsName $codeDxServicePortNumber $codeDxTlsServicePortNumber `
@@ -826,7 +849,10 @@ $codeDxDeploymentValuesFile = New-CodeDxDeploymentValuesFile $codeDxDnsName $cod
 	-offlineMode:$false `
 	'./codedx-values.yaml' `
 	-createSCCs:$createSCCs `
-	-useCodeDxDbUser:$skipUseRootDatabaseUser
+	-useCodeDxDbUser:$skipUseRootDatabaseUser `
+	$concurrentAnalysisLimit `
+	$connectionPoolMaxSize $connectionPoolTimeoutMilliseconds `
+	$jobsLimitCpu $jobsLimitMemory $jobsLimitDatabase $jobsLimitDisk
 
 ### Deploy Code Dx
 Write-Verbose 'Deploying Code Dx...'

@@ -102,6 +102,10 @@ spec:
         - mountPath: /opt/codedx/codedx.props
           name: codedx-props
           subPath: codedx.props
+        # Database connection config
+        - mountPath: /opt/codedx/hikari.properties
+          name: hikari-properties
+          subPath: hikari.properties
         # Any extra config files from codedx.props.extra
         {{ range .Values.codedxProps.extra -}}
         - mountPath: "/opt/codedx/{{ .key }}"
@@ -181,6 +185,12 @@ spec:
           items:
           - key: codedx.props
             path: codedx.props
+      - name: hikari-properties
+        configMap:
+          name: {{ include "codedx.props.configMapName" . | quote }}
+          items:
+          - key: hikari.properties
+            path: hikari.properties
       - name: codedx-props-env
         configMap:
           name: {{ include "codedx.props.configMapName" . | quote }}

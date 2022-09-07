@@ -27,6 +27,15 @@ data:
   codedx.props: |-
     swa.db.url = {{ $dbUrl }}
     swa.db.driver = com.mysql.jdbc.Driver
+    swa.jobs.cpu-limit = {{ .Values.codedxProps.limits.jobs.cpu }}
+    swa.jobs.memory-limit = {{ .Values.codedxProps.limits.jobs.memory }}
+    swa.jobs.database-limit = {{ .Values.codedxProps.limits.jobs.database }}
+    swa.jobs.disk-limit = {{ .Values.codedxProps.limits.jobs.disk }}
+    analysis.concurrent-analysis-limit = {{ .Values.codedxProps.limits.analysis.concurrent }}
+
+  hikari.properties: |-
+    maximumPoolSize = {{ .Values.codedxProps.limits.database.poolSize }}
+    connectionTimeout={{ .Values.codedxProps.limits.database.timeout }}
 
   tomcat.env: |-
     CATALINA_OPTS='{{ include "codedx.props.params.combined" . }}'

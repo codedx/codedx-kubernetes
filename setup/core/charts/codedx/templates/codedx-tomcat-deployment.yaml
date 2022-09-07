@@ -81,7 +81,7 @@ spec:
             {{- else }}
             port: 8080
             {{- end }}
-          initialDelaySeconds: 600
+          initialDelaySeconds: 5400
           periodSeconds: 15
           timeoutSeconds: 10
         command: ["start.sh"]

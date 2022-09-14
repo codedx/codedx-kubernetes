@@ -231,7 +231,10 @@ https://github.com/codedx/codedx-kubernetes/tree/master/setup/core
 		Read-Host "Press Enter to run the script now"
 		Write-Host "`nRunning setup command..."
 
-		$cmd = ([convert]::ToBase64String([text.encoding]::unicode.getbytes($setupCmdLine)))
+		# Pause after running the script to show output that might appear in a new window
+		$pauseCmd = "Write-Host 'Press Enter to exit...' -NoNewline; Read-Host"
+
+		$cmd = ([convert]::ToBase64String([text.encoding]::unicode.getbytes("$setupCmdLine; $pauseCmd")))
 		$process = Start-Process pwsh '-e',$cmd -Wait -PassThru
 		if ($process.ExitCode -ne 0) {
 			return $false

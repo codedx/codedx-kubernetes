@@ -57,11 +57,8 @@ spec:
   - ports:
     - port: 443
   {{ end }}
-  {{- if .Values.networkPolicy.codedx.proxyPort }}
-  # Proxy (HTTP and HTTPS)
-  - ports:
-    - port: {{ .Values.networkPolicy.codedx.proxyPort }}
-  {{ end -}}
+  {{- include "netpolicy.egress.ports.tcp" . | nindent 2 -}}
+  {{- include "netpolicy.egress.ports.udp" . | nindent 2 -}}
   {{- if .Values.networkPolicy.codedx.toolService }}
   # Tool orchestration service
   - ports:

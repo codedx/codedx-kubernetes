@@ -147,6 +147,38 @@ Create NetworkPolicy port ranges for DNS resolution.
 {{- end -}}
 
 {{/*
+Create NetworkPolicy port ranges.
+*/}}
+{{- define "netpolicy.ports" -}}
+{{- $portData := . -}}
+{{- if $portData.ports -}}
+{{- if gt (len $portData.ports) 0 -}}
+- ports:
+{{- range $portData.ports }}
+  - port: {{ . }}
+    protocol: {{ $portData.protocol }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create NetworkPolicy TCP port ranges.
+*/}}
+{{- define "netpolicy.egress.ports.tcp" -}}
+{{- $portData := dict "ports" .Values.networkPolicy.codedx.egress.extraPorts.tcp "protocol" "TCP" -}}
+{{- include "netpolicy.ports" $portData -}}
+{{- end -}}
+
+{{/*
+Create NetworkPolicy UDP port ranges.
+*/}}
+{{- define "netpolicy.egress.ports.udp" -}}
+{{- $portData := dict "ports" .Values.networkPolicy.codedx.egress.extraPorts.udp "protocol" "UDP" -}}
+{{- include "netpolicy.ports" $portData -}}
+{{- end -}}
+
+{{/*
 Create a full Egress object for enabling DNS resolution in a NetworkPolicy.
 */}}
 {{- define "netpolicy.dns.egress" -}}

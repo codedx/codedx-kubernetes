@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.4.0
+.VERSION 2.5.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -68,7 +68,6 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 	[switch]   $configureTls,
 	[switch]   $configureServiceTls,
 	[switch]   $skipDatabase,
-	[int]      $proxyPort,
 	[switch]   $skipToolOrchestration,
 	[string]   $toolOrchestrationNamespace,
 	[string]   $toolServiceUrl,
@@ -83,7 +82,9 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 	[int]      $jobsLimitCpu,
 	[int]      $jobsLimitMemory,
 	[int]      $jobsLimitDatabase,
-	[int]      $jobsLimitDisk) {
+	[int]      $jobsLimitDisk,
+	[int[]]    $egressPortsTCP,
+	[int[]]    $egressPortsUDP) {
 
 	$imagePullSecretYaml   = $imagePullSecretName -eq '' ? '[]' : "[ {name: '$imagePullSecretName'} ]"
 	$mariaDbPullSecretYaml = $imagePullSecretName -eq '' ? '[]' : "[ '$imagePullSecretName' ]"
@@ -239,7 +240,10 @@ networkPolicy:
     ldaps: {4}
     http: {4}
     https: {4}
-    proxyPort:{60}
+    egress:
+      extraPorts:
+        tcp: {60}
+        udp: {71}
 {16}
 {43}
   mariadb:
@@ -404,11 +408,12 @@ $tomcatInitImage,
 $mariaDbDockerImageParts[0], $mariaDbDockerImageParts[1], $mariaDbDockerImageParts[2],
 $mariaDbPullSecretYaml,
 $codeDxDbUserConfig,
-($proxyPort -ne 0 ? " $proxyPort" : ''),
+(ConvertTo-YamlIntArray $egressPortsTCP),
 $tlsServiceEnabled, $ingressClassName, $ingressTlsSecretName,
 $concurrentAnalysisLimit,
 $connectionPoolMaxSize, $connectionPoolTimeoutMilliseconds,
-$jobsLimitCpu, $jobsLimitMemory, $jobsLimitDatabase, $jobsLimitDisk
+$jobsLimitCpu, $jobsLimitMemory, $jobsLimitDatabase, $jobsLimitDisk,
+(ConvertTo-YamlIntArray $egressPortsUDP)
 
 	$values | out-file $valuesFile -Encoding ascii -Force
 	Get-ChildItem $valuesFile

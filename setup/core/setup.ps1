@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.4.0
+.VERSION 2.5.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -81,6 +81,8 @@ param (
 	[switch]                 $skipNetworkPolicies,
 
 	[int]                    $proxyPort,
+	[int[]]                  $egressPortsTCP = @(22,7990,7999),
+	[int[]]                  $egressPortsUDP,
 
 	[string]                 $serviceTypeCodeDx,
 	[hashtable]              $serviceAnnotationsCodeDx = @{},
@@ -526,6 +528,10 @@ if ($storageClassName -ne '') {
 	$minioStorageClassName         = $minioStorageClassName         -eq '' ? $storageClassName : $minioStorageClassName
 }
 
+if (0 -ne $proxyPort -and $egressPortsTCP -notcontains $proxyPort) {
+	$egressPortsTCP += $proxyPort
+}
+
 ### Select Kube Context
 if ($kubeContextName -ne '') {
 	Write-Verbose "Selecting kubectl context named $kubeContextName..."
@@ -841,7 +847,6 @@ $codeDxDeploymentValuesFile = New-CodeDxDeploymentValuesFile $codeDxDnsName $cod
 	-useSaml:$useSaml `
 	-ingressEnabled:$useIngress `
 	-enablePSPs:$usePSPs -enableNetworkPolicies:$useNetworkPolicies -configureTls:$useTLS -configureServiceTls:$useServiceTLS -skipDatabase:$skipDatabase `
-	$proxyPort `
 	-skipToolOrchestration:$skipToolOrchestration `
 	$namespaceToolOrchestration `
 	$toolServiceUrl `
@@ -852,7 +857,8 @@ $codeDxDeploymentValuesFile = New-CodeDxDeploymentValuesFile $codeDxDnsName $cod
 	-useCodeDxDbUser:$skipUseRootDatabaseUser `
 	$concurrentAnalysisLimit `
 	$connectionPoolMaxSize $connectionPoolTimeoutMilliseconds `
-	$jobsLimitCpu $jobsLimitMemory $jobsLimitDatabase $jobsLimitDisk
+	$jobsLimitCpu $jobsLimitMemory $jobsLimitDatabase $jobsLimitDisk `
+	$egressPortsTCP $egressPortsUDP
 
 ### Deploy Code Dx
 Write-Verbose 'Deploying Code Dx...'

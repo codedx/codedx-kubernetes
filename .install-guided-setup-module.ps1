@@ -10,8 +10,8 @@ $ErrorActionPreference = 'Stop'
 Set-PSDebug -Strict
 
 # Note: This script will install a specific guided-setup module version from the PowerShell 
-# Gallery (https://www.powershellgallery.com/). Here's how to install the module by hand if 
-# you prefer not to download it from PowerShell Gallery:
+# Gallery (https://www.powershellgallery.com/). Here's how to install the module if you 
+# prefer to download it from the PowerShell Gallery manually:
 #
 # 1. Browse to https://www.powershellgallery.com/packages/guided-setup/<version>, replacing 
 #    <version> with the $guidedSetupRequiredVersion parameter value (see Line 31)

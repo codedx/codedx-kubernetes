@@ -14,13 +14,15 @@ Set-PSDebug -Strict
 # prefer to download it from the PowerShell Gallery manually:
 #
 # 1. Browse to https://www.powershellgallery.com/packages/guided-setup/<version>, replacing 
-#    <version> with the $guidedSetupRequiredVersion parameter value (see Line 31)
+#    <version> with the $guidedSetupRequiredVersion parameter value (see Line 33)
 # 2. Click the "Manual Download" tab
 # 3. Click the "Download the raw nupkg file" button
 # 4. Append ".zip" to the downloaded file
 # 5. Create a new directory named /path/to/modules/guided-setup (replace /path/to accordingly)
-# 5. Extract the zip file to /path/to/modules/guided-setup (e.g., you'll have /path/to/modules/guided-setup/guided-setup.psd1)
-# 6. Append /path/to/modules (not /path/to/modules/guided-setup) to your PSModulePath environment variable
+# 6. Extract the zip file to /path/to/modules/guided-setup (e.g., you'll have /path/to/modules/guided-setup/guided-setup.psd1)
+# 7. Ensure read permissions for all files under /path/to/modules/guided-setup files (running "Get-Module -ListAvailable" 
+#    will show guided-setup version 0.0 with insufficient privileges)
+# 8. Append /path/to/modules (not /path/to/modules/guided-setup) to your PSModulePath environment variable
 
 function Test-AvailableModule($name, $version) {
 	$null -ne (Get-InstalledModule -Name $name -RequiredVersion $version -ErrorAction 'SilentlyContinue') -or

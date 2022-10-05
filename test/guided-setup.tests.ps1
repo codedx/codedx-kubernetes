@@ -1,4 +1,4 @@
-using module @{ModuleName='guided-setup'; RequiredVersion='1.9.0' }
+using module @{ModuleName='guided-setup'; RequiredVersion='1.10.0' }
 
 Import-Module 'pester' -ErrorAction SilentlyContinue
 if (-not $?) {

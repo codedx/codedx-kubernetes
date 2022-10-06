@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.5.0
+.VERSION 2.6.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -559,6 +559,47 @@ if (Test-Path $gitOpsDir -PathType Container) {
 	Remove-Item $gitOpsDir -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
 }
 
+### Fetch Code Dx Charts
+Write-Verbose 'Fetching Code Dx Helm charts...'
+$repoDirectory = './.repo'
+$oldRepoDirectory = './codedx-kubernetes'
+$repoDirectory,$oldRepoDirectory | ForEach-Object {
+	if (Test-Path $_ -PathType Container) {
+		Remove-Item $_ -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
+	}
+}
+
+Invoke-GitClone $codedxGitRepo $codedxGitRepoBranch $repoDirectory
+if ($pauseAfterGitClone) {
+	Read-Host -Prompt 'git clone complete, press Enter to continue...' | Out-Null
+}
+
+### Enforce Upgrade Constraint(s)
+$codeDxChartPath = join-path $repoDirectory 'setup/core/charts/codedx'
+$minimumCodeDxChartVersion = new-object Management.Automation.SemanticVersion('1.74.0')
+if (Test-CodeDxChartUpgradeBlocked `
+	$codeDxChartPath `
+	$namespaceCodeDx `
+	$releaseNameCodeDx `
+	$minimumCodeDxChartVersion `
+	-skipDatabase:$skipDatabase) {
+
+	$minimumCodeDxK8sVersion = 'v2.19.0'
+	$gitRoot = [IO.Path]::GetFullPath((join-path $PSScriptRoot '../..'))
+
+	Write-Host @"
+`nYou cannot upgrade directly to this Code Dx version. You must first upgrade to codedx-kubernetes $minimumCodeDxK8sVersion by doing the following:
+
+1) cd $gitRoot`n
+2) git checkout $minimumCodeDxK8sVersion`n
+3) rerun your run-setup.ps1 to install version $minimumCodeDxK8sVersion`n
+4) cd $gitRoot`n
+5) git checkout master`n
+6) rerun your run-setup.ps1 to finish your upgrade`n
+"@
+	exit 1
+}
+
 ### Wait for Cluster Ready
 if (-not $useGitOps) {
 
@@ -662,20 +703,6 @@ if ($useTLS -and $useToolOrchestration) {
 
 	$codedxCaConfigMapName = '{0}-ca-cert' -f $codeDxChartFullName
 	New-CertificateConfigMapResource $namespaceToolOrchestration $codedxCaConfigMapName $clusterCertificateAuthorityCertPath -useGitOps:$useGitOps
-}
-
-### Fetch Code Dx Charts
-Write-Verbose 'Fetching Code Dx Helm charts...'
-$repoDirectory = './.repo'
-$oldRepoDirectory = './codedx-kubernetes'
-$repoDirectory,$oldRepoDirectory | ForEach-Object {
-	if (Test-Path $_ -PathType Container) {
-		Remove-Item $_ -Force -Confirm:$false -Recurse -ErrorAction SilentlyContinue
-	}
-}
-Invoke-GitClone $codedxGitRepo $codedxGitRepoBranch $repoDirectory
-if ($pauseAfterGitClone) {
-	Read-Host -Prompt 'git clone complete, press Enter to continue...' | Out-Null
 }
 
 Write-Verbose 'Adding Helm repository...'

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.5.0
+.VERSION 2.6.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -771,4 +771,55 @@ function New-BackupAnnotation([string] $backupType) {
 
 function Test-CodeDxDeployment([string] $namespace) {
 	Test-DeploymentLabel $namespace 'app' 'codedx'
+}
+
+function Get-CodeDxChartVersion([string] $namespace, [string] $releaseName) {
+
+	$history = Get-HelmReleaseHistory $namespace $releaseName
+	if ($null -eq $history) {
+		return $null
+	}
+
+	$chartVersionLabel = $history.chart
+	$chartVersion = $chartVersionLabel -replace 'codedx-',''
+
+	return new-object Management.Automation.SemanticVersion($chartVersion)
+}
+
+function Test-CodeDxChartUpgradeBlocked([string] $chartPath,
+	[string] $namespace,
+	[string] $releaseName,
+	[Management.Automation.SemanticVersion] $minimumRequiredVersion,
+	[switch] $skipDatabase) {
+
+	if (-not (Test-HelmRelease $namespace $releaseName)) {
+		Write-Verbose "Helm release $releaseName is not yet installed in namespace $namespace"
+		return $false
+	}
+	Write-Verbose "Checking whether '$chartPath' can be used to upgrade $releaseName in namespace $namespace..."
+
+	if ($skipDatabase) {
+		Write-Verbose 'Upgrade allowed when using an external database'
+		return $false
+	}
+
+	$currentCodeDxChartVersion = Get-CodeDxChartVersion $namespace $releaseName
+	if ($null -eq $currentCodeDxChartVersion) {
+		return $false
+	}
+
+	$nextCodeDxVersion = Get-HelmChartVersion $chartPath
+	$upgradeBlocked = $nextCodeDxVersion -gt $minimumRequiredVersion -and $currentCodeDxChartVersion -lt $minimumRequiredVersion
+
+	Write-Verbose "Versions:`nCurrent=$currentCodeDxChartVersion`nNext=$nextCodeDxVersion`nMinimum=$minimumRequiredVersion`nUpgrade blocked? $upgradeBlocked"
+	$upgradeBlocked
+}
+
+function Get-HelmChartVersion([string] $chartPath) {
+
+	$foundVersion = helm show chart $chartPath | Where-Object { $_ -match '^version' } | ForEach-Object { $_ -match 'version:\s(?<version>.+)' }
+	if (-not $foundVersion) {
+		return $null
+	}
+	return $matches.version
 }

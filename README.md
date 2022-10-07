@@ -20,7 +20,12 @@ You must run guided-setup.ps1 from a system with administrative access to your c
 - [keytool](https://adoptopenjdk.net/) - The keytool application is bundled with the Java 11 JRE.
   If your Code Dx deployment requires specifying a path to a cacerts file, use the cacerts file from a Java 11 JRE install.
 - [kubeseal](https://github.com/bitnami-labs/sealed-secrets/releases) - Required when using GitOps and Bitnami's Sealed Secrets.
->Note: On Windows, make sure that you can run PowerShell Core scripts by switching your [PowerShell Execution Policy](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies) to RemoteSigned (recommended) or Unrestricted. You must run the `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned` command from an elevated/administrator Command Prompt.
+
+>Note: Starting with the codedx-kubernetes release v2.12.0 (9/7/2022), the Code Dx Kubernetes deployment depends on and automatically downloads the [guided-setup](./setup/core/docs/deployment/module.md) PowerShell Gallery module.
+
+### Windows Prerequisites
+
+On Windows, make sure that you can run PowerShell Core scripts by switching your [PowerShell Execution Policy](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies) to RemoteSigned (recommended) or Unrestricted. You must run the `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned` command from an elevated/administrator Command Prompt.
 
 ## Upgrading to Kubernetes v1.22
 

@@ -2,7 +2,7 @@
 
 Here are the steps required to use Code Dx with an external database hosted with AWS RDS:
 
->Note: Code Dx currently requires [MariaDB version 10.3.x](https://mariadb.com/kb/en/release-notes-mariadb-103-series/).
+>Note: Code Dx currently requires [MariaDB version 10.6.x](https://mariadb.com/kb/en/release-notes-mariadb-106-series/).
 
 1) Your new MariaDB RDS database instance must use a configuration that's compatible with Code Dx. Follow the [Create a DB Parameter Group instructions](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithParamGroups.html#USER_WorkingWithParamGroups.Creating) to create a new DB Parameter Group named codedx-mariadb-recommendation. Then edit the parameters of your new group by using the [Modifying Parameters in a DB Parameter Group instructions](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithParamGroups.html#USER_WorkingWithParamGroups.Modifying) to set the following parameter values:
 

@@ -2,7 +2,7 @@
 
 Here are the steps required to use Code Dx with an external database hosted with Azure Database:
 
->Note: Code Dx currently requires [MariaDB version 10.3.x](https://mariadb.com/kb/en/release-notes-mariadb-103-series/).
+>Note: Code Dx currently requires [MariaDB version 10.6.x](https://mariadb.com/kb/en/release-notes-mariadb-106-series/).
 
 1) Your new MariaDB database instance must use a configuration that's compatible with Code Dx. After provisioning a new database instance, open `Server parameters` (under Settings), specify the following parameter values, and click Save:
 

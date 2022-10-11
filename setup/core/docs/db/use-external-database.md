@@ -2,7 +2,7 @@
 
 Here are the steps required to use Code Dx with an external database:
 
->Note: Code Dx currently requires [MariaDB version 10.3.x](https://mariadb.com/kb/en/release-notes-mariadb-103-series/).
+>Note: Code Dx currently requires [MariaDB version 10.6.x](https://mariadb.com/kb/en/release-notes-mariadb-106-series/).
 
 1) Create a database user for Code Dx. You can customize the following statement to create
    a Code Dx database user named codedx (remove 'REQUIRE SSL' when not using TLS).

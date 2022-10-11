@@ -1,6 +1,5 @@
 param (
 	[Parameter(Mandatory=$true)][string] $codeDxVersion,
-	[Parameter(Mandatory=$true)][string] $codeDxTomcatInitVersion,
 	[Parameter(Mandatory=$true)][string] $mariaDBVersion,
 	[Parameter(Mandatory=$true)][string] $toolOrchestrationVersion,
 	[Parameter(Mandatory=$true)][string] $workflowVersion,
@@ -23,7 +22,6 @@ Write-Verbose 'Testing whether update is required...'
 if (Test-CodeDxVersion $setupScriptPath `
 	$restoreDBPath `
 	$codeDxVersion `
-	$codeDxTomcatInitVersion `
 	$mariaDBVersion `
 	$toolOrchestrationVersion `
 	$workflowVersion `
@@ -31,7 +29,7 @@ if (Test-CodeDxVersion $setupScriptPath `
 	throw 'Neither the Code Dx nor Tool Orchestration charts require an update'
 }
 
-if (-not (Test-CodeDxChartVersion $setupScriptPath $codeDxVersion $codeDxTomcatInitVersion)) {
+if (-not (Test-CodeDxChartVersion $setupScriptPath $codeDxVersion)) {
 
 	Write-Verbose 'Updating Code Dx chart version...'
 	$codeDxChartDirectory = './setup/core/charts/codedx'
@@ -40,7 +38,7 @@ if (-not (Test-CodeDxChartVersion $setupScriptPath $codeDxVersion $codeDxTomcatI
 	Write-Verbose 'Updating Code Dx chart values...'
 	Set-ChartDockerImageValues "$codeDxChartDirectory/values.yaml" `
 		([Tuple`3[string,string,string]]::new('codedxTomcatImage',     'codedx/codedx-tomcat', $codeDxVersion),
-		 [Tuple`3[string,string,string]]::new('codedxTomcatInitImage', 'codedx/codedx-bash',   $codeDxTomcatInitVersion))
+		 [Tuple`3[string,string,string]]::new('codedxTomcatInitImage', 'codedx/codedx-tomcat', $codeDxVersion))
 }
 
 if (-not (Test-ToolOrchestrationChartVersion $setupScriptPath $codeDxVersion $toolOrchestrationVersion)) {
@@ -66,7 +64,7 @@ Set-ScriptDockerImageTags $setupScriptPath `
 	([Tuple`3[string,string,string]]::new('imageCodeDxTomcat',       'codedx/codedx-tomcat',              $codeDxVersion),
 	 [Tuple`3[string,string,string]]::new('imageCodeDxTools',        'codedx/codedx-tools',               $codeDxVersion),
 	 [Tuple`3[string,string,string]]::new('imageCodeDxToolsMono',    'codedx/codedx-toolsmono',           $codeDxVersion),
-	 [Tuple`3[string,string,string]]::new('imageCodeDxTomcatInit',   'codedx/codedx-bash',                $codeDxTomcatInitVersion),
+	 [Tuple`3[string,string,string]]::new('imageCodeDxTomcatInit',   'codedx/codedx-tomcat',              $codeDxVersion),
 	 [Tuple`3[string,string,string]]::new('imageMariaDB',            'codedx/codedx-mariadb',             $mariaDBVersion),
 	 [Tuple`3[string,string,string]]::new('imagePrepare',            'codedx/codedx-prepare',             $toolOrchestrationVersion),
 	 [Tuple`3[string,string,string]]::new('imageNewAnalysis',        'codedx/codedx-newanalysis',         $toolOrchestrationVersion),

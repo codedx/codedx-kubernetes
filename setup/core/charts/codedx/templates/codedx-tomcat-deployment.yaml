@@ -63,7 +63,7 @@ spec:
         name: "{{ include "codedx.name" . }}"
         readinessProbe:
           httpGet:
-            path: /codedx/login?local
+            path: /codedx/x/system-status/ready
             {{- if .Values.codedxTls.componentEnabled }}
             scheme: HTTPS
             port: 8443
@@ -74,14 +74,14 @@ spec:
           periodSeconds: 3
         livenessProbe:
           httpGet:
-            path: /codedx/login?local
+            path: /codedx/x/system-status/alive
             {{- if .Values.codedxTls.componentEnabled }}
             scheme: HTTPS
             port: 8443
             {{- else }}
             port: 8080
             {{- end }}
-          initialDelaySeconds: 5400
+          initialDelaySeconds: 900
           periodSeconds: 15
           timeoutSeconds: 10
         command: ["start.sh"]

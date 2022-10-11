@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.6.0
+.VERSION 2.7.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -64,7 +64,7 @@ param (
 	[string]                 $imageToolService        = 'codedx/codedx-tool-service:v1.17.0',
 	[string]                 $imagePreDelete          = 'codedx/codedx-cleanup:v1.17.0',
 
-	[string]                 $imageCodeDxTomcatInit   = 'codedx/codedx-bash:v1.3.0',
+	[string]                 $imageCodeDxTomcatInit   = 'codedx/codedx-tomcat:v2022.7.6',
 	[string]                 $imageMariaDB            = 'codedx/codedx-mariadb:v1.13.0',
 	[string]                 $imageMinio              = 'bitnami/minio:2021.4.6-debian-10-r11',
 	[string]                 $imageWorkflowController = 'codedx/codedx-workflow-controller:v2.16.0',

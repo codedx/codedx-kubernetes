@@ -82,7 +82,6 @@ function Get-ScriptDockerImageTags([string] $scriptPath) {
 function Test-CodeDxVersion([string] $setupScriptPath,
 	[string] $restoreDBScriptPath,
 	[string] $codeDxVersion,
-	[string] $codeDxTomcatInitVersion,
 	[string] $mariaDBVersion,
 	[string] $toolOrchestrationVersion,
 	[string] $workflowVersion,
@@ -90,7 +89,7 @@ function Test-CodeDxVersion([string] $setupScriptPath,
 
 	$tags = (Get-ScriptDockerImageTags $setupScriptPath) + (Get-ScriptDockerImageTags $restoreDBScriptPath)
 
-	(Test-CodeDxChartVersionTags            $tags $codeDxVersion $codeDxTomcatInitVersion)  -and 
+	(Test-CodeDxChartVersionTags            $tags $codeDxVersion)                           -and 
 	(Test-ToolOrchestrationChartVersionTags $tags $codeDxVersion $toolOrchestrationVersion) -and 
 	$tags['$imageMariaDB']            -eq $mariaDBVersion                                   -and 
 	$tags['$imageWorkflowController'] -eq $workflowVersion                                  -and 
@@ -99,13 +98,11 @@ function Test-CodeDxVersion([string] $setupScriptPath,
 }
 
 function Test-CodeDxChartVersion([string] $setupScriptPath,
-	[string] $codeDxVersion,
-	[string] $codeDxTomcatInitVersion) {
+	[string] $codeDxVersion) {
 
 	Test-CodeDxChartVersionTags `
 		(Get-ScriptDockerImageTags $setupScriptPath) `
-		$codeDxVersion `
-		$codeDxTomcatInitVersion
+		$codeDxVersion
 }
 
 function Test-ToolOrchestrationChartVersion([string] $setupScriptPath,
@@ -119,11 +116,10 @@ function Test-ToolOrchestrationChartVersion([string] $setupScriptPath,
 }
 
 function Test-CodeDxChartVersionTags($tags,
-	[string] $codeDxVersion,
-	[string] $codeDxTomcatInitVersion) {
+	[string] $codeDxVersion) {
 
 	$tags['$imageCodeDxTomcat']       -eq $codeDxVersion           -and 
-	$tags['$imageCodeDxTomcatInit']   -eq $codeDxTomcatInitVersion
+	$tags['$imageCodeDxTomcatInit']   -eq $codeDxVersion
 }
 
 function Test-ToolOrchestrationChartVersionTags($tags,

@@ -100,7 +100,6 @@ pipeline {
 								usernamePassword(credentialsId: 'codedx-build-github', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_TOKEN'),
 								string(credentialsId: 'codedxownername',            variable: 'GIT_OWNER'),
 								string(credentialsId: 'codedxreponame',             variable: 'GIT_CODEDX_REPO'),								
-								string(credentialsId: 'tomcatinitreponame',         variable: 'GIT_TOMCAT_INIT_REPO'),
 								string(credentialsId: 'mariadbreponame',            variable: 'GIT_MARIADB_REPO'),
 								string(credentialsId: 'toolorchestrationreponame',  variable: 'GIT_TOOL_ORCHESTRATION_REPO'),
 								string(credentialsId: 'workflowreponame',           variable: 'GIT_WORKFLOW_REPO'),
@@ -114,7 +113,7 @@ pipeline {
 									hasNextVersion = nextVersion != ''
 
 									currentVersions = []
-									[GIT_CODEDX_REPO,GIT_TOMCAT_INIT_REPO,GIT_MARIADB_REPO,GIT_TOOL_ORCHESTRATION_REPO,GIT_WORKFLOW_REPO,GIT_RESTOREDB_REPO].each { x ->
+									[GIT_CODEDX_REPO,GIT_MARIADB_REPO,GIT_TOOL_ORCHESTRATION_REPO,GIT_WORKFLOW_REPO,GIT_RESTOREDB_REPO].each { x ->
 
 										currentVersion = getLatestGitHubRelease(GIT_TOKEN, GIT_OWNER, x)
 										if (currentVersion == '') {
@@ -124,19 +123,18 @@ pipeline {
 									}
 
 									codeDxVersion             = currentVersions[0]
-									codeDxTomcatInitVersion   = currentVersions[1]
-									mariaDBVersion            = currentVersions[2]
-									toolOrchestrationVersion  = currentVersions[3]
-									workflowVersion           = currentVersions[4]
-									restoreDBVersion          = currentVersions[5]
+									mariaDBVersion            = currentVersions[1]
+									toolOrchestrationVersion  = currentVersions[2]
+									workflowVersion           = currentVersions[3]
+									restoreDBVersion          = currentVersions[4]
 
-									def isCurrentVersion = sh(returnStdout: true, script: "pwsh -command \"&{ . ./.version/common.ps1; Test-CodeDxVersion './setup/core/setup.ps1' './admin/restore-db.ps1' '$codeDxVersion' '$codeDxTomcatInitVersion' '$mariaDBVersion' '$toolOrchestrationVersion' '$workflowVersion' '$restoreDBVersion' }\"")
+									def isCurrentVersion = sh(returnStdout: true, script: "pwsh -command \"&{ . ./.version/common.ps1; Test-CodeDxVersion './setup/core/setup.ps1' './admin/restore-db.ps1' '$codeDxVersion' '$mariaDBVersion' '$toolOrchestrationVersion' '$workflowVersion' '$restoreDBVersion' }\"")
 
 									hasDockerChanges = !(isCurrentVersion.toBoolean())
 									println("Next version is '$nextVersion' (hasNextVersion='$hasNextVersion' hasDockerChanges='$hasDockerChanges')")
 
 									if (!hasNextVersion && !hasDockerChanges) {
-										error("unable to continue because the repository is up to date with the latest versions; codeDxVersion=$codeDxVersion; codeDxTomcatInitVersion=$codeDxTomcatInitVersion; mariaDBVersion=$mariaDBVersion; toolOrchestrationVersion=$toolOrchestrationVersion; workflowVersion=$workflowVersion; restoreDBVersion=$restoreDBVersion")
+										error("unable to continue because the repository is up to date with the latest versions; codeDxVersion=$codeDxVersion; mariaDBVersion=$mariaDBVersion; toolOrchestrationVersion=$toolOrchestrationVersion; workflowVersion=$workflowVersion; restoreDBVersion=$restoreDBVersion")
 									}
 								}
 							}
@@ -157,7 +155,7 @@ pipeline {
 								timeout(time: 15) {
 
 									// pipeline not triggered by SCM and input response should occur with minimal delay, so invoke input in this stage (leaving container running)
-									input message: "Continue with these versions? Code Dx: $codeDxVersion; Tomcat Init: $codeDxTomcatInitVersion; MariaDB: $mariaDBVersion; Tool Orchestration: $toolOrchestrationVersion; Workflow: $workflowVersion; RestoreDB: $restoreDBVersion"
+									input message: "Continue with these versions? Code Dx: $codeDxVersion; MariaDB: $mariaDBVersion; Tool Orchestration: $toolOrchestrationVersion; Workflow: $workflowVersion; RestoreDB: $restoreDBVersion"
 								}
 							} catch (err) {
 
@@ -186,9 +184,9 @@ pipeline {
 
 									// note: this optionally applies minor version update to chart(s)
 									// chart version(s) should be adjusted manually when hasNextVersion=true and hasDockerChanges=false
-									sh "pwsh ./.version/version.ps1 '$codeDxVersion' '$codeDxTomcatInitVersion' '$mariaDBVersion' '$toolOrchestrationVersion' '$workflowVersion' '$restoreDBVersion'"
+									sh "pwsh ./.version/version.ps1 '$codeDxVersion' '$mariaDBVersion' '$toolOrchestrationVersion' '$workflowVersion' '$restoreDBVersion'"
 									sh 'git add .'
-									sh "git commit -m 'feat: update to latest Docker image versions' -m 'Code Dx: $codeDxVersion' -m 'Tomcat Init: $codeDxTomcatInitVersion' -m 'MariaDB: $mariaDBVersion' -m 'Tool Orchestration: $toolOrchestrationVersion' -m 'Workflow: $workflowVersion' -m 'RestoreDB: $restoreDBVersion'"
+									sh "git commit -m 'feat: update to latest Docker image versions' -m 'Code Dx: $codeDxVersion' -m 'MariaDB: $mariaDBVersion' -m 'Tool Orchestration: $toolOrchestrationVersion' -m 'Workflow: $workflowVersion' -m 'RestoreDB: $restoreDBVersion'"
 								}
 							}
 

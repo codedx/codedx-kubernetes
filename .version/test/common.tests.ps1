@@ -31,7 +31,7 @@ Describe 'Get-ScriptDockerImageTags' {
 		$tags['$imageToolService']        | Should -BeExactly 'v1.0.1'
 		$tags['$imagePreDelete']          | Should -BeExactly 'v1.0.1'
 
-		$tags['$imageCodeDxTomcatInit']   | Should -BeExactly 'v1.0.2'
+		$tags['$imageCodeDxTomcatInit']   | Should -BeExactly 'v1.0.0'
 
 		$tags['$imageMariaDB']            | Should -BeExactly 'v1.0.3'
 
@@ -70,7 +70,7 @@ Describe 'Test-ToolOrchestrationChartVersion' {
 
 		. $mocks
 
-		$t = Test-CodeDxChartVersion `
+		$t = Test-ToolOrchestrationChartVersion `
 			'./setup/core/setup.ps1'           `
 			-codeDxVersion            'v2.0.0' `
 			-toolOrchestrationVersion 'v1.0.1'
@@ -84,7 +84,7 @@ Describe 'Test-ToolOrchestrationChartVersion' {
 
 		. $mocks
 
-		$t = Test-CodeDxChartVersion `
+		$t = Test-ToolOrchestrationChartVersion `
 			'./setup/core/setup.ps1'           `
 			-codeDxVersion            'v1.0.0' `
 			-toolOrchestrationVersion 'v2.0.1'
@@ -109,8 +109,7 @@ Describe 'Test-CodeDxChartVersion' {
 
 		$t = Test-CodeDxChartVersion `
 			'./setup/core/setup.ps1'           `
-			-codeDxVersion            'v1.0.0' `
-			-codeDxTomcatInitVersion  'v1.0.2'
+			-codeDxVersion            'v1.0.0'
 
 		Assert-MockCalled -CommandName 'Get-Content' -Exactly 1
 
@@ -123,22 +122,7 @@ Describe 'Test-CodeDxChartVersion' {
 
 		$t = Test-CodeDxChartVersion `
 			'./setup/core/setup.ps1'           `
-			-codeDxVersion            'v2.0.0' `
-			-codeDxTomcatInitVersion  'v1.0.2'
-
-		Assert-MockCalled -CommandName 'Get-Content' -Exactly 1
-
-		$t | Should -BeFalse
-	}
-
-	It 'should not match current Tomcat init version' {
-
-		. $mocks
-
-		$t = Test-CodeDxChartVersion `
-			'./setup/core/setup.ps1'           `
-			-codeDxVersion            'v1.0.0' `
-			-codeDxTomcatInitVersion  'v2.0.2'
+			-codeDxVersion            'v2.0.0'
 
 		Assert-MockCalled -CommandName 'Get-Content' -Exactly 1
 
@@ -162,7 +146,6 @@ Describe 'Test-CodeDxVersion' {
 			'./setup/core/setup.ps1'           `
 			'./admin/restore-db.ps1'           `
 			-codeDxVersion            'v1.0.0' `
-			-codeDxTomcatInitVersion  'v1.0.2' `
 			-mariaDBVersion           'v1.0.3' `
 			-toolOrchestrationVersion 'v1.0.1' `
 			-workflowVersion          'v1.0.4' `
@@ -181,26 +164,6 @@ Describe 'Test-CodeDxVersion' {
 			'./setup/core/setup.ps1'           `
 			'./admin/restore-db.ps1'           `
 			-codeDxVersion            'v2.0.0' `
-			-codeDxTomcatInitVersion  'v1.0.2' `
-			-mariaDBVersion           'v1.0.3' `
-			-toolOrchestrationVersion 'v1.0.1' `
-			-workflowVersion          'v1.0.4' `
-			-restoreDBVersion         'v1.0.5'
-
-		Assert-MockCalled -CommandName 'Get-Content' -Exactly 2
-
-		$t | Should -BeFalse
-	}
-
-	It 'should not match current Tomcat init version' {
-
-		. $mocks
-
-		$t = Test-CodeDxVersion `
-			'./setup/core/setup.ps1'           `
-			'./admin/restore-db.ps1'           `
-			-codeDxVersion            'v1.0.0' `
-			-codeDxTomcatInitVersion  'v2.0.2' `
 			-mariaDBVersion           'v1.0.3' `
 			-toolOrchestrationVersion 'v1.0.1' `
 			-workflowVersion          'v1.0.4' `
@@ -219,7 +182,6 @@ Describe 'Test-CodeDxVersion' {
 			'./setup/core/setup.ps1'           `
 			'./admin/restore-db.ps1'           `
 			-codeDxVersion            'v1.0.0' `
-			-codeDxTomcatInitVersion  'v1.0.2' `
 			-mariaDBVersion           'v2.0.3' `
 			-toolOrchestrationVersion 'v1.0.1' `
 			-workflowVersion          'v1.0.4' `
@@ -238,7 +200,6 @@ Describe 'Test-CodeDxVersion' {
 			'./setup/core/setup.ps1'           `
 			'./admin/restore-db.ps1'           `
 			-codeDxVersion            'v1.0.0' `
-			-codeDxTomcatInitVersion  'v1.0.2' `
 			-mariaDBVersion           'v1.0.3' `
 			-toolOrchestrationVersion 'v2.0.1' `
 			-workflowVersion          'v1.0.4' `
@@ -257,7 +218,6 @@ Describe 'Test-CodeDxVersion' {
 			'./setup/core/setup.ps1'           `
 			'./admin/restore-db.ps1'           `
 			-codeDxVersion            'v1.0.0' `
-			-codeDxTomcatInitVersion  'v1.0.2' `
 			-mariaDBVersion           'v1.0.3' `
 			-toolOrchestrationVersion 'v1.0.1' `
 			-workflowVersion          'v2.0.4' `
@@ -276,7 +236,6 @@ Describe 'Test-CodeDxVersion' {
 			'./setup/core/setup.ps1'           `
 			'./admin/restore-db.ps1'           `
 			-codeDxVersion            'v1.0.0' `
-			-codeDxTomcatInitVersion  'v1.0.2' `
 			-mariaDBVersion           'v1.0.3' `
 			-toolOrchestrationVersion 'v1.0.1' `
 			-workflowVersion          'v1.0.4' `
@@ -352,14 +311,14 @@ Describe 'Set-ChartDockerImageValues' {
 		$valuesFile = './setup/core/charts/codedx/values.yaml'
 		Set-ChartDockerImageValues -valuesPath $valuesFile `
 			([Tuple`3[string,string,string]]::new('codedxTomcatImage',     'codedx/codedx-tomcat', '2.0.0'),
-			 [Tuple`3[string,string,string]]::new('codedxTomcatInitImage', 'codedx/codedx-bash',   '2.0.2'))
+			 [Tuple`3[string,string,string]]::new('codedxTomcatInitImage', 'codedx/codedx-tomcat', '2.0.0'))
 		
 		Assert-MockCalled -CommandName 'Get-Content' -Exactly 1
 		Assert-MockCalled -CommandName 'Set-Content' -Exactly 1
 
 		$data = $fileContent[$valuesFile]
 		$data -match 'codedxTomcatImage:\s''codedx/codedx-tomcat:2\.0\.0''' | Should -BeTrue
-		$data -match 'codedxTomcatInitImage:\s''codedx/codedx-bash:2\.0\.2''' | Should -BeTrue
+		$data -match 'codedxTomcatInitImage:\s''codedx/codedx-tomcat:2\.0\.0''' | Should -BeTrue
 	}
 
 	It 'should set values (Code Dx Tool Orchestration)' {
@@ -410,7 +369,7 @@ Describe 'Set-ScriptDockerImageTags' {
 			([Tuple`3[string,string,string]]::new('imageCodeDxTomcat',       'codedx/codedx-tomcat',              'v2.0.0'),
 			 [Tuple`3[string,string,string]]::new('imageCodeDxTools',        'codedx/codedx-tools',               'v2.0.0'),
 			 [Tuple`3[string,string,string]]::new('imageCodeDxToolsMono',    'codedx/codedx-toolsmono',           'v2.0.0'),
-			 [Tuple`3[string,string,string]]::new('imageCodeDxTomcatInit',   'codedx/codedx-bash',                'v2.0.2'),
+			 [Tuple`3[string,string,string]]::new('imageCodeDxTomcatInit',   'codedx/codedx-tomcat',              'v2.0.0'),
 			 [Tuple`3[string,string,string]]::new('imageMariaDB',            'codedx/codedx-mariadb',             'v2.0.3'),
 			 [Tuple`3[string,string,string]]::new('imagePrepare',            'codedx/codedx-prepare',             'v2.0.1'),
 			 [Tuple`3[string,string,string]]::new('imageNewAnalysis',        'codedx/codedx-newanalysis',         'v2.0.1'),
@@ -428,7 +387,7 @@ Describe 'Set-ScriptDockerImageTags' {
 		$data -match '\$imageCodeDxTomcat\s+=\s+''codedx/codedx-tomcat:v2\.0\.0'',$' | Should -BeTrue
 		$data -match '\$imageCodeDxTools\s+=\s+''codedx/codedx-tools:v2\.0\.0'',$' | Should -BeTrue
 		$data -match '\$imageCodeDxToolsMono\s+=\s+''codedx/codedx-toolsmono:v2\.0\.0'',$' | Should -BeTrue
-		$data -match '\$imageCodeDxTomcatInit\s+=\s+''codedx/codedx-bash:v2\.0\.2'',$' | Should -BeTrue
+		$data -match '\$imageCodeDxTomcatInit\s+=\s+''codedx/codedx-tomcat:v2\.0\.0'',$' | Should -BeTrue
 		$data -match '\$imageMariaDB\s+=\s+''codedx/codedx-mariadb:v2\.0\.3'',$' | Should -BeTrue
 		$data -match '\$imagePrepare\s+=\s+''codedx/codedx-prepare:v2\.0\.1'',$' | Should -BeTrue
 		$data -match '\$imageNewAnalysis\s+=\s+''codedx/codedx-newanalysis:v2\.0\.1'',$' | Should -BeTrue

@@ -66,5 +66,6 @@ Terminal 3 (Master DB):
 
 Terminal 4:
 
-32.	exit # terminal
+32.	kubectl -n cdx-app scale --replicas=1 deployment/codedx
+33.	exit # terminal
 

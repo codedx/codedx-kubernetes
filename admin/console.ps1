@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.2.0
+.VERSION 1.3.0
 .GUID 9b147f81-cb5d-4f13-830c-f0eb653520a7
 .AUTHOR Code Dx
 #>
@@ -81,6 +81,18 @@ function Get-KubectlContexts([switch] $nameOnly) {
 	$contexts
 }
 
+function Test-IsCodeDxAdminKey([string] $codedxBaseUrl, [bool] $codedxSkipCertificateCheck, [string] $codedxAdminApiKey) {
+
+	try {
+		Invoke-RestMethod -SkipCertificateCheck:$codedxSkipCertificateCheck -Headers @{"API-Key"=$codedxAdminApiKey} -Uri "$codedxBaseUrl/api/admin/users" | Out-Null
+		return $true
+	} catch {
+		return $false
+	}
+}
+
+$hasAdminKey = $codedxAdminApiKey -ne '' -and $codedxBaseUrl -ne '' -and (Test-IsCodeDxAdminKey $codedxBaseUrl $codedxSkipCertificateCheck $codedxAdminApiKey)
+
 $choices = @(
 
 	@{id="A1"; name='Show All Workflows';
@@ -148,9 +160,12 @@ $choices = @(
 
 	@{id="C4"; name='Get Code Dx Projects';
 		action={
-			(Invoke-RestMethod -SkipCertificateCheck:$codedxSkipCertificateCheck -Headers @{"API-Key"=$codedxAdminApiKey} -Uri "$codedxBaseUrl/api/projects").projects
+			$projects = Invoke-RestMethod -SkipCertificateCheck:$codedxSkipCertificateCheck -Headers @{"API-Key"=$codedxAdminApiKey} -Uri "$codedxBaseUrl/api/projects"
+			$projects.projects | ForEach-Object {
+				Write-Host "$($_.name) ($($_.id))"
+			}
 		};
-		valid = {$codedxAdminApiKey -ne '' -and $codedxBaseUrl -ne ''}
+		valid = {$hasAdminKey}
 	}
 
 	@{id="D1"; name='Delete *all* Code Dx Projects';
@@ -163,7 +178,7 @@ $choices = @(
 				}
 			}
 		};
-		valid = {$codedxAdminApiKey -ne '' -and $codedxBaseUrl -ne ''}
+		valid = {$hasAdminKey}
 	}
 
 	@{id="D2"; name='Delete Code Dx Deployment';

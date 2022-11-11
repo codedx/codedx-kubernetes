@@ -1,0 +1,78 @@
+apiVersion: v1
+entries:
+  argo:
+  - apiVersion: v2
+    appVersion: v2.12.2
+    created: "2022-11-11T17:13:14.496222088+01:00"
+    dependencies:
+    - condition: minio.install
+      name: minio
+      repository: https://kubernetes-charts.storage.googleapis.com/
+      version: 5.0.6
+    description: A Helm chart for Argo Workflows
+    digest: bcbad6b0606705d5158ec458a8449be3a49da227cb58caec5aee012ea12e67c1
+    home: https://github.com/argoproj/argo-helm
+    icon: https://raw.githubusercontent.com/argoproj/argo/master/docs/assets/argo.png
+    maintainers:
+    - name: alexec
+    - name: alexmt
+    - name: jessesuen
+    - name: benjaminws
+    name: argo
+    urls:
+    - charts/argo-0.14.2.tgz
+    version: 0.14.2
+  codedx-tool-orchestration:
+  - apiVersion: v2
+    appVersion: 1.17.0
+    created: "2022-11-11T17:13:14.493739365+01:00"
+    dependencies:
+    - name: argo
+      repository: https://codedx.github.io/codedx-kubernetes
+      version: 0.14.2
+    - name: minio
+      repository: https://codedx.github.io/codedx-kubernetes
+      version: 3.1.8
+    description: A Helm chart for Code Dx Tool Orchestration
+    digest: 03bbb710ce255875d27056ff9b12939dea23ce9474d1d36c50daeb8a590f00dc
+    home: https://github.com/codedx/codedx-kubernetes
+    icon: https://codedx.com/wp-content/uploads/2017/03/CodeDx-logo.png
+    keywords:
+    - codedx
+    - tool
+    - orchestration
+    maintainers:
+    - email: support@codedx.com
+      name: tylercamp
+    - email: support@codedx.com
+      name: ssalas
+    name: codedx-tool-orchestration
+    urls:
+    - codedx-tool-orchestration-1.65.0.tgz
+    version: 1.65.0
+  minio:
+  - apiVersion: v1
+    appVersion: 2020.3.25
+    created: "2022-11-11T17:13:14.497709656+01:00"
+    description: MinIO is an object storage server, compatible with Amazon S3 cloud
+      storage service, mainly used for storing unstructured data (such as photos,
+      videos, log files, etc.)
+    digest: b6ce3ed4c555beb4796639cc3b7a45755b96c16d6a5be2e0f9132305d4034e06
+    home: https://min.io
+    icon: https://codedx.com/wp-content/uploads/2017/03/CodeDx-logo.png
+    keywords:
+    - minio
+    - storage
+    - object-storage
+    - s3
+    - cluster
+    maintainers:
+    - email: support@codedx.com
+      name: CodeDx
+    name: minio
+    sources:
+    - https://github.com/codedx/charts
+    urls:
+    - charts/minio-3.1.8.tgz
+    version: 3.1.8
+generated: "2022-11-11T17:13:14.489748938+01:00"

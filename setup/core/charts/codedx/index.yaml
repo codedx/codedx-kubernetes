@@ -1,9 +1,41 @@
 apiVersion: v1
 entries:
+  codedx:
+  - apiVersion: v2
+    appVersion: 2022.10.2
+    created: "2022-11-11T17:18:20.367712292+01:00"
+    dependencies:
+    - condition: mariadb.enabled
+      name: mariadb
+      repository: https://codedx.github.io/codedx-kubernetes
+      version: 7.3.20
+    description: A Helm chart for Code Dx
+    digest: b2150b17a3c024e5905c2d0fb4e29834925d2554e7f15cc3ca215410bacfb24e
+    home: https://github.com/codedx/codedx-kubernetes
+    icon: https://codedx.com/wp-content/uploads/2017/03/CodeDx-logo.png
+    keywords:
+    - codedx
+    - security
+    - sast
+    - scan
+    - analysis
+    maintainers:
+    - email: support@codedx.com
+      name: tylercamp
+    - email: support@codedx.com
+      name: ssalas
+    name: codedx
+    sources:
+    - https://hub.docker.com/r/codedx/codedx-tomcat
+    - https://hub.docker.com/_/tomcat/
+    - https://hub.docker.com/r/bitnami/mariadb
+    urls:
+    - codedx-1.77.0.tgz
+    version: 1.77.0
   mariadb:
   - apiVersion: v1
     appVersion: 10.3.25
-    created: "2022-11-11T17:12:45.054492199+01:00"
+    created: "2022-11-11T17:18:20.368880619+01:00"
     description: Fast, reliable, scalable, and easy to use open-source relational
       database system. MariaDB Server is intended for mission-critical, heavy-load
       production systems as well as for embedding into mass-deployed software. Highly
@@ -27,4 +59,4 @@ entries:
     urls:
     - charts/mariadb-7.3.20.tgz
     version: 7.3.20
-generated: "2022-11-11T17:12:45.053026958+01:00"
+generated: "2022-11-11T17:18:20.365391644+01:00"

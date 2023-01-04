@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.2.0
+.VERSION 1.3.0
 .GUID 1830f430-23af-46c2-b73c-8b936957b671
 .AUTHOR Code Dx
 #>
@@ -26,6 +26,8 @@ $ErrorActionPreference = 'Stop'
 $VerbosePreference = 'Continue'
 
 Set-PSDebug -Strict
+
+$global:PSNativeCommandArgumentPassing='Legacy'
 
 '../.install-guided-setup-module.ps1','../setup/core/common/mariadb.ps1','../setup/core/common/codedx.ps1' | ForEach-Object {
 	$path = join-path $PSScriptRoot $_

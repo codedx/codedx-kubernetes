@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.1.0
+.VERSION 1.2.0
 .GUID 538418ba-21ee-4221-ad23-a3b7e26efcab
 .AUTHOR Code Dx
 #>
@@ -18,6 +18,8 @@ param (
 
 $ErrorActionPreference = 'Stop'
 Set-PSDebug -Strict
+
+$global:PSNativeCommandArgumentPassing='Legacy'
 
 $VerbosePreference = 'Continue'
 

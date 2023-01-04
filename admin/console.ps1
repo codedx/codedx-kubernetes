@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.3.0
+.VERSION 1.4.0
 .GUID 9b147f81-cb5d-4f13-830c-f0eb653520a7
 .AUTHOR Code Dx
 #>
@@ -23,6 +23,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Set-PSDebug -Strict
+
+$global:PSNativeCommandArgumentPassing='Legacy'
 
 '../setup/core/common/codedx.ps1' | ForEach-Object {
 	$path = join-path $PSScriptRoot $_

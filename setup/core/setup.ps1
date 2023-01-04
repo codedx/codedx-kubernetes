@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.7.0
+.VERSION 2.8.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -197,6 +197,9 @@ $ErrorActionPreference = 'Stop'
 $VerbosePreference = 'Continue'
 
 Set-PSDebug -Strict
+
+# Use "Legacy" argument passing to avoid errors from conditional empty string arguments
+$global:PSNativeCommandArgumentPassing='Legacy'
 
 '../../.install-guided-setup-module.ps1','./common/codedx.ps1','./common/prereqs.ps1','./common/mariadb.ps1','./common/velero.ps1' | ForEach-Object {
 	$path = join-path $PSScriptRoot $_

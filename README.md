@@ -67,6 +67,10 @@ git clone https://github.com/codedx/codedx-kubernetes.git
 
 ## Run Guided Setup
 
+The guided setup script checks whether your system meets the prerequisites before gathering configuration data with a [series of steps](#guided-setup-steps) to help you specify the setup.ps1 parameters necessary to deploy Code Dx in your Kubernetes environment. 
+
+>Note: You will not have to visit every Guided Setup step because screens are presented based on your selected deployment options. For example, opting to use Code Dx with an external database will show steps that request database configuration details and include links to [external database instance provisioning instructions](./setup/core/docs/db).
+
 To run the guided setup script after cloning the codedx-kubernetes repository, change directory to codedx-kubernetes, and use pwsh to run guided-setup.ps1:
 
 ```
@@ -75,8 +79,6 @@ pwsh ./guided-setup.ps1
 ```
 
 >Note: If running `pwsh ./guided-setup.ps1` generates errors mentioning unexpected tokens, run `pwsh ./guided-setup-check-prereqs.ps1` to test whether your system meets the PowerShell Core v7 prerequisite.
-
-The guided setup script checks whether your system meets the prerequisites before gathering configuration data with a [series of steps](#guided-setup-steps) to help you specify the setup.ps1 parameters necessary to deploy Code Dx in your Kubernetes environment.
 
 Finish the guided setup by either running the generated setup command or saving your setup command to one or more files. Saving your setup command is recommended and something that's required if you want to configure authentication with [LDAP](./setup/core/docs/auth/use-ldap.md) or [specify Code Dx property values](./setup/core/docs/config/codedx-props.md) in the [Code Dx Properties File](https://community.synopsys.com/s/document-item?bundleId=codedx&topicId=install_guide%2FCodeDxConfiguration%2Fconfig-files.html&_LANG=enus).
 

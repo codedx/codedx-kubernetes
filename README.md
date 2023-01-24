@@ -130,6 +130,7 @@ Follow the steps below to uninstall Code Dx from your cluster, replacing `cdx-ap
 
 1. Delete the Code Dx Helm release: helm -n cdx-app delete codedx
 2. Delete the Code Dx Tool Orchestration release, if it exists: helm -n cdx-svc delete codedx-tool-orchestration
+>Note: You can bypass the workflow clean up process by adding the --no-hooks parameter: helm -n cdx-svc delete --no-hooks codedx-tool-orchestration
 3. Delete the Code Dx k8s namespace: kubectl delete ns cdx-app
 4. Delete the Code Dx Tool Orchestration k8s namespace, if it exists: kubectl delete ns cdx-svc
 5. Delete any remaining Persistent Volumes (PV) and any related PV data

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.2.0
+.VERSION 1.3.0
 .GUID 538418ba-21ee-4221-ad23-a3b7e26efcab
 .AUTHOR Code Dx
 #>
@@ -11,9 +11,11 @@ This script runs a test using a pod and PVC.
 
 param (
 	[string] $namespace = 'default',
-    [string] $podName = 'code-dx-test-pod',
-    [string] $pvcName = 'code-dx-test-pvc',
-	[Parameter(Mandatory=$true)][string] $storageClassName
+  [string] $podName = 'code-dx-test-pod',
+  [string] $pvcName = 'code-dx-test-pvc',
+  [Parameter(Mandatory=$true)][string] $storageClassName,
+  [Parameter(Mandatory=$true)][int]    $securityContextRunAsUserID = 0,
+  [Parameter(Mandatory=$true)][int]    $securityContextFsGroupID = 0
 )
 
 $ErrorActionPreference = 'Stop'
@@ -51,37 +53,50 @@ metadata:
   name: {1}
   namespace: {0}
 spec:
+  securityContext:
+    runAsUser: {4}
+    fsGroup: {5}
   containers:
     - image: busybox
       name: busybox
-      command: ["ls","-la","/var/cdx"]
+      command: ["sh","-c","echo 'test' > /data/test; while [ -f /data/test ]; do sleep 1; done;"]
       volumeMounts:
-      - mountPath: "/var/cdx"
+      - mountPath: "/data"
         name: code-dx-test-vol
   volumes:
     - name: code-dx-test-vol
       persistentVolumeClaim:
         claimName: {3}
-'@ -f $namespace, $podName, $storageClassName, $pvcName
+'@ -f $namespace, $podName, $storageClassName, $pvcName, $securityContextRunAsUserID, $securityContextFsGroupID
 
-Write-Host "Testing for pod $podName in namespace $namespace."
+Write-Host "Testing for pod $podName in namespace $namespace..."
 if (Test-Pod $namespace $podName) {
-    Write-Host "Removing pod $podName in namespace $namespace."
+    Write-Host "Removing pod $podName in namespace $namespace..."
     Remove-Pod $namespace $podName
 }
 
 $file = [io.path]::GetTempFileName()
 $yaml | out-file $file -Encoding ascii
 
-Write-Host "Creating pod $podName in namespace $namespace."
+Write-Host "Creating pod $podName in namespace $namespace..."
 New-NamespacedResource $namespace 'pod' $podName $file
 Remove-Item -path $file
 
-Wait-RunningPod "Waiting for pod $podName in namespace $namespace." 300 $namespace $podName
+Wait-RunningPod "Waiting for pod $podName in namespace $namespace..." 300 $namespace $podName
 
-Write-Host "Removing pod $podName in namespace $namespace."
+$testFile = '/data/test'
+
+Write-Host "Reading $testFile..."
+$output = kubectl -n $namespace exec $podName -- cat $testFile
+$result = $LASTEXITCODE -eq 0 -and $output -eq 'test' ? 'Done' : 'Failed'
+Write-Host "Read: $output"
+
+Write-Host "Removing $testFile..."
+kubectl -n $namespace exec $podName -- rm $testFile
+
+Write-Host "Removing pod $podName in namespace $namespace..."
 Remove-Pod $namespace $podName
-Write-Host "Removing pvc $pvcName in namespace $namespace."
+Write-Host "Removing pvc $pvcName in namespace $namespace..."
 Remove-KubernetesPvc $namespace $pvcName
 
-Write-Host 'Done'
+Write-Host $result

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.3.0
+.VERSION 1.4.0
 .GUID 538418ba-21ee-4221-ad23-a3b7e26efcab
 .AUTHOR Code Dx
 #>
@@ -71,8 +71,8 @@ spec:
 
 Write-Host "Testing for pod $podName in namespace $namespace..."
 if (Test-Pod $namespace $podName) {
-    Write-Host "Removing pod $podName in namespace $namespace..."
-    Remove-Pod $namespace $podName
+	Write-Host "Removing pod $podName in namespace $namespace..."
+	Remove-Pod $namespace $podName
 }
 
 $file = [io.path]::GetTempFileName()
@@ -85,18 +85,18 @@ Remove-Item -path $file
 Wait-RunningPod "Waiting for pod $podName in namespace $namespace..." 300 $namespace $podName
 
 $testFile = '/data/test'
+$success = $true
+@('cat', $testFile),@('chmod', 700, $testFile),@('rm', $testFile) | ForEach-Object {
 
-Write-Host "Reading $testFile..."
-$output = kubectl -n $namespace exec $podName -- cat $testFile
-$result = $LASTEXITCODE -eq 0 -and $output -eq 'test' ? 'Done' : 'Failed'
-Write-Host "Read: $output"
-
-Write-Host "Removing $testFile..."
-kubectl -n $namespace exec $podName -- rm $testFile
+	$cmd = $_
+	Write-Host "Test -> $([string]::join(' ', $cmd))"
+	kubectl -n $namespace exec $podName -- @cmd
+	$success = $success -and $LASTEXITCODE -eq 0
+}
 
 Write-Host "Removing pod $podName in namespace $namespace..."
 Remove-Pod $namespace $podName
 Write-Host "Removing pvc $pvcName in namespace $namespace..."
 Remove-KubernetesPvc $namespace $pvcName
 
-Write-Host $result
+Write-Host ($success ? 'Done' : 'Failed')

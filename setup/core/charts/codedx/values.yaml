@@ -3,12 +3,12 @@
 # codedxTomcatImage specifies the image to use for the Code Dx deployment.
 # ref: https://hub.docker.com/r/codedx/codedx-tomcat/tags
 #
-codedxTomcatImage: 'codedx/codedx-tomcat:v2023.1.2'
+codedxTomcatImage: 'codedx/codedx-tomcat:v2023.1.3'
 
 # codedxTomcatInitImage specifies the image to use for the Code Dx deployment initialization.
 # ref: https://hub.docker.com/r/codedx/codedx-tomcat/tags
 #
-codedxTomcatInitImage: 'codedx/codedx-tomcat:v2023.1.2'
+codedxTomcatInitImage: 'codedx/codedx-tomcat:v2023.1.3'
 
 # codedxTomcatImagePullPolicy specifies the policy to use when pulling the Code Dx Tomcat image.
 # ref: https://kubernetes.io/docs/concepts/configuration/overview/#container-images

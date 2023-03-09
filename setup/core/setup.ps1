@@ -67,7 +67,7 @@ param (
 	[string]                 $imageCodeDxTomcatInit   = 'codedx/codedx-tomcat:v2023.1.3',
 	[string]                 $imageMariaDB            = 'codedx/codedx-mariadb:v1.19.0',
 	[string]                 $imageMinio              = 'bitnami/minio:2021.4.6-debian-10-r11',
-	[string]                 $imageWorkflowController = 'codedx/codedx-workflow-controller:v2.16.0',
+	[string]                 $imageWorkflowController = 'codedx/codedx-workflow-controller:v2.17.0',
 	[string]                 $imageWorkflowExecutor   = 'codedx/codedx-argoexec:v2.17.0',
 
 	[int]                    $toolServiceReplicas = 3,

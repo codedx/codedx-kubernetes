@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.8.0
+.VERSION 2.11.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -57,18 +57,18 @@ param (
 	[string]                 $imageCodeDxTools        = 'codedx/codedx-tools:v2023.1.3',
 	[string]                 $imageCodeDxToolsMono    = 'codedx/codedx-toolsmono:v2023.1.3',
 
-	[string]                 $imagePrepare            = 'codedx/codedx-prepare:v1.20.0',
-	[string]                 $imageNewAnalysis        = 'codedx/codedx-newanalysis:v1.20.0',
-	[string]                 $imageSendResults        = 'codedx/codedx-results:v1.20.0',
-	[string]                 $imageSendErrorResults   = 'codedx/codedx-error-results:v1.20.0',
-	[string]                 $imageToolService        = 'codedx/codedx-tool-service:v1.20.0',
-	[string]                 $imagePreDelete          = 'codedx/codedx-cleanup:v1.20.0',
+	[string]                 $imagePrepare            = 'codedx/codedx-prepare:v1.21.0',
+	[string]                 $imageNewAnalysis        = 'codedx/codedx-newanalysis:v1.21.0',
+	[string]                 $imageSendResults        = 'codedx/codedx-results:v1.21.0',
+	[string]                 $imageSendErrorResults   = 'codedx/codedx-error-results:v1.21.0',
+	[string]                 $imageToolService        = 'codedx/codedx-tool-service:v1.21.0',
+	[string]                 $imagePreDelete          = 'codedx/codedx-cleanup:v1.21.0',
 
 	[string]                 $imageCodeDxTomcatInit   = 'codedx/codedx-tomcat:v2023.1.3',
 	[string]                 $imageMariaDB            = 'codedx/codedx-mariadb:v1.19.0',
 	[string]                 $imageMinio              = 'bitnami/minio:2021.4.6-debian-10-r11',
 	[string]                 $imageWorkflowController = 'codedx/codedx-workflow-controller:v2.16.0',
-	[string]                 $imageWorkflowExecutor   = 'codedx/codedx-argoexec:v2.16.0',
+	[string]                 $imageWorkflowExecutor   = 'codedx/codedx-argoexec:v2.17.0',
 
 	[int]                    $toolServiceReplicas = 3,
 
@@ -122,6 +122,9 @@ param (
 	[string]                 $redirectDockerHubReferencesTo,
 
 	[string]                 $codedxHelmRepo = 'https://codedx.github.io/codedx-kubernetes',
+
+	[string]                 $helmTimeoutCodeDx = '5m0s',
+	[string]                 $helmTimeoutToolOrchestration = '15m0s',
 	
 	[string]                 $codedxGitRepo = 'https://github.com/codedx/codedx-kubernetes.git',
 	[string]                 $codedxGitRepoBranch = 'charts-2.27.0',
@@ -139,6 +142,14 @@ param (
 	[string]                 $externalDatabasePwd,
 	[string]                 $externalDatabaseServerCert,
 	[switch]                 $externalDatabaseSkipTls,
+
+	[switch]                 $skipMinIO,
+	[string]                 $externalWorkflowStorageEndpoint,
+	[switch]                 $externalWorkflowStorageEndpointSecure,
+	[string]                 $externalWorkflowStorageUsername = 'admin',
+	[string]                 $externalWorkflowStoragePwd,
+	[string]                 $externalWorkflowStorageBucketName = 'code-dx-storage',
+	[string]                 $externalWorkflowStorageCertChainPath,
 
 	[switch]                 $skipToolOrchestration,
 
@@ -288,16 +299,19 @@ if ($useTLS -and $clusterCertificateAuthorityCertPath -eq '') {
 	$clusterCertificateAuthorityCertPath = Read-Host -Prompt 'Enter path to cluster CA certificate' 
 }
 
-if ($useToolOrchestration -and $minioAdminUsername -eq '') { 
-	$minioAdminUsername = Read-HostSecureText 'Enter a username for the MinIO admin account' 5 
-}
+if (-not $skipMinIO) {
 
-if ($useToolOrchestration -and $minioAdminPwd -eq '') { 
-	if (-not $useGitOps) {
-		$minioAdminPwd = Get-MinioPasswordFromPd $namespaceToolOrchestration $releaseNameToolOrchestration
+	if ($useToolOrchestration -and $minioAdminUsername -eq '') { 
+		$minioAdminUsername = Read-HostSecureText 'Enter a username for the MinIO admin account' 5 
 	}
-	if ('' -eq $minioAdminPwd) {
-		$minioAdminPwd = Read-HostSecureText 'Enter a password for the MinIO admin account' 8 
+
+	if ($useToolOrchestration -and $minioAdminPwd -eq '') { 
+		if (-not $useGitOps) {
+			$minioAdminPwd = Get-MinioPasswordFromPd $namespaceToolOrchestration $releaseNameToolOrchestration
+		}
+		if ('' -eq $minioAdminPwd) {
+			$minioAdminPwd = Read-HostSecureText 'Enter a password for the MinIO admin account' 8 
+		}
 	}
 }
 
@@ -679,22 +693,26 @@ if ($useTLS) {
 $tlsToolServiceCertSecretName = ''
 $codedxCaConfigMapName = ''
 $tlsMinioCertSecretName = ''
-$minioCertConfigMapName = ''
+$workflowStorageCertConfigMapName = ''
+$workflowStorageCertConfigMapKeyName = 'workflow-storage.pem'
 $toolOrchestrationFullName = Get-CodeDxToolOrchestrationChartFullName $releaseNameToolOrchestration
 if ($useTLS -and $useToolOrchestration) {
 
-	$minioFullName = '{0}-minio' -f $releaseNameToolOrchestration
-	
-	# NOTE: New-Certificate uses kubectl to create and approve a CertificateSigningRequest, so it requires cluster access
-	$minioPublicKeyFile = 'minio.pem'; $minioPrivateKeyFile = 'minio.key'
-	$tlsFiles += $minioPublicKeyFile
-	New-Certificate $csrSignerNameToolOrchestration $clusterCertificateAuthorityCertPath $minioFullName $minioFullName $minioPublicKeyFile $minioPrivateKeyFile $namespaceToolOrchestration @()
+	if (-not $skipMinIO) {
 
-	$tlsMinioCertSecretName = '{0}-minio-tls' -f $toolOrchestrationFullName
-	New-CertificateSecretResource $namespaceToolOrchestration $tlsMinioCertSecretName $minioPublicKeyFile $minioPrivateKeyFile -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+		$minioFullName = '{0}-minio' -f $releaseNameToolOrchestration
+			
+		# NOTE: New-Certificate uses kubectl to create and approve a CertificateSigningRequest, so it requires cluster access
+		$minioPublicKeyFile = $workflowStorageCertConfigMapKeyName; $minioPrivateKeyFile = 'workflow-storage.key'
+		$tlsFiles += $minioPublicKeyFile
+		New-Certificate $csrSignerNameToolOrchestration $clusterCertificateAuthorityCertPath $minioFullName $minioFullName $minioPublicKeyFile $minioPrivateKeyFile $namespaceToolOrchestration @()
 
-	$minioCertConfigMapName = '{0}-minio-cert' -f $toolOrchestrationFullName
-	New-CertificateConfigMapResource $namespaceToolOrchestration $minioCertConfigMapName $minioPublicKeyFile -useGitOps:$useGitOps
+		$tlsMinioCertSecretName = '{0}-minio-tls' -f $toolOrchestrationFullName
+		New-CertificateSecretResource $namespaceToolOrchestration $tlsMinioCertSecretName $minioPublicKeyFile $minioPrivateKeyFile -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+
+		$workflowStorageCertConfigMapName = '{0}-minio-cert' -f $toolOrchestrationFullName
+		New-CertificateConfigMapResource $namespaceToolOrchestration $workflowStorageCertConfigMapName $minioPublicKeyFile -useGitOps:$useGitOps
+	}
 
 	# NOTE: New-Certificate uses kubectl to create and approve a CertificateSigningRequest, so it requires cluster access
 	$toolServicePublicKeyFile = 'toolsvc.pem'; $toolServicePrivateKeyFile = 'toolsvc.key'
@@ -717,7 +735,21 @@ Add-HelmRepo 'codedx' $codedxHelmRepo
 if ($useToolOrchestration) {
 
 	New-ToolServicePdSecret $namespaceToolOrchestration $releaseNameToolOrchestration $toolServiceApiKey -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
-	New-MinioPdSecret $namespaceToolOrchestration $releaseNameToolOrchestration $minioAdminUsername $minioAdminPwd -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+	
+	$workflowStorageExistingSecretName = Get-MinioPdSecretName $releaseNameToolOrchestration
+	if (-not $skipMinIO) {
+		New-MinioPdSecret $namespaceToolOrchestration $releaseNameToolOrchestration $minioAdminUsername $minioAdminPwd -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+	} else {
+
+		$workflowStorageExistingSecretName = Get-WorkflowStorageSecretName $releaseNameToolOrchestration
+		New-WorkflowStorageSecretName $namespaceToolOrchestration $releaseNameToolOrchestration $externalWorkflowStorageUsername $externalWorkflowStoragePwd  -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+		
+		if ('' -ne $externalWorkflowStorageCertChainPath) {
+
+			$workflowStorageCertConfigMapName = '{0}-wf-storage-cert' -f $toolOrchestrationFullName
+			New-CertificateConfigMapResource $namespaceCodeDx $workflowStorageCertConfigMapName $externalWorkflowStorageCertChainPath 'ca.crt' -useGitOps:$useGitOps
+		}
+	}
 
 	if ('' -ne $dockerImagePullSecretName) {
 		New-DockerImagePullSecretResource $namespaceToolOrchestration $dockerImagePullSecretName $dockerRegistry $dockerRegistryUser $dockerRegistryPwd  -useGitOps:$useGitOps -useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
@@ -739,9 +771,9 @@ if ($useToolOrchestration) {
 		$toolServiceEphemeralStorageReservation $minioEphemeralStorageReservation $workflowEphemeralStorageReservation `
 		$kubeApiTargetPort `
 		(Get-ToolServicePdSecretName $releaseNameToolOrchestration) `
-		(Get-MinioPdSecretName $releaseNameToolOrchestration) `
+		$workflowStorageExistingSecretName `
 		$tlsToolServiceCertSecretName $codedxCaConfigMapName `
-		$tlsMinioCertSecretName $minioCertConfigMapName `
+		$tlsMinioCertSecretName $workflowStorageCertConfigMapName `
 		$toolServiceNodeSelector $minioNodeSelector $workflowControllerNodeSelector $toolNodeSelector `
 		$toolServiceNoScheduleExecuteToleration $minioNoScheduleExecuteToleration $workflowControllerNoScheduleExecuteToleration $toolNoScheduleExecuteToleration `
 		$backupType `
@@ -749,7 +781,12 @@ if ($useToolOrchestration) {
 		'./toolsvc-values.yaml' `
 		-usePnsExecutor:$true `
 		$workflowStepMinimumRunTimeSeconds `
-		-createSCCs:$createSCCs
+		-createSCCs:$createSCCs `
+		-skipMinIO:$skipMinIO `
+		$externalWorkflowStorageEndpoint `
+		-workflowStorageEndpointSecure:$externalWorkflowStorageEndpointSecure `
+		$externalWorkflowStorageBucketName `
+		$workflowStorageCertConfigMapKeyName
 
 	Write-Verbose 'Creating CRDs...'
 	$crdDirectory = (Test-CertificateSigningRequestV1Beta1) ? 'v1beta1' : 'v1'
@@ -768,6 +805,7 @@ if ($useToolOrchestration) {
 	$helmResult = Invoke-HelmCommand 'Tool Orchestration' `
 		$waitTimeSeconds $namespaceToolOrchestration `
 		$releaseNameToolOrchestration `
+		$helmTimeoutToolOrchestration `
 		$chartFolder `
 		$toolOrchestrationValuesFile.FullName `
 		$extraToolOrchestrationValuesPath `
@@ -896,6 +934,7 @@ $codeDxChartFolder = join-path $workDir .repo/setup/core/charts/codedx
 $helmResult = Invoke-HelmCommand 'Code Dx' `
 	$waitTimeSeconds $namespaceCodeDx `
 	$releaseNameCodeDx `
+	$helmTimeoutCodeDx `
 	$codeDxChartFolder `
 	$codeDxDeploymentValuesFile.FullName `
 	$extraCodeDxValuesPaths `
@@ -979,6 +1018,7 @@ if ($useGitOps -and (-not $useHelmManifest)) {
 		New-HelmRelease $codeDxHelmReleaseName `
 			$namespaceCodeDx `
 			$releaseNameCodeDx `
+			$helmTimeoutCodeDx `
 			-chartGitName 'codedx-kubernetes' `
 			-chartGit ($useHelmController ? 'https://github.com/codedx/codedx-kubernetes' : 'git@github.com:codedx/codedx-kubernetes') `
 			-chartRef $codedxGitRepoBranch `
@@ -991,7 +1031,8 @@ if ($useGitOps -and (-not $useHelmManifest)) {
 			$releaseNameCodeDx `
 			(join-path $workDir .repo/setup/core/charts/codedx) `
 			$codeDxValuesPaths `
-			$codeDxDockerImageNames
+			$codeDxDockerImageNames `
+			$helmTimeoutCodeDx
 	}
 
 	### Optionally Create Tool Orchestration HelmRelease
@@ -1041,6 +1082,7 @@ if ($useGitOps -and (-not $useHelmManifest)) {
 			New-HelmRelease $toolOrchestrationHelmReleaseName `
 				$namespaceToolOrchestration `
 				$releaseNameToolOrchestration `
+				$helmTimeoutToolOrchestration `
 				-chartGitName 'codedx-kubernetes' `
 				-chartGit ($useHelmController ? 'https://github.com/codedx/codedx-kubernetes' : 'git@github.com:codedx/codedx-kubernetes') `
 				-chartRef $codedxGitRepoBranch `
@@ -1053,7 +1095,8 @@ if ($useGitOps -and (-not $useHelmManifest)) {
 				$releaseNameToolOrchestration `
 				(join-path $workDir .repo/setup/core/charts/codedx-tool-orchestration) `
 				$toolOrchestrationValuesPaths `
-				$toolOrchestrationDockerImages
+				$toolOrchestrationDockerImages `
+				$helmTimeoutToolOrchestration
 		}
 	}
 }

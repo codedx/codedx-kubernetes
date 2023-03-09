@@ -62,15 +62,15 @@ function New-Mocks() {
 
 	Mock -ModuleName Guided-Setup Test-KeyToolCertificate {
 		$global:caCertCertificateExists
-	} -ParameterFilter { 'ca.crt','db-ca.crt','extra1.pem','extra2.pem' -contains $path }
+	} -ParameterFilter { 'ca.crt','db-ca.crt','extra1.pem','extra2.pem','storage-cert.pem' -contains $path }
 
 	Mock Test-Path {
 		$global:caCertFileExists
-	} -ParameterFilter { 'ca.crt','db-ca.crt','cacerts','extra1.pem','extra2.pem','idp-metadata.xml','sealed-secrets.pem' -contains $path }
+	} -ParameterFilter { 'ca.crt','db-ca.crt','cacerts','extra1.pem','extra2.pem','idp-metadata.xml','sealed-secrets.pem','storage-cert.pem' -contains $path }
 
 	Mock -ModuleName Guided-Setup Test-Path {
 		$global:caCertFileExists
-	} -ParameterFilter { 'ca.crt','db-ca.crt','cacerts','extra1.pem','extra2.pem','idp-metadata.xml','sealed-secrets.pem' -contains $path }
+	} -ParameterFilter { 'ca.crt','db-ca.crt','cacerts','extra1.pem','extra2.pem','idp-metadata.xml','sealed-secrets.pem','storage-cert.pem' -contains $path }
 
 	Mock -ModuleName Guided-Setup Start-Sleep {
 	}

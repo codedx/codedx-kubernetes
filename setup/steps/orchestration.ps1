@@ -227,7 +227,7 @@ password must be at least eight characters long.
 	}
 
 	[bool]CanRun() {
-		return -not $this.config.skipToolOrchestration
+		return -not $this.config.skipToolOrchestration -and -not $this.config.skipMinIO
 	}
 }
 

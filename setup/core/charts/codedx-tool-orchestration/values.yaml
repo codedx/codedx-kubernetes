@@ -244,6 +244,7 @@ argo:
 
 # NOTE: These are setting attributes for the `minio` dependency
 minio:
+  enabled: true
   image:
     # https://github.com/minio/minio/releases
     # https://github.com/bitnami/bitnami-docker-minio/releases
@@ -260,12 +261,12 @@ minio:
       enabled: false
       # Specifies the name of a k8s secret containing the certificate info used to configure
       # MinIO TLS. Create the secret using the following command:
-      # kubectl create secret generic cdx-minio-tls --from-file=minio.pem=path/to/minio.pem --from-file=minio.key=path/to/minio.key
+      # kubectl create secret generic cdx-minio-tls --from-file=workflow-storage.pem=path/to/minio.pem --from-file=workflow-storage.key=path/to/minio.key
       certSecret: "cdx-minio-tls"
       # The name of the MinIO public certificate in certSecret
-      publicCrt: "minio.pem"
+      publicCrt: "workflow-storage.pem"
       # The name of the MinIO private key in certSecret
-      privateKey: "minio.key"
+      privateKey: "workflow-storage.key"
   persistence:
     size: 50Gi
     storageClass: 
@@ -275,12 +276,20 @@ minio:
     minAvailable:
     maxUnavailable: 0
 
-# Options for configuring clients to explicitly trust certificate data for the MinIO TLS configuration. This section
-# does not apply when minio.tls.enabled=false.
-minioTlsTrust:
+workflowStorage:
+  # Workflow storage endpoint to use, either an external endpoint (e.g., AWS, GCP) or the older, bundled MinIO instance. Specify the
+  # hostname and port (e.g., hostname:port).
+  endpoint:
+  # Whether the endpoint is secured with HTTPS.
+  endpointSecure:
+  # Name of workflow storage bucket that will store workflow files. This should be an existing bucket when the account associated 
+  # with the storage credentials cannot create the bucket on its own.
+  bucketName: code-dx-storage
+  # Use an existing secret, with fields access-key and secret-key, for the storage credential. The credential must be able
+  # to create and delete objects in the bucket given by the 'bucketName' parameter.
+  existingSecret:
   # Specifies a ConfigMap name that contains certificate data that should be explicitly trusted when connecting to
-  # the MinIO server. When using MinIO TLS (minio.tls.enabled=true), use configMapName when the MinIO server's
-  # certificate was not issued by a well known CA.
+  # workflow storage. Use configMapName when the workflow storage server's certificate was not issued by a well known CA.
   configMapName: ""
-  # Specifies the key name in the configMapName ConfigMap containing the MinIO certificate data.
+  # Specifies the key name in the configMapName ConfigMap containing the certificate data.
   configMapPublicCertKeyName: ""

@@ -59,17 +59,12 @@ spec:
           "-logMaxSizeMB", "{{ .Values.logs.maxSizeMB }}",
           "-logMaxBackups", "{{ .Values.logs.maxBackups }}",
           "-minimumWorkflowStepRunTime", "{{ .Values.minimumWorkflowStepRunTimeSeconds }}",
-          "-minioAdminClientPath", "/opt/codedx/service/tools/mc",
-          "-minioAdminPasswordPath", "/opt/codedx/service/secrets/minioAdminPassword",
-          "-minioAdminUsernamePath", "/opt/codedx/service/secrets/minioAdminUsername",
-          "-minioEndpoint", "{{ template "minio.ref.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{.Values.minio.service.port}}",
-          {{ if .Values.minio.tls.enabled -}}
-          "-minioTlsEnabled",
-          {{ if .Values.minioTlsTrust.configMapName -}}
-          "-minioTlsConfigMapName", "{{ .Values.minioTlsTrust.configMapName }}",
-          "-minioTlsConfigMapPublicCertName", "{{ .Values.minioTlsTrust.configMapPublicCertKeyName }}",
-          {{ end -}}
-          {{ end -}}
+          "-storageEndpoint", {{ include "codedx-tool-orchestration.storageEndpoint" . }},
+          "-storageTlsEnabled={{ include "codedx-tool-orchestration.storageTlsEnabled" . }}",
+          "-storageBucket", {{ .Values.workflowStorage.bucketName | quote }},
+          "-storageCredentialSecretName", {{ include "codedx-tool-orchestration.storageCredentialSecretName" . }},
+          "-storageTlsConfigMapName", {{ include "codedx-tool-orchestration.storageTlsConfigMapName" . }},
+          "-storageTlsConfigMapPublicCertName", {{ include "codedx-tool-orchestration.storageTlsConfigMapPublicCertName" . }},
           "-port", "{{ required "toolServicePort is required" .Values.toolServicePort }}",
           "-serviceName", "{{ .Release.Name }}",
           {{ if .Values.toolServiceTls.secret -}}
@@ -107,16 +102,16 @@ spec:
           mountPath: "/opt/codedx/service/secrets/adminApiKey"
           readOnly: true
           subPath: adminApiKey
-        - name: minio-secret-volume
-          mountPath: "/opt/codedx/service/secrets/minioAdminUsername"
+        - name: storage-secret-volume
+          mountPath: "/opt/codedx/service/secrets/storageUsername"
           readOnly: true
-          subPath: minioAdminUsername
-        - name: minio-secret-volume
-          mountPath: "/opt/codedx/service/secrets/minioAdminPassword"
+          subPath: storageUsername
+        - name: storage-secret-volume
+          mountPath: "/opt/codedx/service/secrets/storagePassword"
           readOnly: true
-          subPath: minioAdminPassword
-        {{ if and .Values.minio.tls.enabled .Values.minioTlsTrust.configMapName -}}
-        - name: minio-cert-volume
+          subPath: storagePassword
+        {{ if .Values.workflowStorage.configMapName -}}
+        - name: storage-cert-volume
           mountPath: /etc/ssl/certs/cdx-minio.pem
           subPath: cdx-minio.pem
           readOnly: true
@@ -136,20 +131,20 @@ spec:
           items:
           - key: api-key
             path: adminApiKey
-      - name: minio-secret-volume
+      - name: storage-secret-volume
         secret:
           secretName: {{ .Values.minio.global.minio.existingSecret | quote }}
           items:
           - key: access-key
-            path: minioAdminUsername
+            path: storageUsername
           - key: secret-key
-            path: minioAdminPassword
-      {{ if and .Values.minio.tls.enabled .Values.minioTlsTrust.configMapName -}}
-      - name: minio-cert-volume
+            path: storagePassword
+      {{ if .Values.workflowStorage.configMapName -}}
+      - name: storage-cert-volume
         configMap:
-          name: {{ .Values.minioTlsTrust.configMapName }}
+          name: {{ .Values.workflowStorage.configMapName }}
           items:
-            - key: {{ .Values.minioTlsTrust.configMapPublicCertKeyName }}
+            - key: {{ .Values.workflowStorage.configMapPublicCertKeyName }}
               path: cdx-minio.pem
       {{ end -}}
       {{ if .Values.toolServiceTls.secret -}}

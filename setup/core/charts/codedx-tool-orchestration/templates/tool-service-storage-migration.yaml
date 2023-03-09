@@ -1,15 +1,14 @@
+{{- if .Values.minio.enabled -}}
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "codedx-tool-orchestration.pre-delete-job" . | quote }}
+  name: {{ include "codedx-tool-orchestration.migrate-data-job" . | quote }}
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
     component: hook
   annotations:
-    "helm.sh/hook": pre-delete
-    "helm.sh/hook-weight": "-5"
-    "helm.sh/hook-delete-policy": hook-succeeded
+    "helm.sh/hook": post-upgrade
 spec:
   template:
     metadata:
@@ -26,21 +25,31 @@ spec:
         fsGroup: 1000
         runAsUser: 1000
       restartPolicy: Never
+      initContainers:
+      - name: "wait-for-storage"
+        image: "bash"
+        command: ["bash", "-c", "for i in {1..60}; do if (timeout 2 bash -c \"</dev/tcp/{{- print (include "minio.ref.fullname" .) "." .Release.Namespace ".svc.cluster.local/" .Values.minio.service.port -}}\" echo $?); then echo 'Successfully connected to MinIO port'; exit 0; else echo 'Retrying MinIO connection...'; sleep 2; fi; done; echo 'MinIO is unavailable'; exit 1"]
       containers:
-      - name: cleanup-projects-job
-        image: "{{ required "imageNameHelmPreDelete is required" .Values.imageNameHelmPreDelete }}"
-        command: ["/opt/codedx/cleanup/bin/cleanup"]
-        args: ["-kubernetesNamespace", "{{ .Release.Namespace }}",
-          "-logFile", "/opt/codedx/cleanup/logs/cleanup.log",
-          "-logMaxSizeMB", "{{ .Values.logs.maxSizeMB }}",
-          "-logMaxBackups", "{{ .Values.logs.maxBackups }}",
-          "-storageEndpoint", {{ include "codedx-tool-orchestration.storageEndpoint" . }},
-          "-storageTlsEnabled={{ include "codedx-tool-orchestration.storageTlsEnabled" . }}",
-          "-storageBucket", {{ .Values.workflowStorage.bucketName | quote }},
-          "-storageCredentialSecretName", {{ include "codedx-tool-orchestration.storageCredentialSecretName" . }},
-          "-storageTlsConfigMapName", {{ include "codedx-tool-orchestration.storageTlsConfigMapName" . }},
-          "-storageTlsConfigMapPublicCertName", {{ include "codedx-tool-orchestration.storageTlsConfigMapPublicCertName" . }},
-          "-workDir", "/opt/codedx/cleanup/work"]
+      - name: migrate-storage-one-bucket-strategy
+        image: "{{ required "toolServiceImageName is required" .Values.toolServiceImageName }}"
+        command: ["/opt/codedx/service/bin/migrate"]
+        args: [
+          "-workDirectory", "/opt/codedx/service/tmp",
+          "-fromEndpoint", {{ include "codedx-tool-orchestration.storageEndpoint" . }},
+          "-fromUsernamePath", "/opt/codedx/cleanup/secrets/storageUsername",
+          "-fromPasswordPath", "/opt/codedx/cleanup/secrets/storagePassword",
+          "-toBucket", "code-dx-storage",
+          "-toEndpoint", {{ include "codedx-tool-orchestration.storageEndpoint" . }},
+          "-toUsernamePath", "/opt/codedx/cleanup/secrets/storageUsername",
+          "-toPasswordPath", "/opt/codedx/cleanup/secrets/storagePassword",
+          {{- if .Values.toolServiceTls.secret }}
+          "-toTlsEnabled",
+          "-fromTlsEnabled",
+          {{- end }}
+          {{- if .Values.workflowStorage.configMapName }}
+          "-fromTLSCertToTrustPath", "/etc/ssl/certs/cdx-minio.pem",
+          "-toTLSCertToTrustPath", "/etc/ssl/certs/cdx-minio.pem",
+          {{- end }}]
         volumeMounts:
         - name: storage-secret-volume
           mountPath: "/opt/codedx/cleanup/secrets/storageUsername"
@@ -55,10 +64,6 @@ spec:
           mountPath: /etc/ssl/certs/cdx-minio.pem
           subPath: cdx-minio.pem
           readOnly: true
-        {{- end }}
-        {{- if .Values.toolServiceTls.secret }}
-        - name: tool-service-tls-volume
-          mountPath: "/opt/codedx/cleanup/tls"
         {{- end }}
       volumes:
       - name: storage-secret-volume
@@ -77,8 +82,4 @@ spec:
             - key: {{ .Values.workflowStorage.configMapPublicCertKeyName }}
               path: cdx-minio.pem
       {{- end }}
-      {{- if .Values.toolServiceTls.secret }}
-      - name: tool-service-tls-volume
-        secret:
-          secretName: {{ .Values.toolServiceTls.secret }}
-      {{- end }}
+{{ end -}}

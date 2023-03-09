@@ -434,7 +434,7 @@ class MinioDockerImage : DockerImageNameStep {
 	}
 
 	[bool]CanRun() {
-		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration -and -not $this.config.useDockerRedirection
+		return -not $this.config.useDefaultDockerImages -and -not $this.config.skipToolOrchestration -and -not $this.config.useDockerRedirection -and -not $this.config.skipMinIO
 	}
 }
 

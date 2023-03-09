@@ -117,6 +117,9 @@ This section describes the setup.ps1 script parameters, which you can specify by
 |                                                    |                                                            |                                                   |
 | `codedxHelmRepo`                                   | Code Dx Helm repository                                    | `https://codedx.github.io/codedx-kubernetes`      |
 |                                                    |                                                            |                                                   |
+| `helmTimeoutCodeDx`                                | timeout for Code Dx helm chart upgrade/install             | `5m0s`                                            |
+| `helmTimeoutToolOrchestration`                     | timeout for Tool Orchestration helm chart upgrade/install  | `15m0s`                                           |
+|                                                    |                                                            |                                                   |
 | `codedxGitRepo`                                    | Code Dx Kubernetes git repository                          | `https://github.com/codedx/codedx-kubernetes.git` |
 | `codedxGitRepoBranch`                              | Code Dx Kubernetes git repository branch                   | `master`                                          |
 |                                                    |                                                            |                                                   |
@@ -133,6 +136,14 @@ This section describes the setup.ps1 script parameters, which you can specify by
 | `externalDatabasePwd`                              | password for external database user                        | `5Ed3&#Rutcdw` (example)                          |
 | `externalDatabaseServerCert`                       | file path to CA issuing cert for external database         | `/tmp/cacert.pem` (example)                       |
 | `externalDatabaseSkipTls`                          | whether to skip configuring one-way client auth            | `$false`                                          |
+|                                                    |                                                            |                                                   |
+| `skipMinIO`                                        | whether to skip installing MinIO (use external storage)    | `$false`                                          |
+| `externalWorkflowStorageEndpoint`                  | host name and port number for external storage             | `storage.googleapis.com` (example)                |
+| `externalWorkflowStorageEndpointSecure`            | whether externalWorkflowStorageEndpoint is secure          | `$false`                                          |
+| `externalWorkflowStorageUsername`                  | username of account with access to external storage        | `admin` (example)                                 |
+| `externalWorkflowStoragePwd`                       | password of account with access to external storage        | ``                                                |
+| `externalWorkflowStorageBucketName`                | name of bucket for storing workflow data                   | `code-dx-storage`                                 |
+| `externalWorkflowStorageCertChainPath`             | CA cert chain file path for untrusted storage endpoint     |                                                   |
 |                                                    |                                                            |                                                   |
 | `skipToolOrchestration`                            | whether to skip installing the Tool Orchestration feature  | `$false`                                          |
 |                                                    |                                                            |                                                   |

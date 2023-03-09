@@ -258,7 +258,7 @@ class MinIOEphemeralStorage : EphemeralStorageStep {
 	}
 
 	[bool]CanRun() {
-		return ([EphemeralStorageStep]$this).CanRun() -and (-not ($this.config.skipToolOrchestration))
+		return ([EphemeralStorageStep]$this).CanRun() -and -not $this.config.skipToolOrchestration -and -not ($this.config.skipMinIO)
 	}
 
 	[void]ApplyDefault() {

@@ -4,7 +4,7 @@
 .AUTHOR Code Dx
 #>
 
-using module @{ModuleName='guided-setup'; RequiredVersion='1.10.0' }
+using module @{ModuleName='guided-setup'; RequiredVersion='1.11.0' }
 
 $ErrorActionPreference = 'Stop'
 $VerbosePreference = 'Continue'
@@ -29,6 +29,7 @@ Write-Host 'Loading...' -NoNewline
 './setup/steps/ephemeralstorage.ps1',
 './setup/steps/codedx.ps1',
 './setup/steps/cert.ps1',
+'./setup/steps/storage.ps1',
 './setup/steps/schedule.ps1',
 './setup/steps/database.ps1',
 './setup/steps/summary.ps1' | ForEach-Object {
@@ -73,6 +74,7 @@ $s = @{}
 [DefaultEphemeralStorage],[CodeDxEphemeralStorage],[MasterDatabaseEphemeralStorage],[SubordinateDatabaseEphemeralStorage],[ToolServiceEphemeralStorage],[MinIOEphemeralStorage],[WorkflowEphemeralStorage],
 [DefaultVolumeSize],[CodeDxVolumeSize],[MasterDatabaseVolumeSize],[SubordinateDatabaseVolumeSize],[MinIOVolumeSize],[StorageClassName],
 [UseDefaultCACerts],[CACertsFile],[CACertsFilePassword],[CACertsChangePassword],[CACertsFileNewPassword],[AddExtraCertificates],[ExtraCertificates],
+[UseExternalStorage],[ExternalStorageEndpoint],[ExternalStorageTLS],[ExternalStorageUsername],[ExternalStoragePassword],[ExternalStorageBucket],[ExternalStorageTrustCert],[ExternalStorageCertificate],
 [UseNodeSelectors],[CodeDxNodeSelector],[MasterDatabaseNodeSelector],[SubordinateDatabaseNodeSelector],[ToolServiceNodeSelector],[MinIONodeSelector],[WorkflowControllerNodeSelector],[ToolNodeSelector],
 [UseTolerations],[CodeDxTolerations],[MasterDatabaseTolerations],[SubordinateDatabaseTolerations],[ToolServiceTolerations],[MinIOTolerations],[WorkflowControllerTolerations],[ToolTolerations],
 [Finish],[Abort]
@@ -91,7 +93,18 @@ Add-StepTransitions $graph $s[[ChooseContext]] $s[[SelectContext]],$s[[Prequisit
 Add-StepTransitions $graph $s[[ChooseContext]] $s[[SelectContext]],$s[[GetKubernetesPort]]
 
 Add-StepTransitions $graph $s[[GetKubernetesPort]] $s[[SealedSecretsNamespace]],$s[[SealedSecretsControllerName]],$s[[SealedSecretsPublicKeyPath]],$s[[UseTriageAssistant]]
-Add-StepTransitions $graph $s[[GetKubernetesPort]] $s[[UseTriageAssistant]],$s[[UseToolOrchestration]],$s[[UseExternalDatabase]],$s[[BackupType]],$s[[VeleroNamespace]],$s[[BackupSchedule]],$s[[BackupDatabaseTimeout]],$s[[BackupTimeToLive]],$s[[UseDefaultOptions]]
+Add-StepTransitions $graph $s[[GetKubernetesPort]] $s[[UseTriageAssistant]],$s[[UseToolOrchestration]],$s[[UseExternalDatabase]]
+
+Add-StepTransitions $graph $s[[UseExternalDatabase]] $s[[UseExternalStorage]],$s[[ExternalStorageEndpoint]],$s[[ExternalStorageTLS]],$s[[ExternalStorageUsername]],$s[[ExternalStoragePassword]],$s[[ExternalStorageBucket]],$s[[ExternalStorageTrustCert]]
+Add-StepTransitions $graph $s[[UseExternalDatabase]] $s[[BackupType]]
+
+Add-StepTransitions $graph $s[[ExternalStorageBucket]] $s[[BackupType]]
+Add-StepTransitions $graph $s[[ExternalStorageTrustCert]] $s[[ExternalStorageCertificate]],$s[[BackupType]]
+Add-StepTransitions $graph $s[[ExternalStorageTrustCert]] $s[[BackupType]]
+
+Add-StepTransitions $graph $s[[UseExternalStorage]] $s[[BackupType]]
+
+Add-StepTransitions $graph $s[[BackupType]] $s[[VeleroNamespace]],$s[[BackupSchedule]],$s[[BackupDatabaseTimeout]],$s[[BackupTimeToLive]],$s[[UseDefaultOptions]]
 Add-StepTransitions $graph $s[[BackupType]] $s[[UseDefaultOptions]]
 
 Add-StepTransitions $graph $s[[UseDefaultOptions]] $s[[UsePodSecurityPolicyOption]],$s[[UseNetworkPolicyOption]],$s[[UseTlsOption]]
@@ -126,6 +139,7 @@ Add-StepTransitions $graph $s[[AddExtraCertificates]] $s[[ExtraCertificates]],$s
 Add-StepTransitions $graph $s[[AddExtraCertificates]] $s[[CodeDxPassword]]
 
 Add-StepTransitions $graph $s[[CodeDxPassword]] $s[[ToolServiceKey]],$s[[MinioAdminPassword]],$s[[ToolServiceReplicaCount]],$s[[UsePrivateDockerRegistry]]
+Add-StepTransitions $graph $s[[CodeDxPassword]] $s[[ToolServiceKey]],$s[[ToolServiceReplicaCount]],$s[[UsePrivateDockerRegistry]]
 Add-StepTransitions $graph $s[[CodeDxPassword]] $s[[UsePrivateDockerRegistry]]
 
 Add-StepTransitions $graph $s[[UsePrivateDockerRegistry]] $s[[DockerImagePullSecret]],$s[[PrivateDockerRegistryHost]],$s[[PrivateDockerRegistryUser]],$s[[PrivateDockerRegistryPwd]],$s[[UseDefaultDockerImages]]
@@ -136,6 +150,7 @@ Add-StepTransitions $graph $s[[UseDefaultDockerImages]] $s[[CodeDxTomcatDockerIm
 Add-StepTransitions $graph $s[[UseDefaultDockerImages]] $s[[CodeDxTomcatDockerImage]],$s[[CodeDxTomcatInitDockerImage]],$s[[CodeDxMariaDBDockerImage]],$s[[IngressKind]]
 Add-StepTransitions $graph $s[[UseDefaultDockerImages]] $s[[CodeDxTomcatDockerImage]],$s[[CodeDxTomcatInitDockerImage]],$s[[CodeDxToolsDockerImage]]
 Add-StepTransitions $graph $s[[CodeDxToolsDockerImage]] $s[[CodeDxToolsMonoDockerImage]],$s[[CodeDxToolServiceDockerImage]],$s[[CodeDxSendResultsDockerImage]],$s[[CodeDxSendErrorResultsDockerImage]],$s[[CodeDxNewAnalysisDockerImage]],$s[[CodeDxPrepareDockerImage]],$s[[CodeDxPreDeleteDockerImage]],$s[[MinioDockerImage]],$s[[CodeDxWorkflowControllerDockerImage]],$s[[CodeDxWorkflowExecutorDockerImage]],$s[[IngressKind]]
+Add-StepTransitions $graph $s[[CodeDxToolsDockerImage]] $s[[CodeDxToolsMonoDockerImage]],$s[[CodeDxToolServiceDockerImage]],$s[[CodeDxSendResultsDockerImage]],$s[[CodeDxSendErrorResultsDockerImage]],$s[[CodeDxNewAnalysisDockerImage]],$s[[CodeDxPrepareDockerImage]],$s[[CodeDxPreDeleteDockerImage]],$s[[CodeDxWorkflowControllerDockerImage]],$s[[CodeDxWorkflowExecutorDockerImage]],$s[[IngressKind]]
 Add-StepTransitions $graph $s[[UseDefaultDockerImages]] $s[[CodeDxTomcatDockerImage]],$s[[CodeDxTomcatInitDockerImage]],$s[[IngressKind]]
 
 Add-StepTransitions $graph $s[[UseDefaultDockerImages]] $s[[IngressKind]]
@@ -159,6 +174,7 @@ Add-StepTransitions $graph $s[[CodeDxCPU]] $s[[MasterDatabaseCPU]],$s[[Subordina
 Add-StepTransitions $graph $s[[MasterDatabaseCPU]] $s[[ToolServiceCPU]]
 Add-StepTransitions $graph $s[[MasterDatabaseCPU]] $s[[DefaultMemory]]
 Add-StepTransitions $graph $s[[CodeDxCPU]] $s[[ToolServiceCPU]],$s[[MinIOCPU]],$s[[WorkflowCPU]],$s[[DefaultMemory]]
+Add-StepTransitions $graph $s[[CodeDxCPU]] $s[[ToolServiceCPU]],$s[[WorkflowCPU]],$s[[DefaultMemory]]
 Add-StepTransitions $graph $s[[CodeDxCPU]] $s[[MasterDatabaseCPU]],$s[[SubordinateDatabaseCPU]],$s[[DefaultMemory]]
 Add-StepTransitions $graph $s[[CodeDxCPU]] $s[[DefaultMemory]]
 
@@ -169,6 +185,7 @@ Add-StepTransitions $graph $s[[CodeDxMemory]] $s[[MasterDatabaseMemory]],$s[[Sub
 Add-StepTransitions $graph $s[[MasterDatabaseMemory]] $s[[ToolServiceMemory]]
 Add-StepTransitions $graph $s[[MasterDatabaseMemory]] $s[[DefaultEphemeralStorage]]
 Add-StepTransitions $graph $s[[CodeDxMemory]] $s[[ToolServiceMemory]],$s[[MinIOMemory]],$s[[WorkflowMemory]],$s[[DefaultEphemeralStorage]]
+Add-StepTransitions $graph $s[[CodeDxMemory]] $s[[ToolServiceMemory]],$s[[WorkflowMemory]],$s[[DefaultEphemeralStorage]]
 Add-StepTransitions $graph $s[[CodeDxMemory]] $s[[MasterDatabaseMemory]],$s[[SubordinateDatabaseMemory]],$s[[DefaultEphemeralStorage]]
 Add-StepTransitions $graph $s[[CodeDxMemory]] $s[[DefaultEphemeralStorage]]
 
@@ -179,6 +196,7 @@ Add-StepTransitions $graph $s[[CodeDxEphemeralStorage]] $s[[MasterDatabaseEpheme
 Add-StepTransitions $graph $s[[MasterDatabaseEphemeralStorage]] $s[[ToolServiceEphemeralStorage]]
 Add-StepTransitions $graph $s[[MasterDatabaseEphemeralStorage]] $s[[DefaultVolumeSize]]
 Add-StepTransitions $graph $s[[CodeDxEphemeralStorage]] $s[[ToolServiceEphemeralStorage]],$s[[MinIOEphemeralStorage]],$s[[WorkflowEphemeralStorage]],$s[[DefaultVolumeSize]]
+Add-StepTransitions $graph $s[[CodeDxEphemeralStorage]] $s[[ToolServiceEphemeralStorage]],$s[[WorkflowEphemeralStorage]],$s[[DefaultVolumeSize]]
 Add-StepTransitions $graph $s[[CodeDxEphemeralStorage]] $s[[MasterDatabaseEphemeralStorage]],$s[[SubordinateDatabaseEphemeralStorage]],$s[[DefaultVolumeSize]]
 Add-StepTransitions $graph $s[[CodeDxEphemeralStorage]] $s[[DefaultVolumeSize]]
 
@@ -197,6 +215,7 @@ Add-StepTransitions $graph $s[[StorageClassName]] $s[[Finish]]
 
 Add-StepTransitions $graph $s[[UseNodeSelectors]] $s[[CodeDxNodeSelector]],$s[[MasterDatabaseNodeSelector]],$s[[SubordinateDatabaseNodeSelector]],$s[[ToolServiceNodeSelector]]
 Add-StepTransitions $graph $s[[UseNodeSelectors]] $s[[CodeDxNodeSelector]],$s[[ToolServiceNodeSelector]],$s[[MinIONodeSelector]],$s[[WorkflowControllerNodeSelector]],$s[[ToolNodeSelector]],$s[[UseTolerations]]
+Add-StepTransitions $graph $s[[UseNodeSelectors]] $s[[CodeDxNodeSelector]],$s[[ToolServiceNodeSelector]],$s[[WorkflowControllerNodeSelector]],$s[[ToolNodeSelector]],$s[[UseTolerations]]
 Add-StepTransitions $graph $s[[UseNodeSelectors]] $s[[CodeDxNodeSelector]],$s[[UseTolerations]]
 Add-StepTransitions $graph $s[[UseNodeSelectors]] $s[[UseTolerations]]
 Add-StepTransitions $graph $s[[SubordinateDatabaseNodeSelector]] $s[[UseTolerations]]
@@ -205,6 +224,7 @@ Add-StepTransitions $graph $s[[MasterDatabaseNodeSelector]] $s[[UseTolerations]]
 
 Add-StepTransitions $graph $s[[UseTolerations]] $s[[CodeDxTolerations]],$s[[MasterDatabaseTolerations]],$s[[SubordinateDatabaseTolerations]],$s[[ToolServiceTolerations]]
 Add-StepTransitions $graph $s[[UseTolerations]] $s[[CodeDxTolerations]],$s[[ToolServiceTolerations]],$s[[MinIOTolerations]],$s[[WorkflowControllerTolerations]],$s[[ToolTolerations]],$s[[Finish]]
+Add-StepTransitions $graph $s[[UseTolerations]] $s[[CodeDxTolerations]],$s[[ToolServiceTolerations]],$s[[WorkflowControllerTolerations]],$s[[ToolTolerations]],$s[[Finish]]
 Add-StepTransitions $graph $s[[UseTolerations]] $s[[CodeDxTolerations]],$s[[Finish]]
 Add-StepTransitions $graph $s[[UseTolerations]] $s[[Finish]]
 Add-StepTransitions $graph $s[[SubordinateDatabaseTolerations]] $s[[Finish]]

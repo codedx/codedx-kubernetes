@@ -59,6 +59,7 @@ function Set-UseToolOrchestrationAndSubordinateDatabasePass([int] $saveOption) {
 	$global:inputs.enqueue(1) # skip triage assistant
 	$global:inputs.enqueue(0) # choose tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(1) # skip external storage
 	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(1) # choose deployment options (via other)
 	$global:inputs.enqueue(0) # choose PSP
@@ -508,6 +509,7 @@ function Set-AllNodeSelectorAndPodTolerationsPass([int] $saveOption) {
 	$global:inputs.enqueue(1) # skip triage assistant
 	$global:inputs.enqueue(0) # choose tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(1) # skip external storage
 	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(1) # choose deployment options (via other)
 	$global:inputs.enqueue(0) # choose PSP
@@ -590,6 +592,7 @@ function Set-DockerImageNamesAndPrivateRegistryPass([int] $saveOption) {
 	$global:inputs.enqueue(1) # skip triage assistant
 	$global:inputs.enqueue(0) # choose tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(1) # skip external storage
 	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(1) # choose deployment options (via other)
 	$global:inputs.enqueue(0) # choose PSP
@@ -716,6 +719,7 @@ function Set-UseCustomResourcesPass([int] $saveOption) {
 	$global:inputs.enqueue(1) # skip triage assistant
 	$global:inputs.enqueue(0) # choose tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(1) # skip external storage
 	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(1) # choose deployment options (via other)
 	$global:inputs.enqueue(0) # choose PSP
@@ -841,6 +845,7 @@ function Set-SomeDockerImageNames([int] $saveOption) {
 	$global:inputs.enqueue(1) # skip triage assistant
 	$global:inputs.enqueue(0) # choose tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(1) # skip external storage
 	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(1) # choose deployment options (via other)
 	$global:inputs.enqueue(0) # choose PSP
@@ -907,6 +912,7 @@ function Set-PassWithDefaultResourceReservations([int] $saveOption) {
 	$global:inputs.enqueue(1) # skip triage assistant
 	$global:inputs.enqueue(0) # choose tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(1) # skip external storage
 	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(1) # choose deployment options (via other)
 	$global:inputs.enqueue(0) # choose PSP
@@ -958,6 +964,7 @@ function Set-PassWithCustomAcceptingDefaultResourceReservations([int] $saveOptio
 	$global:inputs.enqueue(1) # skip triage assistant
 	$global:inputs.enqueue(0) # choose tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(1) # skip external storage
 	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(1) # choose deployment options (via other)
 	$global:inputs.enqueue(0) # choose PSP
@@ -1349,6 +1356,7 @@ function Set-DockerImageNamesNoDatabaseOrchestration([int] $saveOption) {
 	$global:inputs.enqueue(1) # skip triage assistant
 	$global:inputs.enqueue(0) # choose tool orchestration
 	$global:inputs.enqueue(0) # use external db
+	$global:inputs.enqueue(1) # skip external storage
 	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(1) # choose deployment options (via other)
 	$global:inputs.enqueue(0) # choose PSP
@@ -1660,6 +1668,7 @@ function Set-UseCertManagerClusterIssuer([int] $saveOption) {
 	$global:inputs.enqueue(1) # skip triage assistant
 	$global:inputs.enqueue(0) # choose tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(1) # skip external storage
 	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(1) # choose deployment options (via other)
 	$global:inputs.enqueue(0) # choose PSP
@@ -1713,6 +1722,7 @@ function Set-UseCertManagerIssuers([int] $saveOption) {
 	$global:inputs.enqueue(1) # skip triage assistant
 	$global:inputs.enqueue(0) # choose tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(1) # skip external storage
 	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(1) # choose other deployment options
 	$global:inputs.enqueue(1) # choose PSPs
@@ -1813,6 +1823,7 @@ function Set-MustUseCertManagerClusterIssuer([int] $saveOption) {
 	$global:inputs.enqueue(1) # skip triage assistant
 	$global:inputs.enqueue(0) # choose tool orchestration
 	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(1) # skip external storage
 	$global:inputs.enqueue(0) # skip backup
 	$global:inputs.enqueue(1) # choose deployment options (via other)
 	$global:inputs.enqueue(0) # choose PSP
@@ -2302,5 +2313,360 @@ function Set-ClassicLoadBalancerIngressHelmCommandPass([int] $saveOption) {
 	$global:inputs.enqueue('default') # storage class name
 	$global:inputs.enqueue(1) # skip node selectors
 	$global:inputs.enqueue(1) # skip pod tolerations
+	$global:inputs.enqueue($saveOption) # next step save option
+}
+
+function Set-UseToolOrchestrationAndExternalStorageWithTLS([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue(0)     # skip GitOps
+	$global:inputs.enqueue(0)     # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(0) # choose minikube env
+	$global:inputs.enqueue(0) # choose minikube context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(1) # skip triage assistant
+	$global:inputs.enqueue(0) # choose tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # choose external storage
+	$global:inputs.enqueue('endpoint:9000') # specify endpoint
+	$global:inputs.enqueue(0) # specify uses-TLS
+	$global:inputs.enqueue('my-storage-username') # specify storage username
+	$global:inputs.enqueue((New-Password 'my-storage-password')) # specify storage password
+	$global:inputs.enqueue((New-Password 'my-storage-password')) # specify storage password
+	$global:inputs.enqueue('code-dx-storage') # specify storage bucket
+	$global:inputs.enqueue(0) # specify trust cert
+	$global:inputs.enqueue('storage-cert.pem') # specify cert
+	$global:inputs.enqueue(0) # skip backup
+	$global:inputs.enqueue(1) # choose deployment options (via other)
+	$global:inputs.enqueue(0) # choose PSP
+	$global:inputs.enqueue(0) # choose Network Policy
+	$global:inputs.enqueue(0) # choose TLS
+	$global:inputs.enqueue(0) # choose kubernetes.io/legacy-unknown signer
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue('cdx-svc') # specify namespace
+	$global:inputs.enqueue('codedx-tool-orchestration')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
+	$global:inputs.enqueue(1) # specify db replicas
+	$global:inputs.enqueue(0) # choose default cacerts
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue((New-Password 'my-tool-service-password')) # specify tool service pwd
+	$global:inputs.enqueue((New-Password 'my-tool-service-password')) # specify tool service pwd confirm
+	$global:inputs.enqueue((New-Password 'my-minio-password')) # specify MinIO pwd
+	$global:inputs.enqueue((New-Password 'my-minio-password')) # specify MinIO pwd confirm
+	$global:inputs.enqueue(2) # specify tool service replicas
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(0) # choose default Docker images
+	$global:inputs.enqueue(0) # use ClusterIP service
+	$global:inputs.enqueue(0) # use local accounts
+	$global:inputs.enqueue(0) # use default cpu reservation
+	$global:inputs.enqueue(0) # use default memory reservation
+	$global:inputs.enqueue(0) # use default storage reservation
+	$global:inputs.enqueue(0) # use default volume sizes
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue($saveOption) # next step save option
+}
+
+function Set-UseToolOrchestrationAndExternalStorageWithTLSNoCert([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue(0)     # skip GitOps
+	$global:inputs.enqueue(0)     # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(0) # choose minikube env
+	$global:inputs.enqueue(0) # choose minikube context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(1) # skip triage assistant
+	$global:inputs.enqueue(0) # choose tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # choose external storage
+	$global:inputs.enqueue('endpoint:9000') # specify endpoint
+	$global:inputs.enqueue(0) # specify uses-TLS
+	$global:inputs.enqueue('my-storage-username') # specify storage username
+	$global:inputs.enqueue((New-Password 'my-storage-password')) # specify storage password
+	$global:inputs.enqueue((New-Password 'my-storage-password')) # specify storage password
+	$global:inputs.enqueue('code-dx-storage') # specify storage bucket
+	$global:inputs.enqueue(1) # skip trust cert
+	$global:inputs.enqueue(0) # skip backup
+	$global:inputs.enqueue(1) # choose deployment options (via other)
+	$global:inputs.enqueue(0) # choose PSP
+	$global:inputs.enqueue(0) # choose Network Policy
+	$global:inputs.enqueue(0) # choose TLS
+	$global:inputs.enqueue(0) # choose kubernetes.io/legacy-unknown signer
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue('cdx-svc') # specify namespace
+	$global:inputs.enqueue('codedx-tool-orchestration')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
+	$global:inputs.enqueue(1) # specify db replicas
+	$global:inputs.enqueue(0) # choose default cacerts
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue((New-Password 'my-tool-service-password')) # specify tool service pwd
+	$global:inputs.enqueue((New-Password 'my-tool-service-password')) # specify tool service pwd confirm
+	$global:inputs.enqueue((New-Password 'my-minio-password')) # specify MinIO pwd
+	$global:inputs.enqueue((New-Password 'my-minio-password')) # specify MinIO pwd confirm
+	$global:inputs.enqueue(2) # specify tool service replicas
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(0) # choose default Docker images
+	$global:inputs.enqueue(0) # use ClusterIP service
+	$global:inputs.enqueue(0) # use local accounts
+	$global:inputs.enqueue(0) # use default cpu reservation
+	$global:inputs.enqueue(0) # use default memory reservation
+	$global:inputs.enqueue(0) # use default storage reservation
+	$global:inputs.enqueue(0) # use default volume sizes
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue($saveOption) # next step save option
+}
+
+function Set-UseToolOrchestrationAndExternalStorageWithoutTLS([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue(0)     # skip GitOps
+	$global:inputs.enqueue(0)     # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(0) # choose minikube env
+	$global:inputs.enqueue(0) # choose minikube context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(1) # skip triage assistant
+	$global:inputs.enqueue(0) # choose tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # choose external storage
+	$global:inputs.enqueue('endpoint:9000') # specify endpoint
+	$global:inputs.enqueue(1) # specify no-TLS
+	$global:inputs.enqueue('my-storage-username') # specify storage username
+	$global:inputs.enqueue((New-Password 'my-storage-password')) # specify storage password
+	$global:inputs.enqueue((New-Password 'my-storage-password')) # specify storage password
+	$global:inputs.enqueue('code-dx-storage') # specify storage bucket
+	$global:inputs.enqueue(0) # skip backup
+	$global:inputs.enqueue(1) # choose deployment options (via other)
+	$global:inputs.enqueue(0) # choose PSP
+	$global:inputs.enqueue(0) # choose Network Policy
+	$global:inputs.enqueue(0) # choose TLS
+	$global:inputs.enqueue(0) # choose kubernetes.io/legacy-unknown signer
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue('cdx-svc') # specify namespace
+	$global:inputs.enqueue('codedx-tool-orchestration')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
+	$global:inputs.enqueue(1) # specify db replicas
+	$global:inputs.enqueue(0) # choose default cacerts
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue((New-Password 'my-tool-service-password')) # specify tool service pwd
+	$global:inputs.enqueue((New-Password 'my-tool-service-password')) # specify tool service pwd confirm
+	$global:inputs.enqueue((New-Password 'my-minio-password')) # specify MinIO pwd
+	$global:inputs.enqueue((New-Password 'my-minio-password')) # specify MinIO pwd confirm
+	$global:inputs.enqueue(2) # specify tool service replicas
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(0) # choose default Docker images
+	$global:inputs.enqueue(0) # use ClusterIP service
+	$global:inputs.enqueue(0) # use local accounts
+	$global:inputs.enqueue(0) # use default cpu reservation
+	$global:inputs.enqueue(0) # use default memory reservation
+	$global:inputs.enqueue(0) # use default storage reservation
+	$global:inputs.enqueue(0) # use default volume sizes
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue($saveOption) # next step save option
+}
+function Set-UseToolOrchestrationAndExternalStorageEKS([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue(0)     # skip GitOps
+	$global:inputs.enqueue(0)     # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(2) # choose EKS env
+	$global:inputs.enqueue(1) # choose EKS context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(1) # skip triage assistant
+	$global:inputs.enqueue(0) # choose tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # choose external storage
+	$global:inputs.enqueue('endpoint:9000') # specify endpoint
+	$global:inputs.enqueue(0) # specify uses-TLS
+	$global:inputs.enqueue('my-storage-username') # specify storage username
+	$global:inputs.enqueue((New-Password 'my-storage-password')) # specify storage password
+	$global:inputs.enqueue((New-Password 'my-storage-password')) # specify storage password
+	$global:inputs.enqueue('code-dx-storage') # specify storage bucket
+	$global:inputs.enqueue(0) # specify trust cert
+	$global:inputs.enqueue('storage-cert.pem') # specify cert
+	$global:inputs.enqueue(0) # skip backup
+	$global:inputs.enqueue(1) # choose deployment options (via other)
+	$global:inputs.enqueue(0) # choose PSP
+	$global:inputs.enqueue(0) # choose Network Policy
+	$global:inputs.enqueue(0) # choose TLS
+	$global:inputs.enqueue(0) # choose kubernetes.io/legacy-unknown signer
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue('cdx-svc') # specify namespace
+	$global:inputs.enqueue('codedx-tool-orchestration')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
+	$global:inputs.enqueue(1) # specify db replicas
+	$global:inputs.enqueue(0) # choose default cacerts
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue((New-Password 'my-tool-service-password')) # specify tool service pwd
+	$global:inputs.enqueue((New-Password 'my-tool-service-password')) # specify tool service pwd confirm
+	$global:inputs.enqueue((New-Password 'my-minio-password')) # specify MinIO pwd
+	$global:inputs.enqueue((New-Password 'my-minio-password')) # specify MinIO pwd confirm
+	$global:inputs.enqueue(2) # specify tool service replicas
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(0) # choose default Docker images
+	$global:inputs.enqueue(0) # use ClusterIP service
+	$global:inputs.enqueue(0) # use local accounts
+	$global:inputs.enqueue(0) # use default cpu reservation
+	$global:inputs.enqueue(0) # use default memory reservation
+	$global:inputs.enqueue(0) # use default storage reservation
+	$global:inputs.enqueue(0) # use default volume sizes
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue(1) # skip node selectors
+	$global:inputs.enqueue(1) # skip pod tolerations
+	$global:inputs.enqueue($saveOption) # next step save option
+}
+
+function Set-UseToolOrchestrationAndExternalStorageEKSNoMinIODefaults([int] $saveOption) {
+	$global:inputs = new-object collections.queue
+	$global:inputs.enqueue($null) # welcome
+	$global:inputs.enqueue(0)     # skip GitOps
+	$global:inputs.enqueue(0)     # prereqs
+	$global:inputs.enqueue($TestDrive) # workdir
+	$global:inputs.enqueue(2) # choose EKS env
+	$global:inputs.enqueue(1) # choose EKS context
+	$global:inputs.enqueue(0) # select context
+	$global:inputs.enqueue(0) # choose default port
+	$global:inputs.enqueue(1) # skip triage assistant
+	$global:inputs.enqueue(0) # choose tool orchestration
+	$global:inputs.enqueue(1) # skip external db
+	$global:inputs.enqueue(0) # choose external storage
+	$global:inputs.enqueue('endpoint:9000') # specify endpoint
+	$global:inputs.enqueue(0) # specify uses-TLS
+	$global:inputs.enqueue('my-storage-username') # specify storage username
+	$global:inputs.enqueue((New-Password 'my-storage-password')) # specify storage password
+	$global:inputs.enqueue((New-Password 'my-storage-password')) # specify storage password
+	$global:inputs.enqueue('code-dx-storage') # specify storage bucket
+	$global:inputs.enqueue(0) # specify trust cert
+	$global:inputs.enqueue('storage-cert.pem') # specify cert
+	$global:inputs.enqueue(0) # skip backup
+	$global:inputs.enqueue(1) # choose deployment options (via other)
+	$global:inputs.enqueue(0) # choose PSP
+	$global:inputs.enqueue(0) # choose Network Policy
+	$global:inputs.enqueue(0) # choose TLS
+	$global:inputs.enqueue(0) # choose kubernetes.io/legacy-unknown signer
+	$global:inputs.enqueue('ca.crt')  # specify cluster cert
+	$global:inputs.enqueue('cdx-app') # specify namespace
+	$global:inputs.enqueue('codedx')  # specify release name
+	$global:inputs.enqueue('cdx-svc') # specify namespace
+	$global:inputs.enqueue('codedx-tool-orchestration')  # specify release name
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd
+	$global:inputs.enqueue((New-Password 'my-root-db-password')) # specify root db pwd confirm
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd
+	$global:inputs.enqueue((New-Password 'my-replication-db-password')) # specify replication pwd confirm
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd
+	$global:inputs.enqueue((New-Password 'my-db-user-password')) # specify db user pwd confirm
+	$global:inputs.enqueue(1) # specify db replicas
+	$global:inputs.enqueue(0) # choose default cacerts
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd
+	$global:inputs.enqueue((New-Password 'my-codedx-password')) # specify cdx pwd confirm
+	$global:inputs.enqueue((New-Password 'my-tool-service-password')) # specify tool service pwd
+	$global:inputs.enqueue((New-Password 'my-tool-service-password')) # specify tool service pwd confirm
+	$global:inputs.enqueue((New-Password 'my-minio-password')) # specify MinIO pwd
+	$global:inputs.enqueue((New-Password 'my-minio-password')) # specify MinIO pwd confirm
+	$global:inputs.enqueue(2) # specify tool service replicas
+	$global:inputs.enqueue(1) # skip private reg
+	$global:inputs.enqueue(1) # choose Docker images
+	$global:inputs.enqueue('codedx-tomcat') # specify tomcat name
+	$global:inputs.enqueue('codedx-tomcat-init') # specify tomcat init name
+	$global:inputs.enqueue('codedx-mariadb') # specify mariadb name
+	$global:inputs.enqueue('codedx-tools') # specify tools name
+	$global:inputs.enqueue('codedx-toolsmono') # specify toolsmono name
+	$global:inputs.enqueue('codedx-toolservice') # specify toolservice name
+	$global:inputs.enqueue('codedx-sendresults') # specify sendresults name
+	$global:inputs.enqueue('codedx-senderrorresults') # specify senderrorresults name
+	$global:inputs.enqueue('codedx-newanalysis') # specify newanalysis name
+	$global:inputs.enqueue('codedx-prepare') # specify prepare name
+	$global:inputs.enqueue('codedx-cleanup') # specify cleanup name
+	$global:inputs.enqueue('codedx-workflow-controller') # specify workflow controller
+	$global:inputs.enqueue('codedx-workflow-executor') # specify workflow executor
+	$global:inputs.enqueue(0) # use ClusterIP service
+	$global:inputs.enqueue(0) # use local accounts
+	$global:inputs.enqueue(1) # choose custom cpu reservation
+	$global:inputs.enqueue('1001m')
+	$global:inputs.enqueue('1002m')
+	$global:inputs.enqueue('1003m')
+	$global:inputs.enqueue('1004')
+	$global:inputs.enqueue('1006')
+	$global:inputs.enqueue(1) # choose custom memory reservation
+	$global:inputs.enqueue('501')
+	$global:inputs.enqueue('502')
+	$global:inputs.enqueue('503')
+	$global:inputs.enqueue('504Mi')
+	$global:inputs.enqueue('506Mi')
+	$global:inputs.enqueue(1) # choose custom storage reservation
+	$global:inputs.enqueue('1025')
+	$global:inputs.enqueue('1026Mi')
+	$global:inputs.enqueue('1027')
+	$global:inputs.enqueue('1028Mi')
+	$global:inputs.enqueue('1030')
+	$global:inputs.enqueue(1) # choose default volume sizes
+	$global:inputs.enqueue(20)
+	$global:inputs.enqueue(25)
+	$global:inputs.enqueue(30)
+	$global:inputs.enqueue('default') # storage class name
+	$global:inputs.enqueue(0) # choose node selectors
+	$global:inputs.enqueue('alpha.eksctl.io/nodegroup-name') # specify node selector key (code dx app)
+	$global:inputs.enqueue('codedx-nodes-1') # specify node selector value (code dx app)
+	$global:inputs.enqueue('alpha.eksctl.io/nodegroup-name') # specify node selector key (master db)
+	$global:inputs.enqueue('codedx-nodes-2') # specify node selector value (master db)
+	$global:inputs.enqueue('alpha.eksctl.io/nodegroup-name') # specify node selector key (subordinate db)
+	$global:inputs.enqueue('codedx-nodes-3') # specify node selector value (subordinate db)
+	$global:inputs.enqueue('alpha.eksctl.io/nodegroup-name') # specify node selector key (tool service)
+	$global:inputs.enqueue('codedx-nodes-4') # specify node selector value (tool service)
+	$global:inputs.enqueue('alpha.eksctl.io/nodegroup-name') # specify node selector key (workflow controller)
+	$global:inputs.enqueue('codedx-nodes-6') # specify node selector value (workflow controller)
+	$global:inputs.enqueue('alpha.eksctl.io/nodegroup-name') # specify node selector key (tools)
+	$global:inputs.enqueue('codedx-nodes-7') # specify node selector value (tools)
+	$global:inputs.enqueue(0) # choose pod tolerations
+	$global:inputs.enqueue('host') # specify pod tolerations key (code dx app)
+	$global:inputs.enqueue('codedx-web') # specify pod tolerations value (code dx app)
+	$global:inputs.enqueue('host') # specify pod tolerations key (master db)
+	$global:inputs.enqueue('master-db') # specify pod tolerations value (master db)
+	$global:inputs.enqueue('host') # specify pod tolerations key (subordinate db)
+	$global:inputs.enqueue('subordinate-db') # specify pod tolerations value (subordinate db)
+	$global:inputs.enqueue('host') # specify pod tolerations key (tool service)
+	$global:inputs.enqueue('tool-service') # specify pod tolerations value (tool service)
+	$global:inputs.enqueue('host') # specify pod tolerations key (workflow controller)
+	$global:inputs.enqueue('workflow-controller') # specify pod tolerations value (workflow controller)
+	$global:inputs.enqueue('host') # specify pod tolerations key (tools)
+	$global:inputs.enqueue('tools') # specify pod tolerations value (tools)
 	$global:inputs.enqueue($saveOption) # next step save option
 }

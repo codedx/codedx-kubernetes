@@ -214,7 +214,7 @@ class MinIOVolumeSize : VolumeSizeStep {
 	}
 
 	[bool]CanRun() {
-		return ([VolumeSizeStep]$this).CanRun() -and (-not ($this.config.skipToolOrchestration))
+		return ([VolumeSizeStep]$this).CanRun() -and -not $this.config.skipToolOrchestration -and -not $this.config.skipMinIO
 	}
 
 	[void]ApplyDefault() {

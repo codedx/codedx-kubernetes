@@ -164,9 +164,21 @@ https://github.com/codedx/codedx-kubernetes/tree/master/setup/core
 
 		if (-not $this.config.skipToolOrchestration) {
 
-			'minioVolumeSizeGiB','toolServiceReplicas' | ForEach-Object {
-				$this.AddIntParameter($sb, $_)
+			if ($this.config.skipMinIO) {
+
+				$this.AddSwitchParameter($sb, 'skipMinIO')
+				$this.AddSwitchParameter($sb, 'externalWorkflowStorageEndpointSecure')
+
+				'externalWorkflowStorageEndpoint',
+				'externalWorkflowStorageUsername','externalWorkflowStoragePwd',
+				'externalWorkflowStorageBucketName','externalWorkflowStorageCertChainPath' | ForEach-Object {
+					$this.AddParameter($sb, $_)
+				}
+			} else {
+				$this.AddIntParameter($sb, 'minioVolumeSizeGiB')
 			}
+
+			$this.AddIntParameter($sb, 'toolServiceReplicas')
 			'namespaceToolOrchestration','releaseNameToolOrchestration' | ForEach-Object {
 				$this.AddParameter($sb, $_)
 			}

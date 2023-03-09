@@ -86,6 +86,10 @@ If release name contains chart name it will be used as a full name.
 {{- include "sanitize" (printf "%s-pre-delete-job" (include "codedx-tool-orchestration.fullname" .)) -}}
 {{- end -}}
 
+{{- define "codedx-tool-orchestration.migrate-data-job" -}}
+{{- include "sanitize" (printf "%s-migrate-data-job" (include "codedx-tool-orchestration.fullname" .)) -}}
+{{- end -}}
+
 {{- define "codedx-tool-orchestration.workflow.priorityClassName" -}}
 {{- include "sanitize" (printf "%s-wf-pc" (include "codedx-tool-orchestration.fullname" .)) -}}
 {{- end -}}
@@ -100,6 +104,30 @@ If release name contains chart name it will be used as a full name.
 
 {{- define "codedx-tool-orchestration.workflow-scc" -}}
 {{- include "sanitize" (printf "%s-workflow-scc" (include "codedx-tool-orchestration.fullname" .)) -}}
+{{- end -}}
+
+{{- define "codedx-tool-orchestration.storageEndpoint" -}}
+{{- if .Values.minio.enabled -}}
+{{- print (include "minio.ref.fullname" .) "." .Release.Namespace ".svc.cluster.local:" .Values.minio.service.port | quote -}}
+{{- else -}}
+{{- .Values.workflowStorage.endpoint | quote -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "codedx-tool-orchestration.storageCredentialSecretName" -}}
+{{- .Values.workflowStorage.existingSecret | default .Values.minio.global.minio.existingSecret | quote -}}
+{{- end -}}
+
+{{- define "codedx-tool-orchestration.storageTlsEnabled" -}}
+{{- print (or .Values.workflowStorage.endpointSecure (and .Values.minio.enabled .Values.minio.tls.enabled)) -}}
+{{- end -}}
+
+{{- define "codedx-tool-orchestration.storageTlsConfigMapName" -}}
+{{- .Values.workflowStorage.configMapName | default "" | quote -}}
+{{- end -}}
+
+{{- define "codedx-tool-orchestration.storageTlsConfigMapPublicCertName" -}}
+{{- .Values.workflowStorage.configMapPublicCertKeyName | default "" | quote -}}
 {{- end -}}
 
 {{/*

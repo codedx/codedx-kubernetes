@@ -1,4 +1,4 @@
-using module @{ModuleName='guided-setup'; RequiredVersion='1.10.0' }
+using module @{ModuleName='guided-setup'; RequiredVersion='1.11.0' }
 
 Import-Module 'pester' -ErrorAction SilentlyContinue
 if (-not $?) {
@@ -962,6 +962,78 @@ Describe 'Generate Setup Command from Classic Load Balancer Ingress HelmCommand 
 		$runSetupFile = join-path $TestDrive run-setup.ps1
 		$runSetupFile | Should -Exist
 		$expectedParams = "-kubeContextName 'EKS' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -codeDxMemoryReservation '8192Mi' -dbMasterMemoryReservation '8192Mi' -codeDxCPUReservation '2000m' -dbMasterCPUReservation '2000m' -codeDxEphemeralStorageReservation '2048Mi' -storageClassName 'default' -serviceTypeCodeDx 'LoadBalancer' -caCertsFilePath 'cacerts' -csrSignerNameCodeDx 'kubernetes.io/legacy-unknown' -csrSignerNameToolOrchestration 'kubernetes.io/legacy-unknown' -useHelmCommand -skipSealedSecrets -codedxAdminPwd 'my-codedx-password' -caCertsFilePwd 'changeit' -codedxDatabaseUserPwd 'my-db-user-password' -skipIngressEnabled -skipUseRootDatabaseUser -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 443 -dbVolumeSizeGiB 64 -dbSlaveReplicaCount 0 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -skipToolOrchestration -serviceAnnotationsCodeDx @{'service.beta.kubernetes.io/aws-load-balancer-backend-protocol'='https';'service.beta.kubernetes.io/aws-load-balancer-ssl-cert'='arn:value';'service.beta.kubernetes.io/aws-load-balancer-ssl-ports'='https'}"
+		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
+	}
+}
+
+Describe 'Generate Setup Command with External Storage' -Tag 'ExternalStorageHelmCommandPass' {
+
+	BeforeEach {
+		Set-TestDefaults
+	}
+
+	It '(52) Should generate minikube, HelmCommand setup.ps1 command with external storage' {
+	
+		Set-UseToolOrchestrationAndExternalStorageWithTLS 1
+
+		New-Mocks
+		. ./guided-setup.ps1
+
+		$runSetupFile = join-path $TestDrive run-setup.ps1
+		$runSetupFile | Should -Exist
+		$expectedParams = "-kubeContextName 'minikube' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -codeDxMemoryReservation '8192Mi' -dbMasterMemoryReservation '8192Mi' -dbSlaveMemoryReservation '8192Mi' -toolServiceMemoryReservation '500Mi' -workflowMemoryReservation '500Mi' -codeDxCPUReservation '2000m' -dbMasterCPUReservation '2000m' -dbSlaveCPUReservation '1000m' -codeDxEphemeralStorageReservation '2048Mi' -storageClassName 'default' -serviceTypeCodeDx 'ClusterIP' -csrSignerNameCodeDx 'kubernetes.io/legacy-unknown' -csrSignerNameToolOrchestration 'kubernetes.io/legacy-unknown' -codedxAdminPwd 'my-codedx-password' -codedxDatabaseUserPwd 'my-db-user-password' -skipIngressEnabled -skipUseRootDatabaseUser -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 9443 -dbVolumeSizeGiB 64 -dbSlaveVolumeSizeGiB 64 -dbSlaveReplicaCount 1 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -skipMinIO -externalWorkflowStorageEndpointSecure -externalWorkflowStorageEndpoint 'endpoint:9000' -externalWorkflowStorageUsername 'my-storage-username' -externalWorkflowStoragePwd 'my-storage-password' -externalWorkflowStorageBucketName 'code-dx-storage' -externalWorkflowStorageCertChainPath 'storage-cert.pem' -toolServiceReplicas 2 -namespaceToolOrchestration 'cdx-svc' -releaseNameToolOrchestration 'codedx-tool-orchestration' -toolServiceApiKey 'my-tool-service-password'"
+		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
+	}
+
+	It '(53) Should generate minikube, HelmCommand setup.ps1 command with external storage TLS no cert trust' {
+	
+		Set-UseToolOrchestrationAndExternalStorageWithTLSNoCert 1
+
+		New-Mocks
+		. ./guided-setup.ps1
+
+		$runSetupFile = join-path $TestDrive run-setup.ps1
+		$runSetupFile | Should -Exist
+		$expectedParams = "-kubeContextName 'minikube' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -codeDxMemoryReservation '8192Mi' -dbMasterMemoryReservation '8192Mi' -dbSlaveMemoryReservation '8192Mi' -toolServiceMemoryReservation '500Mi' -workflowMemoryReservation '500Mi' -codeDxCPUReservation '2000m' -dbMasterCPUReservation '2000m' -dbSlaveCPUReservation '1000m' -codeDxEphemeralStorageReservation '2048Mi' -storageClassName 'default' -serviceTypeCodeDx 'ClusterIP' -csrSignerNameCodeDx 'kubernetes.io/legacy-unknown' -csrSignerNameToolOrchestration 'kubernetes.io/legacy-unknown' -codedxAdminPwd 'my-codedx-password' -codedxDatabaseUserPwd 'my-db-user-password' -skipIngressEnabled -skipUseRootDatabaseUser -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 9443 -dbVolumeSizeGiB 64 -dbSlaveVolumeSizeGiB 64 -dbSlaveReplicaCount 1 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -skipMinIO -externalWorkflowStorageEndpointSecure -externalWorkflowStorageEndpoint 'endpoint:9000' -externalWorkflowStorageUsername 'my-storage-username' -externalWorkflowStoragePwd 'my-storage-password' -externalWorkflowStorageBucketName 'code-dx-storage' -toolServiceReplicas 2 -namespaceToolOrchestration 'cdx-svc' -releaseNameToolOrchestration 'codedx-tool-orchestration' -toolServiceApiKey 'my-tool-service-password'"
+		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
+	}
+
+	It '(54) Should generate minikube, HelmCommand setup.ps1 command with external storage no TLS' {
+	
+		Set-UseToolOrchestrationAndExternalStorageWithoutTLS 1
+
+		New-Mocks
+		. ./guided-setup.ps1
+
+		$runSetupFile = join-path $TestDrive run-setup.ps1
+		$runSetupFile | Should -Exist
+		$expectedParams = "-kubeContextName 'minikube' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -codeDxMemoryReservation '8192Mi' -dbMasterMemoryReservation '8192Mi' -dbSlaveMemoryReservation '8192Mi' -toolServiceMemoryReservation '500Mi' -workflowMemoryReservation '500Mi' -codeDxCPUReservation '2000m' -dbMasterCPUReservation '2000m' -dbSlaveCPUReservation '1000m' -codeDxEphemeralStorageReservation '2048Mi' -storageClassName 'default' -serviceTypeCodeDx 'ClusterIP' -csrSignerNameCodeDx 'kubernetes.io/legacy-unknown' -csrSignerNameToolOrchestration 'kubernetes.io/legacy-unknown' -codedxAdminPwd 'my-codedx-password' -codedxDatabaseUserPwd 'my-db-user-password' -skipIngressEnabled -skipUseRootDatabaseUser -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 9443 -dbVolumeSizeGiB 64 -dbSlaveVolumeSizeGiB 64 -dbSlaveReplicaCount 1 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -skipMinIO -externalWorkflowStorageEndpoint 'endpoint:9000' -externalWorkflowStorageUsername 'my-storage-username' -externalWorkflowStoragePwd 'my-storage-password' -externalWorkflowStorageBucketName 'code-dx-storage' -toolServiceReplicas 2 -namespaceToolOrchestration 'cdx-svc' -releaseNameToolOrchestration 'codedx-tool-orchestration' -toolServiceApiKey 'my-tool-service-password'"
+		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
+	}
+
+	It '(55) Should generate EKS, HelmCommand setup.ps1 command with external storage' {
+	
+		Set-UseToolOrchestrationAndExternalStorageEKS 1
+
+		New-Mocks
+		. ./guided-setup.ps1
+
+		$runSetupFile = join-path $TestDrive run-setup.ps1
+		$runSetupFile | Should -Exist
+		$expectedParams = "-kubeContextName 'EKS' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -codeDxMemoryReservation '8192Mi' -dbMasterMemoryReservation '8192Mi' -dbSlaveMemoryReservation '8192Mi' -toolServiceMemoryReservation '500Mi' -workflowMemoryReservation '500Mi' -codeDxCPUReservation '2000m' -dbMasterCPUReservation '2000m' -dbSlaveCPUReservation '1000m' -codeDxEphemeralStorageReservation '2048Mi' -storageClassName 'default' -serviceTypeCodeDx 'ClusterIP' -csrSignerNameCodeDx 'kubernetes.io/legacy-unknown' -csrSignerNameToolOrchestration 'kubernetes.io/legacy-unknown' -codedxAdminPwd 'my-codedx-password' -codedxDatabaseUserPwd 'my-db-user-password' -skipIngressEnabled -skipUseRootDatabaseUser -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 9443 -dbVolumeSizeGiB 64 -dbSlaveVolumeSizeGiB 64 -dbSlaveReplicaCount 1 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -skipMinIO -externalWorkflowStorageEndpointSecure -externalWorkflowStorageEndpoint 'endpoint:9000' -externalWorkflowStorageUsername 'my-storage-username' -externalWorkflowStoragePwd 'my-storage-password' -externalWorkflowStorageBucketName 'code-dx-storage' -externalWorkflowStorageCertChainPath 'storage-cert.pem' -toolServiceReplicas 2 -namespaceToolOrchestration 'cdx-svc' -releaseNameToolOrchestration 'codedx-tool-orchestration' -toolServiceApiKey 'my-tool-service-password'"
+		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
+	}
+
+	It '(56) Should generate EKS, HelmCommand setup.ps1 command with external storage and no MinIO defaults' {
+	
+		Set-UseToolOrchestrationAndExternalStorageEKSNoMinIODefaults 1
+
+		New-Mocks
+		. ./guided-setup.ps1
+
+		$runSetupFile = join-path $TestDrive run-setup.ps1
+		$runSetupFile | Should -Exist
+		$expectedParams = "-kubeContextName 'EKS' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -codeDxMemoryReservation '501Mi' -dbMasterMemoryReservation '502Mi' -dbSlaveMemoryReservation '503Mi' -toolServiceMemoryReservation '504Mi' -workflowMemoryReservation '506Mi' -codeDxCPUReservation '1001m' -dbMasterCPUReservation '1002m' -dbSlaveCPUReservation '1003m' -toolServiceCPUReservation '1004m' -workflowCPUReservation '1006m' -codeDxEphemeralStorageReservation '1025Mi' -dbMasterEphemeralStorageReservation '1026Mi' -dbSlaveEphemeralStorageReservation '1027Mi' -toolServiceEphemeralStorageReservation '1028Mi' -workflowEphemeralStorageReservation '1030Mi' -imageCodeDxTomcat 'codedx-tomcat' -imageCodeDxTools 'codedx-tools' -imageCodeDxToolsMono 'codedx-toolsmono' -imageNewAnalysis 'codedx-newanalysis' -imageSendResults 'codedx-sendresults' -imageSendErrorResults 'codedx-senderrorresults' -imageToolService 'codedx-toolservice' -imagePrepare 'codedx-prepare' -imagePreDelete 'codedx-cleanup' -imageCodeDxTomcatInit 'codedx-tomcat-init' -imageMariaDB 'codedx-mariadb' -imageWorkflowController 'codedx-workflow-controller' -imageWorkflowExecutor 'codedx-workflow-executor' -storageClassName 'default' -serviceTypeCodeDx 'ClusterIP' -csrSignerNameCodeDx 'kubernetes.io/legacy-unknown' -csrSignerNameToolOrchestration 'kubernetes.io/legacy-unknown' -codedxAdminPwd 'my-codedx-password' -codedxDatabaseUserPwd 'my-db-user-password' -skipIngressEnabled -skipUseRootDatabaseUser -codeDxVolumeSizeGiB 20 -codeDxTlsServicePortNumber 9443 -codeDxNodeSelector ([Tuple``2[string,string]]::new('alpha.eksctl.io/nodegroup-name','codedx-nodes-1')) -codeDxNoScheduleExecuteToleration ([Tuple``2[string,string]]::new('host','codedx-web')) -dbVolumeSizeGiB 25 -dbSlaveVolumeSizeGiB 30 -dbSlaveReplicaCount 1 -subordinateDatabaseNodeSelector ([Tuple``2[string,string]]::new('alpha.eksctl.io/nodegroup-name','codedx-nodes-3')) -subordinateDatabaseNoScheduleExecuteToleration ([Tuple``2[string,string]]::new('host','subordinate-db')) -masterDatabaseNodeSelector ([Tuple``2[string,string]]::new('alpha.eksctl.io/nodegroup-name','codedx-nodes-2')) -masterDatabaseNoScheduleExecuteToleration ([Tuple``2[string,string]]::new('host','master-db')) -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -skipMinIO -externalWorkflowStorageEndpointSecure -externalWorkflowStorageEndpoint 'endpoint:9000' -externalWorkflowStorageUsername 'my-storage-username' -externalWorkflowStoragePwd 'my-storage-password' -externalWorkflowStorageBucketName 'code-dx-storage' -externalWorkflowStorageCertChainPath 'storage-cert.pem' -toolServiceReplicas 2 -namespaceToolOrchestration 'cdx-svc' -releaseNameToolOrchestration 'codedx-tool-orchestration' -toolServiceNodeSelector ([Tuple``2[string,string]]::new('alpha.eksctl.io/nodegroup-name','codedx-nodes-4')) -toolServiceNoScheduleExecuteToleration ([Tuple``2[string,string]]::new('host','tool-service')) -workflowControllerNodeSelector ([Tuple``2[string,string]]::new('alpha.eksctl.io/nodegroup-name','codedx-nodes-6')) -workflowControllerNoScheduleExecuteToleration ([Tuple``2[string,string]]::new('host','workflow-controller')) -toolNodeSelector ([Tuple``2[string,string]]::new('alpha.eksctl.io/nodegroup-name','codedx-nodes-7')) -toolNoScheduleExecuteToleration ([Tuple``2[string,string]]::new('host','tools')) -toolServiceApiKey 'my-tool-service-password'"
 		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
 	}
 }

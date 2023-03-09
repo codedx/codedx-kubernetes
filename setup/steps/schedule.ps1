@@ -288,7 +288,7 @@ Note: You can use the same node selector key and value for multiple workloads.
 	}
 
 	[bool]CanRun() {
-		return ([NodeSelectorStep]$this).CanRun() -and -not $this.config.skipToolOrchestration
+		return ([NodeSelectorStep]$this).CanRun() -and -not $this.config.skipToolOrchestration -and -not $this.config.skipMinIO
 	}
 
 	[void]Reset(){
@@ -595,7 +595,7 @@ Note: You can use the same pod toleration key and value for multiple workloads.
 	}
 
 	[bool]CanRun() {
-		return ([PodTolerationStep]$this).CanRun() -and -not $this.config.skipToolOrchestration
+		return ([PodTolerationStep]$this).CanRun() -and -not $this.config.skipToolOrchestration -and -not $this.config.skipMinIO
 	}
 
 	[void]Reset(){

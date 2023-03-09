@@ -262,7 +262,7 @@ class MinIOMemory : MemoryStep {
 	}
 
 	[bool]CanRun() {
-		return ([MemoryStep]$this).CanRun() -and (-not ($this.config.skipToolOrchestration))
+		return ([MemoryStep]$this).CanRun() -and -not $this.config.skipToolOrchestration -and -not ($this.config.skipMinIO)
 	}
 
 	[void]ApplyDefault() {

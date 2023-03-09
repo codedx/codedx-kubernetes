@@ -208,6 +208,15 @@ class ConfigInput {
 
 	[bool]   $createSCCs
 
+	[bool]   $skipMinIO
+	[string] $externalWorkflowStorageEndpoint
+	[bool]   $externalWorkflowStorageEndpointSecure
+	[string] $externalWorkflowStorageUsername
+	[string] $externalWorkflowStoragePwd
+	[string] $externalWorkflowStorageBucketName
+	[bool]   $externalWorkflowStorageTrustCert
+	[string] $externalWorkflowStorageCertChainPath
+
 	[hashtable]  $notes = @{}
 
 	ConfigInput() {

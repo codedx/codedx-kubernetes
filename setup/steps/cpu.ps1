@@ -249,7 +249,7 @@ class MinIOCPU : CPUStep {
 	}
 
 	[bool]CanRun() {
-		return ([CPUStep]$this).CanRun() -and (-not ($this.config.skipToolOrchestration))
+		return ([CPUStep]$this).CanRun() -and -not $this.config.skipToolOrchestration -and -not ($this.config.skipMinIO)
 	}
 
 	[void]ApplyDefault() {

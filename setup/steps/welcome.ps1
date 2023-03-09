@@ -150,16 +150,22 @@ class Prerequisites : Step {
 	static [string] hidden $description = @'
 Your system must meet these prerequisites to run the Code Dx setup scripts:
 
-	- PowerShell Core (v7+)
-	- helm v3.1+ (https://github.com/helm/helm/releases/tag/v3.2.4)
-	- kubectl (https://kubernetes.io/docs/tasks/tools/install-kubectl/)
-	- openssl (https://www.openssl.org/)
-	- git (https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-	- keytool (Java 8 JRE - https://adoptopenjdk.net/)
+  - PowerShell Core v7 *
+  - helm v3.1 *
+  - kubectl *
+  - openssl *
+  - git *
+  - keytool *
 '@
 	static [string] hidden $kubesealDescription = @'
 
-	- kubeseal (https://github.com/bitnami-labs/sealed-secrets/releases)
+  - kubeseal *
+'@
+
+	static [string] hidden $versionLink = @'
+
+
+  * https://github.com/codedx/codedx-kubernetes#prerequisites
 '@
 
 	Prerequisites([ConfigInput] $config) : base(
@@ -176,6 +182,8 @@ Your system must meet these prerequisites to run the Code Dx setup scripts:
 		if (-not $this.config.skipSealedSecrets) {
 			$prereqDescription += [Prerequisites]::kubesealDescription
 		}
+		$prereqDescription += [Prerequisites]::versionLink
+
 		Write-HostSection 'Prerequisites' $prereqDescription
 
 		Write-Host 'Checking prerequisites...'; ([Step]$this).Delay()

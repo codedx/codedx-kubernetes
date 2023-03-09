@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.7.0
+.VERSION 2.8.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -449,13 +449,13 @@ function New-ToolOrchestrationValuesFile([string]   $codedxNamespace,
 	[string]   $workflowEphemeralStorageLimit,
 	[int]      $kubeApiTargetPort,
 	[string]   $toolOrchestrationExistingSecret,
-	[string]   $minioExistingSecretName,
+	[string]   $workflowStorageExistingSecretName,
 
 	[string]   $tlsToolServiceCertSecret,
 	[string]   $codedxCaConfigMap,
 
 	[string]   $tlsMinioCertSecret,
-	[string]   $minioCertConfigMap,
+	[string]   $workflowStorageCertConfigMap,
 
 	[Tuple`2[string,string]] $toolServiceNodeSelector,
 	[Tuple`2[string,string]] $minioNodeSelector,
@@ -475,7 +475,13 @@ function New-ToolOrchestrationValuesFile([string]   $codedxNamespace,
 	[string]   $valuesFile,
 	[switch]   $usePnsExecutor,
 	[int]      $stepMinimumRunTimeSeconds,
-	[switch]   $createSCCs) {
+	[switch]   $createSCCs,
+	
+	[switch]   $skipMinIO,
+	[string]   $workflowStorageEndpoint,
+	[switch]   $workflowStorageEndpointSecure,
+	[string]   $workflowStorageBucketName,
+	[string]   $workflowStorageCertConfigMapKeyName) {
 
 	$protocol = 'http'
 	if ($configureTls) {
@@ -531,6 +537,7 @@ argo:
 {26}
 
 minio:
+  enabled: {52}
   global:
     minio:
       existingSecret: '{0}'
@@ -552,9 +559,13 @@ minio:
   tolerations: {33}
 {27}
 
-minioTlsTrust:
-  configMapName: {28}
-  configMapPublicCertKeyName: 'minio.pem'
+workflowStorage:
+  endpoint: '{53}'
+  endpointSecure: {54}
+  bucketName: '{55}'
+  existingSecret: '{0}'
+  configMapName: '{28}'
+  configMapPublicCertKeyName: '{56}'
 
 podSecurityPolicy:
   tws:
@@ -619,7 +630,7 @@ openshift:
   createSCC: {41}
 
 minimumWorkflowStepRunTimeSeconds: {51}
-'@ -f $minioExistingSecretName,
+'@ -f $workflowStorageExistingSecretName,
 $codedxNamespace,$codedxReleaseName,$toolOrchestrationExistingSecret,
 $imagePullSecretName,$toolsImage,$toolsMonoImage,$newAnalysisImage,$sendResultsImage,$sendErrorResultsImage,$toolServiceImage,$numReplicas,
 $tlsConfig,$tlsMinioCertSecret,$tlsToolServiceCertSecret,
@@ -628,7 +639,7 @@ $tlsConfig,$codedxCaConfigMap,$minioVolumeSizeGiB,$imagePullSecretYaml,$preDelet
 (Format-ResourceLimitRequest -limitMemory $toolServiceMemoryLimit -limitCPU $toolServiceCPULimit -limitEphemeralStorage $toolServiceEphemeralStorageLimit),
 (Format-ResourceLimitRequest -limitMemory $workflowMemoryLimit -limitCPU $workflowCPULimit -limitEphemeralStorage $workflowEphemeralStorageLimit -indent 4),
 (Format-ResourceLimitRequest -limitMemory $minioMemoryLimit -limitCPU $minioCPULimit -limitEphemeralStorage $minioEphemeralStorageLimit -indent 2),
-$minioCertConfigMap,
+$workflowStorageCertConfigMap,
 (Format-NodeSelector $toolServiceNodeSelector), (Format-NodeSelector $minioNodeSelector), (Format-NodeSelector $workflowControllerNodeSelector),
 (Format-PodTolerationNoScheduleNoExecute $toolServiceNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $minioNoScheduleExecuteToleration), (Format-PodTolerationNoScheduleNoExecute $workflowControllerNoScheduleExecuteToleration),
 ($null -eq $toolNodeSelector ? '' : $toolNodeSelector.Item1),
@@ -641,7 +652,9 @@ $createSCCs.tostring().tolower(),
 $minioDockerImageParts[0],$minioDockerImageParts[1],$minioDockerImageParts[2],
 $workflowControllerImageParts[0],$workflowControllerImageParts[1],$workflowExecutorImageParts[1],$workflowControllerImageParts[2],
 $minioImagePullSecretYaml,$prepareImage,
-$stepMinimumRunTimeSeconds
+$stepMinimumRunTimeSeconds,
+(-not $skipMinIO).tostring().tolower(),
+$workflowStorageEndpoint,$workflowStorageEndpointSecure.ToString().ToLower(),$workflowStorageBucketName,$workflowStorageCertConfigMapKeyName
 
 	$values | out-file $valuesFile -Encoding ascii -Force
 	Get-ChildItem $valuesFile

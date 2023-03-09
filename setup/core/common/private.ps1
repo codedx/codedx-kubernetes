@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.2.0
+.VERSION 1.3.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -136,6 +136,16 @@ function Get-MinioPdSecretName([string] $releaseName) {
 
 function New-MinioPdSecret([string] $namespace, [string] $releaseName, [string] $minioUsername, [string] $minioPwd, [switch] $useGitOps) {
 	New-GenericSecretResource $namespace (Get-MinioPdSecretName $releaseName) @{"access-key"=$minioUsername;"secret-key"=$minioPwd} @{} `
+		-useGitOps:$useGitOps `
+		-useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
+}
+
+function Get-WorkflowStorageSecretName([string] $releaseName) {
+	"$releaseName-wf-storage-pd"
+}
+
+function New-WorkflowStorageSecretName([string] $namespace, [string] $releaseName, [string] $storageUsername, [string] $storagePwd, [switch] $useGitOps) {
+	New-GenericSecretResource $namespace (Get-WorkflowStorageSecretName $releaseName) @{"access-key"=$storageUsername;"secret-key"=$storagePwd} @{} `
 		-useGitOps:$useGitOps `
 		-useSealedSecrets:$useSealedSecrets $sealedSecretsNamespace $sealedSecretsControllerName $sealedSecretsPublicKeyPath
 }

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.6.0
+.VERSION 2.7.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -135,7 +135,7 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 	if ($useSaml) {
 
 		$protocol = 'https'
-		if (-not $ingressEnabled -and -not $tlsServiceEnabled) { # ingress will always use TLS
+		if (-not $ingressEnabled -and -not $configureServiceTls) { # ingress will always use TLS
 			$protocol = 'http'
 		}
 		$hostBasePath = "$protocol`://$codeDxDnsName/codedx"

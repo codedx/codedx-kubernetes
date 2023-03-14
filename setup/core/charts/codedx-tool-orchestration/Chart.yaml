@@ -1,6 +1,6 @@
 apiVersion: v2
 name: codedx-tool-orchestration
-version: 1.71.0
+version: 1.72.0
 appVersion: "1.21.0"
 description: A Helm chart for Code Dx Tool Orchestration
 icon: https://codedx.com/wp-content/uploads/2017/03/CodeDx-logo.png

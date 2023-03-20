@@ -160,6 +160,9 @@ class SelectContext: Step {
 
 class GetKubernetesPort: Step {
 
+	static [int] hidden $minPort = 0
+	static [int] hidden $maxPort = 65535
+
 	GetKubernetesPort([ConfigInput] $config) : base(
 		[GetKubernetesPort].Name, 
 		$config,
@@ -182,13 +185,23 @@ class GetKubernetesPort: Step {
 				break
 			} catch {
 				Write-Host "ERROR: Unable to read port from cluster (is the cluster up and running?):`n$_`n"
+				Write-Host "If you suspect this is a permissions issue, enter 'N' below and manually specify a port.`n"
 				$question = new-object YesNoQuestion("Try again?",
 					"Yes, try again.",
-					"No, go back to the previous step and select a different kubectl context.", 0)
+					"No, manually enter port number.", 0)
 				
 				$question.Prompt()
-				if (-not $question.hasResponse -or $question.choice -ne 0) {
+				if (-not $question.hasResponse) {
 					return $false
+				} elseif (1 -eq $question.choice) {
+
+					$portNumber = $this.SpecifyKubernetesPort()
+					if ($this.IsInvalidPortNumber($portNumber)) {
+						return $false
+					}
+
+					$this.config.kubeApiTargetPort = $portNumber
+					return $true
 				}
 			}
 		}
@@ -203,17 +216,31 @@ class GetKubernetesPort: Step {
 		}
 
 		if ($question.choice -eq 1) {
-			$question = new-object IntegerQuestion('Enter the port number for your Kubernetes port', 0, 65535, $false)
-		
-			$question.Prompt()
-			if (-not $question.hasResponse) {
+
+			$portNumber = $this.SpecifyKubernetesPort()
+			if ($this.IsInvalidPortNumber($portNumber)) {
 				return $false
 			}
 
-			$this.config.kubeApiTargetPort = $question.intResponse
+			$this.config.kubeApiTargetPort = $portNumber
 		}
 
 		return $true
+	}
+
+	[int]SpecifyKubernetesPort() {
+
+		$question = new-object IntegerQuestion('Enter the port number for your Kubernetes port', [GetKubernetesPort]::minPort, [GetKubernetesPort]::maxPort, $false)
+		
+		$question.Prompt()
+		if (-not $question.hasResponse) {
+			return -1
+		}
+		return $question.intResponse
+	}
+
+	[bool]IsInvalidPortNumber([int] $portNumber) {
+		return $portNumber -lt [GetKubernetesPort]::minPort -or $portNumber -gt [GetKubernetesPort]::maxPort
 	}
 
 	[void]Reset() {

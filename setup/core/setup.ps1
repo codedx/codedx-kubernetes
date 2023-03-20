@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.11.0
+.VERSION 2.11.1
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -248,6 +248,7 @@ $useLocalDatabase = -not $skipDatabase
 $useRootDatabaseUser = -not $skipUseRootDatabaseUser
 
 $useGitOps = $useHelmOperator -or $useHelmController -or $useHelmManifest -or $useHelmCommand
+$invokeHelm = -not $useGitOps -or $useHelmManifest
 $useSealedSecrets = $useGitOps -and -not $skipSealedSecrets
 
 $useVelero = $backupType -like 'velero*'
@@ -800,24 +801,27 @@ if ($useToolOrchestration) {
 		}
 	}
 
-	Write-Verbose 'Deploying Tool Orchestration...'
-	$chartFolder = join-path $workDir .repo/setup/core/charts/codedx-tool-orchestration
-	$helmResult = Invoke-HelmCommand 'Tool Orchestration' `
-		$waitTimeSeconds $namespaceToolOrchestration `
-		$releaseNameToolOrchestration `
-		$helmTimeoutToolOrchestration `
-		$chartFolder `
-		$toolOrchestrationValuesFile.FullName `
-		$extraToolOrchestrationValuesPath `
-		-dryRun:$useGitOps `
-		-skipCRDs
+	if ($invokeHelm) {
 
-	if (-not $useGitOps) {
-		Wait-Deployment 'Helm Upgrade/Install: Tool Orchestration' $waitTimeSeconds $namespaceToolOrchestration $toolOrchestrationFullName $toolServiceReplicas
-	}
+		Write-Verbose 'Deploying Tool Orchestration...'
+		$chartFolder = join-path $workDir .repo/setup/core/charts/codedx-tool-orchestration
+		$helmResult = Invoke-HelmCommand 'Tool Orchestration' `
+			$waitTimeSeconds $namespaceToolOrchestration `
+			$releaseNameToolOrchestration `
+			$helmTimeoutToolOrchestration `
+			$chartFolder `
+			$toolOrchestrationValuesFile.FullName `
+			$extraToolOrchestrationValuesPath `
+			-dryRun:$useGitOps `
+			-skipCRDs
 
-	if ($useHelmManifest) {
-		New-ResourceFile 'HelmManifest' $namespaceToolOrchestration $releaseNameToolOrchestration $helmResult
+		if (-not $useGitOps) {
+			Wait-Deployment 'Helm Upgrade/Install: Tool Orchestration' $waitTimeSeconds $namespaceToolOrchestration $toolOrchestrationFullName $toolServiceReplicas
+		}
+
+		if ($useHelmManifest) {
+			New-ResourceFile 'HelmManifest' $namespaceToolOrchestration $releaseNameToolOrchestration $helmResult
+		}
 	}
 }
 
@@ -928,55 +932,29 @@ $codeDxDeploymentValuesFile = New-CodeDxDeploymentValuesFile $codeDxDnsName $cod
 	$jobsLimitCpu $jobsLimitMemory $jobsLimitDatabase $jobsLimitDisk `
 	$egressPortsTCP $egressPortsUDP
 
-### Deploy Code Dx
-Write-Verbose 'Deploying Code Dx...'
-$codeDxChartFolder = join-path $workDir .repo/setup/core/charts/codedx
-$helmResult = Invoke-HelmCommand 'Code Dx' `
-	$waitTimeSeconds $namespaceCodeDx `
-	$releaseNameCodeDx `
-	$helmTimeoutCodeDx `
-	$codeDxChartFolder `
-	$codeDxDeploymentValuesFile.FullName `
-	$extraCodeDxValuesPaths `
-	-dryRun:$useGitOps `
-	-skipCRDs
+if ($invokeHelm) {
 
-if (-not $useGitOps) {
-	Wait-Deployment 'Helm Upgrade/Install: Code Dx' $waitTimeSeconds $namespaceCodeDx $codeDxChartFullName 1
-}
-
-if ($useHelmManifest) {
-	New-ResourceFile 'HelmManifest' $namespaceCodeDx $releaseNameCodeDx $helmResult
-}
-
-if ($useVelero) {
-
-	$skipDatabaseBackup = $skipDatabase -or $dbSlaveReplicaCount -le 0
-
-	$scheduleName = "$releaseNameCodeDx-schedule"
-	$databaseBackupTimeout = "$($backupDatabaseTimeoutMinutes)m"
-	$databaseBackupTimeToLive = "$($backupTimeToLiveHours)h0m0s"
-
-	Write-Verbose "Creating Velero Schedule resource $scheduleName..."
-	$schedule = New-VeleroBackupSchedule $workDir $scheduleName `
-		'schedule.yaml' `
+	### Deploy Code Dx
+	Write-Verbose 'Deploying Code Dx...'
+	$codeDxChartFolder = join-path $workDir .repo/setup/core/charts/codedx
+	$helmResult = Invoke-HelmCommand 'Code Dx' `
+		$waitTimeSeconds $namespaceCodeDx `
 		$releaseNameCodeDx `
-		$namespaceVelero `
-		$backupScheduleCronExpression `
-		$namespaceCodeDx `
-		$namespaceToolOrchestration `
-		$databaseBackupTimeout `
-		$databaseBackupTimeToLive `
-		-skipDatabaseBackup:$skipDatabaseBackup `
-		-skipToolOrchestration:$skipToolOrchestration `
-		-dryRun:$useGitOps
+		$helmTimeoutCodeDx `
+		$codeDxChartFolder `
+		$codeDxDeploymentValuesFile.FullName `
+		$extraCodeDxValuesPaths `
+		-dryRun:$useGitOps `
+		-skipCRDs
 
-	if ($useGitOps) {
-		New-ResourceFile 'Schedule' $namespaceVelero $scheduleName $schedule
+	if (-not $useGitOps) {
+		Wait-Deployment 'Helm Upgrade/Install: Code Dx' $waitTimeSeconds $namespaceCodeDx $codeDxChartFullName 1
 	}
-}
 
-if ($useGitOps -and (-not $useHelmManifest)) {
+	if ($useHelmManifest) {
+		New-ResourceFile 'HelmManifest' $namespaceCodeDx $releaseNameCodeDx $helmResult
+	}
+} else {
 
 	$useHelmRelease = $useHelmController -or $useHelmOperator
 
@@ -1098,6 +1076,33 @@ if ($useGitOps -and (-not $useHelmManifest)) {
 				$toolOrchestrationDockerImages `
 				$helmTimeoutToolOrchestration
 		}
+	}
+}
+
+if ($useVelero) {
+
+	$skipDatabaseBackup = $skipDatabase -or $dbSlaveReplicaCount -le 0
+
+	$scheduleName = "$releaseNameCodeDx-schedule"
+	$databaseBackupTimeout = "$($backupDatabaseTimeoutMinutes)m"
+	$databaseBackupTimeToLive = "$($backupTimeToLiveHours)h0m0s"
+
+	Write-Verbose "Creating Velero Schedule resource $scheduleName..."
+	$schedule = New-VeleroBackupSchedule $workDir $scheduleName `
+		'schedule.yaml' `
+		$releaseNameCodeDx `
+		$namespaceVelero `
+		$backupScheduleCronExpression `
+		$namespaceCodeDx `
+		$namespaceToolOrchestration `
+		$databaseBackupTimeout `
+		$databaseBackupTimeToLive `
+		-skipDatabaseBackup:$skipDatabaseBackup `
+		-skipToolOrchestration:$skipToolOrchestration `
+		-dryRun:$useGitOps
+
+	if ($useGitOps) {
+		New-ResourceFile 'Schedule' $namespaceVelero $scheduleName $schedule
 	}
 }
 

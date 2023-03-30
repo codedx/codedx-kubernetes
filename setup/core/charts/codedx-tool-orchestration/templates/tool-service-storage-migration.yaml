@@ -24,6 +24,14 @@ spec:
       securityContext:
         fsGroup: 1000
         runAsUser: 1000
+      {{- if .Values.nodeSelectors }}
+      nodeSelector:
+      {{- toYaml .Values.nodeSelectors | trim | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations:
+      {{- toYaml .Values.tolerations | trim | nindent 8 }}
+      {{- end }}
       restartPolicy: Never
       initContainers:
       - name: "wait-for-storage"

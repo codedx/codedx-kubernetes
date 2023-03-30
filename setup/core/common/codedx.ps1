@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.8.0
+.VERSION 2.8.1
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -623,8 +623,8 @@ tolerations: {32}
 tools:
   nodeSelectorKey: '{35}'
   nodeSelectorValue: '{36}'
-  tolerationKey: '{37}'
-  tolerationValue: '{38}'
+  podTolerationKey: '{37}'
+  podTolerationValue: '{38}'
 
 openshift:
   createSCC: {41}

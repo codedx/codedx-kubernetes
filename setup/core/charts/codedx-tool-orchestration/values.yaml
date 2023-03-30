@@ -97,11 +97,11 @@ tools:
   #
   # Then use this configuration to create a toleration for codedx-tool-node:
   #
-  # tolerationKey: dedicated
-  # tolerationValue: codedx-tool-node
+  # podTolerationKey: dedicated
+  # podTolerationValue: codedx-tool-node
   #
-  tolerationKey:
-  tolerationValue:
+  podTolerationKey:
+  podTolerationValue:
 
 logs:
   # Maximum size in MB for each log file

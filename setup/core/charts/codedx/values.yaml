@@ -510,7 +510,9 @@ codedxTls:
   #
   keyFile: 'codedx-cert.key'
 
-priorityClassValue: 10100
+priorityClass:
+  create: true
+  value: 10100
 
 # Annotations for Code Dx pod
 podAnnotations: {}
@@ -553,7 +555,9 @@ mariadb:
       # Use default storage class for master/slave PVCs
       storageClass: 
       size: 32Gi
-    priorityClassValue: 10200
+    priorityClass:
+      create: true
+      value: 10200
     podDisruptionBudget:
       enabled: true
       minAvailable:
@@ -591,7 +595,9 @@ mariadb:
       size: 32Gi
       backup:
         size: 32Gi
-    priorityClassValue: 10200
+    priorityClass:
+      create: true
+      value: 10200
     podDisruptionBudget:
       enabled: true
       minAvailable: 1

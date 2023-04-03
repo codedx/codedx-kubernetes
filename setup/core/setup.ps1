@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.11.1
+.VERSION 2.12.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -201,7 +201,9 @@ param (
 	[int]                    $jobsLimitCpu,
 	[int]                    $jobsLimitMemory,
 	[int]                    $jobsLimitDatabase,
-	[int]                    $jobsLimitDisk
+	[int]                    $jobsLimitDisk,
+
+	[switch]                 $skipNamespaceConfiguration
 )
 
 $ErrorActionPreference = 'Stop'
@@ -635,9 +637,13 @@ if (-not $useGitOps) {
 	}
 }
 
-### Create Code Dx Namespace
-Write-Verbose "Creating namespace $namespaceCodeDx..."
-New-NamespaceResource $namespaceCodeDx ([Tuple]::Create('name', $namespaceCodeDx)) -useGitOps:$useGitOps
+if ($skipNamespaceConfiguration) {
+	Write-Verbose "Skipping create-and-configure namespace step for $namespaceCodeDx (assuming namespace exists with name label)..."
+} else {
+	### Create Code Dx Namespace
+	Write-Verbose "Creating namespace $namespaceCodeDx..."
+	New-NamespaceResource $namespaceCodeDx ([Tuple]::Create('name', $namespaceCodeDx)) -useGitOps:$useGitOps
+}
 
 ### Optionally Configure Docker Image Pull Secret
 if ('' -ne $dockerImagePullSecretName) {
@@ -652,8 +658,12 @@ if ('' -eq $caCertsFilePath -and $codeDxMustTrustCerts) {
 
 ### Optionally Create Code Dx Tool Orchestration Namespace
 if ($useToolOrchestration) {
-	Write-Verbose "Creating namespace $namespaceToolOrchestration..."
-	New-NamespaceResource $namespaceToolOrchestration ([Tuple]::Create('name', $namespaceToolOrchestration)) -useGitOps:$useGitOps
+	if ($skipNamespaceConfiguration) {
+		Write-Verbose "Skipping create-and-configure namespace step for $namespaceToolOrchestration (assuming namespace exists with name label)..."
+	} else {
+		Write-Verbose "Creating namespace $namespaceToolOrchestration..."
+		New-NamespaceResource $namespaceToolOrchestration ([Tuple]::Create('name', $namespaceToolOrchestration)) -useGitOps:$useGitOps
+	}
 }
 
 ### Optionally Configure Code Dx TLS

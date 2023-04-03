@@ -173,7 +173,9 @@ spec:
       {{ else }}
           command: ["bash", "-c", "url='{{ .Values.codedxProps.dbconnection.externalDbUrl }}' && pat='^jdbc:mysql://([^/]+)/.+$' && [[ $url =~ $pat ]] && host=${BASH_REMATCH[1]} && for i in {1..60}; do if (timeout 2 bash -c </dev/tcp/$host/3306 echo $?); then echo 'Successfully connected to MariaDB port'; exit 0; else echo 'Retrying database connection...'; sleep 2; fi; done; echo 'MariaDB is unavailable'; exit 1"]
       {{ end -}}
+      {{- if .Values.priorityClass.create }}
       priorityClassName: {{ include "codedx.priorityClassName" . | quote }}
+      {{ end -}}
       restartPolicy: Always
       volumes:
       - name: 'codedx-appdata'

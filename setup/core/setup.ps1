@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.12.0
+.VERSION 2.12.1
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -567,7 +567,10 @@ if ($useHelmManifest -and (Test-CodeDxDeployment $namespaceCodeDx)) {
 ### Create Work Directory
 $workDir = join-path $workDir "$releaseNameCodeDx-$releaseNameToolOrchestration"
 Write-Verbose "Creating directory $workDir..."
-New-Item -Type Directory $workDir -Force
+
+# Use an absolute path for workDir
+$workDir = (New-Item -Type Directory $workDir -Force).FullName
+Write-Verbose "Using work directory $workDir..."
 
 ### Switch to Work Directory
 Write-Verbose "Switching to directory $workDir..."

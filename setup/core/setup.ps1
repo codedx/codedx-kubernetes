@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.12.1
+.VERSION 2.14.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -271,8 +271,14 @@ if (-not $skipTLS -and $isBetaCsrRequired -and -not (Test-CertificateSigningRequ
 }
 
 ### Validate Parameters
-if ($useToolOrchestration -and $workflowStepMinimumRunTimeSeconds -le 0) {
-	Write-ErrorMessageAndExit "Using the PNS executor requires workflow steps to run for a minimum amount of time. The value for -workflowStepMinimumRunTimeSeconds ($workflowStepMinimumRunTimeSeconds), which must be greater than 0."
+if ($useToolOrchestration) {
+	if ($workflowStepMinimumRunTimeSeconds -le 0) {
+		Write-ErrorMessageAndExit "Using the PNS executor requires workflow steps to run for a minimum amount of time. The value for -workflowStepMinimumRunTimeSeconds ($workflowStepMinimumRunTimeSeconds) must be greater than 0."
+	}
+
+	if ($toolServiceReplicas -le 0) {
+		Write-ErrorMessageAndExit "Using tool orchestration requires 1 or more tool service replicas ($toolServiceReplicas is invalid). The value for -toolServiceReplicas ($toolServiceReplicas) must be greater than 0."
+	}
 }
 
 $dns1123SubdomainExpr = '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
@@ -595,6 +601,16 @@ $repoDirectory,$oldRepoDirectory | ForEach-Object {
 Invoke-GitClone $codedxGitRepo $codedxGitRepoBranch $repoDirectory
 if ($pauseAfterGitClone) {
 	Read-Host -Prompt 'git clone complete, press Enter to continue...' | Out-Null
+}
+
+$defaultHelmRepo = 'https://codedx.github.io/codedx-kubernetes'
+if ($codedxHelmRepo -ne $defaultHelmRepo) {
+
+	Write-Verbose "Changing Helm repository reference from $defaultHelmRepo to $codedxHelmRepo..."
+	$chartsDirectory = join-path $repoDirectory "setup/core/charts"
+	
+	Set-HelmChartRepositoryReference (join-path $chartsDirectory 'codedx/Chart.yaml') $defaultHelmRepo $codedxHelmRepo
+	Set-HelmChartRepositoryReference (join-path $chartsDirectory 'codedx-tool-orchestration/Chart.yaml') $defaultHelmRepo $codedxHelmRepo
 }
 
 ### Enforce Upgrade Constraint(s)

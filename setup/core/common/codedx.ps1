@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.8.1
+.VERSION 2.9.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -835,4 +835,12 @@ function Get-HelmChartVersion([string] $chartPath) {
 		return $null
 	}
 	return $matches.version
+}
+
+function Set-HelmChartRepositoryReference([string] $chartYamlPath, [string] $currentHelmRepo, [string] $newHelmRepo) {
+
+	$chartContent = Get-Content $chartYamlPath
+	$chartContent = $chartContent -replace $currentHelmRepo,$newHelmRepo
+
+	Set-Content $chartYamlPath $chartContent
 }

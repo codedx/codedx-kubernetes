@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.14.0
+.VERSION 2.14.1
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -264,7 +264,7 @@ if (-not (Test-SetupPreqs ([ref]$prereqMessages) -useSealedSecrets:$useSealedSec
 }
 
 $csrSignerNameLegacyUnknown = Get-CsrSignerNameLegacyUnknown
-$isBetaCsrRequired = $csrSignerNameCodeDx -eq $csrSignerNameLegacyUnknown -or $csrSignerNameToolOrchestration -eq $csrSignerNameLegacyUnknown
+$isBetaCsrRequired = $csrSignerNameCodeDx -eq $csrSignerNameLegacyUnknown -or (-not $skipToolOrchestration -and $csrSignerNameToolOrchestration -eq $csrSignerNameLegacyUnknown)
 if (-not $skipTLS -and $isBetaCsrRequired -and -not (Test-CertificateSigningRequestV1Beta1)) {
 	# the v1 stable CSR API no longer supports the legacy-unknown signer name
 	Write-ErrorMessageAndExit "Unable to continue because you previously enabled the TLS deployment option with the 'kubernetes.io/legacy-unknown' signer name. That signer requires the v1beta1 version of the Certificate Request Signer (CSR) resource, unavailable in this Kubernetes version. You must either disable the TLS deployment option by using the -skipTLS deployment script parameter or switch to an alternate Certificate Request Signer. For an example of enabling the TLS deployment option with cert-manager (https://cert-manager.io/docs/usage/kube-csr/), refer to https://github.com/codedx/codedx-kubernetes/blob/master/setup/core/docs/config/cert-manager-csr-upgrade.md."

@@ -43,7 +43,7 @@ This section describes the setup.ps1 script parameters, which you can specify by
 | `minioCPUReservation`                              | CPU request and limit for MinIO                            | `2` (example)                                     |
 | `workflowCPUReservation`                           | CPU request and limit for workflow controller              | `2` (example)                                     |
 |                                                    |                                                            |                                                   |
-| `codeDxEphemeralStorageReservation`                | storage request and limit for Code Dx                      | `2Gi`                                             |
+| `codeDxEphemeralStorageReservation`                | storage request and limit for Code Dx                      | `2868Mi`                                             |
 | `dbMasterEphemeralStorageReservation`              | storage request and limit for the master database          | `2Gi` (example)                                   |
 | `dbSlaveEphemeralStorageReservation`               | storage request and limit for slave databases              | `2Gi` (example)                                   |
 | `toolServiceEphemeralStorageReservation`           | storage request and limit for the tool service             | `2Gi` (example)                                   |

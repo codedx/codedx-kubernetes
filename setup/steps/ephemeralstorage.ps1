@@ -162,7 +162,7 @@ class CodeDxEphemeralStorage : EphemeralStorageStep {
 	}
 
 	[string]GetDefault() {
-		return '2048Mi'
+		return '2868Mi'
 	}
 }
 

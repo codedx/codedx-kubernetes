@@ -36,6 +36,7 @@ spec:
       securityContext:
         fsGroup: 1000
         runAsUser: 1000
+        runAsGroup: 1000
       {{- if .Values.nodeSelectors }}
       nodeSelector:
       {{- toYaml .Values.nodeSelectors | trim | nindent 8 }}
@@ -46,6 +47,12 @@ spec:
       {{- end }}
       containers:
       - env:
+        - name: TMPDIR
+          value: /tmp
+        - name: CATALINA_BASE
+          value: /opt/tomcat
+        - name: CATALINA_TMPDIR
+          value: /opt/tomcat/temp
         - name: SUPERUSER_NAME
           value: "admin"
         - name: SUPERUSER_PASSWORD
@@ -85,6 +92,8 @@ spec:
           periodSeconds: 15
           timeoutSeconds: 10
         command: ["start.sh"]
+        securityContext:
+          readOnlyRootFilesystem: true
         args: {{ include "codedx.props.params.separated" . | nindent 8 }}
         ports:
         - containerPort: 8080
@@ -165,8 +174,14 @@ spec:
           name: codedx-tls
           subPath: ssl.key
         {{- end }}
+        - mountPath: /opt/tomcat
+          name: ephemeral-tomcat
+        - mountPath: /tmp
+          name: ephemeral-tmp
       initContainers:
         - name: {{ include "dbinit.fullname" . | quote }}
+          securityContext:
+            readOnlyRootFilesystem: true
           image: {{ required "A tomcat init image must be provided! Assign codedxTomcatInitImage!" .Values.codedxTomcatInitImage | quote }}
       {{- if .Values.mariadb.enabled }}
           command: ["bash", "-c", "for i in {1..60}; do if (timeout 2 bash -c \"</dev/tcp/{{ .Release.Name }}-mariadb/3306\" echo $?); then echo 'Successfully connected to MariaDB port'; exit 0; else echo 'Retrying database connection...'; sleep 2; fi; done; echo 'MariaDB is unavailable'; exit 1"]
@@ -306,4 +321,8 @@ spec:
             path: ssl.crt
           - key: {{ .Values.codedxTls.keyFile }}
             path: ssl.key
-      {{- end -}}
+      {{- end }}
+      - emptyDir: {}
+        name: ephemeral-tomcat
+      - emptyDir: {}
+        name: ephemeral-tmp

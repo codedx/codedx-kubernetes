@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.9.0
+.VERSION 2.10.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -667,16 +667,40 @@ function Get-CodeDxKeystore([string] $namespace, [string] $imageCodeDxTomcat, [s
 	Write-Verbose "Starting pod in $namespace using Docker image $imageCodeDxTomcat..."
 	Remove-Pod $namespace $podName -force
 
-	$overrides = ''
+	$imagePullSecrets = ''
 	if ('' -ne $imagePullSecretName) {
-		$overrides = "--overrides=$('{"apiVersion":"v1","spec":{"imagePullSecrets":[{"name":"' + $imagePullSecretName + '"}]}}' | convertto-json)"
+		$imagePullSecrets = "{name: $imagePullSecretName}"
 	}
 
-	kubectl -n $namespace run $podName --image=$imageCodeDxTomcat --restart=Never $overrides -- sleep "$($waitSeconds)s"
+	@'
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {0}
+  namespace: {1}
+spec:
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+  restartPolicy: Never
+  imagePullSecrets: [{2}]
+  containers:
+    - image: {3}
+      name: busybox
+      command: ["sh","-c","sleep {4}s"]
+      resources:
+        limits:
+          cpu: 500m
+          memory: 1024Mi
+      securityContext:
+        readOnlyRootFilesystem: true
+'@ -f $podName,$namespace,$imagePullSecrets,$imageCodeDxTomcat,$waitSeconds | kubectl apply -f -
+
 	if ($LASTEXITCODE -ne 0) {
 		throw "Unable to start Code Dx pod to fetch cacerts file, kubectl exited with code $LASTEXITCODE."
 	}
-	Wait-RunningPod 'copy-cacerts' $waitTimeSeconds $namespace $podName
+	Wait-RunningPod "Waiting for pod $podName in namespace $namespace before copying default cacerts file" $waitSeconds $namespace $podName
 
 	if (Test-Path $outPath -PathType 'Leaf') {
 		Write-Verbose "Removing $outPath..."

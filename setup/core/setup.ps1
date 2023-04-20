@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.14.1
+.VERSION 2.15.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -46,7 +46,7 @@ param (
 	[string]                 $minioCPUReservation,
 	[string]                 $workflowCPUReservation,
 
-	[string]                 $codeDxEphemeralStorageReservation = '2Gi',
+	[string]                 $codeDxEphemeralStorageReservation = '2868Mi',
 	[string]                 $dbMasterEphemeralStorageReservation,
 	[string]                 $dbSlaveEphemeralStorageReservation,
 	[string]                 $toolServiceEphemeralStorageReservation,

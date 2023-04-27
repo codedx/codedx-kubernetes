@@ -55,16 +55,6 @@ spec:
           value: /opt/tomcat/temp
         - name: SUPERUSER_NAME
           value: "admin"
-        - name: SUPERUSER_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.existingSecret | quote }}
-              key: admin-password
-        - name: KEYSTORE_KEY
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.existingSecret | quote }}
-              key: 'cacerts-new-password'
         image: {{ required "A tomcat image must be provided! Assign codedxTomcatImage!" .Values.codedxTomcatImage | quote }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.codedxTomcatImagePullPolicy | quote }}
         name: "{{ include "codedx.name" . }}"
@@ -115,6 +105,12 @@ spec:
         - mountPath: /opt/codedx/hikari.properties
           name: hikari-properties
           subPath: hikari.properties
+        - mountPath: /home/codedx/.codedx/admin-password
+          name: admin-password
+          subPath: admin-password
+        - mountPath: /home/codedx/.codedx/cacerts-new-password
+          name: cacerts-new-password
+          subPath: cacerts-new-password
         # Any extra config files from codedx.props.extra
         {{ range .Values.codedxProps.extra -}}
         - mountPath: "/opt/codedx/{{ .key }}"
@@ -220,6 +216,19 @@ spec:
           items:
           - key: codedx.mariadb.props
             path: {{ include "codedx.mariadb.props.name" . | quote }}
+      - name: admin-password
+        secret:
+          secretName: {{ .Values.existingSecret | quote }}
+          items:
+          - key: admin-password
+            path: admin-password
+      - name: cacerts-new-password
+        secret:
+          secretName: {{ .Values.existingSecret | quote }}
+          optional: true
+          items:
+          - key: cacerts-new-password
+            path: cacerts-new-password
       {{- range .Values.codedxProps.extra }}
       - name: "codedx-extra-props-{{ .key }}"
         {{- if eq (required "codedxProps.extra entries must have a 'type' defined!" .type) "secret" }}

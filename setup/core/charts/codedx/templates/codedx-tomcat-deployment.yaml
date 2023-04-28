@@ -176,6 +176,10 @@ spec:
           name: ephemeral-tmp
       initContainers:
         - name: {{ include "dbinit.fullname" . | quote }}
+          resources:
+            limits:
+              memory: "20Mi"
+              cpu: "100m"
           securityContext:
             readOnlyRootFilesystem: true
           image: {{ required "A tomcat init image must be provided! Assign codedxTomcatInitImage!" .Values.codedxTomcatInitImage | quote }}

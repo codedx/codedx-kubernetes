@@ -85,4 +85,8 @@ function New-Mocks() {
 	Mock -ModuleName Guided-Setup Test-CertificateSigningRequestV1Beta1 {
 		$global:csrSupportsV1Beta1
 	}
+
+	Mock Get-KubectlServerVersionNumber {
+		$global:k8sVersionNumber
+	}
 }

@@ -1,10 +1,10 @@
 <#PSScriptInfo
-.VERSION 2.9.0
+.VERSION 2.10.0
 .GUID e917c41a-260f-4ea4-980d-db00f8baef1b
 .AUTHOR Code Dx
 #>
 
-using module @{ModuleName='guided-setup'; RequiredVersion='1.13.0' }
+using module @{ModuleName='guided-setup'; RequiredVersion='1.14.0' }
 
 $ErrorActionPreference = 'Stop'
 $VerbosePreference = 'Continue'
@@ -108,6 +108,7 @@ Add-StepTransitions $graph $s[[BackupType]] $s[[VeleroNamespace]],$s[[BackupSche
 Add-StepTransitions $graph $s[[BackupType]] $s[[UseDefaultOptions]]
 
 Add-StepTransitions $graph $s[[UseDefaultOptions]] $s[[UsePodSecurityPolicyOption]],$s[[UseNetworkPolicyOption]],$s[[UseTlsOption]]
+Add-StepTransitions $graph $s[[UseDefaultOptions]] $s[[UseNetworkPolicyOption]],$s[[UseTlsOption]]
 Add-StepTransitions $graph $s[[UseDefaultOptions]] $s[[UseLegacyUnknownSigner]]
 Add-StepTransitions $graph $s[[UseDefaultOptions]] $s[[CertsCAPath]]
 Add-StepTransitions $graph $s[[UseDefaultOptions]] $s[[CodeDxNamespace]]

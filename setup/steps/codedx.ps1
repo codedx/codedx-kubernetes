@@ -14,8 +14,8 @@ class UseDefaultOptions : Step {
 	static [string] hidden $description = @'
 Specify what deployment options work best for your Kubernetes environment. 
 
-Note: The Code Dx setup script can create Pod Security Policy and 
-Network Policy resources, but your cluster must support those 
+Note: The Code Dx setup script can create Pod Security Policy (where 
+available) and Network Policy resources, but your cluster must support those 
 resource types for them to be active in your Kubernetes environment.
 '@
 
@@ -27,8 +27,17 @@ resource types for them to be active in your Kubernetes environment.
 		'What options do you want to enable?') {}
 
 	[IQuestion]MakeQuestion([string] $prompt) {
+
+		$defaultName = '&Pod Security Policy and Network Policy'
+		$defaultDescription = 'Enable PSPs and Network Policies'
+
+		if (-not $this.config.supportsPSPs) {
+			$defaultName = '&Network Policy'
+			$defaultDescription = 'Enable Network Policies'
+		}
+
 		return new-object MultipleChoiceQuestion($prompt, @(
-			[tuple]::create('&Pod Security Policy and Network Policy', 'Enable PSPs and Network Policies'),
+			[tuple]::create($defaultName, $defaultDescription),
 			[tuple]::create('&Other', 'Enable/disable each option individually')), 0)
 	}
 
@@ -37,7 +46,7 @@ resource types for them to be active in your Kubernetes environment.
 		$choice = ([MultipleChoiceQuestion]$question).choice
 
 		$this.config.useDefaultOptions = $choice -eq 0
-		$this.config.skipPSPs = $choice -eq 1
+		$this.config.skipPSPs = (-not $this.config.supportsPSPs) -or $choice -eq 1
 		$this.config.skipTLS  = $choice -eq 0
 		$this.config.skipNetworkPolicies = $choice -eq 1
 		return $true
@@ -82,7 +91,7 @@ must support Pod Security Policies for the resources to apply.
 	}
 
 	[bool]CanRun() {
-		return -not $this.config.useDefaultOptions
+		return $this.config.supportsPSPs -and -not $this.config.useDefaultOptions
 	}
 }
 

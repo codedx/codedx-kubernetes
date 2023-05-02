@@ -12,10 +12,10 @@ keywords:
 sources:
 dependencies:
 - name: argo
-  version: 0.14.2
+  version: 0.14.3
   repository: https://codedx.github.io/codedx-kubernetes
 - name: minio
-  version: 3.1.8
+  version: 3.2.0
   repository: https://codedx.github.io/codedx-kubernetes
   condition: minio.enabled
 maintainers:

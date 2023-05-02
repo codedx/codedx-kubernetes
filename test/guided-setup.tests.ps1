@@ -1,4 +1,4 @@
-using module @{ModuleName='guided-setup'; RequiredVersion='1.13.0' }
+using module @{ModuleName='guided-setup'; RequiredVersion='1.14.0' }
 
 Import-Module 'pester' -ErrorAction SilentlyContinue
 if (-not $?) {
@@ -44,6 +44,7 @@ function Set-TestDefaults() {
 	$global:caCertFileExists = $true
 	$global:keystorePasswordValid = $true
 	$global:csrSupportsV1Beta1 = $true
+	$global:k8sVersionNumber = 1.24
 }
 
 Describe 'Generate Setup Command from Default Pass' -Tag 'DefaultPass' {
@@ -1034,6 +1035,27 @@ Describe 'Generate Setup Command with External Storage' -Tag 'ExternalStorageHel
 		$runSetupFile = join-path $TestDrive run-setup.ps1
 		$runSetupFile | Should -Exist
 		$expectedParams = "-kubeContextName 'EKS' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -codeDxMemoryReservation '501Mi' -dbMasterMemoryReservation '502Mi' -dbSlaveMemoryReservation '503Mi' -toolServiceMemoryReservation '504Mi' -workflowMemoryReservation '506Mi' -codeDxCPUReservation '1001m' -dbMasterCPUReservation '1002m' -dbSlaveCPUReservation '1003m' -toolServiceCPUReservation '1004m' -workflowCPUReservation '1006m' -codeDxEphemeralStorageReservation '1025Mi' -dbMasterEphemeralStorageReservation '1026Mi' -dbSlaveEphemeralStorageReservation '1027Mi' -toolServiceEphemeralStorageReservation '1028Mi' -workflowEphemeralStorageReservation '1030Mi' -imageCodeDxTomcat 'codedx-tomcat' -imageCodeDxTools 'codedx-tools' -imageCodeDxToolsMono 'codedx-toolsmono' -imageNewAnalysis 'codedx-newanalysis' -imageSendResults 'codedx-sendresults' -imageSendErrorResults 'codedx-senderrorresults' -imageToolService 'codedx-toolservice' -imagePrepare 'codedx-prepare' -imagePreDelete 'codedx-cleanup' -imageCodeDxTomcatInit 'codedx-tomcat-init' -imageMariaDB 'codedx-mariadb' -imageWorkflowController 'codedx-workflow-controller' -imageWorkflowExecutor 'codedx-workflow-executor' -storageClassName 'default' -serviceTypeCodeDx 'ClusterIP' -csrSignerNameCodeDx 'kubernetes.io/legacy-unknown' -csrSignerNameToolOrchestration 'kubernetes.io/legacy-unknown' -codedxAdminPwd 'my-codedx-password' -codedxDatabaseUserPwd 'my-db-user-password' -skipIngressEnabled -skipUseRootDatabaseUser -codeDxVolumeSizeGiB 20 -codeDxTlsServicePortNumber 9443 -codeDxNodeSelector ([Tuple``2[string,string]]::new('alpha.eksctl.io/nodegroup-name','codedx-nodes-1')) -codeDxNoScheduleExecuteToleration ([Tuple``2[string,string]]::new('host','codedx-web')) -dbVolumeSizeGiB 25 -dbSlaveVolumeSizeGiB 30 -dbSlaveReplicaCount 1 -subordinateDatabaseNodeSelector ([Tuple``2[string,string]]::new('alpha.eksctl.io/nodegroup-name','codedx-nodes-3')) -subordinateDatabaseNoScheduleExecuteToleration ([Tuple``2[string,string]]::new('host','subordinate-db')) -masterDatabaseNodeSelector ([Tuple``2[string,string]]::new('alpha.eksctl.io/nodegroup-name','codedx-nodes-2')) -masterDatabaseNoScheduleExecuteToleration ([Tuple``2[string,string]]::new('host','master-db')) -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -skipMinIO -externalWorkflowStorageEndpointSecure -externalWorkflowStorageEndpoint 'endpoint:9000' -externalWorkflowStorageUsername 'my-storage-username' -externalWorkflowStoragePwd 'my-storage-password' -externalWorkflowStorageBucketName 'code-dx-storage' -externalWorkflowStorageCertChainPath 'storage-cert.pem' -toolServiceReplicas 2 -namespaceToolOrchestration 'cdx-svc' -releaseNameToolOrchestration 'codedx-tool-orchestration' -toolServiceNodeSelector ([Tuple``2[string,string]]::new('alpha.eksctl.io/nodegroup-name','codedx-nodes-4')) -toolServiceNoScheduleExecuteToleration ([Tuple``2[string,string]]::new('host','tool-service')) -workflowControllerNodeSelector ([Tuple``2[string,string]]::new('alpha.eksctl.io/nodegroup-name','codedx-nodes-6')) -workflowControllerNoScheduleExecuteToleration ([Tuple``2[string,string]]::new('host','workflow-controller')) -toolNodeSelector ([Tuple``2[string,string]]::new('alpha.eksctl.io/nodegroup-name','codedx-nodes-7')) -toolNoScheduleExecuteToleration ([Tuple``2[string,string]]::new('host','tools')) -toolServiceApiKey 'my-tool-service-password'"
+		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
+	}
+}
+
+Describe 'Generate Setup Command Where PSPs Are Unsupported' -Tag 'DefaultPassK8s25' {
+
+	BeforeEach {
+		Set-TestDefaults
+		$global:k8sVersionNumber = 1.25
+	}
+
+	It '(57) Should generate minikube setup.ps1 command without PSPs' {
+	
+		Set-DefaultPass
+
+		New-Mocks
+		. ./guided-setup.ps1
+
+		$runSetupFile = join-path $TestDrive run-setup.ps1
+		$runSetupFile | Should -Exist
+		$expectedParams = "-kubeContextName 'minikube' -kubeApiTargetPort '8443' -namespaceCodeDx 'cdx-app' -releaseNameCodeDx 'codedx' -clusterCertificateAuthorityCertPath 'ca.crt' -codeDxMemoryReservation '8192Mi' -dbMasterMemoryReservation '8192Mi' -codeDxCPUReservation '2000m' -dbMasterCPUReservation '2000m' -codeDxEphemeralStorageReservation '2868Mi' -storageClassName 'default' -serviceTypeCodeDx 'ClusterIP' -csrSignerNameCodeDx 'kubernetes.io/legacy-unknown' -csrSignerNameToolOrchestration 'kubernetes.io/legacy-unknown' -codedxAdminPwd 'my-codedx-password' -codedxDatabaseUserPwd 'my-db-user-password' -skipPSPs -skipIngressEnabled -skipUseRootDatabaseUser -codeDxVolumeSizeGiB 64 -codeDxTlsServicePortNumber 9443 -dbVolumeSizeGiB 64 -dbSlaveReplicaCount 0 -mariadbRootPwd 'my-root-db-password' -mariadbReplicatorPwd 'my-replication-db-password' -skipToolOrchestration"
 		Test-SetupParameters $PSScriptRoot $runSetupFile $TestDrive $expectedParams | Should -BeTrue
 	}
 }

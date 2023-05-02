@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.15.0
+.VERSION 2.16.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -556,6 +556,12 @@ if ($storageClassName -ne '') {
 
 if (0 -ne $proxyPort -and $egressPortsTCP -notcontains $proxyPort) {
 	$egressPortsTCP += $proxyPort
+}
+
+$k8sVersion = Get-KubectlServerVersionNumber
+if ($usePSPs -and $k8sVersion -ge 1.25) {
+	Write-Verbose "Skipping PSPs (unsupported by K8s version $k8sVersion)..."
+	$usePSPs = $false
 }
 
 ### Select Kube Context

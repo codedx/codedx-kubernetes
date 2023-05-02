@@ -109,6 +109,8 @@ class ConfigInput {
 	[bool]         $skipPSPs
 	[bool]         $skipNetworkPolicies
 
+	[bool]         $supportsPSPs
+
 	[bool]         $skipTLS
 	[bool]         $skipServiceTLS
 	[string]       $csrSignerNameCodeDx

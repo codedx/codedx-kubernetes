@@ -150,11 +150,20 @@ class SelectContext: Step {
 		if (-not $question.hasResponse) {
 			return $false
 		}
-		return $question.choice -eq 0
+		if ($question.choice -eq 0) {
+			$this.config.supportsPSPs = (Get-KubectlServerVersionNumber) -lt 1.25
+			return $true
+		} else {
+			return $false
+		}
 	}
 
 	[bool]CanRun() {
 		return $this.config.HasContext()
+	}
+
+	[void]Reset() {
+		$this.config.supportsPSPs = $false
 	}
 }
 

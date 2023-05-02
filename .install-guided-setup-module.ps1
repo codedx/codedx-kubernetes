@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.7.0
+.VERSION 1.8.0
 .GUID c312e161-60ba-420b-83ae-45cdc25c12db
 .AUTHOR Code Dx
 .DESCRIPTION Conditionally installs guided-setup module
@@ -30,7 +30,7 @@ function Test-AvailableModule($name, $version) {
 }
 
 $guidedSetupModuleName = 'guided-setup'
-$guidedSetupRequiredVersion = '1.13.0' # must match constant in using-module statements
+$guidedSetupRequiredVersion = '1.14.0' # must match constant in using-module statements
 
 $verbosePref = $global:VerbosePreference
 try {

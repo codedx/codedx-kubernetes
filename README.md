@@ -27,6 +27,14 @@ You must run guided-setup.ps1 from a system with administrative access to your c
 
 On Windows, make sure that you can run PowerShell Core scripts by switching your [PowerShell Execution Policy](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies) to RemoteSigned (recommended) or Unrestricted. You must run the `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned` command from an elevated/administrator Command Prompt.
 
+## Upgrading to Kubernetes v1.25
+
+Kubernetes removed support for the PodSecurityPolicy (PSP) resource with the v1.25 release.
+
+>Note: If your deployment does not use PSP resources, you can skip this section.
+
+You should append the `-skipPSPs` parameter to your run-setup.ps1 script and rerun the script before upgrading your cluster to Kubernetes v1.25. If you skip that step, future helm deployments will fail because your helm manifest will include unavailable PSP resources. One way to recover from that situation is to delete the helm release Kubernetes secret resources in all Code Dx namespaces and rerun your run-setup.ps1 script.
+
 ## Upgrading to Kubernetes v1.22
 
 You can ignore this section if you previously deployed Code Dx without the TLS Deployment Option.

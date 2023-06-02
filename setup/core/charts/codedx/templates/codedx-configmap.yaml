@@ -48,7 +48,7 @@ data:
     fi
 
   codedx-ml.props: |-
-    codedx.external-url = {{ include "codedx.serviceurl" . | quote }}
+    codedx.internal-url = {{ include "codedx.serviceurl" . | quote }}
 
   logback.xml: |-
     <configuration>

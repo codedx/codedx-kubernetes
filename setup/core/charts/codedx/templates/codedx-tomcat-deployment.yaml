@@ -179,7 +179,7 @@ spec:
         - name: {{ include "dbinit.fullname" . | quote }}
           resources:
             limits:
-              memory: "20Mi"
+              memory: "100Mi"
               cpu: "100m"
           securityContext:
             readOnlyRootFilesystem: true

@@ -166,6 +166,7 @@ This section describes the setup.ps1 script parameters, which you can specify by
 | `samlIdentityProviderMetadataPath`                 | XML metadata file for your SAML IdP                        | idp-metadata.xml (example)                        |
 | `samlKeystorePwd`                                  | password to secure SAML-related Java keystore              | `5Ed3&#Rutdcw` (example)                          |
 | `samlPrivateKeyPwd`                                | password to secure private key stored in Java keystore     | `5Ed3&#Rutcwd` (example)                          |
+| `samlHostBasePathOverride`                         | overrides URL used for the auth.hostBasePath property      | `https://alt.codedx.io/codedx` (example)          |
 |                                                    |                                                            |                                                   |
 | `pauseAfterGitClone`                               | whether to pause (for debug purposes) after git clone      |                                                   |
 |                                                    |                                                            |                                                   |

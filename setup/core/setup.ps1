@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.16.0
+.VERSION 2.17.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -158,6 +158,7 @@ param (
 	[string]                 $samlIdentityProviderMetadataPath,
 	[string]                 $samlKeystorePwd,
 	[string]                 $samlPrivateKeyPwd,
+	[string]                 $samlHostBasePathOverride,
 
 	[Tuple`2[string,string]] $codeDxNodeSelector,
 	[Tuple`2[string,string]] $masterDatabaseNodeSelector,
@@ -945,7 +946,7 @@ $codeDxDeploymentValuesFile = New-CodeDxDeploymentValuesFile $codeDxDnsName $cod
 	$ingressClassNameCodeDx $ingressTlsSecretNameCodeDx $ingressAnnotationsCodeDx `
 	$caCertsSecretName `
 	$externalDatabaseUrl `
-	$samlAppName $samlIdpXmlFileConfigMapName $samlSecretName `
+	$samlAppName $samlIdpXmlFileConfigMapName $samlSecretName $samlHostBasePathOverride `
 	$tlsSecretNameCodeDx `
 	$tlsSecretNameMasterDatabase $masterDatabaseCertConfigMapName `
 	$codeDxNodeSelector $masterDatabaseNodeSelector $subordinateDatabaseNodeSelector `

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.10.0
+.VERSION 2.11.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -51,6 +51,7 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 	[string]   $samlAppName,
 	[string]   $samlIdpXmlFileConfigMapName,
 	[string]   $samlSecretName,
+	[string]   $samlHostBasePathOverride,
 	[string]   $tlsSecretName,
 	[string]   $dbMasterTlsSecretName,
 	[string]   $dbMasterTlsCaConfigMapName,
@@ -134,11 +135,15 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 	$hostBasePath = ''
 	if ($useSaml) {
 
-		$protocol = 'https'
-		if (-not $ingressEnabled -and -not $configureServiceTls) { # ingress will always use TLS
-			$protocol = 'http'
+		if ('' -ne $samlHostBasePathOverride) {
+			$hostBasePath = $samlHostBasePathOverride
+		} else {
+			$protocol = 'https'
+			if (-not $ingressEnabled -and -not $configureServiceTls) { # ingress will always use TLS
+				$protocol = 'http'
+			}
+			$hostBasePath = "$protocol`://$codeDxDnsName/codedx"
 		}
-		$hostBasePath = "$protocol`://$codeDxDnsName/codedx"
 	}
 
 	$codedxPodAnnotations = New-BackupAnnotation $backupType

@@ -2,9 +2,9 @@
 Code Dx will be available at the following URL(s):
 {{ range .Values.ingress.hosts }}
 {{- if .tls -}}
-- https://{{ .name }}/codedx
+- https://{{ .name }}
 {{ else -}}
-- http://{{ .name }}/codedx
+- http://{{ .name }}
 {{ end -}}
 {{- end -}}
 {{- else -}}

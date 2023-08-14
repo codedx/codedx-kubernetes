@@ -23,7 +23,7 @@ spec:
   - host: {{ .name | quote }}
     http:
       paths:
-      - path: /codedx
+      - path: /
         pathType: Prefix
         backend:
           service:

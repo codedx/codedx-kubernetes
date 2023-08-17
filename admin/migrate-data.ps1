@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.3.0
+.VERSION 1.4.0
 .GUID 1830f430-23af-46c2-b73c-8b936957b671
 .AUTHOR Code Dx
 #>
@@ -219,8 +219,9 @@ created in Step 2 of the Migrate Code Dx Data to Kubernetes instructions.
 
 You can restore mysqldump files using a command that looks like this:
 
-  mysql -uroot --password=root-password codedxdb < dump-codedx.sql
+  mysql -uroot -p codedxdb < dump-codedx.sql
 
+Note: Replace 'root' and 'codedxdb' as necessary.
 '@
 	Write-Host $externalDatabaseInstructions
 	Read-Host -Prompt 'Restore your database (see above) and then press Enter to continue...'
@@ -236,21 +237,26 @@ if (0 -ne $LASTEXITCODE) {
 }
 $codeDxPodName = $codeDxPodName -replace 'pod/',''
 
+Write-Verbose "Switching to directory $appDataPath..."
+Push-Location $appDataPath
+
 Write-Verbose "Copying analysis-files to Code Dx volume..."
-Copy-K8sItem $namespaceCodeDx $analysisFiles $codeDxPodName 'codedx' '/opt/codedx'
+Copy-K8sItem $namespaceCodeDx 'analysis-files' $codeDxPodName 'codedx' '/opt/codedx'
 
 $keystoreFiles = join-path $appDataPath 'keystore'
 if (Test-Path $keystoreFiles -PathType Container) {
 	Write-Verbose 'Copying keystore to Code Dx volume...'
 	Write-Verbose 'NOTE: SAML configuration under keystore must be compatible with current k8s deployment.'
-	Copy-K8sItem $namespaceCodeDx $keystoreFiles $codeDxPodName 'codedx' '/opt/codedx'
+	Copy-K8sItem $namespaceCodeDx 'keystore' $codeDxPodName 'codedx' '/opt/codedx'
 }
 
 $mlTriageFiles = join-path $appDataPath 'mltriage-files'
 if (Test-Path $mlTriageFiles -PathType Container) {
 	Write-Verbose "Copying mltriage-files to Code Dx volume..."
-	Copy-K8sItem $namespaceCodeDx $mlTriageFiles $codeDxPodName 'codedx' '/opt/codedx'
+	Copy-K8sItem $namespaceCodeDx 'mltriage-files' $codeDxPodName 'codedx' '/opt/codedx'
 }
+
+Pop-Location
 
 Write-Verbose "Restarting Code Dx deployment named $deploymentCodeDx..."
 Set-DeploymentReplicas  $namespaceCodeDx $deploymentCodeDx 0 $waitSeconds

@@ -2,8 +2,6 @@
 
 Here are the steps to move your K8s Code Dx deployment:
 
->Note: This procedure partially migrates Tool Orchestration feature data. It will migrate custom add-in tool definitions. It will not migrate workflow storage (e.g., tool logs) or Project Secrets, so you must re-create any Tool Orchestration Project Secrets afterward.
-
 ## Deploy New Code Dx
 
 1) Deploy a brand-new instance of Code Dx, matching version numbers between the source and new destination deployments.
@@ -26,6 +24,10 @@ $ kubectl -n cdx-src scale --replicas=0 deployment/codedx-src-codedx
 ```
 
 2) Open a terminal and change to a directory where you can store files created during the migration process; let's call this your work directory.
+
+```
+$ cd /path/to/work/directory
+```
 
 3) Save the following content to a file named host-code-dx-appdata-volume.yaml, replacing the `cdx-src` namespace, `codedx/codedx-tomcat:v2023.4.8` Docker image name, and `codedx-src-appdata` volume name as necessary:
 
@@ -53,10 +55,10 @@ spec:
         claimName: codedx-src-appdata
 ```
 
-4) Run the host-code-dx-appdata-volume pod:
+4) Run the following command to start the host-code-dx-appdata-volume pod, and wait for it to reach a ready state:
 
 ```
-$ kubectl apply -f /path/to/host-code-dx-appdata-volume.yaml
+$ kubectl apply -f /path/to/work/directory/host-code-dx-appdata-volume.yaml
 ```
 
 5) Run the following commands to copy the analysis-files directory (if it exists), replacing the `cdx-src` namespace as necessary:
@@ -119,16 +121,16 @@ $ kubectl -n cdx-src cp codedx-src-mariadb-master-0:/path/to/dump-codedx.sql ./d
 
 ## Copy Local Data to New Code Dx Instance
 
-If you are using an on-cluster database, run the following command, replacing the `cdx-dest` namespace, `codedx-dest` release name, `/path/to/work/directory` directory, and the passwords for `dest-root-pwd` and `dest-replication-password` as necessary:
+If you are using an on-cluster database, run the following command, replacing the `cdx-dest` namespace, `codedx-dest` release name, `/path/to/work/directory` directory, and the passwords for `dest-root-pwd` and `dest-replication-password` as necessary (replace the `cdx-src-svc` namespace or delete the `-namespaceSourceToolOrchestration` parameter if you are not using the Tool Orchestration feature):
 
 ```
 $ cd /path/to/work/directory
-$ pwsh /path/to/git/codedx-kubernetes/admin/migrate-data.ps1 -namespaceCodeDx cdx-dest -releaseNameCodeDx codedx-dest -appDataPath . -dumpFile database/dump-codedx.sql -rootPwd dest-root-pwd -replicationPwd dest-replication-password
+$ pwsh /path/to/git/codedx-kubernetes/admin/migrate-data.ps1 -namespaceCodeDx cdx-dest -releaseNameCodeDx codedx-dest -appDataPath . -dumpFile database/dump-codedx.sql -rootPwd dest-root-pwd -replicationPwd dest-replication-password -namespaceSourceToolOrchestration cdx-src-svc
 ```
 
-If you are using an external database, run the following command, replacing the `cdx-dest` namespace, `/path/to/work/directory` directory, and `codedx-dest` release name:
+If you are using an external database, run the following command, replacing the `cdx-dest` namespace, `/path/to/work/directory` directory, and `codedx-dest` release name (replace the `cdx-src-svc` namespace or delete the `-namespaceSourceToolOrchestration` parameter if you are not using the Tool Orchestration feature):
 
 ```
 $ cd /path/to/work/directory
-$ pwsh /path/to/git/codedx-kubernetes/admin/migrate-data.ps1 -namespaceCodeDx cdx-dest -releaseNameCodeDx codedx-dest -appDataPath . -externalDatabase
+$ pwsh /path/to/git/codedx-kubernetes/admin/migrate-data.ps1 -namespaceCodeDx cdx-dest -releaseNameCodeDx codedx-dest -appDataPath . -externalDatabase  -namespaceSourceToolOrchestration cdx-src-svc
 ```

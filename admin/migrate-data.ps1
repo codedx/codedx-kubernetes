@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.5.0
+.VERSION 1.6.0
 .GUID 1830f430-23af-46c2-b73c-8b936957b671
 .AUTHOR Code Dx
 #>
@@ -18,6 +18,7 @@ param (
 	[string] $replicationPwd,
 	[string] $namespaceCodeDx = 'cdx-app',
 	[string] $releaseNameCodeDx = 'codedx',
+	[string] $namespaceSourceToolOrchestration = '',
 	[int]    $waitSeconds = 600,
 	[switch] $externalDatabase
 )
@@ -35,6 +36,15 @@ $global:PSNativeCommandArgumentPassing='Legacy'
 		Write-Error "Unable to find file script dependency at $path. Please download the entire codedx-kubernetes GitHub repository and rerun the downloaded copy of this script."
 	}
 	. $path
+}
+
+function New-WorkDirectory([string] $parentDirectory, [string] $directoryName) {
+
+	$dir = join-path $parentDirectory $directoryName
+	if (Test-Path $dir -PathType Container) {
+		Remove-Item -LiteralPath $dir -Recurse -Force
+	}
+	(New-Item -Path $dir -ItemType Directory).FullName
 }
 
 $internalDatabase = -not $externalDatabase
@@ -262,11 +272,45 @@ if (Test-Path $addInFiles -PathType Container) {
 	Copy-K8sItem $namespaceCodeDx 'tool-data' $codeDxPodName 'codedx' '/opt/codedx'
 }
 
+$workflowSecretsDir = New-WorkDirectory $appDataPath 'workflow-secrets'
+$workflowRequirementsDir = New-WorkDirectory $appDataPath 'workflow-requirements'
+
+if ('' -ne $namespaceSourceToolOrchestration) {
+
+	Write-Verbose "Copying workflow secrets to $workflowSecretsDir..."
+	$workflowSecrets = kubectl -n $namespaceSourceToolOrchestration get secret -l codedx-orchestration.secretType=workflowSecret -o json | ConvertFrom-Json
+	$workflowSecrets.items | ForEach-Object {
+		$obj = $_ | Select-Object -Property @('apiVersion','kind','metadata','type','data')
+		$obj.metadata = $obj.metadata | Select-Object -Property @('annotations','labels','name')
+		$obj | ConvertTo-Json | Out-File -LiteralPath "$workflowSecretsDir/$($obj.metadata.name).yaml"
+	}
+
+	Write-Verbose "Copying workflow resource requirements to $workflowRequirementsDir..."
+	$workflowRequirementNames = kubectl -n $namespaceSourceToolOrchestration get configmap -o name | Where-Object { $_ -like '*-resource-requirements' }
+	$workflowRequirementNames | ForEach-Object {
+		$obj = kubectl -n $namespaceSourceToolOrchestration get $_ -o json | ConvertFrom-Json | Select-Object -Property @('apiVersion','kind','metadata','data')
+		if ($obj.metadata.name -ne 'cdx-toolsvc-resource-requirements') { # skip default requirement managed by chart
+			$obj.metadata = $obj.metadata | Select-Object -Property @('annotations','labels','name')
+			$obj | ConvertTo-Json | Out-File -LiteralPath "$workflowRequirementsDir/$($obj.metadata.name).yaml"
+		}
+	}
+}
+
 Pop-Location
 
 Write-Verbose "Restarting Code Dx deployment named $deploymentCodeDx..."
 Set-DeploymentReplicas  $namespaceCodeDx $deploymentCodeDx 0 $waitSeconds
 Set-DeploymentReplicas  $namespaceCodeDx $deploymentCodeDx 1 $waitSeconds
+
+if ((Get-ChildItem $workflowSecretsDir).Length -gt 0) {
+	Write-Host "Run the following command after replacing <namespace> with your destination deployment:`nkubectl -n <namespace> apply -f $workflowSecretsDir"
+	Read-Host -Prompt 'Run the above command and then press Enter to continue...'
+}
+
+if ((Get-ChildItem $workflowRequirementsDir).Length -gt 0) {
+	Write-Host "Run the following command after replacing <namespace> with your destination deployment:`nkubectl -n <namespace> apply -f $workflowRequirementsDir"
+	Read-Host -Prompt 'Run the above command and then press Enter to continue...'
+}
 
 Write-Verbose "`nNote: The database restore may have changed your Code Dx admin password.`n"
 Write-Host 'Done'

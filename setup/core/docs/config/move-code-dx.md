@@ -2,7 +2,7 @@
 
 Here are the steps to move your K8s Code Dx deployment:
 
->Note: This procedure does not cover data migration for the Tool Orchestration feature.
+>Note: This procedure partially migrates Tool Orchestration feature data. It will migrate custom add-in tool definitions. It will not migrate workflow storage (e.g., tool logs) or Project Secrets, so you must re-create any Tool Orchestration Project Secrets afterward.
 
 ## Deploy New Code Dx
 
@@ -84,7 +84,18 @@ $ kubectl -n cdx-src cp host-code-dx-appdata-volume:/var/cdx/keystore/master.key
 $ kubectl -n cdx-src cp host-code-dx-appdata-volume:/var/cdx/keystore/Secret ./keystore/Secret
 ```
 
-8) Run the following command to delete the host-code-dx-appdata-volume pod, replacing the `cdx-src` namespace as necessary:
+8) If your Code Dx AppData has a tool-data/addin-tool-files directory, run the following commands to copy the add-in files (if they exist), replacing the `cdx-src` namespace as necessary:
+
+```
+$ cd /path/to/work/directory
+$ mkdir tool-data
+$ cd tool-data
+$ kubectl -n cdx-src cp host-code-dx-appdata-volume:/var/cdx/tool-data/addin-tool-files addin-tool-files
+```
+
+>Note: You may not have a tool-data/addin-tool-files directory.
+
+9) Run the following command to delete the host-code-dx-appdata-volume pod, replacing the `cdx-src` namespace as necessary:
 
 ```
 $ kubectl -n cdx-src delete pod host-code-dx-appdata-volume

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.4.0
+.VERSION 1.5.0
 .GUID 1830f430-23af-46c2-b73c-8b936957b671
 .AUTHOR Code Dx
 #>
@@ -254,6 +254,12 @@ $mlTriageFiles = join-path $appDataPath 'mltriage-files'
 if (Test-Path $mlTriageFiles -PathType Container) {
 	Write-Verbose "Copying mltriage-files to Code Dx volume..."
 	Copy-K8sItem $namespaceCodeDx 'mltriage-files' $codeDxPodName 'codedx' '/opt/codedx'
+}
+
+$addInFiles = join-path $appDataPath 'tool-data/addin-tool-files'
+if (Test-Path $addInFiles -PathType Container) {
+	Write-Verbose "Copying tool-data/addin-tool-files to Code Dx volume..."
+	Copy-K8sItem $namespaceCodeDx 'tool-data' $codeDxPodName 'codedx' '/opt/codedx'
 }
 
 Pop-Location

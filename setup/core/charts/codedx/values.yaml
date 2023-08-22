@@ -384,7 +384,7 @@ loggingConfigMap:
 authentication:
   # Use `hostBasePath` to configure the base portion of authentication callbacks such as the 
   # endpoint for the Code Dx Assertion Consumer Service. When using TLS, this value should be 
-  # https://your-code-dx-fqdn/codedx, or http://your-code-dx-fqdn/codedx otherwise.
+  # https://your-code-dx-fqdn/srm, or http://your-code-dx-fqdn/srm otherwise.
   #
   hostBasePath:
 

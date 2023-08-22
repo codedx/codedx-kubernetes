@@ -103,7 +103,7 @@ Determine the URL of the Code Dx service.
 {{- if .Values.codedxTls.serviceEnabled -}}
 {{- $port = .Values.codedxTlsTomcatPort -}}
 {{- end -}}
-{{- $protocol -}}://{{- include "codedx.servicename" . -}}:{{- $port -}}/codedx
+{{- $protocol -}}://{{- include "codedx.servicename" . -}}:{{- $port -}}/srm
 {{- end -}}
 
 {{/*

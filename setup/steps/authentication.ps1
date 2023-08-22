@@ -108,7 +108,7 @@ name.
 
 	[bool]HandleResponse([IQuestion] $question) {
 		$this.config.codeDxDnsName = ([Question]$question).response
-		$this.config.hostBasePath = "$($this.config.skipTLS ? 'http' : 'https')://$($this.config.codeDxDnsName)/codedx"
+		$this.config.hostBasePath = "$($this.config.skipTLS ? 'http' : 'https')://$($this.config.codeDxDnsName)/srm"
 		return $true
 	}
 

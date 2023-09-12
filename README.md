@@ -1,5 +1,7 @@
 
-# Deploy Code Dx on Kubernetes
+# Deploy Code Dx on Kubernetes (deprecated)
+
+Follow [these instructions](https://github.com/synopsys-sig/srm-k8s) if you are deploying Software Risk Manager for the first time. Follow the Software Risk Manager [migration instructions](https://github.com/synopsys-sig/srm-k8s/tree/main/admin/migrate) to move to the new Software Risk Manager deployment model. 
 
 Running guided-setup.ps1 is the recommended way to deploy Code Dx on Kubernetes (requires [PowerShell Core 7](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-7)). The script will help you specify the correct setup.ps1 script parameters for installing Code Dx on your Kubernetes cluster.
 Download the [Code Dx Deployment Diagram](https://github.com/codedx/codedx-kubernetes/raw/5680337846c38f9a9683d4c05d60564241186f7a/setup/core/docs/deployment-overview.pdf) for an overview of how Code Dx runs on Kubernetes.

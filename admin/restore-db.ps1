@@ -18,7 +18,7 @@ param (
 	[string] $namespaceCodeDx = 'cdx-app',
 	[string] $releaseNameCodeDx = 'codedx',
 	[int]    $waitSeconds = 600,
-	[string] $imageDatabaseRestore = 'codedx/codedx-dbrestore:v1.6.0',
+	[string] $imageDatabaseRestore = 'codedx/codedx-dbrestore:v1.7.0',
 	[string] $dockerImagePullSecretName,
 	[switch] $skipCodeDxRestart
 )

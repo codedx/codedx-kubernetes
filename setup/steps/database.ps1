@@ -21,9 +21,6 @@ secure the communication between Code Dx and your database (recommended).
 To use AWS RDS with MariaDB engine, follow these instructions:
 https://github.com/codedx/codedx-kubernetes/blob/master/setup/core/docs/db/use-rds-for-code-dx-database.md
 
-To use Azure Database for MariaDB, follow these instructions:
-https://github.com/codedx/codedx-kubernetes/blob/master/setup/core/docs/db/use-azure-db-for-code-dx-database.md
-
 Otherwise, follow these instructions to create your Code Dx database:
 https://github.com/codedx/codedx-kubernetes/blob/master/setup/core/docs/db/use-external-database.md
 '@

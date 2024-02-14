@@ -81,6 +81,6 @@ function Test-CodeDxSetupKubernetesVersion ([ref]$k8sMessages) {
 
 	$k8sRequiredMajorVersion = 1
 	$k8sMinimumMinorVersion = 19
-	$k8sMaximumMinorVersion = 27
+	$k8sMaximumMinorVersion = 28
 	Test-SetupKubernetesVersion $k8sMessages $k8sRequiredMajorVersion $k8sMinimumMinorVersion $k8sMaximumMinorVersion
 }

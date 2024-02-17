@@ -170,6 +170,8 @@ serviceAccount:
   create: true
   # (optional)
   name:
+  # (optional)
+  workflowName:
 
 podSecurityPolicy:
   tws:

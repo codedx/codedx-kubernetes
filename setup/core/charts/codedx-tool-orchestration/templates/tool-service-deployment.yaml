@@ -74,7 +74,7 @@ spec:
           "-workDir", "/opt/codedx/service/work",
           "-workflowControllerInstanceName", "{{ .Release.Name }}",
           "-workflowPriorityClassName", {{ include "codedx-tool-orchestration.workflow.priorityClassName" . | quote }},
-          "-workflowRoleNames", {{ include "codedx-tool-orchestration.workflow.role.name" . }}]
+          "-workflowServiceAccount", {{ include "codedx-tool-orchestration.serviceAccountNameWorkflow" . | quote }}]
         readinessProbe:
           httpGet:
             port: 3333

@@ -1,5 +1,7 @@
 {{- $saName := (include "codedx-tool-orchestration.serviceAccountName" .) | quote -}}
+{{- $saWorkflowName := (include "codedx-tool-orchestration.serviceAccountNameWorkflow" .) | quote -}}
 {{- $rName := (printf "%s-%s" (include "codedx-tool-orchestration.fullname" .) "role") | quote -}}
+{{- $workflowRoleName := (include "codedx-tool-orchestration.workflow.role.name" .) | quote -}}
 {{- $rbName := (printf "%s-%s" (include "codedx-tool-orchestration.fullname" .) "binding") | quote -}}
 
 {{- if .Values.serviceAccount.create -}}
@@ -7,6 +9,14 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: {{ $saName }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $saWorkflowName }}
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
@@ -31,25 +41,12 @@ rules:
 - apiGroups: [""]
   resources: ["pods"]
   verbs: ["get"]
-- apiGroups: [""]
-  resources: ["serviceaccounts"]
-  verbs: ["delete"]
 - apiGroups: ["argoproj.io"]
   resources: ["workflows"]
   verbs: ["get", "list", "create", "delete", "patch"]
 - apiGroups: [""]
-  resources: ["serviceaccounts"]
-  verbs: ["create"]
-- apiGroups: [""]
   resources: ["configmaps"]
   verbs: ["get"]
-- apiGroups: ["rbac.authorization.k8s.io"]
-  resources: ["rolebindings"]
-  verbs: ["create"]
-- apiGroups: ["rbac.authorization.k8s.io"]
-  resources: ["roles"]
-  verbs: ["bind"]
-  resourceNames: [{{ include "codedx-tool-orchestration.workflow.role.name" . | quote }}]
 {{- if .Values.podSecurityPolicy.tws.bind }}
 - apiGroups: ["policy"]
   resources: ["podsecuritypolicies"]
@@ -63,7 +60,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ include "codedx-tool-orchestration.workflow.role.name" . | quote }}
+  name: {{ $workflowRoleName }}
   namespace: {{ .Release.Namespace | quote }}
 rules:
 - apiGroups: [""]
@@ -79,6 +76,22 @@ rules:
   resourceNames:
   - {{ include "codedx-tool-orchestration.rbac.psp.tws-workflows.name" . | quote }}
 {{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ (include "codedx-tool-orchestration.workflow.rolebindingname" .) | quote }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "codedx-tool-orchestration.commonLabels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ $workflowRoleName }}
+subjects:
+- name: {{ $saWorkflowName }}
+  kind: ServiceAccount
+  namespace: {{ .Release.Namespace | quote }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding

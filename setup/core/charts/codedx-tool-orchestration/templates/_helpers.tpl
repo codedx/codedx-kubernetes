@@ -78,6 +78,21 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 {{- end -}}
 
+{{/*
+Create the name of the TO workflow service account to use
+*/}}
+{{- define "codedx-tool-orchestration.serviceAccountNameWorkflow" -}}
+{{- if .Values.serviceAccount.create }}
+{{- default (printf "%s-workflow" (include "codedx-tool-orchestration.fullname"  .)) .Values.serviceAccount.workflowName }}
+{{- else }}
+{{- default "default" .Values.serviceAccount.workflowName }}
+{{- end }}
+{{- end }}
+
+{{- define "codedx-tool-orchestration.workflow.rolebindingname" -}}
+{{- printf "%s-to-workflow-rolebinding" (include "codedx-tool-orchestration.fullname"  .) }}
+{{- end -}}
+
 {{- define "codedx-tool-orchestration.workflow.role.name" -}}
 {{- (printf "%s-%s" (include "codedx-tool-orchestration.name" .) "workflow-role") -}}
 {{- end -}}

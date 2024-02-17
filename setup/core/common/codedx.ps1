@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.12.0
+.VERSION 2.13.0
 .GUID 6b1307f7-7098-4c65-9a86-8478840ad4cd
 .AUTHOR Code Dx
 #>
@@ -501,7 +501,7 @@ function New-ToolOrchestrationValuesFile([string]   $codedxNamespace,
 	$tlsConfig = $configureTls.ToString().ToLower()
 
 	$codeDxOrchestrationFullName = Get-CodeDxChartFullName $codedxReleaseName
-	$codedxBaseUrl = '{0}://{1}.{2}.svc.cluster.local:{3}/codedx' -f $protocol,$codeDxOrchestrationFullName,$codedxNamespace,$codedxPort
+	$codedxBaseUrl = '{0}://{1}.{2}.svc.cluster.local:{3}/srm' -f $protocol,$codeDxOrchestrationFullName,$codedxNamespace,$codedxPort
 
 	$imagePullSecretYaml      = $imagePullSecretName -eq '' ? '[]' : "[ {name: '$imagePullSecretName'} ]"
 	$minioImagePullSecretYaml = $imagePullSecretName -eq '' ? '[]' : "[ '$imagePullSecretName' ]"

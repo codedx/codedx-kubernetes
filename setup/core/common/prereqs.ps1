@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.6.0
+.VERSION 1.7.0
 .GUID c191448b-25fd-4ec2-980e-e7a8ba85e693
 .AUTHOR Code Dx
 #>
@@ -81,6 +81,6 @@ function Test-CodeDxSetupKubernetesVersion ([ref]$k8sMessages) {
 
 	$k8sRequiredMajorVersion = 1
 	$k8sMinimumMinorVersion = 19
-	$k8sMaximumMinorVersion = 28
+	$k8sMaximumMinorVersion = 29
 	Test-SetupKubernetesVersion $k8sMessages $k8sRequiredMajorVersion $k8sMinimumMinorVersion $k8sMaximumMinorVersion
 }

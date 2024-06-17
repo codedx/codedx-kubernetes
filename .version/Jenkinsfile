@@ -115,7 +115,8 @@ pipeline {
 									mariaDBVersion            = currentVersions[1]
 									// Note: v1.34.0 is the most recent TO version that the legacy K8s chart (codedx-kubernetes) supports
 									toolOrchestrationVersion  = 'v1.34.0'
-									workflowVersion           = currentVersions[3]
+									// Note: v1.34.0 is the most recent Workflow version that the legacy K8s chart (codedx-kubernetes) supports
+									workflowVersion           = 'v2.17.0'
 									restoreDBVersion          = currentVersions[4]
 
 									def isCurrentVersion = sh(returnStdout: true, script: "pwsh -command \"&{ . ./.version/common.ps1; Test-CodeDxVersion './setup/core/setup.ps1' './admin/restore-db.ps1' '$codeDxVersion' '$mariaDBVersion' '$toolOrchestrationVersion' '$workflowVersion' '$restoreDBVersion' }\"")

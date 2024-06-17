@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.17.0
+.VERSION 2.17.1
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Code Dx
 #>
@@ -67,8 +67,8 @@ param (
 	[string]                 $imageCodeDxTomcatInit   = 'codedx/codedx-tomcat:v2024.6.0',
 	[string]                 $imageMariaDB            = 'codedx/codedx-mariadb:v1.31.0',
 	[string]                 $imageMinio              = 'bitnami/minio:2021.4.6-debian-10-r11',
-	[string]                 $imageWorkflowController = 'codedx/codedx-workflow-controller:v3.0.0',
-	[string]                 $imageWorkflowExecutor   = 'codedx/codedx-argoexec:v3.0.0',
+	[string]                 $imageWorkflowController = 'codedx/codedx-workflow-controller:v2.17.0',
+	[string]                 $imageWorkflowExecutor   = 'codedx/codedx-argoexec:v2.17.0',
 
 	[int]                    $toolServiceReplicas = 3,
 

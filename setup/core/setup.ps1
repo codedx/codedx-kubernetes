@@ -53,9 +53,9 @@ param (
 	[string]                 $minioEphemeralStorageReservation,
 	[string]                 $workflowEphemeralStorageReservation,
 
-	[string]                 $imageCodeDxTomcat       = 'codedx/codedx-tomcat:v2024.6.1',
-	[string]                 $imageCodeDxTools        = 'codedx/codedx-tools:v2024.6.1',
-	[string]                 $imageCodeDxToolsMono    = 'codedx/codedx-toolsmono:v2024.6.1',
+	[string]                 $imageCodeDxTomcat       = 'codedx/codedx-tomcat:v2024.6.2',
+	[string]                 $imageCodeDxTools        = 'codedx/codedx-tools:v2024.6.2',
+	[string]                 $imageCodeDxToolsMono    = 'codedx/codedx-toolsmono:v2024.6.2',
 
 	[string]                 $imagePrepare            = 'codedx/codedx-prepare:v1.34.0',
 	[string]                 $imageNewAnalysis        = 'codedx/codedx-newanalysis:v1.34.0',
@@ -64,8 +64,8 @@ param (
 	[string]                 $imageToolService        = 'codedx/codedx-tool-service:v1.34.0',
 	[string]                 $imagePreDelete          = 'codedx/codedx-cleanup:v1.34.0',
 
-	[string]                 $imageCodeDxTomcatInit   = 'codedx/codedx-tomcat:v2024.6.1',
-	[string]                 $imageMariaDB            = 'codedx/codedx-mariadb:v1.31.0',
+	[string]                 $imageCodeDxTomcatInit   = 'codedx/codedx-tomcat:v2024.6.2',
+	[string]                 $imageMariaDB            = 'codedx/codedx-mariadb:v1.32.0',
 	[string]                 $imageMinio              = 'bitnami/minio:2021.4.6-debian-10-r11',
 	[string]                 $imageWorkflowController = 'codedx/codedx-workflow-controller:v2.17.0',
 	[string]                 $imageWorkflowExecutor   = 'codedx/codedx-argoexec:v2.17.0',

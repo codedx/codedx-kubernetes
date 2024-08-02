@@ -109,6 +109,7 @@ $ kubectl -n cdx-src delete pod host-code-dx-appdata-volume
 
 ```
 mysqldump --host=127.0.0.1 --port=3306 --user=root -p codedx > dump-codedx.sql
+sed 's/\sDEFINER=`[^`]*`@`[^`]*`//g' -i dump-codedx.sql
 ```
 
 2) Create /path/to/work/directory/database and copy dump-codedx.sql to the database directory. If you are using an on-cluster database, run this command, replacing the `cdx-src` namespace, `/path/to/dump-codedx.sql` path, and `codedx-src-mariadb-master-0` pod name as necessary:

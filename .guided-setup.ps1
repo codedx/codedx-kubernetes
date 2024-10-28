@@ -1,7 +1,8 @@
 <#PSScriptInfo
 .VERSION 2.10.0
 .GUID e917c41a-260f-4ea4-980d-db00f8baef1b
-.AUTHOR Code Dx
+.AUTHOR Black Duck
+.COPYRIGHT Copyright 2024 Black Duck Software, Inc. All rights reserved.
 #>
 
 using module @{ModuleName='guided-setup'; RequiredVersion='1.14.0' }

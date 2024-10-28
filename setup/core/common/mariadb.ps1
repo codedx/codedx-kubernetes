@@ -1,7 +1,8 @@
 <#PSScriptInfo
 .VERSION 1.3.0
 .GUID d7edc525-a26e-4f80-b65b-262a0e56422e
-.AUTHOR Code Dx
+.AUTHOR Black Duck
+.COPYRIGHT Copyright 2024 Black Duck Software, Inc. All rights reserved.
 #>
 
 <# 

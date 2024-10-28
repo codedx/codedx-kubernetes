@@ -1,7 +1,8 @@
 <#PSScriptInfo
 .VERSION 1.8.0
 .GUID c312e161-60ba-420b-83ae-45cdc25c12db
-.AUTHOR Code Dx
+.AUTHOR Black Duck
+.COPYRIGHT Copyright 2024 Black Duck Software, Inc. All rights reserved.
 .DESCRIPTION Conditionally installs guided-setup module
 #>
 

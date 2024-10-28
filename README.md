@@ -90,7 +90,7 @@ pwsh ./guided-setup.ps1
 
 >Note: If running `pwsh ./guided-setup.ps1` generates errors mentioning unexpected tokens, run `pwsh ./guided-setup-check-prereqs.ps1` to test whether your system meets the PowerShell Core v7 prerequisite.
 
-Finish the guided setup by either running the generated setup command or saving your setup command to one or more files. Saving your setup command is recommended and something that's required if you want to configure authentication with [LDAP](./setup/core/docs/auth/use-ldap.md) or [specify Code Dx property values](./setup/core/docs/config/codedx-props.md) in the [Code Dx Properties File](https://community.synopsys.com/s/document-item?bundleId=codedx&topicId=install_guide%2FCodeDxConfiguration%2Fconfig-files.html&_LANG=enus).
+Finish the guided setup by either running the generated setup command or saving your setup command to one or more files. Saving your setup command is recommended and something that's required if you want to configure authentication with [LDAP](./setup/core/docs/auth/use-ldap.md) or [specify Code Dx property values](./setup/core/docs/config/codedx-props.md) in the [Code Dx Properties File](https://documentation.blackduck.com/bundle/srm/page/install_guide/SRMConfiguration/config-files.html).
 
 >Note: You can find a description of each setup command parameter [here](./setup/core#setup-script).
 

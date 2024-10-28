@@ -273,7 +273,7 @@ the information you have provided thus far:
 - auth.hostBasePath
 
 You can find the entire list of Code Dx SAML properties at 
-https://community.synopsys.com/s/document-item?bundleId=codedx&topicId=install_guide%2FCodeDxConfiguration%2Fsaml-props.html&_LANG=enus
+https://documentation.blackduck.com/bundle/srm/page/install_guide/SRMConfiguration/saml-props.html
 
 To configure additional SAML properties, follow these instructions:
 https://github.com/codedx/codedx-kubernetes/blob/master/setup/core/docs/auth/use-saml.md

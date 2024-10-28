@@ -15,7 +15,7 @@ Code Dx can orchestrate analyses that run on your Kubernetes cluster. The Tool
 Orchestration feature is a separately licensed Code Dx component. You can 
 learn more by visiting the following URL:
 
-https://community.synopsys.com/s/global-search/%40uri#q=tool%20orchestration
+https://documentation.blackduck.com/bundle/srm/page/user_guide/Analysis/tool_orchestration.html
 '@
 
 	UseToolOrchestration([ConfigInput] $config) : base(

@@ -1,6 +1,6 @@
 # Use LDAP for Authentication
 
-Here are the deployment steps required to use [Code Dx with LDAP](https://community.synopsys.com/s/document-item?bundleId=codedx&topicId=install_guide%2FCodeDxConfiguration%2Factive-directory-props.html&_LANG=enus) with a GitOps deployment that uses SealedSecrets and helm-operator:
+Here are the deployment steps required to use [Code Dx with LDAP](https://documentation.blackduck.com/bundle/srm/page/install_guide/SRMConfiguration/active-directory-props.html) with a GitOps deployment that uses SealedSecrets and helm-operator:
 
 >Note: If you're not using a GitOps deployment, refer to [these LDAP instructions](use-ldap.md).
 

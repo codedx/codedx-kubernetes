@@ -306,14 +306,14 @@ service:
 codedxProps:
 
   limits:
-    # https://community.synopsys.com/s/document-item?bundleId=codedx&topicId=install_guide%2FCodeDxConfiguration%2Fanalysis-behavior-props.html&_LANG=enus
+    # https://documentation.blackduck.com/bundle/srm/page/install_guide/SRMConfiguration/analysis-behavior-props.html
     analysis:
       # analysis.concurrent-analysis-limit
       concurrent: 2
     database:
       poolSize: 5
       timeout: 30000
-    # https://community.synopsys.com/s/document-item?bundleId=codedx&topicId=install_guide%2FCodeDxConfiguration%2Fjob-system.html&_LANG=enus
+    # https://documentation.blackduck.com/bundle/srm/page/install_guide/SRMConfiguration/job-system.html
     jobs:
       # swa.jobs.cpu-limit
       cpu: 2000

@@ -106,10 +106,10 @@ spec:
         - mountPath: /opt/codedx/hikari.properties
           name: hikari-properties
           subPath: hikari.properties
-        - mountPath: /home/codedx/.codedx/admin-password
+        - mountPath: /opt/.codedx/admin-password
           name: admin-password
           subPath: admin-password
-        - mountPath: /home/codedx/.codedx/cacerts-new-password
+        - mountPath: /opt/.codedx/cacerts-new-password
           name: cacerts-new-password
           subPath: cacerts-new-password
         # Any extra config files from codedx.props.extra

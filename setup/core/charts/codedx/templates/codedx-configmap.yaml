@@ -41,7 +41,7 @@ data:
     CATALINA_OPTS='{{ include "codedx.props.params.combined" . }}'
     CATALINA_OPTS="$CATALINA_OPTS {{ default "" .Values.codedxJavaOpts }}"
     CATALINA_OPTS="$CATALINA_OPTS -Dcodedx.autoupdate=true"
-    keystoreKeyFile='/home/codedx/.codedx/cacerts-new-password'
+    keystoreKeyFile='/opt/.codedx/cacerts-new-password'
     if [ -f $keystoreKeyFile ] && [ -s $keystoreKeyFile ]; then
       keystoreKey=$(<$keystoreKeyFile)
       CATALINA_OPTS="$CATALINA_OPTS -Djavax.net.ssl.keystorepassword='$keystoreKey'"

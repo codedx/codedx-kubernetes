@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.8.0
+.VERSION 1.9.0
 .GUID c312e161-60ba-420b-83ae-45cdc25c12db
 .AUTHOR Black Duck
 .COPYRIGHT Copyright 2024 Black Duck Software, Inc. All rights reserved.
@@ -58,9 +58,20 @@ try {
 		# You can adjust the installation policy for the PowerShell Gallery with this command:
 		# Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 
-		Write-Host "`nTrying to install $guidedSetupModuleName module v$guidedSetupRequiredVersion...`n"
+		$availableRepos = Get-PsRepository | 
+			Sort-Object -Property 'Trusted' -Descending | 
+			Select-Object -ExpandProperty 'Name' | 
+			ForEach-Object { 
+				Find-Module -Name $guidedSetupModuleName -RequiredVersion $guidedSetupRequiredVersion -Repository $_ -ErrorAction 'SilentlyContinue'
+			}
+		Write-Host "`nDisplaying repositories containing $guidedSetupModuleName`:$($availableRepos | ForEach-Object { "`n - $($_.Repository)" })"
+
+		# Select the first available repository, preferring trusted repositories
+		$selectedRepo = $availableRepos | Select-Object -First 1 -ExpandProperty 'Repository'
+
+		Write-Host "`nTrying to install $guidedSetupModuleName module v$guidedSetupRequiredVersion from repository $selectedRepo...`n"
 		[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-		Install-Module -Name $guidedSetupModuleName -RequiredVersion $guidedSetupRequiredVersion -Scope CurrentUser
+		Install-Module -Name $guidedSetupModuleName -RequiredVersion $guidedSetupRequiredVersion -Scope CurrentUser -Repository $selectedRepo
 	}
 
 	if (-not (Test-AvailableModule $guidedSetupModuleName $guidedSetupRequiredVersion)) {

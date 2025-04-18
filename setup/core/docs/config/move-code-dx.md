@@ -65,39 +65,13 @@ $ kubectl apply -f /path/to/work/directory/host-code-dx-appdata-volume.yaml
 
 ```
 $ cd /path/to/work/directory
-$ kubectl -n cdx-src cp host-code-dx-appdata-volume:/var/cdx/analysis-files analysis-files
+$ kubectl -n cdx-src exec -it host-code-dx-appdata-volume -- bash
+$ cd /var/cdx
+$ tar -cvzf /var/cdx/appdata.tgz $(ls -d analysis-files notification-templates attachments keystore/master.key keystore/Secret tool-data/addin-tool-files 2> /dev/null)
+$ exit
+$ kubectl -n cdx-src cp host-code-dx-appdata-volume:/var/cdx/appdata.tgz appdata.tgz
 ```
-
-6) If your Code Dx AppData has an mltriage-files directory, run the following commands to copy the mltriage-files directory (if it exists), replacing the `cdx-src` namespace as necessary:
-
-```
-$ cd /path/to/work/directory
-$ kubectl -n cdx-src cp host-code-dx-appdata-volume:/var/cdx/mltriage-files mltriage-files
-```
-
->Note: You may not have an mltriage-files directory.
-
-7) If your Code Dx AppData has a keystore directory with files master.key and Secret, run the following commands to copy the keystore files (if they exist), replacing the `cdx-src` namespace as necessary:
-
-```
-$ cd /path/to/work/directory
-$ mkdir keystore
-$ kubectl -n cdx-src cp host-code-dx-appdata-volume:/var/cdx/keystore/master.key ./keystore/master.key
-$ kubectl -n cdx-src cp host-code-dx-appdata-volume:/var/cdx/keystore/Secret ./keystore/Secret
-```
-
-8) If your Code Dx AppData has a tool-data/addin-tool-files directory, run the following commands to copy the add-in files (if they exist), replacing the `cdx-src` namespace as necessary:
-
-```
-$ cd /path/to/work/directory
-$ mkdir tool-data
-$ cd tool-data
-$ kubectl -n cdx-src cp host-code-dx-appdata-volume:/var/cdx/tool-data/addin-tool-files addin-tool-files
-```
-
->Note: You may not have a tool-data/addin-tool-files directory.
-
-9) Run the following command to delete the host-code-dx-appdata-volume pod, replacing the `cdx-src` namespace as necessary:
+6) Run the following command to delete the host-code-dx-appdata-volume pod, replacing the `cdx-src` namespace as necessary:
 
 ```
 $ kubectl -n cdx-src delete pod host-code-dx-appdata-volume

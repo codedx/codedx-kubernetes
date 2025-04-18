@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.6.0
+.VERSION 1.7.0
 .GUID 1830f430-23af-46c2-b73c-8b936957b671
 .AUTHOR Black Duck
 .COPYRIGHT Copyright 2024 Black Duck Software, Inc. All rights reserved.
@@ -56,11 +56,6 @@ if ($appDataPath -eq '') {
 
 if (-not (Test-Path $appDataPath -PathType Container)) {
 	Write-Error "Unable to find Code Dx AppData folder at $appDataPath."
-}
-
-$analysisFiles = join-path $appDataPath 'analysis-files'
-if (-not (Test-Path $analysisFiles -PathType Container)) {
-	Write-Error "Unable to find Code Dx AppData analysis-files folder at $analysisFiles."
 }
 
 if ($internalDatabase) {
@@ -252,25 +247,15 @@ Write-Verbose "Switching to directory $appDataPath..."
 Push-Location $appDataPath
 
 Write-Verbose "Copying analysis-files to Code Dx volume..."
-Copy-K8sItem $namespaceCodeDx 'analysis-files' $codeDxPodName 'codedx' '/opt/codedx'
+Copy-K8sItem $namespaceCodeDx 'appdata.tgz' $codeDxPodName 'codedx' '/opt/codedx'
 
-$keystoreFiles = join-path $appDataPath 'keystore'
-if (Test-Path $keystoreFiles -PathType Container) {
-	Write-Verbose 'Copying keystore to Code Dx volume...'
-	Write-Verbose 'NOTE: SAML configuration under keystore must be compatible with current k8s deployment.'
-	Copy-K8sItem $namespaceCodeDx 'keystore' $codeDxPodName 'codedx' '/opt/codedx'
+kubectl -n $namespaceCodeDx exec -c 'codedx' $codeDxPodName -- tar --directory /opt/codedx -xzf /opt/codedx/appdata.tgz
+if (0 -ne $LASTEXITCODE) {
+	Write-Error "Unable to expand appdata archive, kubectl exited with exit code $LASTEXITCODE."
 }
-
-$mlTriageFiles = join-path $appDataPath 'mltriage-files'
-if (Test-Path $mlTriageFiles -PathType Container) {
-	Write-Verbose "Copying mltriage-files to Code Dx volume..."
-	Copy-K8sItem $namespaceCodeDx 'mltriage-files' $codeDxPodName 'codedx' '/opt/codedx'
-}
-
-$addInFiles = join-path $appDataPath 'tool-data/addin-tool-files'
-if (Test-Path $addInFiles -PathType Container) {
-	Write-Verbose "Copying tool-data/addin-tool-files to Code Dx volume..."
-	Copy-K8sItem $namespaceCodeDx 'tool-data' $codeDxPodName 'codedx' '/opt/codedx'
+kubectl -n $namespaceCodeDx exec -c 'codedx' $codeDxPodName -- rm /opt/codedx/appdata.tgz
+if (0 -ne $LASTEXITCODE) {
+	Write-Error "Unable to remove appdata archive, kubectl exited with exit code $LASTEXITCODE."
 }
 
 $workflowSecretsDir = New-WorkDirectory $appDataPath 'workflow-secrets'

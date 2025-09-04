@@ -62,8 +62,6 @@ if (-not (Test-ToolOrchestrationChartVersion $setupScriptPath $codeDxVersion $to
 Write-Verbose 'Updating setup script...'
 Set-ScriptDockerImageTags $setupScriptPath `
 	([Tuple`3[string,string,string]]::new('imageCodeDxTomcat',       'codedx/codedx-tomcat',              $codeDxVersion),
-	 [Tuple`3[string,string,string]]::new('imageCodeDxTools',        'codedx/codedx-tools',               $codeDxVersion),
-	 [Tuple`3[string,string,string]]::new('imageCodeDxToolsMono',    'codedx/codedx-toolsmono',           $codeDxVersion),
 	 [Tuple`3[string,string,string]]::new('imageCodeDxTomcatInit',   'codedx/codedx-tomcat',              $codeDxVersion),
 	 [Tuple`3[string,string,string]]::new('imageMariaDB',            'codedx/codedx-mariadb',             $mariaDBVersion),
 	 [Tuple`3[string,string,string]]::new('imagePrepare',            'codedx/codedx-prepare',             $toolOrchestrationVersion),

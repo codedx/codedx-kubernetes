@@ -126,8 +126,6 @@ function Test-ToolOrchestrationChartVersionTags($tags,
 	[string] $codeDxVersion,
 	[string] $toolOrchestrationVersion) {
 
-	$tags['$imageCodeDxTools']        -eq $codeDxVersion            -and 
-	$tags['$imageCodeDxToolsMono']    -eq $codeDxVersion            -and 
 	$tags['$imagePrepare']            -eq $toolOrchestrationVersion -and 
 	$tags['$imageNewAnalysis']        -eq $toolOrchestrationVersion -and 
 	$tags['$imageSendResults']        -eq $toolOrchestrationVersion -and 

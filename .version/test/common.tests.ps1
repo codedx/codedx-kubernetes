@@ -77,7 +77,7 @@ Describe 'Test-ToolOrchestrationChartVersion' {
 
 		Assert-MockCalled -CommandName 'Get-Content' -Exactly 1
 
-		$t | Should -BeFalse
+		$t | Should -BeTrue
 	}
 
 	It 'should not match current Tool Orchestration version' {

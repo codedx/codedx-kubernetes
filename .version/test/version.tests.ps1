@@ -114,21 +114,16 @@ Describe 'version' {
 			-workflowVersion 'v1.0.4' `
 			-restoreDBVersion 'v1.0.5' `
 
-		$fileContent.Keys.Count | Should -Be 6
+		$fileContent.Keys.Count | Should -Be 4 # codedx-tool-orchestration version is fixed
 		$fileContent.Keys | Should -Contain './admin/restore-db.ps1'
 		$fileContent.Keys | Should -Contain './setup/core/setup.ps1'
 		$fileContent.Keys | Should -Contain './setup/core/charts/codedx/Chart.yaml'
 		$fileContent.Keys | Should -Contain './setup/core/charts/codedx/values.yaml'
-		$fileContent.Keys | Should -Contain './setup/core/charts/codedx-tool-orchestration/Chart.yaml'
-		$fileContent.Keys | Should -Contain './setup/core/charts/codedx-tool-orchestration/values.yaml'
 
-		$fileContent['./setup/core/setup.ps1'] | Select-String -Pattern 'imageCodeDxTools\s+=\s''codedx/codedx-tools:v2.0.0''' | Should -Not -BeNullOrEmpty
+		$fileContent['./setup/core/setup.ps1'] | Select-String -Pattern 'imageCodeDxTools\s+=\s''codedx/codedx-tools:v1.0.0''' | Should -Not -BeNullOrEmpty
 		$fileContent['./setup/core/charts/codedx/Chart.yaml'] | Select-String -Pattern 'version:\s1.1.0' | Should -Not -BeNullOrEmpty
 		$fileContent['./setup/core/charts/codedx/Chart.yaml'] | Select-String -Pattern 'appVersion:\s"2.0.0"' | Should -Not -BeNullOrEmpty
 		$fileContent['./setup/core/charts/codedx/values.yaml'] | Select-String -Pattern 'codedxTomcatImage:\s''codedx/codedx-tomcat:v2.0.0''' | Should -Not -BeNullOrEmpty
-		$fileContent['./setup/core/charts/codedx-tool-orchestration/Chart.yaml'] | Select-String -Pattern 'version:\s1.1.1' | Should -Not -BeNullOrEmpty
-		$fileContent['./setup/core/charts/codedx-tool-orchestration/Chart.yaml'] | Select-String -Pattern 'appVersion:\s"1.0.1"' | Should -Not -BeNullOrEmpty
-		$fileContent['./setup/core/charts/codedx-tool-orchestration/values.yaml'] | Select-String -Pattern 'imageNamePrepare:\s''codedx/codedx-prepare:v1.0.1''' | Should -Not -BeNullOrEmpty
 	}
 
 	BeforeEach {

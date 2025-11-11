@@ -128,7 +128,7 @@ param (
 	[string]                 $helmTimeoutToolOrchestration = '15m0s',
 	
 	[string]                 $codedxGitRepo = 'https://github.com/codedx/codedx-kubernetes.git',
-	[string]                 $codedxGitRepoBranch = 'charts-2.105.0',
+	[string]                 $codedxGitRepoBranch = 'charts-2.106.0',
 
 	[int]                    $kubeApiTargetPort = 443,
 

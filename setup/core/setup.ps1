@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2.17.1
+.VERSION 2.18.0
 .GUID 47733b28-676e-455d-b7e8-88362f442aa3
 .AUTHOR Black Duck
 .COPYRIGHT Copyright 2024 Black Duck Software, Inc. All rights reserved.
@@ -66,7 +66,7 @@ param (
 	[string]                 $imagePreDelete          = 'codedx/codedx-cleanup:v1.34.0',
 
 	[string]                 $imageCodeDxTomcatInit   = 'codedx/codedx-tomcat:v2026.3.1',
-	[string]                 $imageMariaDB            = 'codedx/codedx-mariadb:v1.38.0',
+	[string]                 $imageMariaDB            = 'codedx/codedx-mariadb:v1.41.0',
 	[string]                 $imageMinio              = 'bitnami/minio:2021.4.6-debian-10-r11',
 	[string]                 $imageWorkflowController = 'codedx/codedx-workflow-controller:v2.18.0',
 	[string]                 $imageWorkflowExecutor   = 'codedx/codedx-argoexec:v2.18.0',

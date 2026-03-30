@@ -47,7 +47,7 @@ param (
 	[string]                 $minioCPUReservation,
 	[string]                 $workflowCPUReservation,
 
-	[string]                 $codeDxEphemeralStorageReservation = '2868Mi',
+	[string]                 $codeDxEphemeralStorageReservation = '3368Mi',
 	[string]                 $dbMasterEphemeralStorageReservation,
 	[string]                 $dbSlaveEphemeralStorageReservation,
 	[string]                 $toolServiceEphemeralStorageReservation,
@@ -178,6 +178,7 @@ param (
 	[Tuple`2[string,string]] $toolNoScheduleExecuteToleration,
 
 	[switch]                 $pauseAfterGitClone,
+	[switch]                 $skipGitClone,
 
 	[switch]                 $useHelmOperator,
 	[switch]                 $useHelmController,
@@ -606,9 +607,15 @@ $repoDirectory,$oldRepoDirectory | ForEach-Object {
 	}
 }
 
-Invoke-GitClone $codedxGitRepo $codedxGitRepoBranch $repoDirectory
-if ($pauseAfterGitClone) {
-	Read-Host -Prompt 'git clone complete, press Enter to continue...' | Out-Null
+if ($skipGitClone) {
+	$localRepoRoot = join-path $PSScriptRoot '../..'
+	Write-Verbose "Copying local repo from $localRepoRoot to $repoDirectory..."
+	Copy-Item -Path $localRepoRoot -Destination $repoDirectory -Recurse -Force
+} else {
+	Invoke-GitClone $codedxGitRepo $codedxGitRepoBranch $repoDirectory
+	if ($pauseAfterGitClone) {
+		Read-Host -Prompt 'git clone complete, press Enter to continue...' | Out-Null
+	}
 }
 
 $defaultHelmRepo = 'https://codedx.github.io/codedx-kubernetes'

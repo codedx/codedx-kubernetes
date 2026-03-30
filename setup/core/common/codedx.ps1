@@ -167,15 +167,15 @@ function New-CodeDxDeploymentValuesFile([string] $codeDxDnsName,
 	$masterDatabaseTlsConfig = ''
 	if ('' -ne $dbMasterTlsSecretName) {
 		$masterDatabaseTlsConfig = @'
-      ssl_cert=/bitnami/mariadb/tls/cert/tls.crt
-      ssl_key=/bitnami/mariadb/tls/cert/tls.key
+      ssl_cert=/mariadb/tls/cert/tls.crt
+      ssl_key=/mariadb/tls/cert/tls.key
 '@
 	}
 
 	$masterDatabaseTlsCaConfig = ''
 	if ('' -ne $dbMasterTlsCaConfigMapName) {
 		$masterDatabaseTlsCaConfig = @'
-      ssl_ca=/bitnami/mariadb/tls/ca/ca.crt
+      ssl_ca=/mariadb/tls/ca/ca.crt
 '@
 	}
 
@@ -280,16 +280,17 @@ mariadb:
       size: {10}Gi
     config: |-
       [mysqld]
+      init_file=/docker-entrypoint-initdb.d/runalways-setup.sql
       skip-name-resolve
       explicit_defaults_for_timestamp
-      basedir=/opt/bitnami/mariadb
+      basedir=/usr
+      datadir=/mariadb/data/
       port=3306
-      socket=/opt/bitnami/mariadb/tmp/mysql.sock
-      tmpdir=/opt/bitnami/mariadb/tmp
+      socket=/usr/tmp/mysqld.sock
+      tmpdir=/usr/tmp
       max_allowed_packet=16M
       bind-address=0.0.0.0
-      pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
-      log-error=/opt/bitnami/mariadb/logs/mysqld.log
+      pid-file=/usr/tmp/mysqld.pid
       character-set-server=utf8mb4
       collation-server=utf8mb4_general_ci
       optimizer_search_depth=0
@@ -297,22 +298,27 @@ mariadb:
       innodb_flush_log_at_trx_commit=0
       log_bin_trust_function_creators=1
       expire_logs_days=5
+      server-id=1
+      log-bin=mysql-bin
 {50}
 {51}
 
       [client]
       port=3306
-      socket=/opt/bitnami/mariadb/tmp/mysql.sock
+      socket=/usr/tmp/mysqld.sock
 
       [manager]
       port=3306
-      socket=/opt/bitnami/mariadb/tmp/mysql.sock
-      pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
+      socket=/usr/tmp/mysqld.sock
+      pid-file=/usr/tmp/mysqld.pid
     annotations: {45}
     nodeSelector: {32}
     tolerations: {35}
 {19}
   slave:
+    extraEnvVars:
+      - name: MARIADB_ROOT_PASSWORD_FILE
+        value: /usr/secrets/mariadb-root-password
     replicas: {15}
     persistence:
       storageClass: {52}
@@ -323,14 +329,14 @@ mariadb:
       [mysqld]
       skip-name-resolve
       explicit_defaults_for_timestamp
-      basedir=/opt/bitnami/mariadb
+      basedir=/usr
+      datadir=/mariadb/data/
       port=3306
-      socket=/opt/bitnami/mariadb/tmp/mysql.sock
-      tmpdir=/opt/bitnami/mariadb/tmp
+      socket=/usr/tmp/mysqld.sock
+      tmpdir=/usr/tmp
       max_allowed_packet=16M
       bind-address=0.0.0.0
-      pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
-      log-error=/opt/bitnami/mariadb/logs/mysqld.log
+      pid-file=/usr/tmp/mysqld.pid
       character-set-server=utf8mb4
       collation-server=utf8mb4_general_ci
       optimizer_search_depth=0
@@ -338,16 +344,19 @@ mariadb:
       innodb_flush_log_at_trx_commit=0
       log_bin_trust_function_creators=1
       expire_logs_days=5
+      server-id=2
+      log-bin=mysql-bin
+      relay-log=mysql-relay-bin
 
       [client]
       port=3306
-      socket=/opt/bitnami/mariadb/tmp/mysql.sock
+      socket=/usr/tmp/mysqld.sock
 {51}
 
       [manager]
       port=3306
-      socket=/opt/bitnami/mariadb/tmp/mysql.sock
-      pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
+      socket=/usr/tmp/mysqld.sock
+      pid-file=/usr/tmp/mysqld.pid
     annotations: {46}
     nodeSelector: {33}
     tolerations: {36}

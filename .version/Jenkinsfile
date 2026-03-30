@@ -112,7 +112,7 @@ pipeline {
 									}
 
 									codeDxVersion             = currentVersions[0]
-									mariaDBVersion            = 'v1.38.0' // currentVersions[1]
+									mariaDBVersion            = currentVersions[1]
 									// Note: v1.34.0 is the most recent TO version that the legacy K8s chart (codedx-kubernetes) supports
 									toolOrchestrationVersion  = 'v1.34.0'
 									// Note: v1.34.0 is the most recent Workflow version that the legacy K8s chart (codedx-kubernetes) supports

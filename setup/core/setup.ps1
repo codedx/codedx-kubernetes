@@ -54,7 +54,7 @@ param (
 	[string]                 $minioEphemeralStorageReservation,
 	[string]                 $workflowEphemeralStorageReservation,
 
-	[string]                 $imageCodeDxTomcat       = 'codedx/codedx-tomcat:v2026.3.2',
+	[string]                 $imageCodeDxTomcat       = 'codedx/codedx-tomcat:v2026.3.3',
 	[string]                 $imageCodeDxTools        = 'codedx/codedx-tools:v2025.6.4',
 	[string]                 $imageCodeDxToolsMono    = 'codedx/codedx-toolsmono:v2025.6.4',
 
@@ -65,7 +65,7 @@ param (
 	[string]                 $imageToolService        = 'codedx/codedx-tool-service:v1.34.0',
 	[string]                 $imagePreDelete          = 'codedx/codedx-cleanup:v1.34.0',
 
-	[string]                 $imageCodeDxTomcatInit   = 'codedx/codedx-tomcat:v2026.3.2',
+	[string]                 $imageCodeDxTomcatInit   = 'codedx/codedx-tomcat:v2026.3.3',
 	[string]                 $imageMariaDB            = 'codedx/codedx-mariadb:v1.41.0',
 	[string]                 $imageMinio              = 'bitnami/minio:2021.4.6-debian-10-r11',
 	[string]                 $imageWorkflowController = 'codedx/codedx-workflow-controller:v2.18.0',
@@ -128,7 +128,7 @@ param (
 	[string]                 $helmTimeoutToolOrchestration = '15m0s',
 	
 	[string]                 $codedxGitRepo = 'https://github.com/codedx/codedx-kubernetes.git',
-	[string]                 $codedxGitRepoBranch = 'charts-2.113.0',
+	[string]                 $codedxGitRepoBranch = 'charts-2.114.0',
 
 	[int]                    $kubeApiTargetPort = 443,
 

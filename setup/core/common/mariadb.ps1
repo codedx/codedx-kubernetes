@@ -43,7 +43,7 @@ spec:
         command: ["/bin/bash"]
         args: ["-c", "/home/sdb/restore"]
         volumeMounts:
-        - mountPath: /bitnami/mariadb
+        - mountPath: /mariadb
           name: data
         - mountPath: /home/sdb/cfg
           name: rootpwd

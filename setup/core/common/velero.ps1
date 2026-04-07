@@ -86,7 +86,7 @@ spec:
             command:
             - /bin/bash
             - -c
-            - /bitnami/mariadb/scripts/backup.sh && sleep {1}
+            - /mariadb/scripts/backup.sh && sleep {1}
             timeout: '{2}'
 '@ -f 	$codeDxNamespace, `
 		$backupLagTime, `
